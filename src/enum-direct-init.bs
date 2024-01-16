@@ -7,6 +7,7 @@ Date: 2024-01-16
 Group: WG21
 Audience: EWG
 Editor: Jan Schultke, janschultke@gmail.com
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals)
 Markup Shorthands: markdown on
 Abstract: This paper proposes allowing initializing scoped enumeration types using
           direct-initialization in those cases where direct-list-initialization is already possible.
