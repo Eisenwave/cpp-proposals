@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
-Shortname: N/A
+Shortname: Pxxxx
 Revision: 0
 Status: NP
 Date: 2024-01-16
