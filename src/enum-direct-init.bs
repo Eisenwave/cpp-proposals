@@ -1,0 +1,180 @@
+<pre class='metadata'>
+Title: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
+Shortname: N/A
+Revision: 0
+Status: NP
+Date: 2024-01-16
+Group: WG21
+Audience: EWG
+Editor: Jan Schultke, janschultke@gmail.com
+Markup Shorthands: markdown on
+Abstract: This paper proposes allowing initializing scoped enumeration types using
+          direct-initialization in those cases where direct-list-initialization is already possible.
+</pre>
+
+Introduction {#intro}
+=====================
+
+Currently, the following code is ill-formed:
+```cpp
+enum class E {};
+E a{0}; // OK, list-initialization
+E b(0); // error: cannot convert 'int' to 'e' in initialization
+```
+There is no obvious reason why direct-list-initialization must be more permissive than
+non-list-direct-initialization in this case.
+I propose to make this code well-formed.
+
+
+Motivation and scope {#motivation-and-scope}
+============================================
+
+During the discussion leading up to this proposal, multiple developers were bewildered by the
+status quo.
+Direct-list-initialization is perceived as a stricter form of direct-initialization;
+in essence *"direct-initialization without narrowing conversions"*.
+Making direct-initialization at least as permissive as direct-list-initialization would validate
+that intuition.
+
+It's confusing that `static_cast<std::byte>(0)` and `std::byte(0)` are permitted, but
+`std::byte b(0)` and `new std::byte(0)` are not.
+This makes the language less teachable.
+
+[[P0960R3]] proposed to expand parenthesized initialization capabilities for aggregate types.
+That proposal was motivated by perfect forwarding of aggregate types.
+Similarly, this proposal would improve ergonomics in cases such as:
+```cpp
+std::vector<std::byte> bytes;
+bytes.emplace_back(0xff);         // currently ill-formed, proposed to be OK
+```
+
+[[P0138R2]] proposed direct-list-initialization for enumeration types.
+It did not discuss whether non-list-direct-initialization of enumeration types should be made
+more permissive in tandem.
+
+
+Impact on existing code {#impact-on-existing-code}
+==================================================
+
+This code only makes previously ill-formed initialization valid.
+Naturally, this impacts any uses of expression testing (SFINAE, requires-expression, etc.).
+
+`std::is_constructible_v</* enumeration type */, /* ... */>` and other traits that
+test for validity of `T t(expr)` are impacted.
+
+
+
+Design considerations {#design}
+===============================
+
+This proposal largely adopts the rules for direct-list-initialization.
+It merely drops the requirement of non-narrowing conversions.
+
+Fixed underlying types {#fixed-underlying-types}
+------------------------------------------------
+As with direct-list-initialization, a fixed underlying type should be required.
+Enumerations without fixed underlying types act as symbolic constants in the program, or are used
+as a C-compatible non-macro way to define constants.
+There is no motivation to expand direct-initialization rules for these types.
+
+Note: All scoped enumerations implicitly have an `int` (or wider integer) fixed underlying type.
+
+Floating-point initializers {#floating-point-initializers}
+----------------------------------------------------------
+The proposal seeks to make the following code valid:
+```cpp
+std::byte b(0.f);
+```
+This construct is undesirable, but necessary to achieve the
+*"at least as permissive as direct-list-initialization"* semantics.
+CWG should decide whether this construct should be permitted.
+
+Implicit conversions {#implicit-conversions}
+--------------------------------------------
+This proposal does not seek to make implicit conversions from scalar to enumeration types possible.
+The following code is and should remain ill-formed:
+```cpp
+void foo(std::byte);
+foo(0);          // ill-formed
+std::byte b = 0; // ill-formed
+```
+Allowing implicit conversion to enumerations in general would compromise the type safety that
+enumerations offer.
+Direct-initialization is a very specific case where intent is relatively clear.
+
+
+Implementation experience {#implementation-experience}
+======================================================
+
+None.
+
+
+Proposed wording {#proposed-wording}
+====================================
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]].
+
+Insert a new bullet in 9.4.1 [dcl.init.general] paragraph 16, between bullets 7 and 8:
+
+<blockquote>
+<ins>
+Otherwise, if<ul>
+<li>the destination type `T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,</li>
+<li>the parenthesized *expression-list* of the *initializer* has a single element `v` of scalar type, and</li>
+<li>`v` can be implicitly converted to `U`,</li>
+</ul>
+the object is initialized with the value `static_cast<T>(v)` ([expr.type.conv]).
+</ins>
+</blockquote>
+
+Note: This bullet covers all forms of direct-initialization except list-initialization
+      and `static_cast`.
+      List-initialization is already covered by an earlier bullet, and `static_cast` has no
+      *expression-list*, only a single *expression*.
+
+Modify 9.4.5 [dcl.init.list] paragraph 3 bullet 8 as follows:
+
+<blockquote>
+<del>
+Otherwise, if `T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,
+the *initializer-list* has a single element `v` of scalar type,
+`v` can be implicitly converted to `U`, and
+the initialization is direct-list-initialization,
+</del>
+<br>
+<ins>
+Otherwise, if<ul>
+<li>`T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,</li>
+<li>the *initializer-list* has a single element `v` of scalar type,</li>
+<li>`v` can be implicitly converted to `U`, and</li>
+<li>the initialization is direct-list-initialization,</li>
+</ul>
+</ins>
+the object is initialized with the value
+<del>`T(v)` ([expr.type.conv])</del><ins>`static_cast<T>(v)` ([expr.static.cast])</ins>;
+if a narrowing conversion is required to convert `v` to `U`, the program is ill-formed.
+</ins>
+</blockquote>
+
+Note: This change is strictly editorial.
+      It would be valid to keep list-initialization defined in terms of `T(v)` instead
+      of `static_cast<T>(v)`.
+      However, the semantics of `T(v)` in [expr.type.conv] are delegated to `static_cast`
+      in [expr.static.cast] anyway, which is an unecessary double indirection.
+
+<pre class=biblio>
+{
+    "P0960R3": {
+        "authors": ["Ville Voutilainen", "Thomas Köppe"],
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0960r3.html",
+        "title": "Allow initializing aggregates from a parenthesized list of values",
+        "publisher": "WG21"
+    },
+    "P0138R2": {
+        "authors": ["Gabriel Dos Reis", "Microsoft"],
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0138r2.pdf",
+        "title": "Construction Rules for enum class Values",
+        "publisher": "WG21"
+    }
+}
+</pre>
