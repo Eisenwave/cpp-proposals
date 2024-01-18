@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="15b226cfe5ddf0fd8db6ea0b6045877f66a59eae" name="revision">
+  <meta content="d19d451829ee2be4134ffc7ae5efb83b94c0f4a9" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2102,7 +2102,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dt>Project:
      <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
      <dt>Source:
-     <dd><a href="https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs">eisenwave/cpp-proposals</a>
+     <dd><a href="https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-deposit-extract-reverse.bs">eisenwave/cpp-proposals</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2225,8 +2225,8 @@ them suitable for standardization:</p>
     <li data-md>
      <p>For known masks, numerous optimization opportunities are available.</p>
    </ol>
-   <h3 class="heading settled" data-level="2.1" id="use-cases"><span class="secno">2.1. </span><span class="content">Motivating examples</span><a class="self-link" href="#use-cases"></a></h3>
    <p>A GitHub code search for <code class="highlight"><c- o>/</c-><c- p>(</c-><c- n>_pdep_u</c-><c- o>|</c-><c- n>_pext_u</c-><c- p>)(</c-><c- mi>32</c-><c- o>|</c-><c- mi>64</c-><c- p>)</c-><c- o>/</c-> <c- n>AND</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code> reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.</p>
+   <h3 class="heading settled" data-level="2.1" id="use-cases"><span class="secno">2.1. </span><span class="content">Motivating examples</span><a class="self-link" href="#use-cases"></a></h3>
    <h4 class="heading settled" data-level="2.1.1" id="interleaving-bits"><span class="secno">2.1.1. </span><span class="content">Interleaving bits with <code class="highlight"><c- n>expand_bits</c-></code></span><a class="self-link" href="#interleaving-bits"></a></h4>
    <p>A common use case for expansion is interleaving bits:</p>
 <pre class="language-cpp highlight"><c- c1>// interleave the bits of two 8-bit integers x and y</c->
@@ -2236,7 +2236,7 @@ them suitable for standardization:</p>
 Space filling curves are a popular technique in compression.</p>
    <h4 class="heading settled" data-level="2.1.2" id="input-output"><span class="secno">2.1.2. </span><span class="content">UTF-8 decoding with <code class="highlight"><c- n>compress_bitsr</c-></code></span><a class="self-link" href="#input-output"></a></h4>
    <p>The operations can also be used in various I/O-related applications.</p>
-   <p>For example, compression is particularly useful for variable-length
+   <p>For example, <code class="highlight"><c- n>compress_bits</c-></code> is particularly useful for variable-length
 encodings, where data bits are interrupted by bits which signal continuation of the data.
 UTF-8 is a typical example:</p>
 <pre class="language-cpp highlight"><c- b>uint_least32_t</c-> <c- n>x</c-> <c- o>=</c-> <c- n>load32_little_endian</c-><c- p>(</c-><c- n>utf8_data_pointer</c-><c- p>);</c->
@@ -2330,7 +2330,7 @@ latency.
 Zen 2 and older implement PDEP/PEXT in microcode, with 18 cycles latency.</p>
    <p>ARM also supports these operations directly with BDEP, BEXT, and BGRP in the SVE2 instruction set. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> mentions other architectures with direct support.</p>
    <p>Overall, only recent instruction set extensions offer this functionality directly.
-However, when the mask is a constant, many different strategies for hardware-acceleration open up.
+However, when the mask is a constant, many different strategies for hardware acceleration open up.
 For example</p>
    <ul>
     <li data-md>
@@ -2538,7 +2538,7 @@ The following implementation demonstrates how to delegate <code class="highlight
     <li data-md>
      <p>An O(log<sup>2</sup> n) <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code></p>
    </ul>
-   <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers optimized software replacements for PEXT and PDEP, optimized for x86_64.</p>
+   <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for PEXT and PDEP, optimized for x86_64.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow1" title="What is a fast fallback algorithm which emulates PDEP and PEXT in software?">[StackOverflow1]</a> contains discussion of various possible software implementations
 of <code class="highlight"><c- n>compress_bitsr</c-></code> and <code class="highlight"><c- n>expand_bitsr</c-></code>.</p>
    <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>

@@ -7,7 +7,7 @@ Date: 2024-01-16
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
-!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs)
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-deposit-extract-reverse.bs)
 Markup Shorthands: markdown on
 Abstract: This proposal adds bit permutation functions to the bit manipulation library.
 </pre>
@@ -78,11 +78,11 @@ them suitable for standardization:
 4. They are non-trivial to implement efficiently in software.
 5. For known masks, numerous optimization opportunities are available.
 
-## Motivating examples ## {#use-cases}
-
 A GitHub code search for
 `/(_pdep_u|_pext_u)(32|64)/ AND language:c++`
 reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.
+
+## Motivating examples ## {#use-cases}
 
 ### Interleaving bits with `expand_bits` ### {#interleaving-bits}
 
@@ -100,7 +100,7 @@ Space filling curves are a popular technique in compression.
 
 The operations can also be used in various I/O-related applications.
 
-For example, compression is particularly useful for variable-length
+For example, `compress_bits` is particularly useful for variable-length
 encodings, where data bits are interrupted by bits which signal continuation of the data.
 UTF-8 is a typical example:
 ```cpp
@@ -222,7 +222,7 @@ ARM also supports these operations directly with BDEP, BEXT, and BGRP in the SVE
 [[Warren1]] mentions other architectures with direct support.
 
 Overall, only recent instruction set extensions offer this functionality directly.
-However, when the mask is a constant, many different strategies for hardware-acceleration open up.
+However, when the mask is a constant, many different strategies for hardware acceleration open up.
 For example
 - interleaving bits can be assisted (though not fully implemented) using ARM `ZIP1`/`ZIP2`
 - other permutations can be assisted by ARM `TBL` and `TBX`
@@ -455,7 +455,7 @@ constexpr T expand_bitsl(T x, T m) noexcept
 - An O(log n) `reverse_bits`
 - An O(log<sup>2</sup> n) `compress_bits` and `expand_bits`
 
-[[Zp7]] offers optimized software replacements for PEXT and PDEP, optimized for x86_64.
+[[Zp7]] offers fast software implementations for PEXT and PDEP, optimized for x86_64.
 
 [[StackOverflow1]] contains discussion of various possible software implementations
 of `compress_bitsr` and `expand_bitsr`.
