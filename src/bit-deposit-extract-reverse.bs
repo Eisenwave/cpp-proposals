@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: Bit-permutation for `<bit>`
+Title: Bit permutations
 Shortname: Pxxxx
 Revision: 0
 Status: NP
@@ -9,128 +9,268 @@ Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs)
 Markup Shorthands: markdown on
-Abstract: This proposal adds functions two the `<bit>` header which abstract the
-          PDEP and PEXT x86 instructions.
+Abstract: This proposal adds bit permutation functions to the bit manipulation library.
 </pre>
 
-Introduction {#intro}
-=====================
+# Introduction # {#intro}
 
-This proposal seeks to expand the `<bit>` header with the following bit-permutation functions:
-```cpp
-template<class T>
-constexpr T compress_bits(T x, T mask) noexcept;
-```
-For each one-bit in `mask`, the corresponding bit in `x` is taken and packed
-contiguously into the result.
-This operation is directly implemented in x86_64 BMI2 through
-[PEXT (Parallel Bits Extract)](https://www.felixcloutier.com/x86/pext).
+I propose to expand the bit manipulation library with the following functions:
 
 ```cpp
 template<class T>
-constexpr T expand_bits(T x, T mask) noexcept;
+concept __unsigned_integral = is_unsigned_v<T>; // exposition-only
+
+// all constraints are exposition-only
+template<__unsigned_integral T>
+constexpr T reverse_bits(T x) noexcept;
 ```
-For each one-bit in mask, a bit from `x` is taken and shifted into the corresponding position of the
-mask bit.
-This operation is directly implemented in x86_64 BMI2 through
-[PDEP (Parallel Bits Deposit)](https://www.felixcloutier.com/x86/pdep)
 
+Reverses the bits of `x` so that the least significant bit becomes the most significant.
 
-Motivation and scope {#motivation-and-scope}
-============================================
+```cpp
+template<__unsigned_integral T>
+constexpr T compress_bitsr(T x, T m) noexcept;
+```
+
+For each one-bit in `m`, the corresponding bit in `x` is taken and packed
+contiguously into the result, starting with the least significant result bit.
+
+```cpp
+template<__unsigned_integral T>
+constexpr T compress_bitsl(T x, T m) noexcept;
+```
+
+For each one-bit in `m`, the corresponding bit in `x` is taken and packed
+contiguously into the result, starting with the most significant result bit.
+
+```cpp
+template<__unsigned_integral T>
+constexpr T expand_bitsr(T x, T m) noexcept;
+```
+For each one-bit in `m`, a bit from `x`, starting with the least significant bit
+is taken and shifted into the corresponding position of the `m` bit.
+
+```cpp
+template<__unsigned_integral T>
+constexpr T expand_bitsl(T x, T m) noexcept;
+```
+For each one-bit in `m`, a bit from `x`, starting with the most significant bit
+is taken and shifted into the corresponding position of the `m` bit.
+
+# Motivation and scope # {#motivation-and-scope}
+
+Bit-reversal is a common operation with uses in:
+
+- **Cryptography**: reversal can obscure data
+- **Networking**: as part of CRC computation
+- **Graphics**: mirroring of images with one bit per pixel
+- **Random Number Generation**: reversal can counteract low entropy of low-order bits
+    such as in the case of linear congruential generators
+- **Digital Signal Processing**: for radix-2 Cooley-Tukey FFT algorithms
+- **Code Obfuscation**: security by obscurity
 
 Compression and expansion are fundamental operations that meet multiple criteria which make
 them suitable for standardization:
 
-They serve as building blocks for more complex operations. {#building-blocks}
----
-A common use case for PDEP is interleaving bits.
-`expandr_bits(x, 0b...101010) | expandr_bits(y, 0b...010101)` can be used to interleave the
-bits of two numbers `x` and `y`.
+1. They are common and useful operations.
+2. They can be used to implement numerous other operations.
+3. At least on some architectures, they have direct hardware support.
+4. They are non-trivial to implement efficiently in software.
+5. For known masks, numerous optimization opportunities are available.
+
+## Motivating examples ## {#use-cases}
+
+A GitHub code search for
+`/(_pdep_u|_pext_u)(32|64)/ AND language:c++`
+reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.
+
+### Interleaving bits with `expand_bits` ### {#interleaving-bits}
+
+A common use case for expansion is interleaving bits:
+```cpp
+// interleave the bits of two 8-bit integers x and y
+expand_bitsr(x, 0b10101010) | expand_bitsr(y, 0b01010101)
+```
 This translates Cartesian coordinates to the index on a
 [Z-order curve](https://en.wikipedia.org/wiki/Z-order_curve).
 Space filling curves are a popular technique in compression.
 
+
+### UTF-8 decoding with `compress_bitsr` ### {#input-output}
+
 The operations can also be used in various I/O-related applications.
-The operation `(x >> 4) & 0b11`, which extracts the 5th and 6th least significant bits can also be
-expressed as `compress_bits(x, 0b110000)`.
-Compression also handles gaps between bits.
 
-A GitHub code search for
-`/(_pdep_u|_pext_u)(8|16|32|64)/ AND language:c++`
-reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.
-To name some examples, the intrinsic is used in Base-64 and UTF-8 encoding/decoding,
-as well as bitboard chess engines. 
+For example, compression is particularly useful for variable-length
+encodings, where data bits are interrupted by bits which signal continuation of the data.
+UTF-8 is a typical example:
+```cpp
+uint_least32_t x = load32_little_endian(utf8_data_pointer);
+switch (countl_one(uint8_t(x))) {
+case 0: return compress_bitsr(x, 0b01111111);
+case 1: /* error */;
+case 2: return compress_bitsr(x, 0b00111111'00011111);
+case 3: return compress_bitsr(x, 0b00111111'00111111'00001111);
+case 4: return compress_bitsr(x, 0b00111111'00111111'00111111'00000111);
+}
+```
 
-They benefit greatly from hardware support. {#hardware-support}
----
+### Other operations based on `compress_bits` and `expand_bits` ### {#building-operations}
+
+Many operations can be built on top of `compress_bits` and `expand_bits`.
+However, direct hardware support is often needed for these operations to be an efficient choice.
+
+```cpp
+// x & 0xf
+expand_bitsr(x, 0xf)
+compress_bitsr(x, 0xf)
+
+// (x & 0xf) << 4
+expand_bitsr(x, 0xf0)
+// (x >> 4) & 0xf
+compress_bitsr(x, 0xf0)
+
+// Clear the least significant one-bit of x.
+x ^= expand_bitsr(1, x)
+// Clear the nth least significant one-bit of x.
+x ^= expand_bitsr(1 << n, x)
+// Clear the n least significant one-bits of x.
+x ^= expand_bitsr((1 << n) - 1, x)
+
+// (x >> n) & 1
+compress_bitsr(x, 1 << n)
+// Get the least significant bit of x.
+compress_bitsr(x, x) & 1
+// Get the nth least significant bit of x.
+(compress_bitsr(x, x) >> n) & 1
+
+// popcount(x)
+countr_one(compress_bitsr(-1u, x))
+countr_one(compress_bitsr(x, x))
+```
+
+## Hardware support ## {#hardware-support}
+
+<table>
+<tr>
+    <th>Operation</th><th>x86_64</th><th>ARM</th>
+</tr>
+<tr>
+    <td>`reverse_bits`</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/bswap">`BSWAP`</a>)</td>
+    <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html">`RBIT`</a><sup>SVE2</sup></td>
+</tr>
+<tr>
+    <td>`compress_bitsr`</td>
+    <td><a href="https://www.felixcloutier.com/x86/pext">`PEXT`</a><sup>BMI2</sup></td>
+    <td><a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`BEXT`</a><sup>SVE2</sup></td>
+</tr>
+<tr>
+    <td>`expand_bitsr`</td>
+    <td><a href="https://www.felixcloutier.com/x86/pdep">`PDEP`</a><sup>BMI2</sup></td>
+    <td><a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`BDEP`</a><sup>SVE2</sup></td>
+</tr>
+<tr>
+    <td>`compress_bitsl`</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/pext">`PEXT`</a>)<sup>BMI2</sup></td>
+    <td><a href="https://dougallj.github.io/asil/doc/bgrp_z_zz_64.html">`BGRP`</a><sup>SVE2</sup>, (<a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`BEXT`</a>)<sup>SVE2</sup></td>
+</tr>
+<tr>
+    <td>`expand_bitsl`</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/pdep">`PDEP`</a>)<sup>BMI2</sup></td>
+    <td>(<a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`BDEP`</a>)<sup>SVE2</sup></td>
+</tr>
+</table>
+
+(Parenthesized) entries signal that the instruction does not directly implement the function,
+but greatly assists in its implementation.
+
+### Support for `reverse_bits` ### {#hardware-support-reverse}
+
+This operation is directly implemented in ARM through
+<a href="https://developer.arm.com/documentation/dui0473/m/arm-and-thumb-instructions/rbit">RBIT</a>.
+
+Any architecture with support for `byteswap` (such as x86 with
+<a href="https://www.felixcloutier.com/x86/bswap"><code>BSWAP</code></a>)
+also supports bit-reversal in part.
+[[Warren1]] presents an O(log n) algorithm which operates by swapping lower and upper
+`N / 2`, ..., `16`, `8`, `4`, `2`, and `1` bits in parallel.
+Byte-swapping implements these individual swaps up to 8 bits, requiring only three more
+parallel swaps in software:
+```cpp
+// assuming a byte is an octet of bits, and assuming the width of x is a power of two
+x = byteswap(x);
+x = (x & 0x0F0F0F0F) <<  4 | (x & 0xF0F0F0F0) >>  4; // ... quartets of bits
+x = (x & 0x33333333) <<  2 | (x & 0xCCCCCCCC) >>  2; // ... pairs of bits
+x = (x & 0x55555555) <<  1 | (x & 0xAAAAAAAA) >>  1; // ... individual bits
+```
+
+It is worth noting that clang provides a cross-platform family of intrinsics.
+<a href="https://clang.llvm.org/docs/LanguageExtensions.html#builtin-bitreverse">`__builtin_bitreverse`</a>
+uses byte-swapping or bit-reversal instructions if possible.
+
+Such an intrinsic has been requested from GCC users a number of times in [[GNU1]].
+
+### Support for `compress_bits` and `expand_bits` ### {#hardware-support-compress-expand}
+
 Starting with Haswell, Intel CPUs directly implement compression and expansion with
-with
-[PDEP (Parallel Bits Deposit)](https://www.felixcloutier.com/x86/pdep) and
-[PEXT (Parallel Bits Extract)](https://www.felixcloutier.com/x86/pext).
+with PDEP and PEXT.
 Intel x86_64 CPUs, as well AMD CPUs starting with Zen 3 implement PDEP and PEXT with 3 cycles
 latency.
 Zen 2 and older implement PDEP/PEXT in microcode, with 18 cycles latency.
 
-There is no other instruction set with a direct equivalent.
+ARM also supports these operations directly with BDEP, BEXT, and BGRP in the SVE2 instruction set.
+[[Warren1]] mentions other architectures with direct support.
+
+Overall, only recent instruction set extensions offer this functionality directly.
 However, when the mask is a constant, many different strategies for hardware-acceleration open up.
 For example
 - interleaving bits can be assisted (though not fully implemented) using ARM `ZIP1`/`ZIP2`
 - other permutations can be assisted by ARM `TBL` and `TBX`
 
+As [[Warren1]] explains, the cost of computing `compress_bits` and `expand_bits` in software is
+dramatically lower for a constant mask.
+For specific known masks (such as a mask with a single one-bit), the cost is extremely low.
 
-For known mask values, implementation strategies change greatly {#implementation-strategies}
----
-On architectures where there is no direct hardware support such as `PDEP`,
-or where `PDEP` and `PEXT` are costly,
-the implementation strategy for these operations depends greatly on the following information:
+All in all, there are multiple factors that strongly suggest a standard library implementation:
 
-1. Is the mask sparsely populated?
-    - If so, consider an algorithm which traverses each mask bit.
-2. Is the mask a single bit, or a single group of consecutive bits?
-    - If so, the operation can be implemented in terms of a single shift and bitwise AND.
-3. Does the mask have relatively few gaps?
-    - If so, multiple shifts and bitwise ANDs may be needed, but are likely still optimal up to a
-         certain amount of groups.
-4. Is the amount of gaps in the mask known, even if the exact mask isn't known?
-    - This could make the latter strategy highly preferrable, with full loop unrolling.
-5. Are all gaps in the mask equally spaced?
-    - If so, the operation boils down to interleaving or removing equally spaced bits,
-         and there exists a simple solution with logarithmic complexity.
-
-Some of these special cases may be worth detecting using traditional branching.
-Some of these special cases are only worth detecting for known constant masks, or masks which
-become known during optimization passes.
-The choice of strategy is also impacted by other available hardware support, such as for
-`std::countr_zero`.
-
-All in all, there are two factors that suggest a standard library implementation:
 1. The strategy for computing `compress_bits` and `expand_bits` depends greatly on the architecture
     and on information about the mask, even if the exact mask isn't known.
-2. ISO C++ does not offer a mechanism by which all of this information can be utilized.
-    Namely, it is not possible to decide based on information that only becomes available during
-    optimization passes.
+     - `TZCNT`, `CLMUL` (see [[Zp7]]), and `POPCNT` are helpful.
+2. ISO C++ does not offer a mechanism through which all of this information can be utilized.
+    Namely, it is not possible to change strategy based on information that only becomes available
+    during optimization passes.
     Compiler extensions such as `__builtin_constant_p` offer a workaround.
+3. ISO C++ does not offer a mechanism through which function implementations can be chosen
+    based on the surrounding context.
+    In a situation where multiple `compress_bits` calls with the same mask `m` are performed,
+    it is significantly faster to pre-compute information based on the mask once,
+    and utilize it in subsequent calls.
+    The same technique can be used to accelerate integer division for multiple divisons with the
+    same divisor.
 
+Bullets 2. and 3. suggest that `compress_bits` and `expand_bits` benefit from being
+implemented directly in the compiler via intrinsic,
+even if hardware does not directly implement these operations.
 
-Impact on existing code {#impact-on-existing-code}
-==================================================
+# Impact on existing code # {#impact-on-existing-code}
 
 This proposal is purely a standard library expansion.
 No existing code is affected.
 
 
 
-Design considerations {#design}
-===============================
+# Design considerations # {#design}
 
-Why the names `compress_bits` and `expand_bits`? {#naming}
----
-When talking about the proposed operations, there are typically two sets of terminology:
-1. `deposit`/`extract`
-2. `compress`/`expand`
+The design choices in this paper are based on [[P0553R4]], wherever applicable.
 
-The latter is preferrable because the former terminology is rather ambiguous:
+## Why the names `compress_bitsx` and `expand_bitsx`? ## {#naming}
+
+There are multiple synonymous sets of terminology:
+1. `deposit` and `extract`
+2. `compress` and `expand`
+3. `gather` and `scatter`
+
+I have decided against `deposit` and `extract` because of its ambiguity:
 
 Taking the input `0b10101` and densely packing it to `0b111` could be described as:
 > Extract each second bit from `0b10101` and densely deposit it into the result.
@@ -138,16 +278,22 @@ Taking the input `0b10101` and densely packing it to `0b111` could be described 
 Similarly, taking the input `0b111` and expanding it into `0b10101` could be described as:
 > Extract each bit from `0b111` and sparsely deposit it in the result.
 
-Both operations can be described with `extract` and `expand` terminology,
+Both operations can be described with `extract` and `deposit` terminology,
 making it virtually useless in keeping the operations apart.
+`gather` and `scatter` are simply the least common way to describe these operations, which makes
+`compress` and `expand` the best candidates.
 
+The abbreviations `l` and `r` for left/right are consistent with the design choices in [[P0553R4]].
 
-Should there be more general functions? {#more-general}
----
-[[N3864]] originally suggested much more general versions, which includes:
-1. compressing/expanding not just low-order bits, but also high-order bits
-2. performing the operation not just on the whole operand, but on "words" of it
-3. performing the operation not just on bits, but on arbitrarily sized groups of bits
+## Further generalizaton ## {#further-generlizaton}
+
+### No generalized `compress_bits` and `expand_bits` ### {#generalized-compress-expand}
+
+[[N3864]] originally suggested much more general versions of compression and expansion,
+which support:
+
+1. performing the operation not just on the whole operand, but on "words" of it, in parallel
+2. performing the operation not just on bits, but on arbitrarily sized groups of bits
 
 **I don't propose this generality** for the following reasons:
 1. The utility functions in `<bit>` are not meant to provide a full bitwise manipulation library,
@@ -164,122 +310,262 @@ Should there be more general functions? {#more-general}
     and from the perspective of language users.
     It is unclear whether this added complexity is worth it in this case.
 
+### No generalized `reverse_bits` ### {#generalized-reverse-bits}
 
-Possibe implementation {#possible-implementation}
-======================================================
-
-The following implementation is very naive, but compliant:
+Bit reversal can also be generalized to work with any group size:
 ```cpp
-template<class T>
-  requires is_unsigned_v<T>
-constexpr T compress_bits(T x, T mask) noexcept
+template <typename T>
+T reverse_bits(T x, int group_size = 1) noexcept(false);
+```
+With this generalization, `byteswap(x)` on conventional platforms
+is equivalent to `reverse_bits(x, 8)`.
+
+However, this general version is much less used, not as consistently supported in
+hardware, and has a narrow contract.
+`group_size` must be a nonzero factor of `x` for this operation to be meaningful.
+
+Therefore, a generalized bit-reversal is not proposed in this paper.
+
+
+## Why does the signature require two same `T`s? ## {#unusual-signature}
+
+
+Initially, I went through a number of different signatures.
+
+```cpp
+template<__unsigned_integral T, __unsigned_integral X>
+constexpr T compress_bitsr(X x, T m) noexcept;
+```
+This signature is quite clever because the result never has more bits than the mask `m`.
+However, it is surprising that the mask plays such a significant role here.
+
+Furthermore, I've realized that while the result never has more bits than `m`,
+`compress_bitsl` must still deposit bits starting with the most significant bits of the result.
+This suggests the following:
+```cpp
+template<__unsigned_integral T, __unsigned_integral X>
+constexpr common_type_t<T, X> compress_bitsr(X x, T m) noexcept;
+```
+However, it is not trivial to juggle bits between the left and right versions of
+`compress_bits` and `expand_bits`.
+The behavior is also not intuitive when a zero-extension occurs.
+For wider `x`, the mask is always zero-extended to the left, which makes the left and right
+versions slightly asymmetrical.
+
+Since this proposal includes low-level bit operations, it is reasonable and safe to require
+the user to be explicit.
+A call to `compress_bits` or `expand_bits` with two different types is likely a design flaw or bug.
+Therefore, I have settled on the very simple signature:
+```cpp
+template<__unsigned_integral T>
+constexpr T compress_bitsr(T x, T m) noexcept;
+```
+
+
+
+# Possible implementation # {#possible-implementation}
+
+The following implementations with linear time complexity are merely meant to show that an
+implementaiton is feasible.
+They demonstrate how a naive implementation with no hardware support may look.
+
+## `reverse_bits` ## {#impl-reverse-bits}
+
+```cpp
+template<__unsigned_integral T>
+constexpr T reverse_bits(T x) noexcept
 {
     T result = 0;
-    for (T i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
-        if ((mask >> i) & 1) {
+    for (int i = 0; i < numeric_limits<T>::digits; ++i) {
+        result = (result << 1) | x & 1;
+        x >>= 1;
+    }
+    return resutl;
+}
+```
+
+
+## `compress_bits` ## {#impl-compress-bits}
+
+```cpp
+template<__unsigned_integral T>
+constexpr T compress_bitsr(T m) noexcept
+{
+    T result = 0;
+    for (int i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
+        if ((m >> i) & 1) {
             result |= ((x >> i) & 1) << j++;
         }
     }
     return result;
 }
+```
+It is more likely that we have a direct hardware support for `compress_bitsr`.
+The following implementation demonstrates how to delegate `compress_bitsl`.
 
-template<class T>
-  requires is_unsigned_v<T>
-constexpr T expand_bits(T x, T mask) noexcept
+```cpp
+template<__unsigned_integral T>
+constexpr T compress_bitsl(T x, T m) noexcept
+{
+#ifdef __FAST_REVERSE_BITS__
+    return reverse_bits(compress_bitsr(reverse_bits(x)), reverse_bits(m)));
+#else
+    if (m == 0) { // Prevents shift which is >= the operand size.
+        return 0;
+    }
+    int shift = numeric_limits<T>::digits - popcount(m);
+    return compress_bitsr(x, m) << shift;
+#endif
+}
+```
+
+## `expand_bits` ## {#impl-expand-bits}
+
+```cpp
+template<__unsigned_integral T>
+constexpr T expand_bitsr(T x, T m) noexcept
 {
     T result = 0;
-    for (T i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
-        if ((mask >> i) & 1) {
+    for (int i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
+        if ((m >> i) & 1) {
             result |= ((x >> j++) & 1) << i;
         }
     }
     return result;
 }
+
+template<__unsigned_integral T>
+constexpr T expand_bitsl(T x, T m) noexcept
+{
+#ifdef __FAST_REVERSE_BITS__
+    return reverse_bits(expand_bitsl(reverse_bits(x)), reverse_bits(m)));
+#else
+    if (m == 0) {
+        return 0;
+    }
+    int shift = numeric_limits<T>::digits - popcount(m);
+    return expand_bitsr(x >> shift, m);
+#endif
+}
 ```
-[[Warren1]] presents much less naive and likely much faster software implementations.
 
-Proposed wording {#proposed-wording}
-====================================
+## Contemporary implementations ## {#contemporary-implementations}
 
-Let `x` be a sequence of binary digits x<sub>i</sub>
-where `x` = Sum(*x*<sub>*i*</sub> 2<sup>*i*</sup>) for 0 &le; *i* &lt; N.<br>
-Let `m` be a sequence of binary digits m<sub>i</sub>
-where `m` = Sum(*m*<sub>*i*</sub> 2<sup>*i*</sup>) for 0 &le; *i* &lt; N.
+[[Warren1]] presents less naive algorithms:
+- An O(log n) `reverse_bits`
+- An O(log<sup>2</sup> n) `compress_bits` and `expand_bits`
 
-Let *p*(i) = Sum(*m*<sub>*k*</sub>) for 0 &le; *k* &lt; i. 
+[[Zp7]] offers optimized software replacements for PEXT and PDEP, optimized for x86_64.
 
-Note: *p*(*i*) can be computed with `popcount(m & ~(T(-1) << i))`.
+[[StackOverflow1]] contains discussion of various possible software implementations
+of `compress_bitsr` and `expand_bitsr`.
 
-`expand_bits(x, m)` returns
-Sum(*m*<sub>i</sub> *x*<sub>*p*(*i*)</sub> 2<sup>*i*</sup>) for 0 &le; *i* &lt; N.
 
-`compress_bits(x, m)` returns
-Sum(*m*<sub>i</sub> *x*<sub>*i*</sub> 2<sup>*p*(*i*)</sup>) for 0 &le; *i* &lt; N.
+
+
+# Proposed wording # {#proposed-wording}
 
 The proposed changes are relative to the working draft of the standard as of [[!N4917]].
 
-Insert a new bullet in 9.4.1 [dcl.init.general] paragraph 16, between bullets 7 and 8:
+In subclause 22.15 [bit], add the following subclause:
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+</style>
 
 <blockquote>
-<ins>
-Otherwise, if<ul>
-<li>the destination type `T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,</li>
-<li>the parenthesized *expression-list* of the *initializer* has a single element `v` of scalar type, and</li>
-<li>`v` can be implicitly converted to `U`,</li>
-</ul>
-the object is initialized with the value `static_cast<T>(v)` ([expr.type.conv]).
-</ins>
+<p>
+    **Permutation [bit.permute]**
+</p>
+<p>
+    1 In the following descriptions, let *N* denote `numeric_limits<T>​::​digits`.
+    Let x<sub>n</sub> denote the *n*-th least significant bit of *x*, so that
+    *x* = &#x3A3; *x*<sub>*n*</sub> 2<sup>*n*</sup> for 0 &le; *n* &lt; *N*.
+</p>
+
+<p>
+```cpp
+template<class T>
+  constexpr T reverse_bits(T x) noexcept;
+```
+</p>
+<p class="indent">
+    2 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    3 *Returns*: &#x3A3; *x*<sub>*n*</sub> 2<sup>*N*-*n*-1</sup> for 0 &le; *n* &lt; *N*.
+    <br>[*Note*: `reverse_bits(reverse_bits(x))` equals `x`. &mdash; *end note*]
+</p>
+
+<p>
+    4 In the following descriptions,
+    let *p*(*n*) = &#x3A3; *m*<sub>*k*</sub> for 0 &le; *k* &lt; *n*.
+    <br>[*Note*: *p*(*n*) equals `popcount(m & ~(T(-1) << n))`. &mdash; *end note*]
+</p>
+
+<p>
+```cpp
+template<class T>
+  constexpr T compress_bitsr(T x, T m) noexcept;
+```
+</p>
+<p class="indent">
+    5 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    6 *Returns*:  &#x3A3; *m*<sub>n</sub> *x*<sub>*n*</sub> 2<sup>*p*(*n*)</sup>
+</p>
+
+<p>
+```cpp
+template<class T>
+  constexpr T expand_bitsr(T x, T m) noexcept;
+```
+</p>
+<p class="indent">
+    7 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    8 *Returns*:  &#x3A3; *m*<sub>n</sub> *x*<sub>*p*(*n*)</sub> 2<sup>*n*</sup>
+</p>
+
+<p>
+```cpp
+template<class T>
+  constexpr T compress_bitsl(T x, T m) noexcept;
+```
+</p>
+<p class="indent">
+    9 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    10 *Returns*:  `reverse_bits(compress_bitsr(reverse_bits(x), reverse_bits(m)))`.
+</p>
+
+<p>
+```cpp
+template<class T>
+  constexpr T expand_bitsl(T x, T m) noexcept;
+```
+</p>
+<p class="indent">
+    11 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    12 *Returns*:  `reverse_bits(expand_bitsr(reverse_bits(x), reverse_bits(m)))`.
+</p>
 </blockquote>
-
-Note: This bullet covers all forms of direct-initialization except list-initialization
-      and `static_cast`.
-      List-initialization is already covered by an earlier bullet, and `static_cast` has no
-      *expression-list*, only a single *expression*.
-
-Modify 9.4.5 [dcl.init.list] paragraph 3 bullet 8 as follows:
-
-<blockquote>
-<del>
-Otherwise, if `T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,
-the *initializer-list* has a single element `v` of scalar type,
-`v` can be implicitly converted to `U`, and
-the initialization is direct-list-initialization,
-</del>
-<br>
-<ins>
-Otherwise, if<ul>
-<li>`T` is an enumeration with a fixed underlying type ([dcl.enum]) `U`,</li>
-<li>the *initializer-list* has a single element `v` of scalar type,</li>
-<li>`v` can be implicitly converted to `U`, and</li>
-<li>the initialization is direct-list-initialization,</li>
-</ul>
-</ins>
-the object is initialized with the value
-<del>`T(v)` ([expr.type.conv])</del><ins>`static_cast<T>(v)` ([expr.static.cast])</ins>;
-if a narrowing conversion is required to convert `v` to `U`, the program is ill-formed.
-</ins>
-</blockquote>
-
-Note: This change is strictly editorial.
-      It would be valid to keep list-initialization defined in terms of `T(v)` instead
-      of `static_cast<T>(v)`.
-      However, the semantics of `T(v)` in [expr.type.conv] are delegated to `static_cast`
-      in [expr.static.cast] anyway, which is an unecessary double indirection.
 
 
 <pre class=biblio>
 {
-    "P0960R3": {
-        "authors": ["Ville Voutilainen", "Thomas Köppe"],
-        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0960r3.html",
-        "title": "Allow initializing aggregates from a parenthesized list of values",
-        "publisher": "WG21"
-    },
-    "P0138R2": {
-        "authors": ["Gabriel Dos Reis", "Microsoft"],
-        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0138r2.pdf",
-        "title": "Construction Rules for enum class Values",
-        "publisher": "WG21"
+    "StackOverflow1": {
+        "authors": "Jan Schultke",
+        "title": "What is a fast fallback algorithm which emulates PDEP and PEXT in software?",
+        "href": "https://stackoverflow.com/q/77834169/5740428",
+        "publisher": "Stack Overflow"
     },
     "Warren1": {
         "authors": ["Henry S. Warren, Jr."],
@@ -287,6 +573,24 @@ Note: This change is strictly editorial.
         "publisher": "Addision-Wesley",
         "type": "Book",
         "chapter": "7-4, 7-5"
+    },
+    "Zp7": {
+        "authors": ["Zach Wegner"],
+        "title": "Zach's Peppy Parallel-Prefix-Popcountin' PEXT/PDEP Polyfill",
+        "href": "https://github.com/zwegner/zp7",
+        "publisher": "GitHub"
+    },
+    "P0553R4": {
+        "authors": ["Jens Maurer"],
+        "title": "Bit operations",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html",
+        "publisher": "WG21"
+    },
+    "GNU1": {
+        "authors": ["Marc Glisse et al."],
+        "href": "https://gcc.gnu.org/bugzilla/show_bug.cgi?id=50481",
+        "title": "Bug 50481 - builtin to reverse the bit order",
+        "publisher": "GNU Project"
     },
     "N3864": {
         "authors": ["Matthew Fioravante"],
