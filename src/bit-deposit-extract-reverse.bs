@@ -599,6 +599,36 @@ Note: I would have preferred a less mathematical approach to defining these func
       However, it is too difficult to precisely define `compress_bits` and `expand_bits` without
       visual aids, pseudo-code, or other crutches.
 
+## Header synopsis ## {#proposed-header-synopsis}
+
+In subclause 22.15.2 [bit.syn], update the synopsis as follows:
+
+<blockquote>
+<code><pre><ins>
+// 22.15.X, permutations
+template&lt;class T&gt;
+  constexpr T reverse_bits(T x) noexcept;
+template&lt;class T&gt;
+  constexpr T compress_bitsr(T x, T m) noexcept;
+template&lt;class T&gt;
+  constexpr T expand_bitsr(T x, T m) noexcept;
+template&lt;class T&gt;
+  constexpr T compress_bitsl(T x, T m) noexcept;
+template&lt;class T&gt;
+  constexpr T expand_bitsl(T x, T m) noexcept;
+</pre></code>
+</blockquote>
+
+## Feature-testing ## {#proposed-feature-testing}
+
+In subclause 17.3.2 [version.syn] paragraph 2, update the synopsis as follows:
+<blockquote>
+<code><pre>
+#define __cpp_lib_bit_cast                          201806L // freestanding, also in &lt;bit&gt;
+<ins>#define __cpp_lib_bit_permute                       202401L // freestanding, also in &lt;bit&gt;</ins>
+#define __cpp_lib_bitops                            201907L // freestanding, also in &lt;bit&gt;
+</pre></code>
+</blockquote>
 
 # Acknowledgements # {#acknowledgements}
 

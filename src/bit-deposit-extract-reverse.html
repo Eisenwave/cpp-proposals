@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e452b27a7090099708143e9d7f4cc53ad4881be7" name="revision">
+  <meta content="a1e168f181c00f1875a8e2dc4e0734f3d3e451da" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2165,7 +2165,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#impl-expand-bits"><span class="secno">5.3</span> <span class="content"><code class="highlight"><c- n>expand_bits</c-></code></span></a>
       <li><a href="#contemporary-implementations"><span class="secno">5.4</span> <span class="content">Contemporary implementations</span></a>
      </ol>
-    <li><a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
+    <li>
+     <a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
+     <ol class="toc">
+      <li><a href="#proposed-header-synopsis"><span class="secno">6.1</span> <span class="content">Header synopsis</span></a>
+      <li><a href="#proposed-feature-testing"><span class="secno">6.2</span> <span class="content">Feature-testing</span></a>
+     </ol>
     <li><a href="#acknowledgements"><span class="secno">7</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2624,6 +2629,27 @@ of <code class="highlight"><c- n>compress_bitsr</c-></code> and <code class="hig
    <p class="note" role="note"><span class="marker">Note:</span> I would have preferred a less mathematical approach to defining these functions.
       However, it is too difficult to precisely define <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code> without
       visual aids, pseudo-code, or other crutches.</p>
+   <h3 class="heading settled" data-level="6.1" id="proposed-header-synopsis"><span class="secno">6.1. </span><span class="content">Header synopsis</span><a class="self-link" href="#proposed-header-synopsis"></a></h3>
+   <p>In subclause 22.15.2 [bit.syn], update the synopsis as follows:</p>
+   <blockquote> <code class="highlight"><pre class="highlight"><ins>
+<c- c1><c- c1>// 22.15.X, permutations</c-></c->
+<c- k><c- k>template</c-></c-><c- o><c- o>&lt;</c-></c-><c- k><c- k>class</c-></c-> <c- nc><c- nc>T</c-></c-><c- o><c- o>></c-></c->
+  <c- k><c- k>constexpr</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>reverse_bits</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>T</c-></c-> <c- n><c- n>x</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- k>template</c-></c-><c- o><c- o>&lt;</c-></c-><c- k><c- k>class</c-></c-> <c- nc><c- nc>T</c-></c-><c- o><c- o>></c-></c->
+  <c- k><c- k>constexpr</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>compress_bitsr</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>T</c-></c-> <c- n><c- n>x</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- k>template</c-></c-><c- o><c- o>&lt;</c-></c-><c- k><c- k>class</c-></c-> <c- nc><c- nc>T</c-></c-><c- o><c- o>></c-></c->
+  <c- k><c- k>constexpr</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>expand_bitsr</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>T</c-></c-> <c- n><c- n>x</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- k>template</c-></c-><c- o><c- o>&lt;</c-></c-><c- k><c- k>class</c-></c-> <c- nc><c- nc>T</c-></c-><c- o><c- o>></c-></c->
+  <c- k><c- k>constexpr</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>compress_bitsl</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>T</c-></c-> <c- n><c- n>x</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- k>template</c-></c-><c- o><c- o>&lt;</c-></c-><c- k><c- k>class</c-></c-> <c- nc><c- nc>T</c-></c-><c- o><c- o>></c-></c->
+  <c- k><c- k>constexpr</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>expand_bitsl</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>T</c-></c-> <c- n><c- n>x</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c->
+</ins></pre></code> </blockquote>
+   <h3 class="heading settled" data-level="6.2" id="proposed-feature-testing"><span class="secno">6.2. </span><span class="content">Feature-testing</span><a class="self-link" href="#proposed-feature-testing"></a></h3>
+   <p>In subclause 17.3.2 [version.syn] paragraph 2, update the synopsis as follows:</p>
+   <blockquote> <code class="highlight"><pre class="highlight"><c- cp><c- cp>#define __cpp_lib_bit_cast                          201806L </c-></c-><c- c1><c- c1>// freestanding, also in &lt;bit></c-></c->
+<ins><c- cp><c- cp>#define __cpp_lib_bit_permute                       202401L </c-></c-><c- c1><c- c1>// freestanding, also in &lt;bit></c-></c-></ins>
+<c- cp><c- cp>#define __cpp_lib_bitops                            201907L </c-></c-><c- c1><c- c1>// freestanding, also in &lt;bit></c-></c->
+</pre></code> </blockquote>
    <h2 class="heading settled" data-level="7" id="acknowledgements"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I greatly appreciate the assistance of Stack Overflow users in assisting me with research for
 this proposal. 
