@@ -402,7 +402,8 @@ constexpr T reverse_bits(T x) noexcept
 {
     T result = 0;
     for (int i = 0; i < numeric_limits<T>::digits; ++i) {
-        result = (result << 1) | x & 1;
+        result <<= 1;
+        result |= x & 1;
         x >>= 1;
     }
     return result;
@@ -594,7 +595,9 @@ template<class T>
 </p>
 </blockquote>
 
-
+Note: I would have preferred a less mathematical approach to defining these functions.
+      However, it is too difficult to precisely define `compress_bits` and `expand_bits` without
+      visual aids, pseudo-code, or other crutches.
 
 
 # Acknowledgements # {#acknowledgements}
