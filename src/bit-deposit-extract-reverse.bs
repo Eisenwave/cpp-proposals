@@ -130,7 +130,10 @@ case 4: return compress_bitsr(x, 0b00111111'00111111'00111111'00000111);
 ### Other operations based on `compress_bits` and `expand_bits` ### {#building-operations}
 
 Many operations can be built on top of `compress_bits` and `expand_bits`.
-However, direct hardware support is often needed for these operations to be an efficient choice.
+However, direct hardware support is often needed for the proposed functions to efficiently
+implement them.
+Even without such support, they can be canonalized into a faster form.
+The point is that `compress_bits` and `expand_bits` allow you to *express* these operations.
 
 ```cpp
 // x & 0xf
@@ -415,7 +418,7 @@ constexpr T reverse_bits(T x) noexcept
 
 ```cpp
 template<unsigned_integral T>
-constexpr T compress_bitsr(T m) noexcept
+constexpr T compress_bitsr(T x, T m) noexcept
 {
     T result = 0;
     for (int i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
@@ -480,6 +483,8 @@ constexpr T expand_bitsl(T x, T m) noexcept
 [[Warren1]] presents less naive algorithms:
 - An O(log n) `reverse_bits`
 - An O(log<sup>2</sup> n) `compress_bits` and `expand_bits`
+    - can be O(log n) with hardware support for
+         carry-less multiplication aka. GF(2) polynomial multiplication
 
 [[Zp7]] offers fast software implementations for PEXT and PDEP, optimized for x86_64.
 

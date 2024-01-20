@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a1e168f181c00f1875a8e2dc4e0734f3d3e451da" name="revision">
+  <meta content="451a661d31cc8f005f1cdb010f3dbf375082798b" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2278,7 +2278,10 @@ UTF-8 is a typical example:</p>
 </pre>
    <h4 class="heading settled" data-level="2.2.3" id="building-operations"><span class="secno">2.2.3. </span><span class="content">Other operations based on <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code></span><a class="self-link" href="#building-operations"></a></h4>
    <p>Many operations can be built on top of <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code>.
-However, direct hardware support is often needed for these operations to be an efficient choice.</p>
+However, direct hardware support is often needed for the proposed functions to efficiently
+implement them.
+Even without such support, they can be canonalized into a faster form.
+The point is that <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code> allow you to <em>express</em> these operations.</p>
 <pre class="language-cpp highlight"><c- c1>// x &amp; 0xf</c->
 <c- n>expand_bitsr</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mh>0xf</c-><c- p>)</c->
 <c- n>compress_bitsr</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mh>0xf</c-><c- p>)</c->
@@ -2515,7 +2518,7 @@ They demonstrate how a naive implementation with no hardware support may look.</
 </pre>
    <h3 class="heading settled" data-level="5.2" id="impl-compress-bits"><span class="secno">5.2. </span><span class="content"><code class="highlight"><c- n>compress_bits</c-></code></span><a class="self-link" href="#impl-compress-bits"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
     <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
     <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>!=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
@@ -2576,6 +2579,11 @@ The following implementation demonstrates how to delegate <code class="highlight
      <p>An O(log n) <code class="highlight"><c- n>reverse_bits</c-></code></p>
     <li data-md>
      <p>An O(log<sup>2</sup> n) <code class="highlight"><c- n>compress_bits</c-></code> and <code class="highlight"><c- n>expand_bits</c-></code></p>
+     <ul>
+      <li data-md>
+       <p>can be O(log n) with hardware support for
+ carry-less multiplication aka. GF(2) polynomial multiplication</p>
+     </ul>
    </ul>
    <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for PEXT and PDEP, optimized for x86_64.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow1" title="What is a fast fallback algorithm which emulates PDEP and PEXT in software?">[StackOverflow1]</a> contains discussion of various possible software implementations
