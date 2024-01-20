@@ -467,7 +467,7 @@ template<unsigned_integral T>
 constexpr T expand_bitsl(T x, T m) noexcept
 {
 #ifdef __FAST_REVERSE_BITS__
-    return reverse_bits(expand_bitsl(reverse_bits(x)), reverse_bits(m)));
+    return reverse_bits(expand_bitsr(reverse_bits(x)), reverse_bits(m)));
 #else
     if (m == 0) {
         return 0;

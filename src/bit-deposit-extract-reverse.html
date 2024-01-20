@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="451a661d31cc8f005f1cdb010f3dbf375082798b" name="revision">
+  <meta content="c761120c1df18c3c38b78d16b928bdbd3e4a88bf" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2562,7 +2562,7 @@ The following implementation demonstrates how to delegate <code class="highlight
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>expand_bitsl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
 <c- cp>#ifdef __FAST_REVERSE_BITS__</c->
-    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>expand_bitsl</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
+    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>expand_bitsr</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
 <c- cp>#else</c->
     <c- k>if</c-> <c- p>(</c-><c- n>m</c-> <c- o>==</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c->
         <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
