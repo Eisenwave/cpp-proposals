@@ -1,12 +1,13 @@
 <pre class='metadata'>
 Title: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
-Shortname: Pxxxx
+Shortname: P3087
 Revision: 0
-Status: NP
+Status: P
 Date: 2024-01-16
 Group: WG21
 Audience: EWG
 Editor: Jan Schultke, janschultke@gmail.com
+ED: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3087r0.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs)
 Markup Shorthands: markdown on
 Abstract: This paper proposes allowing initializing scoped enumeration types using
