@@ -7,7 +7,7 @@ Date: 2024-01-19
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
-!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-deposit-extract-reverse.bs)
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-permutations.bs)
 Markup Shorthands: markdown on
 Abstract: This proposal adds bit permutation functions to the bit manipulation library.
 </pre>
