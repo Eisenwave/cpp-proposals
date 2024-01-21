@@ -106,7 +106,7 @@ for (size_t i = 0; i != 128; ++i) {
 ```
 
 Note: `byteswap` and `bit_cast` counterparts are not proposed, only functions solely
-dedicated to the manipulation of bit sequence.
+dedicated to the manipulation of bit sequences.
 
 
 # Design considerations # {#design}

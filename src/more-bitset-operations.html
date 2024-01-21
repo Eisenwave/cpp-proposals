@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="3a3aa2a62ee33ffb9b761681f8de7f271b53bebf" name="revision">
+  <meta content="b8f8eeea15346e50fd127abda217482fa00045dc" name="revision">
 <style>
 th {
     text-align: left;
@@ -2215,7 +2215,7 @@ This can be useful for iterating over all set bits:</p>
 <c- p>}</c->
 </pre>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>byteswap</c-></code> and <code class="highlight"><c- n>bit_cast</c-></code> counterparts are not proposed, only functions solely
-dedicated to the manipulation of bit sequence.</p>
+dedicated to the manipulation of bit sequences.</p>
    <h2 class="heading settled" data-level="3" id="design"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
    <p>The member functions should all have the same name as the names as the functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header. <code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
    <p>This function is added because the method for reversing integers may be tremendously faster than
