@@ -151,15 +151,12 @@ blockquote p {
 ins {
     background: rgba(136, 255, 93, 0.2);
     color: inherit;
+    text-decoration: none;
 }
-
 del {
     background: rgba(255, 93, 93, 0.2);
     color: inherit;
-}
-
-ins, del {
-    text-decoration: none;
+    text-decoration: strikethrough;
 }
 </style>
 
