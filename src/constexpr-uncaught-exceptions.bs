@@ -146,6 +146,12 @@ Update subclause 17.9.7 [propagation], `current_exception` as follows:
 <code><pre><ins>constexpr</ins> exception_ptr current_exception() noexcept;</pre></code>
 </blockquote>
 
+# Acknowledgements # {#acknowledgements}
+
+The original idea for this paper and a portion of its content have been adopted from a
+proposal draft by Morwenn.
+
+
 <pre class=biblio>
 {
     "ScopeLite": {
