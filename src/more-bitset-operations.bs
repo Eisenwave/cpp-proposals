@@ -101,6 +101,7 @@ This can be useful for iterating over all set bits:
 bitset<128> bits;
 for (size_t i = 0; i != 128; ++i) {
     i += bits.countr_zero(i);
+    if (i == 128) break;
     // ...
 }
 ```
