@@ -13,7 +13,7 @@ Author: Jan Schultke
 
 ## NP: More bitset operations
 
-- [Latest](bit-bitset-operations.html)
+- [Latest](more-bitset-operations.html)
 
 ## NP: `constexpr uncaught_exceptions()`
 
