@@ -80,11 +80,11 @@ th {
     <td>`countr_one(size_t)`</td>
 </tr>
 <tr>
-    <td>`std::rotl(int)`</td>
+    <td>`std::rotl(T, int)`</td>
     <td>`rotl(size_t)`</td>
 </tr>
 <tr>
-    <td>`std::rotr(int)`</td>
+    <td>`std::rotr(T, int)`</td>
     <td>`rotr(size_t)`</td>
 </tr>
 <tr>

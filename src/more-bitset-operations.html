@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4184fc356664b446b741e8fc5cc4b4f05feb4f66" name="revision">
+  <meta content="3a3aa2a62ee33ffb9b761681f8de7f271b53bebf" name="revision">
 <style>
 th {
     text-align: left;
@@ -2197,10 +2197,10 @@ Add a small amount of further useful member functions.</p>
       <td>
       <td><code class="highlight"><c- n>countr_one</c-><c- p>(</c-><c- b>size_t</c-><c- p>)</c-></code>
      <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotl</c-><c- p>(</c-><c- b>int</c-><c- p>)</c-></code>
+      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotl</c-><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- b>int</c-><c- p>)</c-></code>
       <td><code class="highlight"><c- n>rotl</c-><c- p>(</c-><c- b>size_t</c-><c- p>)</c-></code>
      <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotr</c-><c- p>(</c-><c- b>int</c-><c- p>)</c-></code>
+      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotr</c-><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- b>int</c-><c- p>)</c-></code>
       <td><code class="highlight"><c- n>rotr</c-><c- p>(</c-><c- b>size_t</c-><c- p>)</c-></code>
      <tr>
       <td>
@@ -2226,7 +2226,9 @@ ARM has a dedicated <code class="highlight"><c- n>RBIT</c-></code> instruction f
 is broken.</p>
    <p>This proposal is purely an extension of the functionality of <code class="highlight"><c- n>bitset</c-></code>.</p>
    <h2 class="heading settled" data-level="5" id="implementation-experience"><span class="secno">5. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-bontus1" title="bitset2: bitset improved">[Bontus1]</a> provides  a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> implementation which supports all proposed features.</p>
+   <p><a data-link-type="biblio" href="#biblio-bontus1" title="bitset2: bitset improved">[Bontus1]</a> provides  a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> implementation which supports all proposed features.
+There are no obvious obstacles to implementing the new features in common standard library
+implementations.</p>
    <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Modify subclause 22.9.2.3 [bitset.members] as follows:</p>
@@ -2241,7 +2243,7 @@ is broken.</p>
     the bit at position <code class="highlight"><c- p>(</c-><c- n>I</c-> <c- o>+</c-> <c- n>pos</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>.</ins>
     </p>
     <p>
-     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code></ins>
+     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
     </p>
     <p><code class="highlight"></code></p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>rotr</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
@@ -2251,7 +2253,7 @@ is broken.</p>
     the bit at position <code class="highlight"><c- p>(</c-><c- n>I</c-> <c- o>+</c-> <c- n>N</c-> <c- o>-</c-> <c- n>pos</c-> <c- o>%</c-> <c- n>N</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>.</ins>
     </p>
     <p>
-     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code></ins>
+     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
     </p>
     <p><code class="highlight"></code></p>
 <pre class="highlight"><code><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>set</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
@@ -2265,7 +2267,7 @@ is broken.</p>
     the bit at position <code class="highlight"><c- n>N</c-> <c- o>-</c-> <c- n>I</c-> <c- o>-</c-> <c- mi>1</c-></code>.</ins>
     </p>
     <p>
-     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code></ins>
+     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
     </p>
     <p><code class="highlight"></code></p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- b>size_t</c-> <c- nf>countl_zero</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins></code></pre>
