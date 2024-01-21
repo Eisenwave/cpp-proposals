@@ -1,0 +1,169 @@
+<pre class='metadata'>
+Title: <code>constexpr std::uncaught_exceptions()</code>
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-01-21
+Group: WG21
+Audience: LEWGI, LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs)
+Markup Shorthands: markdown on
+Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exception` `constexpr`.
+</pre>
+
+
+# Overview # {#overview}
+
+I propose to mark the function `std::uncaught_exceptions` `constexpr`.
+This can be done because there can never be an active exception during constant evaluation.
+
+Similarly, `std::current_exception` can always return a null pointer during constant evaluation.
+
+
+# Motivation # {#motivation}
+
+The motivation is the same as allowing `try`-`catch` blocks in `constexpr` functions,
+a feature added to C++20 thanks to [[P1002R1]].
+Allowing the use of `uncaught_exceptions()` in constant expressions makes
+metaprogramming easier and eliminates special `if consteval` cases.
+
+A common use case for `std::uncaught_exceptions` is in the implementation of RAII types which
+execute a function upon destruction, but only if an exception was (not) thrown in the current
+scope.
+This is utilized by `std::scope_success` and `std::scope_failure`; see [[N4806]].
+
+For example, in the implementation of a `constexpr` stack, one may write:
+```cpp
+constexpr value_type pop() {
+    // Only decrease the size of the stack if no exception was thrown during
+    // copy/move construction of the returned object.
+    // This ensures a strong exception guarantee.
+    std::scope_success _{[this] { m_size--; }};
+    return std::move(top());
+}
+```
+It is reasonable to mark such code `constexpr`, and ideally `std::uncaught_exceptions` would not be an
+obstacle to this.
+
+Furthermore, it makes sense to mark `std::uncaught_exceptions`' sister function,
+`std::current_exception` `constexpr`.
+This is done purely for the purpose of consistency.
+I am not aware of any concrete example of `std::current_exception`'s
+lack of `constexpr` being an obstacle.
+
+
+# Possible implementation # {#possible-implementation}
+
+## `constexpr uncaught_exceptions` ## {#constexpr-uncaught-exceptions}
+
+```cpp
+constexpr int uncaught_exceptions() noexcept {
+    if consteval {
+        return 0;
+    } else {
+        return __uncaught_exceptions_impl();
+    }
+}
+```
+
+It is obviously possible for the user to wrap `std::uncaught_exceptions`
+like this themselves (e.g. [[ScopeLite]]), but this is an unnecessary burden.
+
+## `constexpr current_exception` ## {#constexpr-current-exception}
+
+```cpp
+constexpr exception_ptr current_exception() noexcept {
+    if consteval {
+        return exception_ptr(nullptr);
+    } else {
+        return __current_exception_impl();
+    }
+}
+```
+
+## `constexpr` `exception_ptr` ## {#constexpr-exception-ptr}
+
+`std::exception_ptr` would also need to be made a literal type.
+All major three standard libraries implement `exception_ptr` as a wrapper class for `void*`,
+which makes this easily possible.
+
+- See [libc++, exception_ptr.h](https://github.com/llvm/llvm-project/blob/main/libcxx/include/__exception/exception_ptr.h).
+- See [libstdc++, eh_ptr.cc](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/eh_ptr.cc).
+- See [MSVC STL, exception](https://github.com/microsoft/STL/blob/main/stl/inc/exception).
+
+Simply mark all special member functions `constexpr` and if necessary, guard their implementation
+with an `if !consteval` block.
+It is impossible to create an `exception_ptr` that is not a null pointer during constant
+evaluations.
+
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: none;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]].
+
+Update subclause 17.3.2 [version.syn], paragraph 2 as follows:
+
+<blockquote>
+<code><pre>#define __cpp_lib_constexpr_current_exception       <ins>202401L</ins> // freestanding, also in &lt;exception&gt;</pre></code>
+[...]
+<code><pre>#define __cpp_lib_uncaught_exceptions               <del>201411L</del><ins>202401L</ins> // freestanding, also in &lt;exception&gt;</pre></code>
+</blockquote>
+
+Update subclause 17.9.6 [uncaught.exceptions] as follows:
+
+<blockquote>
+<code><pre><ins>constexpr</ins> int uncaught_exceptions() noexcept;</pre></code>
+</blockquote>
+
+Update subclause 17.9.7 [propagation], paragraph 2 as follows:
+
+<blockquote>
+`exception_ptr` <ins>is a literal type([basic.types.general])</ins>
+which meets the requirements of *Cpp17NullablePointer* (Table 36).
+<ins>All expressions which must be valid for a *Cpp17NullablePointer*
+are constant expressions for a null value of type `exception_ptr`.</ins>
+</blockquote>
+
+Note: This wording is slightly work-in-progress.
+
+Update subclause 17.9.7 [propagation], `current_exception` as follows:
+
+<blockquote>
+<code><pre><ins>constexpr</ins> exception_ptr current_exception() noexcept;</pre></code>
+</blockquote>
+
+<pre class=biblio>
+{
+    "ScopeLite": {
+        "authors": ["Martin Moene"],
+        "href": "https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597",
+        "title": "uncaught_exceptions() wrapper in scope-lite",
+        "publisher": "GitHub"
+    },
+    "P1002R1": {
+        "authors": ["Louis Dionne"],
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1002r1.pdf",
+        "title": "Try-catch blocks in constexpr functions",
+        "publisher": "WG21"
+    },
+    "N4806": {
+        "authors": ["Thomas Köppe"],
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4806.html",
+        "title": "Working Draft, C++ Extensions for Library Fundamentals, Version 3"
+    }
+}
+</pre>
