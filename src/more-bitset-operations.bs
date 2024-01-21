@@ -1,0 +1,296 @@
+<pre class='metadata'>
+Title: More bitset operations
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-01-21
+Group: WG21
+Audience: LEWGI, LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/more-bitset-operations.bs)
+Markup Shorthands: markdown on
+Abstract: This paper proposes adding a counterpart `std::bitset` member function for the utility
+          functions in `<bit>`.
+</pre>
+
+# Introduction # {#intro}
+
+[[P0553R4]] added the bit manipulation library to C++20, which introduced many useful utility
+functions.
+
+Some of these already have a counterpart in `std::bitset` (such as `popcount` as `bitset::count`),
+but not nearly all of them.
+This leaves `bitset` overall lacking in functionality,
+which is unfortunate because `std::bitset` is an undeniably useful container.
+At the time of writing, it is used in 73K files on GitHub; see [[GitHub1]].
+
+`std::bitset` does not (and should not) expose the underlying integer sequence of the implementation.
+Therefore, it is not possible for the user to implement these operations efficiently themselves.
+
+
+# Proposed changes # {#proposed-changes}
+
+For each of the functions from the bit manipulation library that are not yet available
+in `std::bitset`, add a member function.
+Add a small amount of further useful member functions.
+
+<style>
+th {
+    text-align: left;
+}
+</style>
+
+<table>
+<tr>
+<th>`<bit>` function</th><th>Proposed `bitset` member</th>
+<tr>
+    <td>`std::has_single_bit(T)`</td>
+    <td>`has_single_bit()`</td>
+</tr>
+<tr>
+    <td>`std::countl_zero(T)`</td>
+    <td>`countl_zero()`</td>
+</tr>
+<tr>
+    <td></td>
+    <td>`countl_zero(size_t)`</td>
+</tr>
+<tr>
+    <td>`std::countl_one(T)`</td>
+    <td>`countl_one()`</td>
+</tr>
+<tr>
+    <td></td>
+    <td>`countl_one(size_t)`</td>
+</tr>
+<tr>
+    <td>`std::countr_zero(T)`</td>
+    <td>`countr_zero()`</td>
+</tr>
+<tr>
+    <td></td>
+    <td>`countr_zero(size_t)`</td>
+</tr>
+<tr>
+    <td>`std::countr_one(T)`</td>
+    <td>`countr_one()`</td>
+</tr>
+<tr>
+    <td></td>
+    <td>`countr_one(size_t)`</td>
+</tr>
+<tr>
+    <td>`std::rotl(int)`</td>
+    <td>`rotl(size_t)`</td>
+</tr>
+<tr>
+    <td>`std::rotr(int)`</td>
+    <td>`rotr(size_t)`</td>
+</tr>
+<tr>
+    <td></td>
+    <td>`reverse()`</td>
+</tr>
+</tr>
+
+</table>
+
+The additional overloads for the counting functions allow counting from a starting position.
+This can be useful for iterating over all set bits:
+```cpp
+bitset<128> bits;
+for (size_t i = 0; i != 128; ++i) {
+    i += bits.countr_zero(i);
+    // ...
+}
+```
+
+Note: `byteswap` and `bit_cast` counterparts are not proposed, only functions solely
+dedicated to the manipulation of bit sequence.
+
+
+# Design considerations # {#design}
+
+The member functions should all have the same name as the names as the functions in the `<bit>`
+header.
+`reverse` is a notable exception, which does not yet exist in `<bit>`.
+
+This function is added because the method for reversing integers may be tremendously faster than
+doing so bit by bit.
+ARM has a dedicated `RBIT` instruction for reversing bits, which could be leveraged.
+
+
+
+# Impact on existing code # {#impact-on-existing-code}
+
+The semantics of existing `bitset` member functions remain unchanged, and no existing valid code
+is broken.
+
+This proposal is purely an extension of the functionality of `bitset`.
+
+
+
+# Implementation experience # {#implementation-experience}
+
+[[Bontus1]] provides  a `std::bitset` implementation which supports all proposed features.
+There are no obvious obstacles to implementing the new features in common standard library
+implementations.
+
+
+# Proposed wording # {#proposed-wording}
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]].
+
+Modify subclause 22.9.2.3 [bitset.members] as follows:
+
+<style>
+blockquote p {
+    margin-left: 2em;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+}
+
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+}
+
+ins, del {
+    text-decoration: none;
+}
+</style>
+
+<blockquote>
+<code><pre>constexpr bitset operator>>(size_t pos) const noexcept;</pre></code>
+<p>
+    *Returns*: `bitset(*this) >>= pos`.
+</p>
+
+<code><pre><ins>constexpr bitset& rotl(size_t pos) noexcept;</ins></pre></code>
+<p>
+    <ins>*Effects*: Replaces each bit at position `I` in `*this` with
+    the bit at position `(I + pos) % N`.</ins>
+</p>
+<p>
+    <ins>*Returns*: `*this`.</ins>
+</p>
+
+<code><pre><ins>constexpr bitset& rotr(size_t pos) noexcept;</ins></pre></code>
+<p>
+    <ins>*Effects*: Replaces each bit at position `I` in `*this` with
+    the bit at position `(I + N - pos % N) % N`.</ins>
+</p>
+<p>
+    <ins>*Returns*: `*this`.</ins>
+</p>
+
+<code><pre>constexpr bitset& set() noexcept;</pre></code>
+<p>
+    [...]
+</p>
+
+<code><pre><ins>constexpr bitset& reverse() noexcept;</ins></pre></code>
+<p>
+    <ins>*Effects*: Replaces each bit at position `I` in `*this` with
+    the bit at position `N - I - 1`.</ins>
+</p>
+<p>
+    <ins>*Returns*: `*this`.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countl_zero(size_t pos) const;</ins></pre></code>
+<p>
+    <ins>*Returns*: The number of consecutive zero-bits in `*this`,
+    starting at position `pos`,
+    and traversing `*this` in decreasing position direction.</ins>
+</p>
+<p>
+    <ins>*Throws*: `out_of_range` if `pos` does not correspond to a valid bit position.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countl_zero() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `countl_zero(N - 1)`.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countl_one(size_t pos) const;</ins></pre></code>
+<p>
+    <ins>*Returns*: The number of consecutive one-bits in `*this`,
+    starting at position `pos`,
+    and traversing `*this` in decreasing position direction.</ins>
+</p>
+<p>
+    <ins>*Throws*: `out_of_range` if `pos` does not correspond to a valid bit position.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countl_one() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `countl_one(N - 1)`.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countr_zero(size_t pos) const;</ins></pre></code>
+<p>
+    <ins>*Returns*: The number of consecutive zero-bits in `*this`,
+    starting at position `pos`,
+    and traversing `*this` in increasing position direction.</ins>
+</p>
+<p>
+    <ins>*Throws*: `out_of_range` if `pos` does not correspond to a valid bit position.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countr_zero() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `countr_zero(0)`.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countr_one(size_t pos) const;</ins></pre></code>
+<p>
+    <ins>*Returns*: The number of consecutive one-bits in `*this`,
+    starting at position `pos`,
+    and traversing `*this` in increasing position direction.</ins>
+</p>
+<p>
+    <ins>*Throws*: `out_of_range` if `pos` does not correspond to a valid bit position.</ins>
+</p>
+
+<code><pre><ins>constexpr size_t countr_one() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `countr_one(0)`.</ins>
+</p>
+
+<code><pre><ins>constexpr bool has_single_bit() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `count() == 1`.</ins>
+</p>
+
+<code><pre>constexpr bool all() const noexcept;</pre></code>
+<p>
+    [...]
+</p>
+</blockquote>
+
+<pre class=biblio>
+{
+    "Bontus1": {
+        "authors": ["Claas Bontus", "d-xo", "zencatalyst"],
+        "title": "bitset2: bitset improved",
+        "href": "https://github.com/ClaasBontus/bitset2",
+        "publisher": "GitHub"
+    },
+    "Github1": {
+        "authors": ["GitHub Code Search"],
+        "title": "std::bitset language:c++",
+        "href": "https://github.com/search?type=code&auto_enroll=true&q=%22std%3A%3Abitset%22+language%3Ac%2B%2B&p=1",
+        "publisher": "Microsoft"
+    },
+    "P0553R4": {
+        "authors": ["Jens Maurer"],
+        "title": "Bit operations",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html",
+        "publisher": "WG21"
+    }
+}
+</pre>
