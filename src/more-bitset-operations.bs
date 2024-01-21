@@ -172,7 +172,9 @@ ins, del {
 <code><pre><ins>constexpr bitset& rotl(size_t pos) noexcept;</ins></pre></code>
 <p>
     <ins>*Effects*: Replaces each bit at position `I` in `*this` with
-    the bit at position `(I + pos) % N`.</ins>
+    the bit at position `(N - pos % N + I) % N`,
+    where all arithmetic is performed using a hypothetical unsigned integer type
+    which is at least one bit wider than `size_t`.</ins>
 </p>
 <p>
     <ins>*Returns*: `*this`.</ins>
@@ -181,7 +183,9 @@ ins, del {
 <code><pre><ins>constexpr bitset& rotr(size_t pos) noexcept;</ins></pre></code>
 <p>
     <ins>*Effects*: Replaces each bit at position `I` in `*this` with
-    the bit at position `(I + N - pos % N) % N`.</ins>
+    the bit at position `(pos + I) % N`,
+    where all arithmetic is performed using a hypothetical unsigned integer type
+    which is at least one bit wider than `size_t`.</ins>
 </p>
 <p>
     <ins>*Returns*: `*this`.</ins>

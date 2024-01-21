@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b8f8eeea15346e50fd127abda217482fa00045dc" name="revision">
+  <meta content="909117badde714d14afe17a17972613ea723f2e1" name="revision">
 <style>
 th {
     text-align: left;
@@ -2240,7 +2240,9 @@ implementations.</p>
     <p></p>
     <p>
      <ins><em>Effects</em>: Replaces each bit at position <code class="highlight"><c- n>I</c-></code> in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> with
-    the bit at position <code class="highlight"><c- p>(</c-><c- n>I</c-> <c- o>+</c-> <c- n>pos</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>.</ins>
+    the bit at position <code class="highlight"><c- p>(</c-><c- n>N</c-> <c- o>-</c-> <c- n>pos</c-> <c- o>%</c-> <c- n>N</c-> <c- o>+</c-> <c- n>I</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>,
+    where all arithmetic is performed using a hypothetical unsigned integer type
+    which is at least one bit wider than <code class="highlight"><c- b>size_t</c-></code>.</ins>
     </p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
@@ -2250,7 +2252,9 @@ implementations.</p>
     <p></p>
     <p>
      <ins><em>Effects</em>: Replaces each bit at position <code class="highlight"><c- n>I</c-></code> in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> with
-    the bit at position <code class="highlight"><c- p>(</c-><c- n>I</c-> <c- o>+</c-> <c- n>N</c-> <c- o>-</c-> <c- n>pos</c-> <c- o>%</c-> <c- n>N</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>.</ins>
+    the bit at position <code class="highlight"><c- p>(</c-><c- n>pos</c-> <c- o>+</c-> <c- n>I</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>,
+    where all arithmetic is performed using a hypothetical unsigned integer type
+    which is at least one bit wider than <code class="highlight"><c- b>size_t</c-></code>.</ins>
     </p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
