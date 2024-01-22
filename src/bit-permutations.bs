@@ -393,11 +393,34 @@ constexpr T compress_bitsr(T x, T m) noexcept;
 
 # Possible implementation # {#possible-implementation}
 
+## Reference implementation ## {#reference-implementation}
+
+All proposed functions have been implemented in [[Schultke1]].
+This reference implementation is compatible with all three major compilers,
+and leverages hardware support from ARM and x86_64 where possible.
+
+
+## Other implementations ## {#contemporary-implementations}
+
+[[Warren1]] presents algorithms which are the basis for [[Schultke1]].
+- An O(log n) `reverse_bits`
+- An O(log<sup>2</sup> n) `compress_bits` and `expand_bits`
+    - can be O(log n) with hardware support for
+         carry-less multiplication aka. GF(2) polynomial multiplication
+
+[[Zp7]] offers fast software implementations for PEXT and PDEP, optimized for x86_64.
+
+[[StackOverflow1]] contains discussion of various possible software implementations
+of `compress_bitsr` and `expand_bitsr`.
+
+
+## Naive implementation ## {#naive-implementation}
+
 The following implementations with linear time complexity are merely meant to show that an
 implementation is feasible.
 They demonstrate how a naive implementation with no hardware support may look.
 
-## `reverse_bits` ## {#impl-reverse-bits}
+### `reverse_bits` ### {#naive-reverse-bits}
 
 ```cpp
 template<unsigned_integral T>
@@ -413,8 +436,7 @@ constexpr T reverse_bits(T x) noexcept
 }
 ```
 
-
-## `compress_bits` ## {#impl-compress-bits}
+### `compress_bits` ### {#naive-compress-bits}
 
 ```cpp
 template<unsigned_integral T>
@@ -422,33 +444,21 @@ constexpr T compress_bitsr(T x, T m) noexcept
 {
     T result = 0;
     for (int i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
-        if ((m >> i) & 1) {
-            result |= ((x >> i) & 1) << j++;
-        }
+        bool mask_bit = (m >> i) & 1;
+        result |= (mask_bit & (x >> i)) << j;
+        j += mask_bit;
     }
     return result;
 }
-```
-It is more likely that we have a direct hardware support for `compress_bitsr`.
-The following implementation demonstrates how to delegate `compress_bitsl`.
 
-```cpp
 template<unsigned_integral T>
 constexpr T compress_bitsl(T x, T m) noexcept
 {
-#ifdef __FAST_REVERSE_BITS__
     return reverse_bits(compress_bitsr(reverse_bits(x)), reverse_bits(m)));
-#else
-    if (m == 0) { // Prevents shift which is >= the operand size.
-        return 0;
-    }
-    int shift = numeric_limits<T>::digits - popcount(m);
-    return compress_bitsr(x, m) << shift;
-#endif
 }
 ```
 
-## `expand_bits` ## {#impl-expand-bits}
+### `expand_bits` ### {#naive-expand-bits}
 
 ```cpp
 template<unsigned_integral T>
@@ -456,9 +466,9 @@ constexpr T expand_bitsr(T x, T m) noexcept
 {
     T result = 0;
     for (int i = 0, j = 0; i != numeric_limits<T>::digits; ++i) {
-        if ((m >> i) & 1) {
-            result |= ((x >> j++) & 1) << i;
-        }
+        bool mask_bit = (m >> i) & 1;
+        result |= (mask_bit & (x >> j)) << i;
+        j += mask_bit;
     }
     return result;
 }
@@ -466,30 +476,9 @@ constexpr T expand_bitsr(T x, T m) noexcept
 template<unsigned_integral T>
 constexpr T expand_bitsl(T x, T m) noexcept
 {
-#ifdef __FAST_REVERSE_BITS__
     return reverse_bits(expand_bitsr(reverse_bits(x)), reverse_bits(m)));
-#else
-    if (m == 0) {
-        return 0;
-    }
-    int shift = numeric_limits<T>::digits - popcount(m);
-    return expand_bitsr(x >> shift, m);
-#endif
 }
 ```
-
-## Contemporary implementations ## {#contemporary-implementations}
-
-[[Warren1]] presents less naive algorithms:
-- An O(log n) `reverse_bits`
-- An O(log<sup>2</sup> n) `compress_bits` and `expand_bits`
-    - can be O(log n) with hardware support for
-         carry-less multiplication aka. GF(2) polynomial multiplication
-
-[[Zp7]] offers fast software implementations for PEXT and PDEP, optimized for x86_64.
-
-[[StackOverflow1]] contains discussion of various possible software implementations
-of `compress_bitsr` and `expand_bitsr`.
 
 
 
@@ -664,6 +653,12 @@ this proposal and shared their thoughts.
         "title": "What is a fast fallback algorithm which emulates PDEP and PEXT in software?",
         "href": "https://stackoverflow.com/q/77834169/5740428",
         "publisher": "Stack Overflow"
+    },
+    "Schultke1": {
+        "authors": ["Jan Schultke"],
+        "title": "C++26 Bit Permutations",
+        "href": "https://github.com/Eisenwave/cxx26-bit-permutations",
+        "publisher": "GitHub"
     },
     "Warren1": {
         "authors": ["Henry S. Warren, Jr."],

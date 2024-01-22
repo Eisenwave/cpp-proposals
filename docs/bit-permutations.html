@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c6a57e7b59cef7b45b663ccfeaa671c095e7e076" name="revision">
+  <meta content="88bd40d38bca7850b05b0cb712b9f9fe729bfd8d" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2160,10 +2160,15 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#possible-implementation"><span class="secno">5</span> <span class="content">Possible implementation</span></a>
      <ol class="toc">
-      <li><a href="#impl-reverse-bits"><span class="secno">5.1</span> <span class="content"><code class="highlight"><c- n>reverse_bits</c-></code></span></a>
-      <li><a href="#impl-compress-bits"><span class="secno">5.2</span> <span class="content"><code class="highlight"><c- n>compress_bits</c-></code></span></a>
-      <li><a href="#impl-expand-bits"><span class="secno">5.3</span> <span class="content"><code class="highlight"><c- n>expand_bits</c-></code></span></a>
-      <li><a href="#contemporary-implementations"><span class="secno">5.4</span> <span class="content">Contemporary implementations</span></a>
+      <li><a href="#reference-implementation"><span class="secno">5.1</span> <span class="content">Reference implementation</span></a>
+      <li><a href="#contemporary-implementations"><span class="secno">5.2</span> <span class="content">Other implementations</span></a>
+      <li>
+       <a href="#naive-implementation"><span class="secno">5.3</span> <span class="content">Naive implementation</span></a>
+       <ol class="toc">
+        <li><a href="#naive-reverse-bits"><span class="secno">5.3.1</span> <span class="content"><code class="highlight"><c- n>reverse_bits</c-></code></span></a>
+        <li><a href="#naive-compress-bits"><span class="secno">5.3.2</span> <span class="content"><code class="highlight"><c- n>compress_bits</c-></code></span></a>
+        <li><a href="#naive-expand-bits"><span class="secno">5.3.3</span> <span class="content"><code class="highlight"><c- n>expand_bits</c-></code></span></a>
+       </ol>
      </ol>
     <li>
      <a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
@@ -2500,80 +2505,12 @@ Therefore, I have settled on the very simple signature:</p>
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
    <h2 class="heading settled" data-level="5" id="possible-implementation"><span class="secno">5. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
-   <p>The following implementations with linear time complexity are merely meant to show that an
-implementation is feasible.
-They demonstrate how a naive implementation with no hardware support may look.</p>
-   <h3 class="heading settled" data-level="5.1" id="impl-reverse-bits"><span class="secno">5.1. </span><span class="content"><code class="highlight"><c- n>reverse_bits</c-></code></span><a class="self-link" href="#impl-reverse-bits"></a></h3>
-<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>)</c-> <c- k>noexcept</c->
-<c- p>{</c->
-    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
-    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
-        <c- n>result</c-> <c- o>&lt;&lt;=</c-> <c- mi>1</c-><c- p>;</c->
-        <c- n>result</c-> <c- o>|=</c-> <c- n>x</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>;</c->
-        <c- n>x</c-> <c- o>>>=</c-> <c- mi>1</c-><c- p>;</c->
-    <c- p>}</c->
-    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
-<c- p>}</c->
-</pre>
-   <h3 class="heading settled" data-level="5.2" id="impl-compress-bits"><span class="secno">5.2. </span><span class="content"><code class="highlight"><c- n>compress_bits</c-></code></span><a class="self-link" href="#impl-compress-bits"></a></h3>
-<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
-<c- p>{</c->
-    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
-    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>!=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>if</c-> <c- p>((</c-><c- n>m</c-> <c- o>>></c-> <c- n>i</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>)</c-> <c- p>{</c->
-            <c- n>result</c-> <c- o>|=</c-> <c- p>((</c-><c- n>x</c-> <c- o>>></c-> <c- n>i</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- n>j</c-><c- o>++</c-><c- p>;</c->
-        <c- p>}</c->
-    <c- p>}</c->
-    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
-<c- p>}</c->
-</pre>
-   <p>It is more likely that we have a direct hardware support for <code class="highlight"><c- n>compress_bitsr</c-></code>.
-The following implementation demonstrates how to delegate <code class="highlight"><c- n>compress_bitsl</c-></code>.</p>
-<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
-<c- p>{</c->
-<c- cp>#ifdef __FAST_REVERSE_BITS__</c->
-    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>compress_bitsr</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
-<c- cp>#else</c->
-    <c- k>if</c-> <c- p>(</c-><c- n>m</c-> <c- o>==</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c-> <c- c1>// Prevents shift which is >= the operand size.</c->
-        <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
-    <c- p>}</c->
-    <c- b>int</c-> <c- n>shift</c-> <c- o>=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-> <c- o>-</c-> <c- n>popcount</c-><c- p>(</c-><c- n>m</c-><c- p>);</c->
-    <c- k>return</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- n>m</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- n>shift</c-><c- p>;</c->
-<c- cp>#endif</c->
-<c- p>}</c->
-</pre>
-   <h3 class="heading settled" data-level="5.3" id="impl-expand-bits"><span class="secno">5.3. </span><span class="content"><code class="highlight"><c- n>expand_bits</c-></code></span><a class="self-link" href="#impl-expand-bits"></a></h3>
-<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>expand_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
-<c- p>{</c->
-    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
-    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>!=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>if</c-> <c- p>((</c-><c- n>m</c-> <c- o>>></c-> <c- n>i</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>)</c-> <c- p>{</c->
-            <c- n>result</c-> <c- o>|=</c-> <c- p>((</c-><c- n>x</c-> <c- o>>></c-> <c- n>j</c-><c- o>++</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- n>i</c-><c- p>;</c->
-        <c- p>}</c->
-    <c- p>}</c->
-    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
-<c- p>}</c->
-
-<c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
-<c- k>constexpr</c-> <c- n>T</c-> <c- n>expand_bitsl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
-<c- p>{</c->
-<c- cp>#ifdef __FAST_REVERSE_BITS__</c->
-    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>expand_bitsr</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
-<c- cp>#else</c->
-    <c- k>if</c-> <c- p>(</c-><c- n>m</c-> <c- o>==</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
-    <c- p>}</c->
-    <c- b>int</c-> <c- n>shift</c-> <c- o>=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-> <c- o>-</c-> <c- n>popcount</c-><c- p>(</c-><c- n>m</c-><c- p>);</c->
-    <c- k>return</c-> <c- n>expand_bitsr</c-><c- p>(</c-><c- n>x</c-> <c- o>>></c-> <c- n>shift</c-><c- p>,</c-> <c- n>m</c-><c- p>);</c->
-<c- cp>#endif</c->
-<c- p>}</c->
-</pre>
-   <h3 class="heading settled" data-level="5.4" id="contemporary-implementations"><span class="secno">5.4. </span><span class="content">Contemporary implementations</span><a class="self-link" href="#contemporary-implementations"></a></h3>
-   <p><a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> presents less naive algorithms:</p>
+   <h3 class="heading settled" data-level="5.1" id="reference-implementation"><span class="secno">5.1. </span><span class="content">Reference implementation</span><a class="self-link" href="#reference-implementation"></a></h3>
+   <p>All proposed functions have been implemented in <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>.
+This reference implementation is compatible with all three major compilers,
+and leverages hardware support from ARM and x86_64 where possible.</p>
+   <h3 class="heading settled" data-level="5.2" id="contemporary-implementations"><span class="secno">5.2. </span><span class="content">Other implementations</span><a class="self-link" href="#contemporary-implementations"></a></h3>
+   <p><a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> presents algorithms which are the basis for <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>.</p>
    <ul>
     <li data-md>
      <p>An O(log n) <code class="highlight"><c- n>reverse_bits</c-></code></p>
@@ -2588,6 +2525,61 @@ The following implementation demonstrates how to delegate <code class="highlight
    <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for PEXT and PDEP, optimized for x86_64.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow1" title="What is a fast fallback algorithm which emulates PDEP and PEXT in software?">[StackOverflow1]</a> contains discussion of various possible software implementations
 of <code class="highlight"><c- n>compress_bitsr</c-></code> and <code class="highlight"><c- n>expand_bitsr</c-></code>.</p>
+   <h3 class="heading settled" data-level="5.3" id="naive-implementation"><span class="secno">5.3. </span><span class="content">Naive implementation</span><a class="self-link" href="#naive-implementation"></a></h3>
+   <p>The following implementations with linear time complexity are merely meant to show that an
+implementation is feasible.
+They demonstrate how a naive implementation with no hardware support may look.</p>
+   <h4 class="heading settled" data-level="5.3.1" id="naive-reverse-bits"><span class="secno">5.3.1. </span><span class="content"><code class="highlight"><c- n>reverse_bits</c-></code></span><a class="self-link" href="#naive-reverse-bits"></a></h4>
+<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- p>{</c->
+    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
+    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
+        <c- n>result</c-> <c- o>&lt;&lt;=</c-> <c- mi>1</c-><c- p>;</c->
+        <c- n>result</c-> <c- o>|=</c-> <c- n>x</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>;</c->
+        <c- n>x</c-> <c- o>>>=</c-> <c- mi>1</c-><c- p>;</c->
+    <c- p>}</c->
+    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
+<c- p>}</c->
+</pre>
+   <h4 class="heading settled" data-level="5.3.2" id="naive-compress-bits"><span class="secno">5.3.2. </span><span class="content"><code class="highlight"><c- n>compress_bits</c-></code></span><a class="self-link" href="#naive-compress-bits"></a></h4>
+<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- p>{</c->
+    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
+    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>!=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
+        <c- b>bool</c-> <c- n>mask_bit</c-> <c- o>=</c-> <c- p>(</c-><c- n>m</c-> <c- o>>></c-> <c- n>i</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>;</c->
+        <c- n>result</c-> <c- o>|=</c-> <c- p>(</c-><c- n>mask_bit</c-> <c- o>&amp;</c-> <c- p>(</c-><c- n>x</c-> <c- o>>></c-> <c- n>i</c-><c- p>))</c-> <c- o>&lt;&lt;</c-> <c- n>j</c-><c- p>;</c->
+        <c- n>j</c-> <c- o>+=</c-> <c- n>mask_bit</c-><c- p>;</c->
+    <c- p>}</c->
+    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
+<c- p>}</c->
+
+<c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>compress_bitsl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- p>{</c->
+    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>compress_bitsr</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
+<c- p>}</c->
+</pre>
+   <h4 class="heading settled" data-level="5.3.3" id="naive-expand-bits"><span class="secno">5.3.3. </span><span class="content"><code class="highlight"><c- n>expand_bits</c-></code></span><a class="self-link" href="#naive-expand-bits"></a></h4>
+<pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>expand_bitsr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- p>{</c->
+    <c- n>T</c-> <c- n>result</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
+    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>!=</c-> <c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
+        <c- b>bool</c-> <c- n>mask_bit</c-> <c- o>=</c-> <c- p>(</c-><c- n>m</c-> <c- o>>></c-> <c- n>i</c-><c- p>)</c-> <c- o>&amp;</c-> <c- mi>1</c-><c- p>;</c->
+        <c- n>result</c-> <c- o>|=</c-> <c- p>(</c-><c- n>mask_bit</c-> <c- o>&amp;</c-> <c- p>(</c-><c- n>x</c-> <c- o>>></c-> <c- n>j</c-><c- p>))</c-> <c- o>&lt;&lt;</c-> <c- n>i</c-><c- p>;</c->
+        <c- n>j</c-> <c- o>+=</c-> <c- n>mask_bit</c-><c- p>;</c->
+    <c- p>}</c->
+    <c- k>return</c-> <c- n>result</c-><c- p>;</c->
+<c- p>}</c->
+
+<c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- k>constexpr</c-> <c- n>T</c-> <c- n>expand_bitsl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
+<c- p>{</c->
+    <c- k>return</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>expand_bitsr</c-><c- p>(</c-><c- n>reverse_bits</c-><c- p>(</c-><c- n>x</c-><c- p>)),</c-> <c- n>reverse_bits</c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
+<c- p>}</c->
+</pre>
    <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>In subclause 22.15 [bit], add the following subclause:</p>
@@ -2814,6 +2806,8 @@ this proposal and shared their thoughts.</p>
    <dd>Jens Maurer. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html"><cite>Bit operations</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html</a>
    <dt id="biblio-p2664r6">[P2664R6]
    <dd>Daniel Towner; Ruslan Arutyunyan. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2664r6.html#permute_by_mask"><cite>Extend std::simd with permutation API</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2664r6.html#permute_by_mask">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2664r6.html#permute_by_mask</a>
+   <dt id="biblio-schultke1">[Schultke1]
+   <dd>Jan Schultke. <a href="https://github.com/Eisenwave/cxx26-bit-permutations"><cite>C++26 Bit Permutations</cite></a>. URL: <a href="https://github.com/Eisenwave/cxx26-bit-permutations">https://github.com/Eisenwave/cxx26-bit-permutations</a>
    <dt id="biblio-stackoverflow1">[StackOverflow1]
    <dd>Jan Schultke et al.. <a href="https://stackoverflow.com/q/77834169/5740428"><cite>What is a fast fallback algorithm which emulates PDEP and PEXT in software?</cite></a>. URL: <a href="https://stackoverflow.com/q/77834169/5740428">https://stackoverflow.com/q/77834169/5740428</a>
    <dt id="biblio-warren1">[Warren1]
