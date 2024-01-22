@@ -16,9 +16,16 @@ Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exceptio
 # Overview # {#overview}
 
 I propose to mark the function `std::uncaught_exceptions` `constexpr`.
-This can be done because there can never be an active exception during constant evaluation.
 
-Similarly, `std::current_exception` can always return a null pointer during constant evaluation.
+Currently, this can be done because there can never be an active exception during constant evaluation.
+`std::uncaught_exceptions` would always return zero during constant evaluation.
+Similarly, `std::current_exception` would always return a null pointer.
+
+[[P2996R1]] recommends exceptions as an error handling mechanism for reflections,
+during constant evaluation.
+If exceptions were throwable in constant expresssions, marking these functions `constexpr`
+would simply be part of exception support.
+**However, [[P2996R1]] is not a prerequisite to this proposal.**
 
 
 # Motivation # {#motivation}
@@ -98,6 +105,25 @@ It is impossible to create an `exception_ptr` that is not a null pointer during 
 evaluations.
 
 
+## Non-trivial implementations ## {#non-trivial-implementations}
+
+[[P2996R1]] suggests allowing `throw` in constant expressions.
+This would mean that `std::active_exceptions`, `std::current_exception`,
+and `std::exception_ptr` would no longer have such trivial implementations,
+and further functions such as `std::make_exception_ptr` may be marked `constexpr`.
+
+The bare minimum compiler support needed for this is:
+
+1. The compiler must track all active exceptions "magically", so that
+    `std::active_exceptions()` returns the correct amount.
+    Alternatively, the mentioned functions need to access a global counter of active exceptions.
+    This requires some form of `int& __builtin_get_exception_counter()`.
+
+2. `std::exception_ptr` behaves like a type-erased, reference-counted smart pointer.
+    [[P2738R1]] has been accepted into C++26, adding `constexpr` cast from `void*`.
+    This makes the implementation of such type-erasure in `constexpr std::exception_ptr` feasible.
+
+
 # Proposed wording # {#proposed-wording}
 
 <style>
@@ -146,6 +172,8 @@ Update subclause 17.9.7 [propagation], `current_exception` as follows:
 <code><pre><ins>constexpr</ins> exception_ptr current_exception() noexcept;</pre></code>
 </blockquote>
 
+
+
 # Acknowledgements # {#acknowledgements}
 
 The original idea for this paper and a portion of its content have been adopted from a
@@ -169,7 +197,20 @@ proposal draft by Morwenn.
     "N4806": {
         "authors": ["Thomas Köppe"],
         "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4806.html",
-        "title": "Working Draft, C++ Extensions for Library Fundamentals, Version 3"
+        "title": "Working Draft, C++ Extensions for Library Fundamentals, Version 3",
+        "publisher": "WG21"
+    },
+    "P2996R1": {
+        "authors": ["Wyatt Childers", "Peter Dimov", "Barry Revzin", "Andrew Sutton", "Faisal Vali", "Daveed Vandevoorde"],
+        "title": "Reflection for C++26",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html",
+        "publisher": "WG21"
+    },
+    "P2738R1": {
+        "authors": ["Corentin Jabot", "David Ledger"],
+        "title": "constexpr cast from void*: towards constexpr type-erasure",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf",
+        "publisher": "WG21"
     }
 }
 </pre>

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1c5251a7586894ff0704497dd1071d72232bb160" name="revision">
+  <meta content="d14058abb42bb06ac245cc91de958da4aa254406" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.2);
@@ -2130,6 +2130,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#constexpr-uncaught-exceptions"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>uncaught_exceptions</c-></code></span></a>
       <li><a href="#constexpr-current-exception"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>current_exception</c-></code></span></a>
       <li><a href="#constexpr-exception-ptr"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>exception_ptr</c-></code></span></a>
+      <li><a href="#non-trivial-implementations"><span class="secno">3.4</span> <span class="content">Non-trivial implementations</span></a>
      </ol>
     <li><a href="#proposed-wording"><span class="secno">4</span> <span class="content">Proposed wording</span></a>
     <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
@@ -2143,9 +2144,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="overview"><span class="secno">1. </span><span class="content">Overview</span><a class="self-link" href="#overview"></a></h2>
-   <p>I propose to mark the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> <code class="highlight"><c- k>constexpr</c-></code>.
-This can be done because there can never be an active exception during constant evaluation.</p>
-   <p>Similarly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code> can always return a null pointer during constant evaluation.</p>
+   <p>I propose to mark the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> <code class="highlight"><c- k>constexpr</c-></code>.</p>
+   <p>Currently, this can be done because there can never be an active exception during constant evaluation. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> would always return zero during constant evaluation.
+Similarly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code> would always return a null pointer.</p>
+   <p><a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> recommends exceptions as an error handling mechanism for reflections,
+during constant evaluation.
+If exceptions were throwable in constant expresssions, marking these functions <code class="highlight"><c- k>constexpr</c-></code> would simply be part of exception support.
+**However, <a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> is not a prerequisite to this proposal.**</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>The motivation is the same as allowing <code class="highlight"><c- k>try</c-></code>-<code class="highlight"><c- k>catch</c-></code> blocks in <code class="highlight"><c- k>constexpr</c-></code> functions,
 a feature added to C++20 thanks to <a data-link-type="biblio" href="#biblio-p1002r1" title="Try-catch blocks in constexpr functions">[P1002R1]</a>.
@@ -2206,6 +2211,21 @@ which makes this easily possible.</p>
 with an <code class="highlight"><c- k>if</c-> <c- o>!</c-><c- k>consteval</c-></code> block.
 It is impossible to create an <code class="highlight"><c- n>exception_ptr</c-></code> that is not a null pointer during constant
 evaluations.</p>
+   <h3 class="heading settled" data-level="3.4" id="non-trivial-implementations"><span class="secno">3.4. </span><span class="content">Non-trivial implementations</span><a class="self-link" href="#non-trivial-implementations"></a></h3>
+   <p><a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> suggests allowing <code class="highlight"><c- k>throw</c-></code> in constant expressions.
+This would mean that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>active_exceptions</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code>,
+and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> would no longer have such trivial implementations,
+and further functions such as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_exception_ptr</c-></code> may be marked <code class="highlight"><c- k>constexpr</c-></code>.</p>
+   <p>The bare minimum compiler support needed for this is:</p>
+   <ol>
+    <li data-md>
+     <p>The compiler must track all active exceptions "magically", so that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>active_exceptions</c-><c- p>()</c-></code> returns the correct amount.
+Alternatively, the mentioned functions need to access a global counter of active exceptions.
+This requires some form of <code class="highlight"><c- b>int</c-><c- o>&amp;</c-> <c- n>__builtin_get_exception_counter</c-><c- p>()</c-></code>.</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> behaves like a type-erased, reference-counted smart pointer. <a data-link-type="biblio" href="#biblio-p2738r1" title="constexpr cast from void*: towards constexpr type-erasure">[P2738R1]</a> has been accepted into C++26, adding <code class="highlight"><c- k>constexpr</c-></code> cast from <code class="highlight"><c- b>void</c-><c- o>*</c-></code>.
+This makes the implementation of such type-erasure in <code class="highlight"><c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> feasible.</p>
+   </ol>
    <h2 class="heading settled" data-level="4" id="proposed-wording"><span class="secno">4. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Update subclause 17.3.2 [version.syn], paragraph 2 as follows:</p>
@@ -2367,6 +2387,10 @@ proposal draft by Morwenn.</p>
    <dd>Thomas Köppe. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4806.html"><cite>Working Draft, C++ Extensions for Library Fundamentals, Version 3</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4806.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4806.html</a>
    <dt id="biblio-p1002r1">[P1002R1]
    <dd>Louis Dionne. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1002r1.pdf"><cite>Try-catch blocks in constexpr functions</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1002r1.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1002r1.pdf</a>
+   <dt id="biblio-p2738r1">[P2738R1]
+   <dd>Corentin Jabot; David Ledger. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf"><cite>constexpr cast from void*: towards constexpr type-erasure</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf</a>
+   <dt id="biblio-p2996r1">[P2996R1]
+   <dd>Wyatt Childers; et al. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html"><cite>Reflection for C++26</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html</a>
    <dt id="biblio-scopelite">[ScopeLite]
    <dd>Martin Moene. <a href="https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597"><cite>uncaught_exceptions() wrapper in scope-lite</cite></a>. URL: <a href="https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597">https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597</a>
   </dl>
