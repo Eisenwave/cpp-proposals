@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bbae6c3abda7ed58395c24d9b9665cc734f42d68" name="revision">
+  <meta content="295d81bf634ae51a6e62a7b6690b711a9de9dac6" name="revision">
 <style>
 th {
     text-align: left;
@@ -2173,7 +2173,7 @@ Add a small amount of further useful member functions.</p>
       <th>Proposed <code class="highlight"><c- n>bitset</c-></code> member
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>has_single_bit</c-><c- p>(</c-><c- n>T</c-><c- p>)</c-></code>
-      <td><code class="highlight"><c- n>has_single_bit</c-><c- p>()</c-></code>
+      <td><code class="highlight"><c- n>one</c-><c- p>()</c-></code>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>countl_zero</c-><c- p>(</c-><c- n>T</c-><c- p>)</c-></code>
       <td><code class="highlight"><c- n>countl_zero</c-><c- p>()</c-></code>
@@ -2220,7 +2220,8 @@ This can be useful for iterating over all set bits:</p>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>byteswap</c-></code> and <code class="highlight"><c- n>bit_cast</c-></code> counterparts are not proposed, only functions solely
 dedicated to the manipulation of bit sequences.</p>
    <h2 class="heading settled" data-level="3" id="design"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
-   <p>The member functions should all have the same name as the corresponding functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
+   <p>The member functions should all have the same (or very similar)
+name as the corresponding functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
    <h3 class="heading settled" data-level="3.1" id="reverse"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>reverse</c-></code></span><a class="self-link" href="#reverse"></a></h3>
    <p><code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.
 This function is added because the method for reversing integers may be tremendously faster than
@@ -2243,6 +2244,65 @@ There are no obvious obstacles to implementing the new features in common standa
 implementations.</p>
    <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
+   <p>Modify the header synopsis in subclause 17.3.2 [version.syn] as follows:</p>
+   <blockquote>
+<pre class="highlight"><code><c- cp>#define __cpp_lib_bitset                            </c-><del><c- cp>202306L</c-></del><ins><c- cp>202401L</c-></ins><c- cp> </c-><c- c1>// also in &lt;bitset></c->
+</code></pre>
+   </blockquote>
+   <p>Modify the header synopsis in subclause 22.9.2.1 [template.bitset.general] as follows:</p>
+   <blockquote>
+<pre class="highlight"><code><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>class</c-> <c- nc>bitset</c-> <c- p>{</c->
+  <c- k>public</c-><c- o>:</c->
+    <c- c1>// bit reference</c->
+    <c- p>[...]</c->
+
+    <c- c1>// [bitset.members], bitset operations</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- k>operator</c-><c- o>&amp;=</c-><c- p>(</c-><c- k>const</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rhs</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- k>operator</c-><c- o>|=</c-><c- p>(</c-><c- k>const</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rhs</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- k>operator</c-><c- o>^=</c-><c- p>(</c-><c- k>const</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rhs</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;=</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- k>operator</c-><c- o>>>=</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c->  <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c->  <c- k>operator</c-><c- o>>></c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<ins><c- o>+</c->   <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rotl</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rotr</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>reverse</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>set</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>set</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>,</c-> <c- b>bool</c-> <c- n>val</c-> <c- o>=</c-> true<c- p>);</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>reset</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>reset</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>);</c->
+    <c- k>constexpr</c-> <c- n>bitset</c->  <c- k>operator</c-><c- o>~</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>flip</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>flip</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>);</c->
+
+    <c- c1>// element access</c->
+    <c- p>[...]</c->
+
+    <c- c1>// observers</c->
+    <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>count</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<ins><c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countl_zero</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countl_zero</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countl_one</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countl_one</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countr_zero</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countr_zero</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countr_one</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- o>+</c->   <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>countr_one</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins>
+    <c- k>constexpr</c-> <c- b>size_t</c-> <c- nf>size</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>bool</c-> <c- k>operator</c-><c- o>==</c-><c- p>(</c-><c- k>const</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- n>rhs</c-><c- p>)</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>bool</c-> <c- nf>test</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>bool</c-> <c- nf>all</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>bool</c-> <c- nf>any</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>bool</c-> <c- nf>none</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
+<ins><c- o>+</c->   <c- k>constexpr</c-> <c- b>bool</c-> <c- n>one</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
+  <c- p>};</c->
+
+  <c- c1>// [bitset.hash], hash support</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>struct</c-> <c- nc>hash</c-><c- p>;</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>struct</c-> <c- nc>hash</c-><c- o>&lt;</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>>></c-><c- p>;</c->
+<c- p>}</c-></code></pre>
+   </blockquote>
    <p>Modify subclause 22.9.2.3 [bitset.members] as follows:</p>
    <blockquote>
      <code class="highlight"><pre class="highlight"><c- k><c- k>constexpr</c-></c-> <c- n><c- n>bitset</c-></c-> <c- k><c- k>operator</c-></c-><c- o><c- o>>></c-></c-><c- p><c- p>(</c-></c-><c- b><c- b>size_t</c-></c-> <c- n><c- n>pos</c-></c-><c- p><c- p>)</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c-></pre></code> 
@@ -2272,10 +2332,6 @@ implementations.</p>
      <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
     </p>
     <p><code class="highlight"></code></p>
-<pre class="highlight"><code><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>set</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
-    <p></p>
-    <p> [...] </p>
-    <p><code class="highlight"></code></p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>reverse</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
     <p></p>
     <p>
@@ -2285,6 +2341,11 @@ implementations.</p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
     </p>
+    <p> [...] </p>
+    <p><code class="highlight"></code></p>
+<pre class="highlight"><code><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>count</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
+    <p></p>
+    <p> <em>Returns</em>: A count of the number of bits set in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. </p>
     <p><code class="highlight"></code></p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- b>size_t</c-> <c- nf>countl_zero</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins></code></pre>
     <p></p>
@@ -2353,17 +2414,20 @@ implementations.</p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- n>countr_one</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code>.</ins>
     </p>
+    <p> [...] </p>
     <p><code class="highlight"></code></p>
-<pre class="highlight"><code><ins><c- k>constexpr</c-> <c- b>bool</c-> <c- nf>has_single_bit</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
+<pre class="highlight"><code><c- k>constexpr</c-> <c- b>bool</c-> <c- nf>none</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
+    <p></p>
+    <p> <em>Returns</em>: <code class="highlight"><c- n>count</c-><c- p>()</c-> <c- o>==</c-> <c- mi>0</c-></code>. </p>
+    <p><code class="highlight"></code></p>
+<pre class="highlight"><code><ins><c- k>constexpr</c-> <c- b>bool</c-> <c- nf>one</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
     <p></p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- n>count</c-><c- p>()</c-> <c- o>==</c-> <c- mi>1</c-></code>.</ins>
     </p>
-    <p><code class="highlight"></code></p>
-<pre class="highlight"><code><c- k>constexpr</c-> <c- b>bool</c-> <c- nf>all</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
-    <p></p>
-    <p> [...] </p>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> The use of a hypothetical integer type in the specification of <code class="highlight"><c- n>rotl</c-></code> and <code class="highlight"><c- n>rotr</c-></code> is necessary
+      because <code class="highlight"><c- p>(</c-><c- n>I</c-> <c- o>+</c-> <c- n>pos</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code> would be incorrect when <code class="highlight"><c- n>I</c-> <c- o>+</c-> <c- n>pos</c-></code> wraps.</p>
   </main>
 <script>
 (function() {

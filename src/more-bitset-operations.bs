@@ -45,7 +45,7 @@ th {
 <th>`<bit>` function</th><th>Proposed `bitset` member</th>
 <tr>
     <td>`std::has_single_bit(T)`</td>
-    <td>`has_single_bit()`</td>
+    <td>`one()`</td>
 </tr>
 <tr>
     <td>`std::countl_zero(T)`</td>
@@ -112,8 +112,8 @@ dedicated to the manipulation of bit sequences.
 
 # Design considerations # {#design}
 
-The member functions should all have the same name as the corresponding functions in the `<bit>`
-header.
+The member functions should all have the same (or very similar)
+name as the corresponding functions in the `<bit>` header.
 
 ## `reverse` ## {#reverse}
 
@@ -154,10 +154,6 @@ implementations.
 
 # Proposed wording # {#proposed-wording}
 
-The proposed changes are relative to the working draft of the standard as of [[!N4917]].
-
-Modify subclause 22.9.2.3 [bitset.members] as follows:
-
 <style>
 blockquote p {
     margin-left: 2em;
@@ -174,6 +170,75 @@ del {
     text-decoration: strikethrough;
 }
 </style>
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]].
+
+Modify the header synopsis in subclause 17.3.2 [version.syn] as follows:
+
+<blockquote>
+<pre><code>
+#define __cpp_lib_bitset                            <del>202306L</del><ins>202401L</ins> // also in &lt;bitset&gt;
+</code></pre>
+</blockquote>
+
+Modify the header synopsis in subclause 22.9.2.1 [template.bitset.general] as follows:
+
+<blockquote>
+<pre><code>
+namespace std {
+  template&lt;size_t N&gt; class bitset {
+  public:
+    // bit reference
+    [...]
+
+    // [bitset.members], bitset operations
+    constexpr bitset& operator&=(const bitset& rhs) noexcept;
+    constexpr bitset& operator|=(const bitset& rhs) noexcept;
+    constexpr bitset& operator^=(const bitset& rhs) noexcept;
+    constexpr bitset& operator&lt;&lt;=(size_t pos) noexcept;
+    constexpr bitset& operator&gt;&gt;=(size_t pos) noexcept;
+    constexpr bitset  operator&lt;&lt;(size_t pos) const noexcept;
+    constexpr bitset  operator&gt;&gt;(size_t pos) const noexcept;
+<ins>+   constexpr bitset& rotl(size_t pos) noexcept;
++   constexpr bitset& rotr(size_t pos) noexcept;
++   constexpr bitset& reverse() noexcept;</ins>
+    constexpr bitset& set() noexcept;
+    constexpr bitset& set(size_t pos, bool val = true);
+    constexpr bitset& reset() noexcept;
+    constexpr bitset& reset(size_t pos);
+    constexpr bitset  operator~() const noexcept;
+    constexpr bitset& flip() noexcept;
+    constexpr bitset& flip(size_t pos);
+
+    // element access
+    [...]
+
+    // observers
+    constexpr size_t count() const noexcept;
+<ins>+   constexpr size_t countl_zero() const noexcept;
++   constexpr size_t countl_zero(size_t pos) const;
++   constexpr size_t countl_one() const noexcept;
++   constexpr size_t countl_one(size_t pos) const;
++   constexpr size_t countr_zero() const noexcept;
++   constexpr size_t countr_zero(size_t pos) const;
++   constexpr size_t countr_one() const noexcept;
++   constexpr size_t countr_one(size_t pos) const;</ins>
+    constexpr size_t size() const noexcept;
+    constexpr bool operator==(const bitset& rhs) const noexcept;
+    constexpr bool test(size_t pos) const;
+    constexpr bool all() const noexcept;
+    constexpr bool any() const noexcept;
+    constexpr bool none() const noexcept;
+<ins>+   constexpr bool one() const noexcept;</ins>
+  };
+
+  // [bitset.hash], hash support
+  template&lt;class T&gt; struct hash;
+  template&lt;size_t N&gt; struct hash&lt;bitset&lt;N&gt;&gt;;
+}</code></pre>
+</blockquote>
+
+Modify subclause 22.9.2.3 [bitset.members] as follows:
 
 <blockquote>
 <code><pre>constexpr bitset operator>>(size_t pos) const noexcept;</pre></code>
@@ -203,11 +268,6 @@ del {
     <ins>*Returns*: `*this`.</ins>
 </p>
 
-<code><pre>constexpr bitset& set() noexcept;</pre></code>
-<p>
-    [...]
-</p>
-
 <code><pre><ins>constexpr bitset& reverse() noexcept;</ins></pre></code>
 <p>
     <ins>*Effects*: Replaces each bit at position `I` in `*this` with
@@ -215,6 +275,15 @@ del {
 </p>
 <p>
     <ins>*Returns*: `*this`.</ins>
+</p>
+
+<p>
+    [...]
+</p>
+
+<code><pre>constexpr bitset& count() noexcept;</pre></code>
+<p>
+    *Returns*: A count of the number of bits set in `*this`.
 </p>
 
 <code><pre><ins>constexpr size_t countl_zero(size_t pos) const;</ins></pre></code>
@@ -277,16 +346,23 @@ del {
     <ins>*Returns*: `countr_one(0)`.</ins>
 </p>
 
-<code><pre><ins>constexpr bool has_single_bit() const noexcept;</ins></pre></code>
-<p>
-    <ins>*Returns*: `count() == 1`.</ins>
-</p>
-
-<code><pre>constexpr bool all() const noexcept;</pre></code>
 <p>
     [...]
 </p>
+
+<code><pre>constexpr bool none() const noexcept;</pre></code>
+<p>
+    *Returns*: `count() == 0`.
+</p>
+
+<code><pre><ins>constexpr bool one() const noexcept;</ins></pre></code>
+<p>
+    <ins>*Returns*: `count() == 1`.</ins>
+</p>
 </blockquote>
+
+Note: The use of a hypothetical integer type in the specification of `rotl` and `rotr` is necessary
+      because `(I + pos) % N` would be incorrect when `I + pos` wraps.
 
 <pre class=biblio>
 {
