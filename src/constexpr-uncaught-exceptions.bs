@@ -96,7 +96,7 @@ All major three standard libraries implement `exception_ptr` as a wrapper class 
 which makes this easily possible.
 
 - See [libc++, exception_ptr.h](https://github.com/llvm/llvm-project/blob/main/libcxx/include/__exception/exception_ptr.h).
-- See [libstdc++, eh_ptr.cc](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/eh_ptr.cc).
+- See [libstdc++, exception_ptr.h](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/exception_ptr.h).
 - See [MSVC STL, exception](https://github.com/microsoft/STL/blob/main/stl/inc/exception).
 
 Simply mark all special member functions `constexpr` and if necessary, guard their implementation
@@ -123,6 +123,21 @@ The bare minimum compiler support needed for this is:
     [[P2738R1]] has been accepted into C++26, adding `constexpr` cast from `void*`.
     This makes the implementation of such type-erasure in `constexpr std::exception_ptr` feasible.
 
+
+## Impact on ABI ## {#impact-on-abi}
+
+Multiple functions, including member functions of `std::exception_ptr` would become
+inline functions if marked `constexpr`.
+To remain ABI-compatible with existing software, it is necessary to emit these inline function
+into the runtime library.
+
+libstdc++ already conditionally does this by marking member functions of
+`std::exception_ptr` `__attribute__((__used__))`.
+Therefore:
+- libstdc++ is not affected.
+- MSVC STL already defines all member function of `exception_ptr` as inline functions,
+    and is also not affected.
+- libc++ would need to apply similar compatibility measures as libstdc++.
 
 # Proposed wording # {#proposed-wording}
 
