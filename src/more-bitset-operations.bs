@@ -112,14 +112,28 @@ dedicated to the manipulation of bit sequences.
 
 # Design considerations # {#design}
 
-The member functions should all have the same name as the names as the functions in the `<bit>`
+The member functions should all have the same name as the corresponding functions in the `<bit>`
 header.
-`reverse` is a notable exception, which does not yet exist in `<bit>`.
 
+## `reverse` ## {#reverse}
+
+`reverse` is a notable exception, which does not yet exist in `<bit>`.
 This function is added because the method for reversing integers may be tremendously faster than
 doing so bit by bit.
 ARM has a dedicated `RBIT` instruction for reversing bits, which could be leveraged.
 
+I have written a not yet published proposal which adds a corresponding bit-reversal function to
+`<bit>`.
+
+## Counting overloads ## {#counting-overloads}
+
+`countl_zero`, `countr_zero`, `countl_one`, and `countr_one`
+are overloaded member functions which take a `size_t` argument or nothing.
+
+This is preferrable to a single member function with a defaulted argument because the overloads
+have different `noexcept` specifications.
+The overloads which take no arguments have a wide constract and can be marked `noexcept`,
+whereas the overloads taking `size_t` may throw `out_of_range`.
 
 
 # Impact on existing code # {#impact-on-existing-code}

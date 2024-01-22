@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="29c2c23f109612e48dfb01f098fcea6fa7d67992" name="revision">
+  <meta content="bbae6c3abda7ed58395c24d9b9665cc734f42d68" name="revision">
 <style>
 th {
     text-align: left;
@@ -2134,7 +2134,12 @@ functions in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#proposed-changes"><span class="secno">2</span> <span class="content">Proposed changes</span></a>
-    <li><a href="#design"><span class="secno">3</span> <span class="content">Design considerations</span></a>
+    <li>
+     <a href="#design"><span class="secno">3</span> <span class="content">Design considerations</span></a>
+     <ol class="toc">
+      <li><a href="#reverse"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>reverse</c-></code></span></a>
+      <li><a href="#counting-overloads"><span class="secno">3.2</span> <span class="content">Counting overloads</span></a>
+     </ol>
     <li><a href="#impact-on-existing-code"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
     <li><a href="#implementation-experience"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
     <li><a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
@@ -2215,10 +2220,19 @@ This can be useful for iterating over all set bits:</p>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>byteswap</c-></code> and <code class="highlight"><c- n>bit_cast</c-></code> counterparts are not proposed, only functions solely
 dedicated to the manipulation of bit sequences.</p>
    <h2 class="heading settled" data-level="3" id="design"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
-   <p>The member functions should all have the same name as the names as the functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header. <code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
-   <p>This function is added because the method for reversing integers may be tremendously faster than
+   <p>The member functions should all have the same name as the corresponding functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
+   <h3 class="heading settled" data-level="3.1" id="reverse"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>reverse</c-></code></span><a class="self-link" href="#reverse"></a></h3>
+   <p><code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.
+This function is added because the method for reversing integers may be tremendously faster than
 doing so bit by bit.
 ARM has a dedicated <code class="highlight"><c- n>RBIT</c-></code> instruction for reversing bits, which could be leveraged.</p>
+   <p>I have written a not yet published proposal which adds a corresponding bit-reversal function to <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
+   <h3 class="heading settled" data-level="3.2" id="counting-overloads"><span class="secno">3.2. </span><span class="content">Counting overloads</span><a class="self-link" href="#counting-overloads"></a></h3>
+   <p><code class="highlight"><c- n>countl_zero</c-></code>, <code class="highlight"><c- n>countr_zero</c-></code>, <code class="highlight"><c- n>countl_one</c-></code>, and <code class="highlight"><c- n>countr_one</c-></code> are overloaded member functions which take a <code class="highlight"><c- b>size_t</c-></code> argument or nothing.</p>
+   <p>This is preferrable to a single member function with a defaulted argument because the overloads
+have different <code class="highlight"><c- k>noexcept</c-></code> specifications.
+The overloads which take no arguments have a wide constract and can be marked <code class="highlight"><c- k>noexcept</c-></code>,
+whereas the overloads taking <code class="highlight"><c- b>size_t</c-></code> may throw <code class="highlight"><c- n>out_of_range</c-></code>.</p>
    <h2 class="heading settled" data-level="4" id="impact-on-existing-code"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
    <p>The semantics of existing <code class="highlight"><c- n>bitset</c-></code> member functions remain unchanged, and no existing valid code
 is broken.</p>
