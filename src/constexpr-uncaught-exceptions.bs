@@ -25,7 +25,7 @@ Similarly, `std::current_exception` would always return a null pointer.
 during constant evaluation.
 If exceptions were throwable in constant expresssions, marking these functions `constexpr`
 would simply be part of exception support.
-**However, [[P2996R1]] is not a prerequisite to this proposal.**
+<b>However, [[P2996R1]] is not a prerequisite to this proposal.</b>
 
 
 # Motivation # {#motivation}

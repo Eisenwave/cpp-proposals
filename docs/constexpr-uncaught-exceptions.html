@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d14058abb42bb06ac245cc91de958da4aa254406" name="revision">
+  <meta content="d82f5008e315418a23e33b26a29d5e537bc0b551" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.2);
@@ -2149,8 +2149,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 Similarly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code> would always return a null pointer.</p>
    <p><a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> recommends exceptions as an error handling mechanism for reflections,
 during constant evaluation.
-If exceptions were throwable in constant expresssions, marking these functions <code class="highlight"><c- k>constexpr</c-></code> would simply be part of exception support.
-**However, <a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> is not a prerequisite to this proposal.**</p>
+If exceptions were throwable in constant expresssions, marking these functions <code class="highlight"><c- k>constexpr</c-></code> would simply be part of exception support. <b>However, <a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> is not a prerequisite to this proposal.</b></p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>The motivation is the same as allowing <code class="highlight"><c- k>try</c-></code>-<code class="highlight"><c- k>catch</c-></code> blocks in <code class="highlight"><c- k>constexpr</c-></code> functions,
 a feature added to C++20 thanks to <a data-link-type="biblio" href="#biblio-p1002r1" title="Try-catch blocks in constexpr functions">[P1002R1]</a>.
