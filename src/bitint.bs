@@ -54,34 +54,109 @@ This requires relatively large-scale changes both to the core language, and to t
 To name a few examples:
 
 - Promotion and conversion rules need to be revised.
-- Type traits such as `std::is_integral` or `std::is_unsinged` need to receive specializations.
+- Non-type template argument deduction from bit-precise integers.
+- Overload resolution with bit-precise integers. 
+- Type traits such as `std::is_integral` or `std::is_unsigned` need to receive specializations.
 - In places where an implementation-defined unsinged integer type is chosen, it must be decided
     whether such a type can be bit-precise, or a standard integer.
 - Functions in `<cmath>`, `<bit>`, and other numerics utilities may be affected.
 - Specializations of `std::numeric_limits` are necessary.
 
+
+
 # Design Considerations # {#design-considerations}
 
 The vast majority of the design is set in stone because it has been standardized in C.
-However, one big question remains open:
-Should bit-precise integers be a fundamental type, or should they be implemented in the
-standard library?
 
-Similar to `std::atomic`, it is possible to simply define a class type that closely mirrors the
-semantics of `_Atomic` in C.
-However, I have dediced against this option for the following reasons:
+## Implementing bit-precise integers as a class template ## {#impl-class-template}
 
-- It adds a lot of maintenance issues in the long run.
-    Most numerics functions or bit manipulation functions should work with bit-precise integers
-    sooner or later.
-    They should be "first-class citizens", with support from `<bit>` et al.
-    Making them a class type would require countless additional overloads to be added to support
-    them explicitly, rather than specifying that a function works with any unsigned integer type.
-- To use bit-precise integers at a large scale, possibly as a near complete replacement for
-    standard integer types, would involve costly mechanism in countless places, such as
-    overload resolution for overloaded operators.
-    This cost may be acceptable for a type like `std::atomic` which is seldom used,
-    but it may slow down compilation to an unacceptable degree for `std::bit_int`.
+An initial design questions is whether to implement bit-precise integers as a class type,
+not as a fundamental type.
+This approach has worked for `std::atomic`/`_Atomic`, but is not feasible for
+bit-precise integers.
+
+### Concerns regarding `signed` and `unsigned` syntax ### {#concerns-regarding-signed-unsigned-syntax}
+
+C uses the syntax `unsigned _BitInt`.
+Even if C++ has a compatibility macro for `_BitInt`, adding `unsigned` to class types is not
+possible.
+At the very least, this would require an additional `_UnsignedBitInt` macro which is used both in
+C and C++, if one wants to achive compatibility.
+
+### Concerns compatibility with implementation-defined choices ### {#concerns-regarding-impl-defined-choices}
+
+C allows bit-precise integers as an implementation-defined choice in practically
+all places.
+For example, it is conforming for an implementation to define `size_t` as `_BitInt(64)`.
+To remain compatible with such a choice would require the `sizeof` operator to possibly
+return a class type.
+Either compatibility with such C implementations would be broken, or the capabilities of
+class types would need to be *drastically* extended.
+
+### Concerns regarding overload resolution ### {#concerns-regarding-overload-resolution}
+
+Some of the desired semantics may be difficult to achieve with class types.
+For example, in overload resolution:
+```cpp
+void foo(std::bit_int<32> x);
+void foo(std::bit_int<16> y);
+int main() {
+    foo(std::bit_int<8>(0)); // should call foo(std::bit_int<16>)
+}
+```
+To implement such behavior for a class type is not trivial.
+It would be possible via a recursive `concept` which makes the 16-bit constructor more constrained,
+or via a "magic" constraint.
+However, these solutions may slow down compilation too much, or require counter-intuitive
+special compiler support that class types normally don't have,
+which defeats the purpose of using them.
+
+### Concerns in the long run ### {#concerns-in-the-long-run}
+
+Last but not least, it is not unthinkable for bit-precise integers to replace standard integers
+in the long run.
+Not today, not in a year, not in a decade, but possibly within half a century.
+It may be short-sighted not to implement them as a core language feature.
+Defining bit-precise integers to be class types may have massive unforseen consequences,
+and may make them unattractive due to impact on compilation speed.
+Unlike `std::atomic`, they may be used directly in *millions* of lines of code within a code base.
+
+
+# Impact on the standard # {#impact-on-the-standard}
+
+The strategy is to re-define the integer types as *standard integer types* and expand the
+category by additional *bit-precise integers*, just like in C.
+This obviously requires reviewing every use "integer", "integral", and "arithmetic"
+in the standard, and update existing wording as needed.
+
+## Lexical conventions [lex] ## {#impact-lex}
+
+It is worth considering whether to support integer suffices for bit-precise integers.
+Similar to Rust, `1u32` could be equivalent to `static_cast<unsigned _BitInt(32)>(1)`.
+It would then need to be discussed how bit-precise integers interact with the preprocessor.
+
+## Basics [basic] ## {#impact-basic}
+
+### Fundamental types [basic.fundamental] ## {#impact-basic-fundamental}
+
+Here is where the bulk of the changes takes places:
+- the signed integer types would now comprise standard signed integer types,
+    extended signed integer types, and bit-precise signed integer types
+- the unsigned integer types would now comprise unsigned signed integer types,
+    extended unsigned integer types, and bit-precise unsigned integer types
+- the bit-precise signed integer types and bit-precise unsigned integer types
+    would be collectively called *bit-precise integer types*
+
+Furthermore,
+- Can `wchar_t` have a bit-precise integer type as its underlying type?
+- Can `char8_t` have a bit-precise integer type as its underlying type?
+- Can `bool` have a bit-precise integer type as its underlying type?
+
+### Conversion ranks [conv.rank] ## {#impact-conv-rank}
+
+The conversion rank of bit-precise integers would have to be specified,
+both between two bit-precise integers, and between bit-precise integers and standard or extended
+integer types.
 
 
 <pre class=biblio>
@@ -91,7 +166,6 @@ However, I have dediced against this option for the following reasons:
         "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf",
         "title": "Adding a Fundamental Type for N-bit integers",
         "publisher": "WG14"
-    },
-
+    }
 }
 </pre>
