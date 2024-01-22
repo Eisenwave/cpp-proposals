@@ -18,3 +18,7 @@ Author: Jan Schultke
 ## NP: `constexpr uncaught_exceptions()`
 
 - [Latest](constexpr-uncaught-exceptions.html)
+
+## NP: Bit-precise integers
+
+- [Latest](bitint.html)

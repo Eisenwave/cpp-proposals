@@ -1,0 +1,97 @@
+<pre class='metadata'>
+Title: <code>Bit-precise integers</code>
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-01-21
+Group: WG21
+Audience: LEWGI, LEWG, EWGI, EWG, WG21
+Editor: Jan Schultke, janschultke@gmail.com
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint.bs)
+Markup Shorthands: markdown on
+Abstract: This paper incorporates the bit-precise integers from C23 into the C++ standard.
+</pre>
+
+# Introduction # {#overview}
+
+[[N2763]] has introduced bit-precise integers into C23, in the form of a new `_BitInt(N)`
+integer type.
+Unlike the standard integer types such as `int`,
+these have a fixed-width which can be specified exactly using an integral constant expression.
+They are not subject to the usual promotion rules,
+and essentially establish a new set of integers, parallel existing types.
+
+An analogous C++ feature would greatly enhance the capabilities of the programmer in C++.
+It is also necessary to interface with C.
+At the time of writing, clang already implements this feature, and an implementation could
+look as follows:
+```cpp
+template <size_t N>
+using bit_int = _BitInt(N);
+
+template <size_t N>
+using bit_uint = unsigned _BitInt(N);
+```
+
+# Motivation and scope # {#motivation}
+
+Bit-precise integers are a perfect fit for C++.
+There are two long-standing design goals that are impossible to meet without them:
+
+1. Keep compatibility with C, if possible.
+2. Keep C++ a low-level language, requiring nothing underneath.
+
+It's obviously not possible for ISO C++ to have C compatibility if C types don't have some
+counterpart in C++.
+This reason alone justifies bit-precise integers in C++.
+
+Furthermore, as [[N2763]] motivates, arbitrary precision integers are useful for representing
+hardware types.
+Certain applications involving FPGAs use up to 2031-bit integers.
+To utilize these hardware capabilities, C++ needs an integer type that can represent them.
+
+This requires relatively large-scale changes both to the core language, and to the standard library.
+To name a few examples:
+
+- Promotion and conversion rules need to be revised.
+- Type traits such as `std::is_integral` or `std::is_unsinged` need to receive specializations.
+- In places where an implementation-defined unsinged integer type is chosen, it must be decided
+    whether such a type can be bit-precise, or a standard integer.
+- Functions in `<cmath>`, `<bit>`, and other numerics utilities may be affected.
+- Specializations of `std::numeric_limits` are necessary.
+
+# Design Considerations # {#design-considerations}
+
+The vast majority of the design is set in stone because it has been standardized in C.
+However, one big question remains open:
+Should bit-precise integers be a fundamental type, or should they be implemented in the
+standard library?
+
+Similar to `std::atomic`, it is possible to simply define a class type that closely mirrors the
+semantics of `_Atomic` in C.
+However, I have dediced against this option for the following reasons:
+
+- It adds a lot of maintenance issues in the long run.
+    Most numerics functions or bit manipulation functions should work with bit-precise integers
+    sooner or later.
+    They should be "first-class citizens", with support from `<bit>` et al.
+    Making them a class type would require countless additional overloads to be added to support
+    them explicitly, rather than specifying that a function works with any unsigned integer type.
+- To use bit-precise integers at a large scale, possibly as a near complete replacement for
+    standard integer types, would involve costly mechanism in countless places, such as
+    overload resolution for overloaded operators.
+    This cost may be acceptable for a type like `std::atomic` which is seldom used,
+    but it may slow down compilation to an unacceptable degree for `std::bit_int`.
+
+
+<pre class=biblio>
+{
+    "N2763": {
+        "authors": ["Aaron Ballman, Melanie Blower, Tommy Hoffner, Erich Keane"],
+        "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf",
+        "title": "Adding a Fundamental Type for N-bit integers",
+        "publisher": "WG14"
+    },
+
+}
+</pre>

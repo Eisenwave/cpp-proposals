@@ -7,7 +7,7 @@ Date: 2024-01-21
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
-!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/enum-direct-init.bs)
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/constexpr-uncaught-exceptions.bs)
 Markup Shorthands: markdown on
 Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exception` `constexpr`.
 </pre>
