@@ -147,7 +147,7 @@ This proposal is purely an extension of the functionality of `bitset`.
 
 # Implementation experience # {#implementation-experience}
 
-[[Bontus1]] provides  a `std::bitset` implementation which supports all proposed features.
+[[Bontus1]] provides  a `std::bitset` implementation which supports most proposed features.
 There are no obvious obstacles to implementing the new features in common standard library
 implementations.
 
