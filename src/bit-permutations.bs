@@ -168,8 +168,8 @@ reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.
 
 Unlike algorithms such as `next_permutation`, it can be used with no modification of the
 original range.
-Together with `prev_bit_permutation`, it is possible to create a bidirectional view of all subsets
-of a range.
+Together with `prev_bit_permutation`, it is possible to create a bidirectional view of all
+fixed-size subsets of a range.
 
 
 ## Motivating examples ## {#use-cases}
