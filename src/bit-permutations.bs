@@ -25,6 +25,20 @@ Reverses the bits of `x` so that the least significant bit becomes the most sign
 
 ```cpp
 template<unsigned_integral T>
+constexpr T next_bit_permutation(T x) noexcept;
+```
+Returns the lowest number `y` in `(x, numeric_limits<T>::max()]` for which
+`popcount(y) == popcount(x)`, or `0` if none exists.
+
+```cpp
+template<unsigned_integral T>
+constexpr T prev_bit_permutation(T x) noexcept;
+```
+Returns the greatest number `y` in `[0, x)` for which
+`popcount(y) == popcount(x)`, or `0` if none exists.
+
+```cpp
+template<unsigned_integral T>
 constexpr T compress_bitsr(T x, T m) noexcept;
 ```
 For each one-bit in `m`, the corresponding bit in `x` is taken and packed
@@ -50,13 +64,6 @@ constexpr T expand_bitsl(T x, T m) noexcept;
 ```
 For each one-bit in `m`, a bit from `x`, starting with the most significant bit
 is taken and shifted into the corresponding position of the `m` bit.
-
-```cpp
-template<unsigned_integral T>
-constexpr T next_bit_permutation(T x) noexcept;
-```
-Returns the lowest number `y` in `(x, numeric_limits<T>::max()]` for which
-`popcount(y) == popcount(x)`, or `0` if none exists.
 
 
 # Motivation and scope # {#motivation-and-scope}
@@ -181,7 +188,7 @@ countr_one(compress_bitsr(x, x))
 
 ### Iterating over subsets using `next_bit_permutation` ### {#iterating-with-next-bit-permutation}
 
-```cpp
+<pre>
 const char set[] {'a', 'b', 'c', 'd'};
 
 for (unsigned bits = 0b11; bits < 16; bits = next_bit_permutation(bits)) {
@@ -191,9 +198,10 @@ for (unsigned bits = 0b11; bits < 16; bits = next_bit_permutation(bits)) {
     if (bits & 8) std::print("{}", set[3]);
     std::println("");
 }
-```
+</pre>
+
 This code prints:
-```cpp
+```text
 ab
 ac
 bc
@@ -203,6 +211,21 @@ cd
 ```
 
 ## Hardware support ## {#hardware-support}
+
+<style>
+th, td, table {
+    border: 1px solid var(--text);
+}
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+table td:nth-child(10n-9), th {
+    font-weight: bold;
+    background-color: color-mix(in srgb, var(--text) 5%, transparent);
+}
+</style>
 
 <table>
 <tr>
@@ -216,6 +239,12 @@ cd
 </tr>
 <tr>
     <td>`next_bit_permutation`</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`TZCNT`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`BSF`</a>)</td>
+    <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html">`CTZ`</a>)</td>
+    <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz">`ctz`</a><sup>B</sup>)</td>
+</tr>
+<tr>
+    <td>`prev_bit_permutation`</td>
     <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`TZCNT`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`BSF`</a>)</td>
     <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html">`CTZ`</a>)</td>
     <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz">`ctz`</a><sup>B</sup>)</td>
@@ -287,6 +316,8 @@ Integer division can also be used as a fallback, although software computation o
 may be faster than integer division.
 
 Both options are shown in [[Anderson1]].
+
+`prev_bit_permutation` can be accelerated using the same operation.
 
 ### Support for `compress_bits` and `expand_bits` ### {#hardware-support-compress-expand}
 
@@ -503,6 +534,18 @@ constexpr T next_bit_permutation(T x) noexcept
 }
 ```
 
+### `prev_bit_permutation` ### {#prev-next-bit-permutation}
+
+```cpp
+template <unsigned_integral T>
+constexpr T next_bit_permutation(T x) noexcept
+{
+    const int count = popcount(x);
+    while (x != 0 && popcount(--x) != count) {}
+    return x;
+}
+```
+
 ### `compress_bits` ### {#naive-compress-bits}
 
 ```cpp
@@ -597,6 +640,8 @@ In subclause 22.15.2 [bit.syn], update the synopsis as follows:
 + template&lt;class T&gt;
 +   constexpr T next_bit_permutation(T x) noexcept;
 + template&lt;class T&gt;
++   constexpr T prev_bit_permutation(T x) noexcept;
++ template&lt;class T&gt;
 +   constexpr T compress_bitsr(T x, T m) noexcept;
 + template&lt;class T&gt;
 +   constexpr T expand_bitsr(T x, T m) noexcept;
@@ -617,7 +662,7 @@ In subclause 22.15 [bit], add the following subclause:
     **Permutation [bit.permute]**
 </p>
 <p>
-    1 In the following descriptions, let *N* denote `numeric_limits<T>​::​digits`.
+    In the following descriptions, let *N* denote `numeric_limits<T>​::​digits`.
     Let &alpha;<sub>*n*</sub>
     denote the *n*-th least significant bit of <code>&alpha;</code>, so that <code>&alpha;</code> equals
     <span title="\sum_{n=0}^{N-1}{\alpha_n 2^n}">
@@ -632,10 +677,10 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    2 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    3 *Returns*: <span title="\sum_{n=0}^{N-1}{x_n 2^{N-n-1}}">
+    *Returns*: <span title="\sum_{n=0}^{N-1}{x_n 2^{N-n-1}}">
         <svg alt="\sum_{n=0}^{N-1}{x_n 2^{N-n-1}}" xmlns="http://www.w3.org/2000/svg" width="106.184px" height="53.920px" viewBox="0 -1733 5866.5 2978.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-46-TEX-LO-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path id="MJX-46-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-46-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-46-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-46-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-46-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-46-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-46-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-46-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(43.8,0)"><use data-c="2211" xlink:href="#MJX-46-TEX-LO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1087.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-46-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-46-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-46-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-46-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-46-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-46-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-46-TEX-I-1D465"></use></g><g data-mml-node="mi" transform="translate(605,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-46-TEX-I-1D45B"></use></g></g><g data-mml-node="msup" transform="translate(1079.3,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-46-TEX-N-32"></use></g><g data-mml-node="TeXAtom" transform="translate(533,413) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-46-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-46-TEX-N-2212"></use></g><g data-mml-node="mi" transform="translate(1666,0)"><use data-c="1D45B" xlink:href="#MJX-46-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(2266,0)"><use data-c="2212" xlink:href="#MJX-46-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3044,0)"><use data-c="31" xlink:href="#MJX-46-TEX-N-31"></use></g></g></g></g></g></g></svg>
     </span>
     <br>[*Note*: `reverse_bits(reverse_bits(x))` equals `x`. &mdash; *end note*]
@@ -648,15 +693,30 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    4 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    5 *Returns*: The lowest integer `y` in (`x`, `numeric_limits<T>::max()]` for which
+    *Returns*: The lowest integer `y` in (`x`, `numeric_limits<T>::max()]` for which
     `popcount(x)` equals `popcount(y)`, or `0` if none exists.
     <br>[*Note*: If `x` is a power of two or zero, `next_bit_permutation(x)`
     equals `x << 1`. &mdash; *end note*]
 </p>
 
+<p>
+```cpp
+template<class T>
+  constexpr T prev_bit_permutation(T x) noexcept;
+```
+</p>
+<p class="indent">
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+</p>
+<p class="indent">
+    *Returns*: The greatest integer `y` in [`0`, `x`) for which
+    `popcount(x)` equals `popcount(y)`, or `0` if none exists.
+    <br>[*Note*: If `x == 0 || next_bit_permutation(x) != 0` is `true`,
+    `prev_bit_permutation(next_bit_permutation(x))` equals `x`. *end note*]
+</p>
 
 <p>
 ```cpp
@@ -665,10 +725,10 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    6 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    7 *Returns*:  <span title="\sum_{n=0}^{N-1}{m_n x_n 2^{(\sum_{k=0}^{n-1}m_k)}}">
+    *Returns*:  <span title="\sum_{n=0}^{N-1}{m_n x_n 2^{(\sum_{k=0}^{n-1}m_k)}}">
         <svg alt="\sum_{n=0}^{N-1}{m_n x_n 2^{(\sum_{k=0}^{n-1}m_k)}}" xmlns="http://www.w3.org/2000/svg" width="146.576px" height="53.920px" viewBox="0 -1733 8098.2 2978.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-36-TEX-LO-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path id="MJX-36-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-36-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-36-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-36-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-36-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-36-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-36-TEX-I-1D45A" d="M21 287Q22 293 24 303T36 341T56 388T88 425T132 442T175 435T205 417T221 395T229 376L231 369Q231 367 232 367L243 378Q303 442 384 442Q401 442 415 440T441 433T460 423T475 411T485 398T493 385T497 373T500 364T502 357L510 367Q573 442 659 442Q713 442 746 415T780 336Q780 285 742 178T704 50Q705 36 709 31T724 26Q752 26 776 56T815 138Q818 149 821 151T837 153Q857 153 857 145Q857 144 853 130Q845 101 831 73T785 17T716 -10Q669 -10 648 17T627 73Q627 92 663 193T700 345Q700 404 656 404H651Q565 404 506 303L499 291L466 157Q433 26 428 16Q415 -11 385 -11Q372 -11 364 -4T353 8T350 18Q350 29 384 161L420 307Q423 322 423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 181Q151 335 151 342Q154 357 154 369Q154 405 129 405Q107 405 92 377T69 316T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-36-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-36-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-36-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-36-TEX-SO-2211" d="M61 748Q64 750 489 750H913L954 640Q965 609 976 579T993 533T999 516H979L959 517Q936 579 886 621T777 682Q724 700 655 705T436 710H319Q183 710 183 709Q186 706 348 484T511 259Q517 250 513 244L490 216Q466 188 420 134T330 27L149 -187Q149 -188 362 -188Q388 -188 436 -188T506 -189Q679 -189 778 -162T936 -43Q946 -27 959 6H999L913 -249L489 -250Q65 -250 62 -248Q56 -246 56 -239Q56 -234 118 -161Q186 -81 245 -11L428 206Q428 207 242 462L57 717L56 728Q56 744 61 748Z"></path><path id="MJX-36-TEX-I-1D458" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path><path id="MJX-36-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(43.8,0)"><use data-c="2211" xlink:href="#MJX-36-TEX-LO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1087.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-36-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-36-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-36-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-36-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-36-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-36-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D45A" xlink:href="#MJX-36-TEX-I-1D45A"></use></g><g data-mml-node="mi" transform="translate(911,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-36-TEX-I-1D45B"></use></g></g><g data-mml-node="msub" transform="translate(1385.3,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-36-TEX-I-1D465"></use></g><g data-mml-node="mi" transform="translate(605,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-36-TEX-I-1D45B"></use></g></g><g data-mml-node="msup" transform="translate(2464.5,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-36-TEX-N-32"></use></g><g data-mml-node="TeXAtom" transform="translate(533,413) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mo"><use data-c="28" xlink:href="#MJX-36-TEX-N-28"></use></g><g data-mml-node="munderover" transform="translate(389,0)"><g data-mml-node="mo"><use data-c="2211" xlink:href="#MJX-36-TEX-SO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(1089,477.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-36-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="2212" xlink:href="#MJX-36-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="31" xlink:href="#MJX-36-TEX-N-31"></use></g></g><g data-mml-node="TeXAtom" transform="translate(1089,-285.4) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D458" xlink:href="#MJX-36-TEX-I-1D458"></use></g><g data-mml-node="mo" transform="translate(521,0)"><use data-c="3D" xlink:href="#MJX-36-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1299,0)"><use data-c="30" xlink:href="#MJX-36-TEX-N-30"></use></g></g></g><g data-mml-node="msub" transform="translate(3022.6,0)"><g data-mml-node="mi"><use data-c="1D45A" xlink:href="#MJX-36-TEX-I-1D45A"></use></g><g data-mml-node="mi" transform="translate(911,-150) scale(0.707)"><use data-c="1D458" xlink:href="#MJX-36-TEX-I-1D458"></use></g></g><g data-mml-node="mo" transform="translate(4352,0)"><use data-c="29" xlink:href="#MJX-36-TEX-N-29"></use></g></g></g></g></g></g></svg>
     </span>
 </p>
@@ -680,10 +740,10 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    8 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    9 *Returns*:  <span title="\sum_{n=0}^{N-1}{m_n x_{(\sum_{k=0}^{n-1}m_k)} 2^n}">
+    *Returns*:  <span title="\sum_{n=0}^{N-1}{m_n x_{(\sum_{k=0}^{n-1}m_k)} 2^n}">
         <svg alt="\sum_{n=0}^{N-1}{m_n x_{(\sum_{k=0}^{n-1}m_k)} 2^n}" xmlns="http://www.w3.org/2000/svg" width="146.576px" height="53.920px" viewBox="0 -1733 8098.2 2978.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-6-TEX-LO-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path id="MJX-6-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-6-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-6-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-6-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-6-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-6-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-6-TEX-I-1D45A" d="M21 287Q22 293 24 303T36 341T56 388T88 425T132 442T175 435T205 417T221 395T229 376L231 369Q231 367 232 367L243 378Q303 442 384 442Q401 442 415 440T441 433T460 423T475 411T485 398T493 385T497 373T500 364T502 357L510 367Q573 442 659 442Q713 442 746 415T780 336Q780 285 742 178T704 50Q705 36 709 31T724 26Q752 26 776 56T815 138Q818 149 821 151T837 153Q857 153 857 145Q857 144 853 130Q845 101 831 73T785 17T716 -10Q669 -10 648 17T627 73Q627 92 663 193T700 345Q700 404 656 404H651Q565 404 506 303L499 291L466 157Q433 26 428 16Q415 -11 385 -11Q372 -11 364 -4T353 8T350 18Q350 29 384 161L420 307Q423 322 423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 181Q151 335 151 342Q154 357 154 369Q154 405 129 405Q107 405 92 377T69 316T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-6-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-6-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-6-TEX-SO-2211" d="M61 748Q64 750 489 750H913L954 640Q965 609 976 579T993 533T999 516H979L959 517Q936 579 886 621T777 682Q724 700 655 705T436 710H319Q183 710 183 709Q186 706 348 484T511 259Q517 250 513 244L490 216Q466 188 420 134T330 27L149 -187Q149 -188 362 -188Q388 -188 436 -188T506 -189Q679 -189 778 -162T936 -43Q946 -27 959 6H999L913 -249L489 -250Q65 -250 62 -248Q56 -246 56 -239Q56 -234 118 -161Q186 -81 245 -11L428 206Q428 207 242 462L57 717L56 728Q56 744 61 748Z"></path><path id="MJX-6-TEX-I-1D458" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path><path id="MJX-6-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path id="MJX-6-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(43.8,0)"><use data-c="2211" xlink:href="#MJX-6-TEX-LO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1087.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-6-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-6-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-6-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-6-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-6-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-6-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D45A" xlink:href="#MJX-6-TEX-I-1D45A"></use></g><g data-mml-node="mi" transform="translate(911,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-6-TEX-I-1D45B"></use></g></g><g data-mml-node="msub" transform="translate(1385.3,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-6-TEX-I-1D465"></use></g><g data-mml-node="TeXAtom" transform="translate(605,-316.7) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mo"><use data-c="28" xlink:href="#MJX-6-TEX-N-28"></use></g><g data-mml-node="munderover" transform="translate(389,0)"><g data-mml-node="mo"><use data-c="2211" xlink:href="#MJX-6-TEX-SO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(1089,477.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-6-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="2212" xlink:href="#MJX-6-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="31" xlink:href="#MJX-6-TEX-N-31"></use></g></g><g data-mml-node="TeXAtom" transform="translate(1089,-285.4) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D458" xlink:href="#MJX-6-TEX-I-1D458"></use></g><g data-mml-node="mo" transform="translate(521,0)"><use data-c="3D" xlink:href="#MJX-6-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1299,0)"><use data-c="30" xlink:href="#MJX-6-TEX-N-30"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(3022.6,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D45A" xlink:href="#MJX-6-TEX-I-1D45A"></use></g><g data-mml-node="mi" transform="translate(911,-150) scale(0.707)"><use data-c="1D458" xlink:href="#MJX-6-TEX-I-1D458"></use></g></g></g><g data-mml-node="mo" transform="translate(4352,0)"><use data-c="29" xlink:href="#MJX-6-TEX-N-29"></use></g></g></g></g><g data-mml-node="msup" transform="translate(7090.9,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-6-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(533,413) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-6-TEX-I-1D45B"></use></g></g></g></g></svg>
     </span>
     <br>[*Note*:
@@ -699,10 +759,10 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    10 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    11 *Returns*:  `reverse_bits(compress_bitsr(reverse_bits(x), reverse_bits(m)))`.
+    *Returns*:  `reverse_bits(compress_bitsr(reverse_bits(x), reverse_bits(m)))`.
 </p>
 
 <p>
@@ -712,10 +772,10 @@ template<class T>
 ```
 </p>
 <p class="indent">
-    10 *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
+    *Constraints*: `T` is an unsigned integer type ([basic.fundamental]).
 </p>
 <p class="indent">
-    11 *Returns*:  `reverse_bits(expand_bitsr(reverse_bits(x), reverse_bits(m)))`.
+    *Returns*:  `reverse_bits(expand_bitsr(reverse_bits(x), reverse_bits(m)))`.
 </p>
 </blockquote>
 
