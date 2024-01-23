@@ -16,12 +16,25 @@ Abstract: This proposal adds bit permutation functions to the bit manipulation l
 
 I propose to expand the bit manipulation library with the following functions:
 
+## `reverse_bits` ## {#intro-reverse-bits}
+
 ```cpp
 // all constraints are exposition-only
 template<unsigned_integral T>
 constexpr T reverse_bits(T x) noexcept;
 ```
 Reverses the bits of `x` so that the least significant bit becomes the most significant.
+The following ASCII diagram depicts the effect on a 4-bit integer, whose bits
+are denoted with `a..d` (`d` is least significant).
+
+```text
+x:                     reverse_bits(x):
++---+---+---+---+      +---+---+---+---+
+| a | b | c | d |  =>  | d | c | b | a |
++---+---+---+---+      +---+---+---+---+
+```
+
+## `next_bit_permutation` and `prev_bit_permutation` ## {#intro-bit-permutation}
 
 ```cpp
 template<unsigned_integral T>
@@ -37,6 +50,17 @@ constexpr T prev_bit_permutation(T x) noexcept;
 Returns the greatest number `y` in `[0, x)` for which
 `popcount(y) == popcount(x)`, or `0` if none exists.
 
+For example, when starting with `7 = 0b111`, `next_bit_permutation` generates the sequence:
+```text
+dec:    7,   11,   13,   14,    19,    21, ...
+bin:  111, 1011, 1101, 1110, 10011, 10101, ...
+```
+`prev_bit_permutation` can be used to generate this sequence in reverse.
+
+
+
+## `compress_bits` ## {#intro-compress-bits}
+
 ```cpp
 template<unsigned_integral T>
 constexpr T compress_bitsr(T x, T m) noexcept;
@@ -51,6 +75,21 @@ constexpr T compress_bitsl(T x, T m) noexcept;
 For each one-bit in `m`, the corresponding bit in `x` is taken and packed
 contiguously into the result, starting with the most significant result bit.
 
+```text
+x:
++---+---+---+---+
+| a | b | c | d |
++---+---+---+---+
+m:    |       |        compress_bitsl(x, m):  compress_bitsr(x, m):
++---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+| 0 | 1 | 0 | 1 |      | b | d | 0 | 0 |      | 0 | 0 | b | d |
++---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+```
+Intuitively, `m` is a "mask" that determines which bits of `x` are packed.
+
+
+## `expand_bits` ## {#intro-expand-bits}
+
 ```cpp
 template<unsigned_integral T>
 constexpr T expand_bitsr(T x, T m) noexcept;
@@ -64,6 +103,18 @@ constexpr T expand_bitsl(T x, T m) noexcept;
 ```
 For each one-bit in `m`, a bit from `x`, starting with the most significant bit
 is taken and shifted into the corresponding position of the `m` bit.
+
+```text
+x:
++---+---+---+---+
+| a | b | c | d |
++---+---+---+---+
+m:                     expand_bitsl(x, m):    expand_bitsr(x, m):
++---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+| 0 | 1 | 0 | 1 |      | 0 | a | 0 | b |      | 0 | c | 0 | d |
++---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+```
+Intuitively, `m` is a "mask" that determines where the bits of `x` are unpacked into.
 
 
 # Motivation and scope # {#motivation-and-scope}
@@ -114,7 +165,11 @@ reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.
 
 `next_bit_permutation` is useful for iterating over all subsets with a fixed amount of elements
 (see below for an example).
-It has the notable advantage that it doesn't modify the original range.
+
+Unlike algorithms such as `next_permutation`, it can be used with no modification of the
+original range.
+Together with `prev_bit_permutation`, it is possible to create a bidirectional view of all subsets
+of a range.
 
 
 ## Motivating examples ## {#use-cases}
