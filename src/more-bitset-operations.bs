@@ -3,7 +3,7 @@ Title: More bitset operations
 Shortname: Pxxxx
 Revision: 0
 Status: NP
-Date: 2024-01-21
+Date: 2024-01-24
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -112,8 +112,7 @@ dedicated to the manipulation of bit sequences.
 
 # Design considerations # {#design}
 
-The member functions should all have the same (or very similar)
-name as the corresponding functions in the `<bit>` header.
+The naming of the member functions is based on the naming scheme in the `<bit>` header.
 
 ## `reverse` ## {#reverse}
 
@@ -122,8 +121,8 @@ This function is added because the method for reversing integers may be tremendo
 doing so bit by bit.
 ARM has a dedicated `RBIT` instruction for reversing bits, which could be leveraged.
 
-I have written a not yet published proposal which adds a corresponding bit-reversal function to
-`<bit>`.
+I have written a not yet published proposal [[Schultke1]]
+which adds a corresponding bit-reversal function to `<bit>`.
 
 ## Counting overloads ## {#counting-overloads}
 
@@ -177,7 +176,7 @@ Modify the header synopsis in subclause 17.3.2 [version.syn] as follows:
 
 <blockquote>
 <pre><code>
-#define __cpp_lib_bitset                            <del>202306L</del><ins>202401L</ins> // also in &lt;bitset&gt;
+#define __cpp_lib_bitset                            <del>202306L</del><ins>20XXXXL</ins> // also in &lt;bitset&gt;
 </code></pre>
 </blockquote>
 
@@ -383,6 +382,12 @@ Note: The use of a hypothetical integer type in the specification of `rotl` and 
         "title": "Bit operations",
         "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html",
         "publisher": "WG21"
+    },
+    "Schultke1": {
+        "authors": ["Jan Schultke"],
+        "title": "Bit permutations",
+        "href": "https://eisenwave.github.io/cpp-proposals/bit-permutations.html",
+        "publisher": "GitHub Pages"
     }
 }
 </pre>

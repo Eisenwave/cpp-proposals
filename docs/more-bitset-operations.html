@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9093efa2f914faecc0ffd7ff0d2376f2afb9296e" name="revision">
+  <meta content="a8a54714fbe64825a79fbaa2170c67947381e205" name="revision">
 <style>
 th {
     text-align: left;
@@ -2108,7 +2108,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PxxxxR0<br>More bitset operations</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">New Proposal, <time class="dt-updated" datetime="2024-01-21">2024-01-21</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">New Proposal, <time class="dt-updated" datetime="2024-01-24">2024-01-24</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2220,14 +2220,13 @@ This can be useful for iterating over all set bits:</p>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>byteswap</c-></code> and <code class="highlight"><c- n>bit_cast</c-></code> counterparts are not proposed, only functions solely
 dedicated to the manipulation of bit sequences.</p>
    <h2 class="heading settled" data-level="3" id="design"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
-   <p>The member functions should all have the same (or very similar)
-name as the corresponding functions in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
+   <p>The naming of the member functions is based on the naming scheme in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
    <h3 class="heading settled" data-level="3.1" id="reverse"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>reverse</c-></code></span><a class="self-link" href="#reverse"></a></h3>
    <p><code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.
 This function is added because the method for reversing integers may be tremendously faster than
 doing so bit by bit.
 ARM has a dedicated <code class="highlight"><c- n>RBIT</c-></code> instruction for reversing bits, which could be leveraged.</p>
-   <p>I have written a not yet published proposal which adds a corresponding bit-reversal function to <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
+   <p>I have written a not yet published proposal <a data-link-type="biblio" href="#biblio-schultke1" title="Bit permutations">[Schultke1]</a> which adds a corresponding bit-reversal function to <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
    <h3 class="heading settled" data-level="3.2" id="counting-overloads"><span class="secno">3.2. </span><span class="content">Counting overloads</span><a class="self-link" href="#counting-overloads"></a></h3>
    <p><code class="highlight"><c- n>countl_zero</c-></code>, <code class="highlight"><c- n>countr_zero</c-></code>, <code class="highlight"><c- n>countl_one</c-></code>, and <code class="highlight"><c- n>countr_one</c-></code> are overloaded member functions which take a <code class="highlight"><c- b>size_t</c-></code> argument or nothing.</p>
    <p>This is preferrable to a single member function with a defaulted argument because the overloads
@@ -2246,7 +2245,7 @@ implementations.</p>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Modify the header synopsis in subclause 17.3.2 [version.syn] as follows:</p>
    <blockquote>
-<pre class="highlight"><code><c- cp>#define __cpp_lib_bitset                            </c-><del><c- cp>202306L</c-></del><ins><c- cp>202401L</c-></ins><c- cp> </c-><c- c1>// also in &lt;bitset></c->
+<pre class="highlight"><code><c- cp>#define __cpp_lib_bitset                            </c-><del><c- cp>202306L</c-></del><ins><c- cp>20XXXXL</c-></ins><c- cp> </c-><c- c1>// also in &lt;bitset></c->
 </code></pre>
    </blockquote>
    <p>Modify the header synopsis in subclause 22.9.2.1 [template.bitset.general] as follows:</p>
@@ -2572,4 +2571,6 @@ implementations.</p>
    <dd>GitHub Code Search. <a href="https://github.com/search?type=code&amp;auto_enroll=true&amp;q=%22std%3A%3Abitset%22+language%3Ac%2B%2B&amp;p=1"><cite>std::bitset language:c++</cite></a>. URL: <a href="https://github.com/search?type=code&amp;auto_enroll=true&amp;q=%22std%3A%3Abitset%22+language%3Ac%2B%2B&amp;p=1">https://github.com/search?type=code&amp;auto_enroll=true&amp;q=%22std%3A%3Abitset%22+language%3Ac%2B%2B&amp;p=1</a>
    <dt id="biblio-p0553r4">[P0553R4]
    <dd>Jens Maurer. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html"><cite>Bit operations</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html</a>
+   <dt id="biblio-schultke1">[Schultke1]
+   <dd>Jan Schultke. <a href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html"><cite>Bit permutations</cite></a>. URL: <a href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html">https://eisenwave.github.io/cpp-proposals/bit-permutations.html</a>
   </dl>
