@@ -7,7 +7,7 @@ Date: 2024-01-24
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
-ED: https://eisenwave.github.io/cpp-proposals/more-bitset-operations-p3103r0.html
+ED: https://eisenwave.github.io/cpp-proposals/more-bitset-operations.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/more-bitset-operations.bs)
 Markup Shorthands: markdown on
 Abstract: This paper proposes adding a counterpart `std::bitset` member function for the utility
