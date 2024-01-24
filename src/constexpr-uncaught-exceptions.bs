@@ -115,9 +115,10 @@ and further functions such as `std::make_exception_ptr` may be marked `constexpr
 The bare minimum compiler support needed for this is:
 
 1. The compiler must track all active exceptions "magically", so that
-    `std::active_exceptions()` returns the correct amount.
-    Alternatively, the mentioned functions need to access a global counter of active exceptions.
-    This requires some form of `int& __builtin_get_exception_counter()`.
+    `std::active_exceptions()` returns the correct amount, and `std::current_exception()` returns
+    the current exception.
+    This needs compiler support because such mutable global state normally doesn't exist in
+    constant expressions.
 
 2. `std::exception_ptr` behaves like a type-erased, reference-counted smart pointer.
     [[P2738R1]] has been accepted into C++26, adding `constexpr` cast from `void*`.
@@ -159,15 +160,17 @@ The proposed changes are relative to the working draft of the standard as of [[!
 Update subclause 17.3.2 [version.syn], paragraph 2 as follows:
 
 <blockquote>
-<code><pre>#define __cpp_lib_constexpr_current_exception       <ins>202401L</ins> // freestanding, also in &lt;exception&gt;</pre></code>
+<pre><code>
+#define __cpp_lib_constexpr_current_exception   <ins>202401L</ins> // freestanding, also in &lt;exception&gt;
 [...]
-<code><pre>#define __cpp_lib_uncaught_exceptions               <del>201411L</del><ins>202401L</ins> // freestanding, also in &lt;exception&gt;</pre></code>
+#define __cpp_lib_uncaught_exceptions           <del>201411L</del><ins>202401L</ins> // freestanding, also in &lt;exception&gt;
+</pre></code>
 </blockquote>
 
 Update subclause 17.9.6 [uncaught.exceptions] as follows:
 
 <blockquote>
-<code><pre><ins>constexpr</ins> int uncaught_exceptions() noexcept;</pre></code>
+<pre><code><ins>constexpr</ins> int uncaught_exceptions() noexcept;</code></pre>
 </blockquote>
 
 Update subclause 17.9.7 [propagation], paragraph 2 as follows:
@@ -184,7 +187,7 @@ Note: This wording is slightly work-in-progress.
 Update subclause 17.9.7 [propagation], `current_exception` as follows:
 
 <blockquote>
-<code><pre><ins>constexpr</ins> exception_ptr current_exception() noexcept;</pre></code>
+<pre><code><ins>constexpr</ins> exception_ptr current_exception() noexcept;</code></pre>
 </blockquote>
 
 

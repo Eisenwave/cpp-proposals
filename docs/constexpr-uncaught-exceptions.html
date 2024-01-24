@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="426b6a05f7e35216f760dac087cdf157e7c4e98c" name="revision">
+  <meta content="527cc74aac993c264ae138290d12c724cb0ad159" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.2);
@@ -2219,9 +2219,10 @@ and further functions such as <code class="highlight"><c- n>std</c-><c- o>::</c-
    <p>The bare minimum compiler support needed for this is:</p>
    <ol>
     <li data-md>
-     <p>The compiler must track all active exceptions "magically", so that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>active_exceptions</c-><c- p>()</c-></code> returns the correct amount.
-Alternatively, the mentioned functions need to access a global counter of active exceptions.
-This requires some form of <code class="highlight"><c- b>int</c-><c- o>&amp;</c-> <c- n>__builtin_get_exception_counter</c-><c- p>()</c-></code>.</p>
+     <p>The compiler must track all active exceptions "magically", so that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>active_exceptions</c-><c- p>()</c-></code> returns the correct amount, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-><c- p>()</c-></code> returns
+the current exception.
+This needs compiler support because such mutable global state normally doesn’t exist in
+constant expressions.</p>
     <li data-md>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> behaves like a type-erased, reference-counted smart pointer. <a data-link-type="biblio" href="#biblio-p2738r1" title="constexpr cast from void*: towards constexpr type-erasure">[P2738R1]</a> has been accepted into C++26, adding <code class="highlight"><c- k>constexpr</c-></code> cast from <code class="highlight"><c- b>void</c-><c- o>*</c-></code>.
 This makes the implementation of such type-erasure in <code class="highlight"><c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> feasible.</p>
@@ -2245,9 +2246,16 @@ and is also not affected.</p>
    <h2 class="heading settled" data-level="4" id="proposed-wording"><span class="secno">4. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Update subclause 17.3.2 [version.syn], paragraph 2 as follows:</p>
-   <blockquote> <code class="highlight"><pre class="highlight"><c- cp><c- cp>#define __cpp_lib_constexpr_current_exception       </c-></c-><ins><c- cp><c- cp>202401L</c-></c-></ins><c- cp><c- cp> </c-></c-><c- c1><c- c1>// freestanding, also in &lt;exception></c-></c-></pre></code> [...] <code class="highlight"><pre class="highlight"><c- cp><c- cp>#define __cpp_lib_uncaught_exceptions               </c-></c-><del><c- cp><c- cp>201411L</c-></c-></del><ins><c- cp><c- cp>202401L</c-></c-></ins><c- cp><c- cp> </c-></c-><c- c1><c- c1>// freestanding, also in &lt;exception></c-></c-></pre></code> </blockquote>
+   <blockquote>
+<pre class="highlight"><code><c- cp>#define __cpp_lib_constexpr_current_exception   </c-><ins><c- cp>202401L</c-></ins><c- cp> </c-><c- c1>// freestanding, also in &lt;exception></c->
+<c- p>[...]</c->
+<c- cp>#define __cpp_lib_uncaught_exceptions           </c-><del><c- cp>201411L</c-></del><ins><c- cp>202401L</c-></ins><c- cp> </c-><c- c1>// freestanding, also in &lt;exception></c->
+</code></pre>
+   </blockquote>
    <p>Update subclause 17.9.6 [uncaught.exceptions] as follows:</p>
-   <blockquote> <code class="highlight"><pre class="highlight"><ins><c- k><c- k>constexpr</c-></c-></ins> <c- b><c- b>int</c-></c-> <c- nf><c- nf>uncaught_exceptions</c-></c-><c- p><c- p>()</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c-></pre></code> </blockquote>
+   <blockquote>
+<pre class="highlight"><code><ins><c- k>constexpr</c-></ins> <c- b>int</c-> <c- nf>uncaught_exceptions</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
+   </blockquote>
    <p>Update subclause 17.9.7 [propagation], paragraph 2 as follows:</p>
    <blockquote>
      <code class="highlight"><c- n>exception_ptr</c-></code> 
@@ -2257,7 +2265,9 @@ and is also not affected.</p>
    </blockquote>
    <p class="note" role="note"><span class="marker">Note:</span> This wording is slightly work-in-progress.</p>
    <p>Update subclause 17.9.7 [propagation], <code class="highlight"><c- n>current_exception</c-></code> as follows:</p>
-   <blockquote> <code class="highlight"><pre class="highlight"><ins><c- k><c- k>constexpr</c-></c-></ins> <c- n><c- n>exception_ptr</c-></c-> <c- nf><c- nf>current_exception</c-></c-><c- p><c- p>()</c-></c-> <c- k><c- k>noexcept</c-></c-><c- p><c- p>;</c-></c-></pre></code> </blockquote>
+   <blockquote>
+<pre class="highlight"><code><ins><c- k>constexpr</c-></ins> <c- n>exception_ptr</c-> <c- nf>current_exception</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
+   </blockquote>
    <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>The original idea for this paper and a portion of its content have been adopted from a
 proposal draft by Morwenn.</p>
