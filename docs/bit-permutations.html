@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e7c3b7884b1287cdfc9dc51d12447540149eaa83" name="revision">
+  <meta content="eda19f12a097d55b050747387f22d78e57210950" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mh] {
@@ -2582,7 +2582,7 @@ The point is that <code class="highlight"><c- n>bit_compress</c-></code> and <co
       <th>RISC-V
      <tr>
       <td><code class="highlight"><c- n>bit_reverse</c-></code>
-      <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb"><code class="highlight"><c- n>vpshufbitqmb</c-></code></a><sup>AVX512_BITALG</sup>, (<a href="https://www.felixcloutier.com/x86/bswap"><code class="highlight"><c- n>BSWAP</c-></code></a>)
+      <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb"><code class="highlight"><c- n>vpshufbitqmb</c-></code></a><sup>AVX512_BITALG</sup>, (<a href="https://www.felixcloutier.com/x86/bswap"><code class="highlight"><c- n>bswap</c-></code></a>)
       <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html"><code class="highlight"><c- n>rbit</c-></code></a><sup>SVE2</sup>
       <td><a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>rev8</c-></code></a><sup>Zbb</sup>+<a href="https://drive.google.com/file/d/1Thd010Eh2DqnhDHpDd3SM7Ame7KENkPw/view"><code class="highlight"><c- n>brev8</c-></code></a><sup>Zbkb</sup>,(<a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>rev8</c-></code></a><sup>Zbb</sup>)
      <tr>
@@ -2593,7 +2593,7 @@ The point is that <code class="highlight"><c- n>bit_compress</c-></code> and <co
      <tr>
       <td><code class="highlight"><c- n>next_bit_permutation</c-></code>
       <td>(<a href="https://www.felixcloutier.com/x86/tzcnt"><code class="highlight"><c- n>tzcnt</c-></code></a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf"><code class="highlight"><c- n>bsf</c-></code></a>)
-      <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html"><code class="highlight"><c- n>CTZ</c-></code></a>)
+      <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html"><code class="highlight"><c- n>ctz</c-></code></a>)
       <td>(<a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>ctz</c-></code></a><sup>Zbb</sup>)
      <tr>
       <td><code class="highlight"><c- n>prev_bit_permutation</c-></code>
@@ -2628,7 +2628,7 @@ but greatly assists in its implementation.</p>
       There appears to have been a name change in 2022.</p>
    <h4 class="heading settled" data-level="4.3.1" id="hardware-support-reverse"><span class="secno">4.3.1. </span><span class="content">Support for <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#hardware-support-reverse"></a></h4>
    <p>This operation is directly implemented in ARM through <code class="highlight"><c- n>rbit</c-></code>.</p>
-   <p>Any architecture with support for <code class="highlight"><c- n>byteswap</c-></code> (such as x86 with <code class="highlight"><c- n>BSWAP</c-></code>)
+   <p>Any architecture with support for <code class="highlight"><c- n>byteswap</c-></code> (such as x86 with <code class="highlight"><c- n>bswap</c-></code>)
 also supports bit-reversal in part. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> presents an O(log n) algorithm which operates by swapping lower and upper <code class="highlight"><c- n>N</c-> <c- o>/</c-> <c- mi>2</c-></code>, ..., <code class="highlight"><c- mi>16</c-></code>, <code class="highlight"><c- mi>8</c-></code>, <code class="highlight"><c- mi>4</c-></code>, <code class="highlight"><c- mi>2</c-></code>, and <code class="highlight"><c- mi>1</c-></code> bits in parallel.
 Byte-swapping implements these individual swaps up to 8 bits, requiring only three more
 parallel swaps in software:</p>
@@ -2644,7 +2644,7 @@ parallel swaps in software:</p>
    <p>Firstly, note that for the pattern length, there are only up to <code class="highlight"><c- n>N</c-></code> relevant cases,
 where <code class="highlight"><c- n>N</c-></code> is the operand width in bits.
 It is feasible to <code class="highlight"><c- k>switch</c-></code> between these cases, where the length is constant in each case.</p>
-   <p>While the AVX-512 instruction <code class="highlight"><c- n>VPSHUFBITQMB</c-></code> can be used for <em>all</em> cases, this is not the ideal
+   <p>While the AVX-512 instruction <code class="highlight"><c- n>vpshufbitqmb</c-></code> can be used for <em>all</em> cases, this is not the ideal
 solution for most cases.
 For very low or very great lengths, a naive solution is sufficient (and even optimal),
 where we simply use <code class="highlight"><c- o>&lt;&lt;</c-></code> and <code class="highlight"><c- o>|</c-></code> to duplicate the pattern.
@@ -2665,19 +2665,19 @@ may be faster than integer division.</p>
    <p><code class="highlight"><c- n>prev_bit_permutation</c-></code> can be accelerated using the same operation.</p>
    <h4 class="heading settled" data-level="4.3.4" id="hardware-support-compress-expand"><span class="secno">4.3.4. </span><span class="content">Support for <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#hardware-support-compress-expand"></a></h4>
    <p>Starting with Haswell (2013), Intel CPUs directly implement compression and expansion with
-with <code class="highlight"><c- n>PEXT</c-></code> and <code class="highlight"><c- n>PDEP</c-></code> respectively.
-AMD CPUs starting with Zen 3 implement <code class="highlight"><c- n>PDEP</c-></code> and <code class="highlight"><c- n>PEXT</c-></code> with 3 cycles
+with <code class="highlight"><c- n>pext</c-></code> and <code class="highlight"><c- n>pdep</c-></code> respectively.
+AMD CPUs starting with Zen 3 implement <code class="highlight"><c- n>pext</c-></code> and <code class="highlight"><c- n>pdep</c-></code> with 3 cycles
 latency, like Intel.
-Zen 2 and older implement <code class="highlight"><c- n>PDEP</c-></code>/<code class="highlight"><c- n>PEXT</c-></code> in microcode, with 18 cycles latency.</p>
-   <p>ARM also supports these operations directly with <code class="highlight"><c- n>BDEP</c-></code>, <code class="highlight"><c- n>BEXT</c-></code>, and <code class="highlight"><c- n>BGRP</c-></code> in the SVE2 instruction set. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> mentions other older architectures with direct support.</p>
+Zen 2 and older implement <code class="highlight"><c- n>pext</c-></code>/<code class="highlight"><c- n>pdep</c-></code> in microcode, with 18 cycles latency.</p>
+   <p>ARM also supports these operations directly with <code class="highlight"><c- n>bext</c-></code>, <code class="highlight"><c- n>bdep</c-></code>, and <code class="highlight"><c- n>bgrp</c-></code> in the SVE2 instruction set. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> mentions other older architectures with direct support.</p>
    <p>Overall, only recent instruction set extensions offer this functionality directly.
 However, when the mask is a constant, many different strategies for hardware acceleration open up.
 For example</p>
    <ul>
     <li data-md>
-     <p>interleaving bits can be assisted (though not fully implemented) using ARM <code class="highlight"><c- n>ZIP1</c-></code>/<code class="highlight"><c- n>ZIP2</c-></code></p>
+     <p>interleaving bits can be assisted (though not fully implemented) using ARM <code class="highlight"><c- n>zip1</c-></code>/<code class="highlight"><c- n>zip2</c-></code></p>
     <li data-md>
-     <p>other permutations can be assisted by ARM <code class="highlight"><c- n>TBL</c-></code> and <code class="highlight"><c- n>TBX</c-></code></p>
+     <p>other permutations can be assisted by ARM <code class="highlight"><c- n>tbl</c-></code> and <code class="highlight"><c- n>tbx</c-></code></p>
    </ul>
    <p>As <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> explains, the cost of computing <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code> in software is
 dramatically lower for a constant mask.
@@ -2689,7 +2689,7 @@ For specific known masks (such as a mask with a single one-bit), the cost is ext
 and on information about the mask, even if the exact mask isn’t known.</p>
      <ul>
       <li data-md>
-       <p><code class="highlight"><c- n>TZCNT</c-></code>, <code class="highlight"><c- n>CLMUL</c-></code> (see <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a> or <a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> for specifics), and <code class="highlight"><c- n>POPCNT</c-></code> are helpful.</p>
+       <p><code class="highlight"><c- n>tzcnt</c-></code>, <code class="highlight"><c- n>clmul</c-></code> (see <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a> or <a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> for specifics), and <code class="highlight"><c- n>popcnt</c-></code> are helpful.</p>
      </ul>
     <li data-md>
      <p>ISO C++ does not offer a mechanism through which all of this information can be utilized.
@@ -2845,7 +2845,7 @@ and leverages hardware support from ARM and x86_64 where possible.</p>
  carry-less multiplication aka. GF(2) polynomial multiplication</p>
      </ul>
    </ul>
-   <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for PEXT and PDEP, optimized for x86_64.</p>
+   <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for <code class="highlight"><c- n>pext</c-></code> and <code class="highlight"><c- n>pdep</c-></code>, optimized for x86_64.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow1" title="What is a fast fallback algorithm which emulates PDEP and PEXT in software?">[StackOverflow1]</a> contains discussion of various possible software implementations
 of <code class="highlight"><c- n>bit_compressr</c-></code> and <code class="highlight"><c- n>bit_expandr</c-></code>.</p>
    <h2 class="heading settled" data-level="8" id="proposed-wording"><span class="secno">8. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
