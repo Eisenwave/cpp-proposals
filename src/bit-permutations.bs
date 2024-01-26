@@ -1,12 +1,13 @@
 <pre class='metadata'>
 Title: Bit permutations
-Shortname: Pxxxx
+Shortname: P3104
 Revision: 0
-Status: NP
-Date: 2024-01-24
+Status: P
+Date: 2024-01-26
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/bit-permutations.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-permutations.bs)
 Markup Shorthands: markdown on
 Abstract: This proposal adds bit permutation functions to the bit manipulation library.
@@ -53,16 +54,16 @@ assembly.
 However, there are still a few operations which are non-trivial to implement in software
 and have widely available hardware support.
 Therefore, I propose to expand the bit manipulation library
-the multiple bit permutation functions described below.
-Even without hardware support, the functions provide great utility and/or help the developer
+with multiple bit permutation functions described below.
+Even without hardware support, these functions provide great utility and/or help the developer
 write more expressive code.
 
 # Proposed features # {#proposed-features}
 
 I propose to add the following functions to the bit manipulation library (`<bit>`).
 
-All constraints are exposition-only.
-The function bodies contain a naive implementation that merely illustrates the behavior.
+Note: All constraints are exposition-only.
+      The function bodies contain a naive implementation that merely illustrates the behavior.
 
 Note: See [[#hardware-support]] for the corresponding hardware instructions.
 
