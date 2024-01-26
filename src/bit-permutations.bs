@@ -1,8 +1,8 @@
 <pre class='metadata'>
 Title: Bit permutations
 Shortname: P3104
-Revision: 0
-Status: P
+Revision: 1
+Status: NP
 Date: 2024-01-26
 Group: WG21
 Audience: LEWGI, LEWG
@@ -44,6 +44,13 @@ del {
     text-decoration: strikethrough;
 }
 </style>
+
+# Revision history # {#revisions}
+
+## Changes since R0 ## {#changes-since-r0}
+
+- Expand [[#hardware-support]], taking more instructions into account, including AVX-512.
+
 
 # Introduction # {#intro}
 
@@ -465,50 +472,50 @@ table td:nth-child(10n-9), th {
 </tr>
 <tr>
     <td>`bit_reverse`</td>
-    <td>(<a href="https://www.felixcloutier.com/x86/bswap">`BSWAP`</a>)</td>
-    <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html">`RBIT`</a><sup>SVE2</sup></td>
-    <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#164-vector-register-gather-instructions">`vrgather`</a><sup>V</sup>)</td>
+    <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb">`vpshufbitqmb`</a><sup>AVX512_BITALG</sup>, (<a href="https://www.felixcloutier.com/x86/bswap">`BSWAP`</a>)</td>
+    <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html">`rbit`</a><sup>SVE2</sup></td>
+    <td><a href="https://github.com/riscv/riscv-bitmanip/">`rev8`</a><sup>Zbb</sup>+<a href="https://drive.google.com/file/d/1Thd010Eh2DqnhDHpDd3SM7Ame7KENkPw/view">`brev8`</a><sup>Zbkb</sup>,(<a href="https://github.com/riscv/riscv-bitmanip/">`rev8`</a><sup>Zbb</sup>)</td>
 </tr>
 <tr>
     <td>`bit_repeat`</td>
-    <td></td>
+    <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb">`vpshufbitqmb`</a><sup>AVX512_BITALG</sup></td>
     <td></td>
     <td></td>
 </tr>
 <tr>
     <td>`next_bit_permutation`</td>
-    <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`TZCNT`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`BSF`</a>)</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`tzcnt`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`bsf`</a>)</td>
     <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html">`CTZ`</a>)</td>
-    <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz">`ctz`</a><sup>B</sup>)</td>
+    <td>(<a href="https://github.com/riscv/riscv-bitmanip/">`ctz`</a><sup>Zbb</sup>)</td>
 </tr>
 <tr>
     <td>`prev_bit_permutation`</td>
-    <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`TZCNT`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`BSF`</a>)</td>
-    <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html">`CTZ`</a>)</td>
-    <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz">`ctz`</a><sup>B</sup>)</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/tzcnt">`tzcnt`</a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf">`bsf`</a>)</td>
+    <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html">`ctz`</a>)</td>
+    <td>(<a href="https://github.com/riscv/riscv-bitmanip/">`ctz`</a><sup>Zbb</sup>)</td>
 </tr>
 <tr>
     <td>`bit_compressr`</td>
-    <td><a href="https://www.felixcloutier.com/x86/pext">`PEXT`</a><sup>BMI2</sup></td>
-    <td><a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`BEXT`</a><sup>SVE2</sup></td>
+    <td><a href="https://www.felixcloutier.com/x86/pext">`pext`</a><sup>BMI2</sup></td>
+    <td><a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`bext`</a><sup>SVE2</sup></td>
     <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#165-vector-compress-instruction">`vcompress`</a><sup>V</sup>)</td>
 </tr>
 <tr>
     <td>`bit_expandr`</td>
-    <td><a href="https://www.felixcloutier.com/x86/pdep">`PDEP`</a><sup>BMI2</sup></td>
-    <td><a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`BDEP`</a><sup>SVE2</sup></td>
+    <td><a href="https://www.felixcloutier.com/x86/pdep">`pdep`</a><sup>BMI2</sup></td>
+    <td><a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`bdep`</a><sup>SVE2</sup></td>
     <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#1651-synthesizing-vdecompress">`viota`+`vrgather`</a><sup>V</sup>)</td>
 </tr>
 <tr>
     <td>`bit_compressl`</td>
-    <td>(<a href="https://www.felixcloutier.com/x86/pext">`PEXT`</a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt">`POPCNT`</a><sup>ABM</sup>)</td>
-    <td><a href="https://dougallj.github.io/asil/doc/bgrp_z_zz_64.html">`BGRP`</a><sup>SVE2</sup>, (<a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`BEXT`</a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html">`CNT`</a><sup>SVE</sup>)</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/pext">`pext`</a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt">`popcnt`</a><sup>ABM</sup>)</td>
+    <td><a href="https://dougallj.github.io/asil/doc/bgrp_z_zz_64.html">`bgrp`</a><sup>SVE2</sup>, (<a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html">`bext`</a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html">`cnt`</a><sup>SVE</sup>)</td>
     <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#165-vector-compress-instruction">`vcompress`</a><sup>V</sup>)</td>
 </tr>
 <tr>
     <td>`bit_expandl`</td>
-    <td>(<a href="https://www.felixcloutier.com/x86/pdep">`PDEP`</a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt">`POPCNT`</a><sup>ABM</sup>)</td>
-    <td>(<a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`BDEP`</a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html">`CNT`</a><sup>SVE</sup>)</td>
+    <td>(<a href="https://www.felixcloutier.com/x86/pdep">`pdep`</a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt">`popcnt`</a><sup>ABM</sup>)</td>
+    <td>(<a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html">`bdep`</a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html">`cnt`</a><sup>SVE</sup>)</td>
     <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#1651-synthesizing-vdecompress">`viota`+`vrgather`</a><sup>V</sup>)</td>
 </tr>
 </table>
@@ -516,13 +523,14 @@ table td:nth-child(10n-9), th {
 (Parenthesized) entries signal that the instruction does not directly implement the function,
 but greatly assists in its implementation.
 
-Note: The RISC-V instructions marked V are all vector instructions.
-      It is possible to turn each bit into a vector element, perform the wanted operation,
-      and compress back into a bit-vector.
+Note: The AVX-512 `vpshufbitqmb` instruction can implement any bit permutation in the mathematical sense, and more.
+
+Note: The RISC-V `brev8` instruction can also be found under the name `rev.b`.
+      There appears to have been a name change in 2022.
 
 ### Support for `bit_reverse` ### {#hardware-support-reverse}
 
-This operation is directly implemented in ARM through `RBIT`.
+This operation is directly implemented in ARM through `rbit`.
 
 Any architecture with support for `byteswap` (such as x86 with `BSWAP`)
 also supports bit-reversal in part.
@@ -546,13 +554,23 @@ Such an intrinsic has been requested from GCC users a number of times in [[GNU1]
 
 ### Support for `bit_repeat` ### {#hardware-support-bit-repeat}
 
-To my knowledge, `bit_repeat` has no direct support in the general case.
-However, for specific cases like `bit_repeat(x, 8)`,
-SIMD permutation/duplication/gather/broadcast instructions can be used.
+Firstly, note that for the pattern length, there are only up to `N` relevant cases,
+where `N` is the operand width in bits.
+It is feasible to `switch` between these cases, where the length is constant in each case.
 
-The primary use of `bit_repeat` is to express repeating bit patterns without magic numbers,
+While the AVX-512 instruction `VPSHUFBITQMB` can be used for *all* cases, this is not the ideal
+solution for most cases.
+For very low or very great lengths, a naive solution is sufficient (and even optimal),
+where we simply use `<<` and `|` to duplicate the pattern.
+What actually matters is how often the pattern is repeated, i.e. `N / length`.
+
+Specific cases like `bit_repeat(x, 8)`, `bit_repeat(x, 16)` can be implemented using
+permutation/duplication/gather/broadcast instructions.
+
+However, note that the primary use of `bit_repeat` is to express repeating bit patterns without magic numbers,
 i.e. to improve code quality.
-It is worth noting that the reference implementation ([[Schultke1]]) requires only O(log N)
+Often, both the pattern and the length are known at compile-time, making hardware support less relevant.
+Even without hardware support, the reference implementation [[Schultke1]] requires only O(log N)
 fundamental bitwise operations.
 
 ### Support for `next_bit_permutation` ### {#hardware-support-next-bit-permutation}

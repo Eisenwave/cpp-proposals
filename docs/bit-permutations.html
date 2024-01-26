@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3104R0: Bit permutations</title>
+  <title>P3104R1: Bit permutations</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="7e38c10f63b033ccf06abf993b3dc6590e237368" name="revision">
+  <meta content="e7c3b7884b1287cdfc9dc51d12447540149eaa83" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mh] {
@@ -2132,8 +2132,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3104R0<br>Bit permutations</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-01-26">2024-01-26</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3104R1<br>Bit permutations</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">New Proposal, <time class="dt-updated" datetime="2024-01-26">2024-01-26</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2158,73 +2158,78 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li>
-     <a href="#proposed-features"><span class="secno">2</span> <span class="content">Proposed features</span></a>
+     <a href="#revisions"><span class="secno">1</span> <span class="content">Revision history</span></a>
      <ol class="toc">
-      <li><a href="#intro-bit-reverse"><span class="secno">2.1</span> <span class="content"><code class="highlight"><c- n>bit_reverse</c-></code></span></a>
-      <li><a href="#intro-bit-repeat"><span class="secno">2.2</span> <span class="content"><code class="highlight"><c- n>bit_repeat</c-></code></span></a>
-      <li><a href="#intro-bit-permutation"><span class="secno">2.3</span> <span class="content"><code class="highlight"><c- n>next_bit_permutation</c-></code> and <code class="highlight"><c- n>prev_bit_permutation</c-></code></span></a>
-      <li><a href="#intro-bit-compress"><span class="secno">2.4</span> <span class="content"><code class="highlight"><c- n>bit_compress</c-></code></span></a>
-      <li><a href="#intro-bit-expand"><span class="secno">2.5</span> <span class="content"><code class="highlight"><c- n>bit_expand</c-></code></span></a>
+      <li><a href="#changes-since-r0"><span class="secno">1.1</span> <span class="content">Changes since R0</span></a>
+     </ol>
+    <li><a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
+    <li>
+     <a href="#proposed-features"><span class="secno">3</span> <span class="content">Proposed features</span></a>
+     <ol class="toc">
+      <li><a href="#intro-bit-reverse"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>bit_reverse</c-></code></span></a>
+      <li><a href="#intro-bit-repeat"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- n>bit_repeat</c-></code></span></a>
+      <li><a href="#intro-bit-permutation"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- n>next_bit_permutation</c-></code> and <code class="highlight"><c- n>prev_bit_permutation</c-></code></span></a>
+      <li><a href="#intro-bit-compress"><span class="secno">3.4</span> <span class="content"><code class="highlight"><c- n>bit_compress</c-></code></span></a>
+      <li><a href="#intro-bit-expand"><span class="secno">3.5</span> <span class="content"><code class="highlight"><c- n>bit_expand</c-></code></span></a>
      </ol>
     <li>
-     <a href="#motivation-and-scope"><span class="secno">3</span> <span class="content">Motivation and scope</span></a>
+     <a href="#motivation-and-scope"><span class="secno">4</span> <span class="content">Motivation and scope</span></a>
      <ol class="toc">
       <li>
-       <a href="#applications"><span class="secno">3.1</span> <span class="content">Applications</span></a>
+       <a href="#applications"><span class="secno">4.1</span> <span class="content">Applications</span></a>
        <ol class="toc">
-        <li><a href="#applications-of-bit-reverse"><span class="secno">3.1.1</span> <span class="content">Applications of <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
-        <li><a href="#applications-of-bit-repeat"><span class="secno">3.1.2</span> <span class="content">Applications of <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
-        <li><a href="#applications-of-bit-compress-and-bit-expand"><span class="secno">3.1.3</span> <span class="content">Applications of <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
-        <li><a href="#applications-of-next-bit-permutation"><span class="secno">3.1.4</span> <span class="content">Applications of <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
+        <li><a href="#applications-of-bit-reverse"><span class="secno">4.1.1</span> <span class="content">Applications of <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
+        <li><a href="#applications-of-bit-repeat"><span class="secno">4.1.2</span> <span class="content">Applications of <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
+        <li><a href="#applications-of-bit-compress-and-bit-expand"><span class="secno">4.1.3</span> <span class="content">Applications of <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
+        <li><a href="#applications-of-next-bit-permutation"><span class="secno">4.1.4</span> <span class="content">Applications of <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
        </ol>
       <li>
-       <a href="#use-cases"><span class="secno">3.2</span> <span class="content">Motivating examples</span></a>
+       <a href="#use-cases"><span class="secno">4.2</span> <span class="content">Motivating examples</span></a>
        <ol class="toc">
-        <li><a href="#implementing-countr-zero"><span class="secno">3.2.1</span> <span class="content">Implementing <code class="highlight"><c- n>countr_zero</c-></code> with <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
-        <li><a href="#interleaving-bits"><span class="secno">3.2.2</span> <span class="content">Interleaving bits with <code class="highlight"><c- n>bit_expand</c-></code></span></a>
-        <li><a href="#input-output"><span class="secno">3.2.3</span> <span class="content">UTF-8 decoding with <code class="highlight"><c- n>bit_compressr</c-></code></span></a>
-        <li><a href="#building-operations"><span class="secno">3.2.4</span> <span class="content">Other operations based on <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
-        <li><a href="#iterating-with-next-bit-permutation"><span class="secno">3.2.5</span> <span class="content">Iterating over subsets using <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
+        <li><a href="#implementing-countr-zero"><span class="secno">4.2.1</span> <span class="content">Implementing <code class="highlight"><c- n>countr_zero</c-></code> with <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
+        <li><a href="#interleaving-bits"><span class="secno">4.2.2</span> <span class="content">Interleaving bits with <code class="highlight"><c- n>bit_expand</c-></code></span></a>
+        <li><a href="#input-output"><span class="secno">4.2.3</span> <span class="content">UTF-8 decoding with <code class="highlight"><c- n>bit_compressr</c-></code></span></a>
+        <li><a href="#building-operations"><span class="secno">4.2.4</span> <span class="content">Other operations based on <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
+        <li><a href="#iterating-with-next-bit-permutation"><span class="secno">4.2.5</span> <span class="content">Iterating over subsets using <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
        </ol>
       <li>
-       <a href="#hardware-support"><span class="secno">3.3</span> <span class="content">Hardware support</span></a>
+       <a href="#hardware-support"><span class="secno">4.3</span> <span class="content">Hardware support</span></a>
        <ol class="toc">
-        <li><a href="#hardware-support-reverse"><span class="secno">3.3.1</span> <span class="content">Support for <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
-        <li><a href="#hardware-support-bit-repeat"><span class="secno">3.3.2</span> <span class="content">Support for <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
-        <li><a href="#hardware-support-next-bit-permutation"><span class="secno">3.3.3</span> <span class="content">Support for <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
-        <li><a href="#hardware-support-compress-expand"><span class="secno">3.3.4</span> <span class="content">Support for <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
+        <li><a href="#hardware-support-reverse"><span class="secno">4.3.1</span> <span class="content">Support for <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
+        <li><a href="#hardware-support-bit-repeat"><span class="secno">4.3.2</span> <span class="content">Support for <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
+        <li><a href="#hardware-support-next-bit-permutation"><span class="secno">4.3.3</span> <span class="content">Support for <code class="highlight"><c- n>next_bit_permutation</c-></code></span></a>
+        <li><a href="#hardware-support-compress-expand"><span class="secno">4.3.4</span> <span class="content">Support for <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
        </ol>
      </ol>
-    <li><a href="#impact-on-existing-code"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impact-on-existing-code"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
     <li>
-     <a href="#design"><span class="secno">5</span> <span class="content">Design considerations</span></a>
+     <a href="#design"><span class="secno">6</span> <span class="content">Design considerations</span></a>
      <ol class="toc">
-      <li><a href="#bit-repeat-signature"><span class="secno">5.1</span> <span class="content">Signature of <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
-      <li><a href="#naming-compress-expand"><span class="secno">5.2</span> <span class="content">Why the names <em>compress</em> and <em>expand</em>?</span></a>
+      <li><a href="#bit-repeat-signature"><span class="secno">6.1</span> <span class="content">Signature of <code class="highlight"><c- n>bit_repeat</c-></code></span></a>
+      <li><a href="#naming-compress-expand"><span class="secno">6.2</span> <span class="content">Why the names <em>compress</em> and <em>expand</em>?</span></a>
       <li>
-       <a href="#further-generalization"><span class="secno">5.3</span> <span class="content">Why the lack of generalization?</span></a>
+       <a href="#further-generalization"><span class="secno">6.3</span> <span class="content">Why the lack of generalization?</span></a>
        <ol class="toc">
-        <li><a href="#generalized-compress-expand"><span class="secno">5.3.1</span> <span class="content">No generalized <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
-        <li><a href="#generalized-bit-reverse"><span class="secno">5.3.2</span> <span class="content">No generalized <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
+        <li><a href="#generalized-compress-expand"><span class="secno">6.3.1</span> <span class="content">No generalized <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span></a>
+        <li><a href="#generalized-bit-reverse"><span class="secno">6.3.2</span> <span class="content">No generalized <code class="highlight"><c- n>bit_reverse</c-></code></span></a>
        </ol>
-      <li><a href="#unusual-signature"><span class="secno">5.4</span> <span class="content">Why does the signature of <code class="highlight"><c- n>bit_compress</c-></code> require two same <code class="highlight"><c- n>T</c-></code>s?</span></a>
+      <li><a href="#unusual-signature"><span class="secno">6.4</span> <span class="content">Why does the signature of <code class="highlight"><c- n>bit_compress</c-></code> require two same <code class="highlight"><c- n>T</c-></code>s?</span></a>
      </ol>
     <li>
-     <a href="#possible-implementation"><span class="secno">6</span> <span class="content">Possible implementation</span></a>
+     <a href="#possible-implementation"><span class="secno">7</span> <span class="content">Possible implementation</span></a>
      <ol class="toc">
-      <li><a href="#reference-implementation"><span class="secno">6.1</span> <span class="content">Reference implementation</span></a>
-      <li><a href="#contemporary-implementations"><span class="secno">6.2</span> <span class="content">Other implementations</span></a>
+      <li><a href="#reference-implementation"><span class="secno">7.1</span> <span class="content">Reference implementation</span></a>
+      <li><a href="#contemporary-implementations"><span class="secno">7.2</span> <span class="content">Other implementations</span></a>
      </ol>
     <li>
-     <a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
+     <a href="#proposed-wording"><span class="secno">8</span> <span class="content">Proposed wording</span></a>
      <ol class="toc">
-      <li><a href="#proposed-feature-testing"><span class="secno">7.1</span> <span class="content">Feature-testing</span></a>
-      <li><a href="#proposed-header-synopsis"><span class="secno">7.2</span> <span class="content">Header synopsis</span></a>
-      <li><a href="#proposed-new-subclause"><span class="secno">7.3</span> <span class="content">New subclause</span></a>
+      <li><a href="#proposed-feature-testing"><span class="secno">8.1</span> <span class="content">Feature-testing</span></a>
+      <li><a href="#proposed-header-synopsis"><span class="secno">8.2</span> <span class="content">Header synopsis</span></a>
+      <li><a href="#proposed-new-subclause"><span class="secno">8.3</span> <span class="content">New subclause</span></a>
      </ol>
-    <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#acknowledgements"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2234,7 +2239,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <h2 class="heading settled" data-level="1" id="revisions"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#revisions"></a></h2>
+   <h3 class="heading settled" data-level="1.1" id="changes-since-r0"><span class="secno">1.1. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes-since-r0"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Expand <a href="#hardware-support">§ 4.3 Hardware support</a>, taking more instructions into account, including AVX-512.</p>
+   </ul>
+   <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>The C++ bit manipulation library in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> is an invaluable abstraction from hardware operations.
 Functions like <code class="highlight"><c- n>countl_zero</c-></code> help the programmer avoid use of intrinsic functions or inline
 assembly.</p>
@@ -2244,12 +2255,12 @@ Therefore, I propose to expand the bit manipulation library
 with multiple bit permutation functions described below.
 Even without hardware support, these functions provide great utility and/or help the developer
 write more expressive code.</p>
-   <h2 class="heading settled" data-level="2" id="proposed-features"><span class="secno">2. </span><span class="content">Proposed features</span><a class="self-link" href="#proposed-features"></a></h2>
+   <h2 class="heading settled" data-level="3" id="proposed-features"><span class="secno">3. </span><span class="content">Proposed features</span><a class="self-link" href="#proposed-features"></a></h2>
    <p>I propose to add the following functions to the bit manipulation library (<code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>).</p>
    <p class="note" role="note"><span class="marker">Note:</span> All constraints are exposition-only.
       The function bodies contain a naive implementation that merely illustrates the behavior.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#hardware-support">§ 3.3 Hardware support</a> for the corresponding hardware instructions.</p>
-   <h3 class="heading settled" data-level="2.1" id="intro-bit-reverse"><span class="secno">2.1. </span><span class="content"><code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#intro-bit-reverse"></a></h3>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#hardware-support">§ 4.3 Hardware support</a> for the corresponding hardware instructions.</p>
+   <h3 class="heading settled" data-level="3.1" id="intro-bit-reverse"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#intro-bit-reverse"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_reverse</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
@@ -2264,7 +2275,7 @@ write more expressive code.</p>
 </pre>
    <p>Reverses the bits of <code class="highlight"><c- n>x</c-></code> so that the least significant bit becomes the most significant.</p>
    <div class="example" id="example-349d65a5"><a class="self-link" href="#example-349d65a5"></a> <code class="highlight"><c- n>bit_reverse</c-><c- p>(</c-><c- b>uint32_t</c-><c- p>{</c-><c- mh>0x00001234</c-><c- p>})</c-></code> equals <code class="highlight"><c- mh>0x24c80000</c-></code>. </div>
-   <h3 class="heading settled" data-level="2.2" id="intro-bit-repeat"><span class="secno">2.2. </span><span class="content"><code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#intro-bit-repeat"></a></h3>
+   <h3 class="heading settled" data-level="3.2" id="intro-bit-repeat"><span class="secno">3.2. </span><span class="content"><code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#intro-bit-repeat"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_repeat</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- b>int</c-> <c- n>length</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>(</c->false<c- p>)</c->
 <c- p>{</c->
@@ -2277,7 +2288,7 @@ write more expressive code.</p>
 </pre>
    <p>Repeats a pattern stored in the least significant <code class="highlight"><c- n>length</c-></code> bits of <code class="highlight"><c- n>x</c-></code>, as many times as fits into <code class="highlight"><c- n>x</c-></code>.</p>
    <div class="example" id="example-50c3301e"><a class="self-link" href="#example-50c3301e"></a> <code class="highlight"><c- n>bit_repeat</c-><c- p>(</c-><c- b>uint32_t</c-><c- p>{</c-><c- mh>0xc</c-><c- p>},</c-> <c- mi>4</c-><c- p>)</c-></code> equals <code class="highlight"><c- mh>0xcccccccc</c-></code>. </div>
-   <h3 class="heading settled" data-level="2.3" id="intro-bit-permutation"><span class="secno">2.3. </span><span class="content"><code class="highlight"><c- n>next_bit_permutation</c-></code> and <code class="highlight"><c- n>prev_bit_permutation</c-></code></span><a class="self-link" href="#intro-bit-permutation"></a></h3>
+   <h3 class="heading settled" data-level="3.3" id="intro-bit-permutation"><span class="secno">3.3. </span><span class="content"><code class="highlight"><c- n>next_bit_permutation</c-></code> and <code class="highlight"><c- n>prev_bit_permutation</c-></code></span><a class="self-link" href="#intro-bit-permutation"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>next_bit_permutation</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
@@ -2306,7 +2317,7 @@ write more expressive code.</p>
 </pre>
     <p><code class="highlight"><c- n>prev_bit_permutation</c-></code> can be used to generate this sequence in reverse.</p>
    </div>
-   <h3 class="heading settled" data-level="2.4" id="intro-bit-compress"><span class="secno">2.4. </span><span class="content"><code class="highlight"><c- n>bit_compress</c-></code></span><a class="self-link" href="#intro-bit-compress"></a></h3>
+   <h3 class="heading settled" data-level="3.4" id="intro-bit-compress"><span class="secno">3.4. </span><span class="content"><code class="highlight"><c- n>bit_compress</c-></code></span><a class="self-link" href="#intro-bit-compress"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_compressr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
@@ -2342,7 +2353,7 @@ m:    |       |        bit_compressl(x, m):  bit_compressr(x, m):
 </pre>
    </div>
    <p class="note" role="note"><span class="marker">Note:</span> Intuitively, <code class="highlight"><c- n>m</c-></code> is a "mask" that determines which bits of <code class="highlight"><c- n>x</c-></code> are packed.</p>
-   <h3 class="heading settled" data-level="2.5" id="intro-bit-expand"><span class="secno">2.5. </span><span class="content"><code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#intro-bit-expand"></a></h3>
+   <h3 class="heading settled" data-level="3.5" id="intro-bit-expand"><span class="secno">3.5. </span><span class="content"><code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#intro-bit-expand"></a></h3>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_expandr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c->
 <c- p>{</c->
@@ -2378,7 +2389,7 @@ m:                     bit_expandl(x, m):    bit_expandr(x, m):
 </pre>
    </div>
    <p class="note" role="note"><span class="marker">Note:</span> Intuitively, <code class="highlight"><c- n>m</c-></code> is a "mask" that determines where the bits of <code class="highlight"><c- n>x</c-></code> are unpacked into.</p>
-   <h2 class="heading settled" data-level="3" id="motivation-and-scope"><span class="secno">3. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
+   <h2 class="heading settled" data-level="4" id="motivation-and-scope"><span class="secno">4. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>Bit-reversal, repetition, compression, and expansion
 are fundamental operations that meet multiple criteria
 which make them suitable for standardization:</p>
@@ -2397,8 +2408,8 @@ which make them suitable for standardization:</p>
    <p><code class="highlight"><c- n>next_bit_permutation</c-></code>, is the most niche of these operations and does not meet all criteria.
 However, I believe it is useful enough to be included in this proposal,
 and it fits the overall theme well.</p>
-   <h3 class="heading settled" data-level="3.1" id="applications"><span class="secno">3.1. </span><span class="content">Applications</span><a class="self-link" href="#applications"></a></h3>
-   <h4 class="heading settled" data-level="3.1.1" id="applications-of-bit-reverse"><span class="secno">3.1.1. </span><span class="content">Applications of <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#applications-of-bit-reverse"></a></h4>
+   <h3 class="heading settled" data-level="4.1" id="applications"><span class="secno">4.1. </span><span class="content">Applications</span><a class="self-link" href="#applications"></a></h3>
+   <h4 class="heading settled" data-level="4.1.1" id="applications-of-bit-reverse"><span class="secno">4.1.1. </span><span class="content">Applications of <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#applications-of-bit-reverse"></a></h4>
    <p>Bit-reversal is a common operation with uses in:</p>
    <ul>
     <li data-md>
@@ -2415,7 +2426,7 @@ such as in the case of <a href="https://en.wikipedia.org/wiki/Linear_congruentia
     <li data-md>
      <p><strong>Code obfuscation</strong>: security by obscurity</p>
    </ul>
-   <h4 class="heading settled" data-level="3.1.2" id="applications-of-bit-repeat"><span class="secno">3.1.2. </span><span class="content">Applications of <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#applications-of-bit-repeat"></a></h4>
+   <h4 class="heading settled" data-level="4.1.2" id="applications-of-bit-repeat"><span class="secno">4.1.2. </span><span class="content">Applications of <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#applications-of-bit-repeat"></a></h4>
    <p>The generation of recurring bit patterns is such a fundamental operation
 that it’s hard to tie to any specific domain, but here are some use cases:</p>
    <ul>
@@ -2430,28 +2441,28 @@ that it’s hard to tie to any specific domain, but here are some use cases:</p>
     <li data-md>
      <p><strong>Error detection</strong>: known bit patterns can be introduced to spot failed transmission</p>
    </ul>
-   <h4 class="heading settled" data-level="3.1.3" id="applications-of-bit-compress-and-bit-expand"><span class="secno">3.1.3. </span><span class="content">Applications of <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#applications-of-bit-compress-and-bit-expand"></a></h4>
+   <h4 class="heading settled" data-level="4.1.3" id="applications-of-bit-compress-and-bit-expand"><span class="secno">4.1.3. </span><span class="content">Applications of <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#applications-of-bit-compress-and-bit-expand"></a></h4>
    <p>Compression and expansion are also common, with uses in:</p>
    <ul>
     <li data-md>
      <p><strong>Space-filling curves</strong>: <a href="https://en.wikipedia.org/wiki/Z-order_curve">Morton/Z-Order</a> and <a href="https://en.wikipedia.org/wiki/Hilbert_curve">Hilbert curves</a></p>
     <li data-md>
-     <p><strong>Input/output</strong>: especially for variable-length encodings, such as UTF-8 (<a href="#input-output">§ 3.2.3 UTF-8 decoding with bit_compressr</a>)</p>
+     <p><strong>Input/output</strong>: especially for variable-length encodings, such as UTF-8 (<a href="#input-output">§ 4.2.3 UTF-8 decoding with bit_compressr</a>)</p>
     <li data-md>
      <p><strong>Chess engines</strong>: for <a href="https://en.wikipedia.org/wiki/Bitboard">bitboards</a>; see <a data-link-type="biblio" href="#biblio-chessprogramming1" title="chessprogramming.org/BMI2, Applications">[ChessProgramming1]</a></p>
     <li data-md>
      <p><strong>Genomics</strong>: according to <a data-link-type="biblio" href="#biblio-arm1" title="Introduction to SVE2, Issue 02, Revision 02">[ARM1]</a></p>
    </ul>
    <p>A GitHub code search for <code class="highlight"><c- o>/</c-><c- p>(</c-><c- n>_pdep_u</c-><c- o>|</c-><c- n>_pext_u</c-><c- p>)(</c-><c- mi>32</c-><c- o>|</c-><c- mi>64</c-><c- p>)</c-><c- o>/</c-> <c- n>AND</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code> reveals ~1300 files which use the intrinsic wrappers for the x86 instructions.</p>
-   <h4 class="heading settled" data-level="3.1.4" id="applications-of-next-bit-permutation"><span class="secno">3.1.4. </span><span class="content">Applications of <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#applications-of-next-bit-permutation"></a></h4>
+   <h4 class="heading settled" data-level="4.1.4" id="applications-of-next-bit-permutation"><span class="secno">4.1.4. </span><span class="content">Applications of <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#applications-of-next-bit-permutation"></a></h4>
    <p><code class="highlight"><c- n>next_bit_permutation</c-></code> is useful for iterating over all subsets with a fixed amount of elements
 (see below for an example).</p>
    <p>Unlike algorithms such as <code class="highlight"><c- n>next_permutation</c-></code>, it can be used with no modification of the
 original range.
 Together with <code class="highlight"><c- n>prev_bit_permutation</c-></code>, it is possible to create a bidirectional view of all
 fixed-size subsets of a range.</p>
-   <h3 class="heading settled" data-level="3.2" id="use-cases"><span class="secno">3.2. </span><span class="content">Motivating examples</span><a class="self-link" href="#use-cases"></a></h3>
-   <h4 class="heading settled" data-level="3.2.1" id="implementing-countr-zero"><span class="secno">3.2.1. </span><span class="content">Implementing <code class="highlight"><c- n>countr_zero</c-></code> with <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#implementing-countr-zero"></a></h4>
+   <h3 class="heading settled" data-level="4.2" id="use-cases"><span class="secno">4.2. </span><span class="content">Motivating examples</span><a class="self-link" href="#use-cases"></a></h3>
+   <h4 class="heading settled" data-level="4.2.1" id="implementing-countr-zero"><span class="secno">4.2.1. </span><span class="content">Implementing <code class="highlight"><c- n>countr_zero</c-></code> with <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#implementing-countr-zero"></a></h4>
    <p><a data-link-type="biblio" href="#biblio-anderson1" title="Bit Twiddling Hacks">[Anderson1]</a> contains a vast amount of algorithms,
 many of which involve masks of alternating <code class="highlight"><c- mi>0</c-></code>s and <code class="highlight"><c- mi>1</c-></code>s.</p>
    <p>When written as "magic numbers" in code,
@@ -2479,7 +2490,7 @@ and to generalize these algorithms. <code class="highlight"><c- n>bit_repeat</c-
    </div>
    <p><code class="highlight"><c- n>bit_repeat</c-></code> has been an invaluable asset in the implementation of the remaining functions
 in this proposal (see <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a> for details).</p>
-   <h4 class="heading settled" data-level="3.2.2" id="interleaving-bits"><span class="secno">3.2.2. </span><span class="content">Interleaving bits with <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#interleaving-bits"></a></h4>
+   <h4 class="heading settled" data-level="4.2.2" id="interleaving-bits"><span class="secno">4.2.2. </span><span class="content">Interleaving bits with <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#interleaving-bits"></a></h4>
    <p>A common use case for expansion is interleaving bits.
 This translates Cartesian coordinates to the index on a <a href="https://en.wikipedia.org/wiki/Z-order_curve">Z-order curve</a>.
 Space filling curves are a popular technique in compression.</p>
@@ -2491,7 +2502,7 @@ Space filling curves are a popular technique in compression.</p>
              <c- o>|</c-> <c- n>bit_expandr</c-><c- p>(</c-><c- n>y</c-><c- p>,</c-> <c- n>bit_repeat</c-><c- p>(</c-><c- mb>0b01u</c-><c- p>,</c-> <c- mi>2</c-><c- p>));</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="3.2.3" id="input-output"><span class="secno">3.2.3. </span><span class="content">UTF-8 decoding with <code class="highlight"><c- n>bit_compressr</c-></code></span><a class="self-link" href="#input-output"></a></h4>
+   <h4 class="heading settled" data-level="4.2.3" id="input-output"><span class="secno">4.2.3. </span><span class="content">UTF-8 decoding with <code class="highlight"><c- n>bit_compressr</c-></code></span><a class="self-link" href="#input-output"></a></h4>
    <p><code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code> are useful in various I/O-related applications.
 They are particularly helpful for dealing with variable-length encodings,
 where "data bits" are interrupted by bits which signal continuation of the data.</p>
@@ -2508,7 +2519,7 @@ For the sake of simplicity, let’s ignore details like reaching the end of the 
 <c- p>}</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="3.2.4" id="building-operations"><span class="secno">3.2.4. </span><span class="content">Other operations based on <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#building-operations"></a></h4>
+   <h4 class="heading settled" data-level="4.2.4" id="building-operations"><span class="secno">4.2.4. </span><span class="content">Other operations based on <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#building-operations"></a></h4>
    <p>Many operations can be built on top of <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code>.
 However, direct hardware support is often needed for the proposed functions to efficiently
 implement them.
@@ -2544,7 +2555,7 @@ The point is that <code class="highlight"><c- n>bit_compress</c-></code> and <co
 <c- n>countr_one</c-><c- p>(</c-><c- n>bit_compressr</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- n>x</c-><c- p>))</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="3.2.5" id="iterating-with-next-bit-permutation"><span class="secno">3.2.5. </span><span class="content">Iterating over subsets using <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#iterating-with-next-bit-permutation"></a></h4>
+   <h4 class="heading settled" data-level="4.2.5" id="iterating-with-next-bit-permutation"><span class="secno">4.2.5. </span><span class="content">Iterating over subsets using <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#iterating-with-next-bit-permutation"></a></h4>
    <div class="example" id="example-ee444949">
     <a class="self-link" href="#example-ee444949"></a> 
 <pre class="highlight"><c- k>const</c-> <c- b>char</c-> <c- n>set</c-><c- p>[]</c-> <c- p>{</c-><c- sc>'a'</c-><c- p>,</c-> <c- sc>'b'</c-><c- p>,</c-> <c- sc>'c'</c-><c- p>,</c-> <c- sc>'d'</c-><c- p>};</c->
@@ -2561,7 +2572,7 @@ The point is that <code class="highlight"><c- n>bit_compress</c-></code> and <co
 <pre class="language-text highlight">ab ac bc ad bd cd
 </pre>
    </div>
-   <h3 class="heading settled" data-level="3.3" id="hardware-support"><span class="secno">3.3. </span><span class="content">Hardware support</span><a class="self-link" href="#hardware-support"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="hardware-support"><span class="secno">4.3. </span><span class="content">Hardware support</span><a class="self-link" href="#hardware-support"></a></h3>
    <table>
     <tbody>
      <tr>
@@ -2571,52 +2582,52 @@ The point is that <code class="highlight"><c- n>bit_compress</c-></code> and <co
       <th>RISC-V
      <tr>
       <td><code class="highlight"><c- n>bit_reverse</c-></code>
-      <td>(<a href="https://www.felixcloutier.com/x86/bswap"><code class="highlight"><c- n>BSWAP</c-></code></a>)
-      <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html"><code class="highlight"><c- n>RBIT</c-></code></a><sup>SVE2</sup>
-      <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#164-vector-register-gather-instructions"><code class="highlight"><c- n>vrgather</c-></code></a><sup>V</sup>)
+      <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb"><code class="highlight"><c- n>vpshufbitqmb</c-></code></a><sup>AVX512_BITALG</sup>, (<a href="https://www.felixcloutier.com/x86/bswap"><code class="highlight"><c- n>BSWAP</c-></code></a>)
+      <td><a href="https://docsmirror.github.io/A64/2023-06/rbit_z_p_z.html"><code class="highlight"><c- n>rbit</c-></code></a><sup>SVE2</sup>
+      <td><a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>rev8</c-></code></a><sup>Zbb</sup>+<a href="https://drive.google.com/file/d/1Thd010Eh2DqnhDHpDd3SM7Ame7KENkPw/view"><code class="highlight"><c- n>brev8</c-></code></a><sup>Zbkb</sup>,(<a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>rev8</c-></code></a><sup>Zbb</sup>)
      <tr>
       <td><code class="highlight"><c- n>bit_repeat</c-></code>
-      <td>
+      <td><a href="https://www.felixcloutier.com/x86/vpshufbitqmb"><code class="highlight"><c- n>vpshufbitqmb</c-></code></a><sup>AVX512_BITALG</sup>
       <td>
       <td>
      <tr>
       <td><code class="highlight"><c- n>next_bit_permutation</c-></code>
-      <td>(<a href="https://www.felixcloutier.com/x86/tzcnt"><code class="highlight"><c- n>TZCNT</c-></code></a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf"><code class="highlight"><c- n>BSF</c-></code></a>)
+      <td>(<a href="https://www.felixcloutier.com/x86/tzcnt"><code class="highlight"><c- n>tzcnt</c-></code></a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf"><code class="highlight"><c- n>bsf</c-></code></a>)
       <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html"><code class="highlight"><c- n>CTZ</c-></code></a>)
-      <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz"><code class="highlight"><c- n>ctz</c-></code></a><sup>B</sup>)
+      <td>(<a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>ctz</c-></code></a><sup>Zbb</sup>)
      <tr>
       <td><code class="highlight"><c- n>prev_bit_permutation</c-></code>
-      <td>(<a href="https://www.felixcloutier.com/x86/tzcnt"><code class="highlight"><c- n>TZCNT</c-></code></a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf"><code class="highlight"><c- n>BSF</c-></code></a>)
-      <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html"><code class="highlight"><c- n>CTZ</c-></code></a>)
-      <td>(<a href="https://five-embeddev.com/riscv-bitmanip/draft/bitmanip.html#insns-ctz"><code class="highlight"><c- n>ctz</c-></code></a><sup>B</sup>)
+      <td>(<a href="https://www.felixcloutier.com/x86/tzcnt"><code class="highlight"><c- n>tzcnt</c-></code></a><sup>BMI</sup>/<a href="https://www.felixcloutier.com/x86/bsf"><code class="highlight"><c- n>bsf</c-></code></a>)
+      <td>(<a href="https://docsmirror.github.io/A64/2023-06/ctz.html"><code class="highlight"><c- n>ctz</c-></code></a>)
+      <td>(<a href="https://github.com/riscv/riscv-bitmanip/"><code class="highlight"><c- n>ctz</c-></code></a><sup>Zbb</sup>)
      <tr>
       <td><code class="highlight"><c- n>bit_compressr</c-></code>
-      <td><a href="https://www.felixcloutier.com/x86/pext"><code class="highlight"><c- n>PEXT</c-></code></a><sup>BMI2</sup>
-      <td><a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html"><code class="highlight"><c- n>BEXT</c-></code></a><sup>SVE2</sup>
+      <td><a href="https://www.felixcloutier.com/x86/pext"><code class="highlight"><c- n>pext</c-></code></a><sup>BMI2</sup>
+      <td><a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html"><code class="highlight"><c- n>bext</c-></code></a><sup>SVE2</sup>
       <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#165-vector-compress-instruction"><code class="highlight"><c- n>vcompress</c-></code></a><sup>V</sup>)
      <tr>
       <td><code class="highlight"><c- n>bit_expandr</c-></code>
-      <td><a href="https://www.felixcloutier.com/x86/pdep"><code class="highlight"><c- n>PDEP</c-></code></a><sup>BMI2</sup>
-      <td><a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html"><code class="highlight"><c- n>BDEP</c-></code></a><sup>SVE2</sup>
+      <td><a href="https://www.felixcloutier.com/x86/pdep"><code class="highlight"><c- n>pdep</c-></code></a><sup>BMI2</sup>
+      <td><a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html"><code class="highlight"><c- n>bdep</c-></code></a><sup>SVE2</sup>
       <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#1651-synthesizing-vdecompress"><code class="highlight"><c- n>viota</c-></code>+<code class="highlight"><c- n>vrgather</c-></code></a><sup>V</sup>)
      <tr>
       <td><code class="highlight"><c- n>bit_compressl</c-></code>
-      <td>(<a href="https://www.felixcloutier.com/x86/pext"><code class="highlight"><c- n>PEXT</c-></code></a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt"><code class="highlight"><c- n>POPCNT</c-></code></a><sup>ABM</sup>)
-      <td><a href="https://dougallj.github.io/asil/doc/bgrp_z_zz_64.html"><code class="highlight"><c- n>BGRP</c-></code></a><sup>SVE2</sup>, (<a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html"><code class="highlight"><c- n>BEXT</c-></code></a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html"><code class="highlight"><c- n>CNT</c-></code></a><sup>SVE</sup>)
+      <td>(<a href="https://www.felixcloutier.com/x86/pext"><code class="highlight"><c- n>pext</c-></code></a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt"><code class="highlight"><c- n>popcnt</c-></code></a><sup>ABM</sup>)
+      <td><a href="https://dougallj.github.io/asil/doc/bgrp_z_zz_64.html"><code class="highlight"><c- n>bgrp</c-></code></a><sup>SVE2</sup>, (<a href="https://dougallj.github.io/asil/doc/bext_z_zz_64.html"><code class="highlight"><c- n>bext</c-></code></a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html"><code class="highlight"><c- n>cnt</c-></code></a><sup>SVE</sup>)
       <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#165-vector-compress-instruction"><code class="highlight"><c- n>vcompress</c-></code></a><sup>V</sup>)
      <tr>
       <td><code class="highlight"><c- n>bit_expandl</c-></code>
-      <td>(<a href="https://www.felixcloutier.com/x86/pdep"><code class="highlight"><c- n>PDEP</c-></code></a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt"><code class="highlight"><c- n>POPCNT</c-></code></a><sup>ABM</sup>)
-      <td>(<a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html"><code class="highlight"><c- n>BDEP</c-></code></a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html"><code class="highlight"><c- n>CNT</c-></code></a><sup>SVE</sup>)
+      <td>(<a href="https://www.felixcloutier.com/x86/pdep"><code class="highlight"><c- n>pdep</c-></code></a><sup>BMI2</sup>+<a href="https://www.felixcloutier.com/x86/popcnt"><code class="highlight"><c- n>popcnt</c-></code></a><sup>ABM</sup>)
+      <td>(<a href="https://dougallj.github.io/asil/doc/bdep_z_zz_64.html"><code class="highlight"><c- n>bdep</c-></code></a><sup>SVE2</sup>+<a href="https://dougallj.github.io/asil/doc/cnt_z_p_z_64.html"><code class="highlight"><c- n>cnt</c-></code></a><sup>SVE</sup>)
       <td>(<a href="https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#1651-synthesizing-vdecompress"><code class="highlight"><c- n>viota</c-></code>+<code class="highlight"><c- n>vrgather</c-></code></a><sup>V</sup>)
    </table>
    <p>(Parenthesized) entries signal that the instruction does not directly implement the function,
 but greatly assists in its implementation.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> The RISC-V instructions marked V are all vector instructions.
-      It is possible to turn each bit into a vector element, perform the wanted operation,
-      and compress back into a bit-vector.</p>
-   <h4 class="heading settled" data-level="3.3.1" id="hardware-support-reverse"><span class="secno">3.3.1. </span><span class="content">Support for <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#hardware-support-reverse"></a></h4>
-   <p>This operation is directly implemented in ARM through <code class="highlight"><c- n>RBIT</c-></code>.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The AVX-512 <code class="highlight"><c- n>vpshufbitqmb</c-></code> instruction can implement any bit permutation in the mathematical sense, and more.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The RISC-V <code class="highlight"><c- n>brev8</c-></code> instruction can also be found under the name <code class="highlight"><c- n>rev</c-><c- p>.</c-><c- n>b</c-></code>.
+      There appears to have been a name change in 2022.</p>
+   <h4 class="heading settled" data-level="4.3.1" id="hardware-support-reverse"><span class="secno">4.3.1. </span><span class="content">Support for <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#hardware-support-reverse"></a></h4>
+   <p>This operation is directly implemented in ARM through <code class="highlight"><c- n>rbit</c-></code>.</p>
    <p>Any architecture with support for <code class="highlight"><c- n>byteswap</c-></code> (such as x86 with <code class="highlight"><c- n>BSWAP</c-></code>)
 also supports bit-reversal in part. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> presents an O(log n) algorithm which operates by swapping lower and upper <code class="highlight"><c- n>N</c-> <c- o>/</c-> <c- mi>2</c-></code>, ..., <code class="highlight"><c- mi>16</c-></code>, <code class="highlight"><c- mi>8</c-></code>, <code class="highlight"><c- mi>4</c-></code>, <code class="highlight"><c- mi>2</c-></code>, and <code class="highlight"><c- mi>1</c-></code> bits in parallel.
 Byte-swapping implements these individual swaps up to 8 bits, requiring only three more
@@ -2629,22 +2640,30 @@ parallel swaps in software:</p>
 </pre>
    <p>It is worth noting that clang provides a cross-platform family of intrinsics. <a href="https://clang.llvm.org/docs/LanguageExtensions.html#builtin-bitreverse"><code class="highlight"><c- n>__builtin_bitreverse</c-></code></a> uses byte-swapping or bit-reversal instructions if possible.</p>
    <p>Such an intrinsic has been requested from GCC users a number of times in <a data-link-type="biblio" href="#biblio-gnu1" title="Bug 50481 - builtin to reverse the bit order">[GNU1]</a>.</p>
-   <h4 class="heading settled" data-level="3.3.2" id="hardware-support-bit-repeat"><span class="secno">3.3.2. </span><span class="content">Support for <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#hardware-support-bit-repeat"></a></h4>
-   <p>To my knowledge, <code class="highlight"><c- n>bit_repeat</c-></code> has no direct support in the general case.
-However, for specific cases like <code class="highlight"><c- n>bit_repeat</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mi>8</c-><c- p>)</c-></code>,
-SIMD permutation/duplication/gather/broadcast instructions can be used.</p>
-   <p>The primary use of <code class="highlight"><c- n>bit_repeat</c-></code> is to express repeating bit patterns without magic numbers,
+   <h4 class="heading settled" data-level="4.3.2" id="hardware-support-bit-repeat"><span class="secno">4.3.2. </span><span class="content">Support for <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#hardware-support-bit-repeat"></a></h4>
+   <p>Firstly, note that for the pattern length, there are only up to <code class="highlight"><c- n>N</c-></code> relevant cases,
+where <code class="highlight"><c- n>N</c-></code> is the operand width in bits.
+It is feasible to <code class="highlight"><c- k>switch</c-></code> between these cases, where the length is constant in each case.</p>
+   <p>While the AVX-512 instruction <code class="highlight"><c- n>VPSHUFBITQMB</c-></code> can be used for <em>all</em> cases, this is not the ideal
+solution for most cases.
+For very low or very great lengths, a naive solution is sufficient (and even optimal),
+where we simply use <code class="highlight"><c- o>&lt;&lt;</c-></code> and <code class="highlight"><c- o>|</c-></code> to duplicate the pattern.
+What actually matters is how often the pattern is repeated, i.e. <code class="highlight"><c- n>N</c-> <c- o>/</c-> <c- n>length</c-></code>.</p>
+   <p>Specific cases like <code class="highlight"><c- n>bit_repeat</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mi>8</c-><c- p>)</c-></code>, <code class="highlight"><c- n>bit_repeat</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mi>16</c-><c- p>)</c-></code> can be implemented using
+permutation/duplication/gather/broadcast instructions.</p>
+   <p>However, note that the primary use of <code class="highlight"><c- n>bit_repeat</c-></code> is to express repeating bit patterns without magic numbers,
 i.e. to improve code quality.
-It is worth noting that the reference implementation (<a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>) requires only O(log N)
+Often, both the pattern and the length are known at compile-time, making hardware support less relevant.
+Even without hardware support, the reference implementation <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a> requires only O(log N)
 fundamental bitwise operations.</p>
-   <h4 class="heading settled" data-level="3.3.3" id="hardware-support-next-bit-permutation"><span class="secno">3.3.3. </span><span class="content">Support for <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#hardware-support-next-bit-permutation"></a></h4>
+   <h4 class="heading settled" data-level="4.3.3" id="hardware-support-next-bit-permutation"><span class="secno">4.3.3. </span><span class="content">Support for <code class="highlight"><c- n>next_bit_permutation</c-></code></span><a class="self-link" href="#hardware-support-next-bit-permutation"></a></h4>
    <p>The next permutation can be efficiently obtained if the platform has a "count trailing zeros"
 instruction.
 Integer division can also be used as a fallback, although software computation of trailing zeros
 may be faster than integer division.</p>
    <p>Both options are shown in <a data-link-type="biblio" href="#biblio-anderson1" title="Bit Twiddling Hacks">[Anderson1]</a>, and one is implemented in <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>.</p>
    <p><code class="highlight"><c- n>prev_bit_permutation</c-></code> can be accelerated using the same operation.</p>
-   <h4 class="heading settled" data-level="3.3.4" id="hardware-support-compress-expand"><span class="secno">3.3.4. </span><span class="content">Support for <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#hardware-support-compress-expand"></a></h4>
+   <h4 class="heading settled" data-level="4.3.4" id="hardware-support-compress-expand"><span class="secno">4.3.4. </span><span class="content">Support for <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#hardware-support-compress-expand"></a></h4>
    <p>Starting with Haswell (2013), Intel CPUs directly implement compression and expansion with
 with <code class="highlight"><c- n>PEXT</c-></code> and <code class="highlight"><c- n>PDEP</c-></code> respectively.
 AMD CPUs starting with Zen 3 implement <code class="highlight"><c- n>PDEP</c-></code> and <code class="highlight"><c- n>PEXT</c-></code> with 3 cycles
@@ -2709,17 +2728,17 @@ even if hardware does not directly implement these operations.</p>
     <p>Knowing the implementation of <code class="highlight"><c- n>bit_compressr</c-></code>, this feels like dark magic.
 This is an optimizing compiler at its finest hour.</p>
    </div>
-   <h2 class="heading settled" data-level="4" id="impact-on-existing-code"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact-on-existing-code"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
    <p>This proposal is purely a standard library expansion.
 No existing code is affected.</p>
-   <h2 class="heading settled" data-level="5" id="design"><span class="secno">5. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
+   <h2 class="heading settled" data-level="6" id="design"><span class="secno">6. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
    <p>The design choices in this paper are based on <a data-link-type="biblio" href="#biblio-p0553r4" title="Bit operations">[P0553R4]</a>, wherever applicable.</p>
-   <h3 class="heading settled" data-level="5.1" id="bit-repeat-signature"><span class="secno">5.1. </span><span class="content">Signature of <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#bit-repeat-signature"></a></h3>
+   <h3 class="heading settled" data-level="6.1" id="bit-repeat-signature"><span class="secno">6.1. </span><span class="content">Signature of <code class="highlight"><c- n>bit_repeat</c-></code></span><a class="self-link" href="#bit-repeat-signature"></a></h3>
    <p><code class="highlight"><c- n>bit_repeat</c-></code> follows the "use <code class="highlight"><c- b>int</c-></code> if possible" rule mentioned in <a data-link-type="biblio" href="#biblio-p0553r4" title="Bit operations">[P0553R4]</a>.
 Other functions such as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotl</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>rotr</c-></code> also accept an <code class="highlight"><c- b>int</c-></code>.</p>
    <p>It is also the only function not marked <code class="highlight"><c- k>noexcept</c-></code>.
 It does not throw, but it is not <code class="highlight"><c- k>noexcept</c-></code> due to its narrow contract (Lakos rule).</p>
-   <h3 class="heading settled" data-level="5.2" id="naming-compress-expand"><span class="secno">5.2. </span><span class="content">Why the names <em>compress</em> and <em>expand</em>?</span><a class="self-link" href="#naming-compress-expand"></a></h3>
+   <h3 class="heading settled" data-level="6.2" id="naming-compress-expand"><span class="secno">6.2. </span><span class="content">Why the names <em>compress</em> and <em>expand</em>?</span><a class="self-link" href="#naming-compress-expand"></a></h3>
    <p>The use of <code class="highlight"><c- n>compress</c-></code> and <code class="highlight"><c- n>expand</c-></code> is consistent with the mask-based permutations for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>simd</c-></code> proposed in <a data-link-type="biblio" href="#biblio-p2664r6" title="Extend std::simd with permutation API">[P2664R6]</a>.</p>
    <p>Furthermore, there are multiple synonymous sets of terminology:</p>
    <ol>
@@ -2744,8 +2763,8 @@ making it virtually useless for keeping the operations apart. <code class="highl
    <p>Further design choices are consistent with <a data-link-type="biblio" href="#biblio-p0553r4" title="Bit operations">[P0553R4]</a>.
 The abbreviations <code class="highlight"><c- n>l</c-></code> and <code class="highlight"><c- n>r</c-></code> for left/right are consistent with <code class="highlight"><c- n>rotl</c-></code>/<code class="highlight"><c- n>rotr</c-></code>.
 The prefix <code class="highlight"><c- n>bit_</c-></code> is consistent with <code class="highlight"><c- n>bit_floor</c-></code> and <code class="highlight"><c- n>bit_ceil</c-></code>.</p>
-   <h3 class="heading settled" data-level="5.3" id="further-generalization"><span class="secno">5.3. </span><span class="content">Why the lack of generalization?</span><a class="self-link" href="#further-generalization"></a></h3>
-   <h4 class="heading settled" data-level="5.3.1" id="generalized-compress-expand"><span class="secno">5.3.1. </span><span class="content">No generalized <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#generalized-compress-expand"></a></h4>
+   <h3 class="heading settled" data-level="6.3" id="further-generalization"><span class="secno">6.3. </span><span class="content">Why the lack of generalization?</span><a class="self-link" href="#further-generalization"></a></h3>
+   <h4 class="heading settled" data-level="6.3.1" id="generalized-compress-expand"><span class="secno">6.3.1. </span><span class="content">No generalized <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code></span><a class="self-link" href="#generalized-compress-expand"></a></h4>
    <p><a data-link-type="biblio" href="#biblio-n3864" title="A constexpr bitwise operations library for C++">[N3864]</a> originally suggested much more general versions of compression and expansion,
 which support:</p>
    <ol>
@@ -2775,7 +2794,7 @@ Adding additional parameters would likely require a narrow contract.</p>
 and from the perspective of language users.
 It is unclear whether this added complexity is worth it in this case.</p>
    </ol>
-   <h4 class="heading settled" data-level="5.3.2" id="generalized-bit-reverse"><span class="secno">5.3.2. </span><span class="content">No generalized <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#generalized-bit-reverse"></a></h4>
+   <h4 class="heading settled" data-level="6.3.2" id="generalized-bit-reverse"><span class="secno">6.3.2. </span><span class="content">No generalized <code class="highlight"><c- n>bit_reverse</c-></code></span><a class="self-link" href="#generalized-bit-reverse"></a></h4>
    <p>Bit reversal can also be generalized to work with any group size:</p>
 <pre class="language-cpp highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
 <c- n>T</c-> <c- n>bit_reverse</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- b>int</c-> <c- n>group_size</c-> <c- o>=</c-> <c- mi>1</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>(</c->false<c- p>);</c->
@@ -2785,7 +2804,7 @@ is equivalent to <code class="highlight"><c- n>bit_reverse</c-><c- p>(</c-><c- n
    <p>However, this general version is much less used, not as consistently supported in
 hardware, and has a narrow contract. <code class="highlight"><c- n>group_size</c-></code> must be a nonzero factor of <code class="highlight"><c- n>x</c-></code> for this operation to be meaningful.</p>
    <p>Therefore, a generalized bit-reversal is not proposed in this paper.</p>
-   <h3 class="heading settled" data-level="5.4" id="unusual-signature"><span class="secno">5.4. </span><span class="content">Why does the signature of <code class="highlight"><c- n>bit_compress</c-></code> require two same <code class="highlight"><c- n>T</c-></code>s?</span><a class="self-link" href="#unusual-signature"></a></h3>
+   <h3 class="heading settled" data-level="6.4" id="unusual-signature"><span class="secno">6.4. </span><span class="content">Why does the signature of <code class="highlight"><c- n>bit_compress</c-></code> require two same <code class="highlight"><c- n>T</c-></code>s?</span><a class="self-link" href="#unusual-signature"></a></h3>
    <p>Initially, I went through a number of different signatures.</p>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- p>,</c-> <c- n>unsigned_integral</c-> <c- n>X</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_compressr</c-><c- p>(</c-><c- n>X</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
@@ -2808,12 +2827,12 @@ Therefore, I have settled on the very simple signature:</p>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_compressr</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
-   <h2 class="heading settled" data-level="6" id="possible-implementation"><span class="secno">6. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
-   <h3 class="heading settled" data-level="6.1" id="reference-implementation"><span class="secno">6.1. </span><span class="content">Reference implementation</span><a class="self-link" href="#reference-implementation"></a></h3>
+   <h2 class="heading settled" data-level="7" id="possible-implementation"><span class="secno">7. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
+   <h3 class="heading settled" data-level="7.1" id="reference-implementation"><span class="secno">7.1. </span><span class="content">Reference implementation</span><a class="self-link" href="#reference-implementation"></a></h3>
    <p>All proposed functions have been implemented in <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>.
 This reference implementation is compatible with all three major compilers,
 and leverages hardware support from ARM and x86_64 where possible.</p>
-   <h3 class="heading settled" data-level="6.2" id="contemporary-implementations"><span class="secno">6.2. </span><span class="content">Other implementations</span><a class="self-link" href="#contemporary-implementations"></a></h3>
+   <h3 class="heading settled" data-level="7.2" id="contemporary-implementations"><span class="secno">7.2. </span><span class="content">Other implementations</span><a class="self-link" href="#contemporary-implementations"></a></h3>
    <p><a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, 2nd Edition">[Warren1]</a> presents algorithms which are the basis for <a data-link-type="biblio" href="#biblio-schultke1" title="C++26 Bit Permutations">[Schultke1]</a>.</p>
    <ul>
     <li data-md>
@@ -2829,15 +2848,15 @@ and leverages hardware support from ARM and x86_64 where possible.</p>
    <p><a data-link-type="biblio" href="#biblio-zp7" title="Zach&apos;s Peppy Parallel-Prefix-Popcountin&apos; PEXT/PDEP Polyfill">[Zp7]</a> offers fast software implementations for PEXT and PDEP, optimized for x86_64.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow1" title="What is a fast fallback algorithm which emulates PDEP and PEXT in software?">[StackOverflow1]</a> contains discussion of various possible software implementations
 of <code class="highlight"><c- n>bit_compressr</c-></code> and <code class="highlight"><c- n>bit_expandr</c-></code>.</p>
-   <h2 class="heading settled" data-level="7" id="proposed-wording"><span class="secno">7. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="proposed-wording"><span class="secno">8. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
-   <h3 class="heading settled" data-level="7.1" id="proposed-feature-testing"><span class="secno">7.1. </span><span class="content">Feature-testing</span><a class="self-link" href="#proposed-feature-testing"></a></h3>
+   <h3 class="heading settled" data-level="8.1" id="proposed-feature-testing"><span class="secno">8.1. </span><span class="content">Feature-testing</span><a class="self-link" href="#proposed-feature-testing"></a></h3>
    <p>In subclause 17.3.2 [version.syn] paragraph 2, update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><code><c- cp>#define __cpp_lib_bitops                    </c-><del><c- cp>201907L</c-></del><ins><c- cp>20XXXXL</c-></ins><c- cp> </c-><c- c1>// freestanding, also in &lt;bit></c->
 </code></pre>
    </blockquote>
-   <h3 class="heading settled" data-level="7.2" id="proposed-header-synopsis"><span class="secno">7.2. </span><span class="content">Header synopsis</span><a class="self-link" href="#proposed-header-synopsis"></a></h3>
+   <h3 class="heading settled" data-level="8.2" id="proposed-header-synopsis"><span class="secno">8.2. </span><span class="content">Header synopsis</span><a class="self-link" href="#proposed-header-synopsis"></a></h3>
    <p>In subclause 22.15.2 [bit.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><code><ins><c- o>+</c-> <c- c1>// 22.15.X, permutations</c->
@@ -2859,7 +2878,7 @@ of <code class="highlight"><c- n>bit_compressr</c-></code> and <code class="high
 <c- o>+</c->   <c- k>constexpr</c-> <c- n>T</c-> <c- n>bit_expandl</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>,</c-> <c- n>T</c-> <c- n>m</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
 </ins></code></pre>
    </blockquote>
-   <h3 class="heading settled" data-level="7.3" id="proposed-new-subclause"><span class="secno">7.3. </span><span class="content">New subclause</span><a class="self-link" href="#proposed-new-subclause"></a></h3>
+   <h3 class="heading settled" data-level="8.3" id="proposed-new-subclause"><span class="secno">8.3. </span><span class="content">New subclause</span><a class="self-link" href="#proposed-new-subclause"></a></h3>
    <p>In subclause 22.15 [bit], add the following subclause:</p>
    <blockquote>
     <p> <strong>22.15.X Permutation [bit.permute]</strong> </p>
@@ -2930,7 +2949,7 @@ of <code class="highlight"><c- n>bit_compressr</c-></code> and <code class="high
    <p class="note" role="note"><span class="marker">Note:</span> I would have preferred a less mathematical approach to defining these functions.
       However, it is too difficult to precisely define <code class="highlight"><c- n>bit_compress</c-></code> and <code class="highlight"><c- n>bit_expand</c-></code> without
       visual aids, pseudo-code, or other crutches.</p>
-   <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <h2 class="heading settled" data-level="9" id="acknowledgements"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I greatly appreciate the assistance of Stack Overflow users in assisting me with research for
 this proposal. 
 I especially thank Peter Cordes for his tireless and selfess dedication to sharing knowledge.</p>
