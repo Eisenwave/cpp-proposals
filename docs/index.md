@@ -21,3 +21,7 @@ Author: Jan Schultke
 
 - [Latest](constexpr-uncaught-exceptions.html)
 - [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
+
+## NP: Carry-less product: `std::clmul`
+
+- [Latest](clmul.html)

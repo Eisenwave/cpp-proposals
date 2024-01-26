@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: Carry-less multiply: `std::clmul`
+Title: Carry-less product: `std::clmul`
 Shortname: Pxxxx
 Revision: 0
 Status: NP
