@@ -1,0 +1,330 @@
+<pre class='metadata'>
+Title: Carry-less multiply: `std::clmul`
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-01-26
+Group: WG21
+Audience: SG6, LEWGI, LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/clmul.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.bs)
+Markup Shorthands: markdown on
+Abstract: This proposal adds carry-less multiplication functions to the standard library.
+          This operation is also known as GF(2) polynomial multiplication. 
+</pre>
+
+
+# Introduction # {#introduction}
+
+Carry-less multiplication is a simple numerical operation on unsigned integers.
+It can be a seen as a regular multiplication,
+but with all carry-bits being discarded.
+In other words, `xor` is being used as a reduction instead of `+`.
+
+It is also known as "XOR multiplication" and "polynomial multiplication".
+The latter name is used because mathematically, it is equivalent to performing a multiplication of
+two polynomials in GF(2), where each bit is a coefficient.
+
+This proposal adds a `std::clmul` function to the bit manipulation library in `<bit>`:
+```cpp
+template<unsigned_integral T, unsigned_integral U> // constraint is exposition-only
+constexpr common_type_t<T, U> clmul(T x, U y) noexcept;
+```
+
+# Motivation # {#motivation}
+
+Carry-less multiplication is an important operation in a number of use cases:
+
+- **CRC Computation:** While cyclic redundancy checks can theretically be performed with a finite
+    field of any length, in practice,
+    <a href="https://en.wikipedia.org/wiki/GF(2)">GF(2)&lsqb;X&rsqb;</a>,
+    the *polynomial ring* over the *Golois field* with two elements is used.
+    Polynomial addition in this ring can be implemented via `xor`, and multiplication via `clmul`,
+    which makes cyclic redundancy checks considerably faster.
+
+- **Cryptography:** `clmul` may be used to implement AES-GCM.
+    [[Intel1]] describes this process in great detail and motivates hardware support for
+    carry-less multiplication via the `pclmulqdq` instruction.
+
+- **Bit manipulation:** `clmul` performs a large amount of `<<` and `xor` operations in parallel.
+    This is utilized in the reference implementation [[Schultke1]] of `std::bit_compressr`,
+    proposed in [[P3104]].
+    Specifically, the form `clmul(x, -1)` computes the bitwise inclusive parity for each bit of `x`
+    and the bits to its right.
+
+Carry-less multiplication is of such great utility that there is widespread hardware support,
+some of it dating back more than a decade.
+
+
+# Possible implementation # {#possible-implementation}
+
+A branchless naive implementation looks as follows:
+```cpp
+template<unsigned_integral T, unsigned_integral U>
+constexpr common_type_t<T, U> clmul(T x, U y) noexcept
+{
+    using Common = common_type_t<T, U>;
+    Common result = 0;
+    for (int i = 0; i < numeric_limits<Common>::digits; ++i) {
+        result ^= (Common{x} << i) * ((Common{y} >> i) & 1);
+    }
+    return result;
+}
+```
+
+## Hardware support ## {#hardware-support}
+
+<style>
+th, td, table {
+    border: 1px solid var(--text);
+}
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+table td:nth-child(10n-9), th {
+    font-weight: bold;
+    background-color: color-mix(in srgb, var(--text) 5%, transparent);
+}
+</style>
+
+The implementation difficulty lies mostly in utilizing available hardware instructions,
+not in the naive fallback implementation.
+
+In the following table, let `uN` denote `N`-bit unsigned integer operands.
+
+<table>
+<tr>
+    <th>Operation</th><th>x86_64</th><th>ARM</th><th>RISC-V</th>
+</tr>
+
+<tr>
+    <td><code highlight="text">clmul u64 -> u128</code></td>
+    <td>`pclmulqdq`<sup>PCLMULQDQ</sup></td>
+    <td>`pmull`+`pmull2`<sup>Neon</sup></td>
+    <td></td>
+</tr>
+
+<tr>
+    <td><code highlight="text">clmul u64 -> u64</code></td>
+    <td></td>
+    <td>`pmull`<sup>Neon</sup></td>
+    <td>`clmul`+`clmulh`<sup>Zbc, Zbkc</sup></td>
+</tr>
+
+<tr>
+    <td><code highlight="text">clmul u32 -> u64</code></td>
+    <td></td>
+    <td></td>
+    <td>`clmul`<sup>Zbc, Zbkc</sup></td>
+</tr>
+
+<tr>
+    <td><code highlight="text">clmul u8x8 -> u16x8</code></td>
+    <td></td>
+    <td>`pmull`<sup>Neon</sup></td>
+    <td></td>
+</tr>
+<tr>
+    <td><code highlight="text">clmul u8x8 -> u8x8</code></td>
+    <td></td>
+    <td>`pmul`<sup>Neon</sup></td>
+    <td></td>
+</tr>
+
+</table>
+
+<div class="example">
+A limited x86_64 implementation of `clmul` may look as follows:
+```cpp
+uint64_t clmul(uint64_t x, uint64_t y)  {
+    __m128i x_128 = _mm_set_epi64x(0, x);
+    __m128i neg1_128 = _mm_set_epi64x(0, y);
+    __m128i result_128 = _mm_clmulepi64_si128(x_128, neg1_128, 0);
+    return static_cast<uint64_t>(_mm_extract_epi64(result_128, 0));
+}
+```
+</div>
+
+
+
+
+# Design Considerations # {#design-considerations}
+
+## Naming ## {#naming}
+
+The name `clmul` was chosen because it does not carry a domain-specific connotation.
+`clmul` is often, but not always used for CRC computation or cryptography in Galois counter mode.
+Outside these domains, such as in pure bit-manipulation, this interpretation makes no sense.
+
+Ultimately, carry-less multiplication is a fundamental operation on integers like multiplication,
+and the interpretation of the bits as coefficients in a GF(2)\[X] polynomial is domain-specific.
+Similarly, `std::accumulate` is not called `std::sum` despite its predominant use for computing
+the sum of a range.
+
+### Argumentum ad populum ### {#argumentum-ad-populum}
+
+While the consensus is not unanimous,
+
+- Intel refers to `PCLMULQDQ` As "Carry-Less Multiplication Quadword" in its manual; see [[Intel2]]
+- RISC-V refers to `clmul` as carry-less multiplication, and this is obvious from the mnemonic
+- The Wikipedia article for this operation is titled "Carry-less product" [[Wikipedia1]]
+
+## Permitting promotion ## {#permitting-promotion}
+
+`common_type_t<T, U>` is used as the return type.
+Therefore, the wider of the two types may be returned, and unbeknownst to the developer,
+`clmul` is performed with a wider range of operands than anticipated.
+
+This is not any more of an issue than for other fundamental operations.
+Intuitively, carry-less multiplication should behave similarly to regular multiplication.
+However, I don't feel strongly on this issue, and it would be unusual for the `<bit>` header.
+
+Issue: **Feedback required:** Should the signature be
+       `common_type_t<T, U>(T, U)`, or simply `T(T, T)`? 
+
+## Widening operations ## {#widening-operations}
+
+[[P3018R0]] proposes functions for widening addition, multiplication, and other operations.
+Due to the excellent hardware support for widening carry-less multiplication,
+`clmul` is a strong candidate for a <i>`clmul_wide`</i> variant.
+
+Issue: **Feedback required:** Should work into a widening variant of `clmul` be pursued?
+
+## Choice of header ## {#choice-of-header}
+
+Currently, `<bit>` seems like a more appropriate candidate than `<cmath>`.
+However, [[P3018R0]] proposes a new `<integer>` header which may be a more suitable candidate.
+
+Issue: **Feedback required:** Should the proposed function be located in `<bit>`?
+
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: none;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]].
+
+Update subclause 17.3.2 [version.syn], paragraph 2 as follows:
+
+<blockquote>
+<pre>
+<ins>#define __cpp_lib_clmul 20XXXXL</ins>
+#define __cpp_lib_bitops <del>201411L</del><ins>20XXXXL</ins>
+</pre>
+</blockquote>
+
+In subclause 22.15.2 [bit.syn], update the synopsis as follows:
+
+<blockquote>
+<pre><ins>
+// 22.15.X, carry-less product
+template&lt;class T, class U&gt;
+   constexpr common_type_t&lt;T, U&gt; clmul(T x, U y) noexcept;
+</ins></pre>
+</blockquote>
+
+In subclause 22.15 [bit], add a new subclause:
+
+<blockquote>
+<p>
+    <b>22.15.X Carry-less product [bit.clmul]</b>
+</p>
+
+<p>
+    <pre>
+template&lt;class T, class U&gt;
+   constexpr common_type_t&lt;T, U&gt; clmul(T x, U y) noexcept;</pre>
+</p>
+<p class="indent">
+    1 Let *N* denote `numeric_limits<common_type_t<T, U>>::digits`.
+    Let &oplus; denote the exclusive bitwise OR operation ([expr.xor]).
+    Let *y*<sub>*n*</sub>
+    denote the *n*-th least significant bit of `y`, so that `y` equals
+    <span title="\sum_{n=0}^{N-1}{y_n 2^n}">
+        <svg alt="\sum_{n=0}^{N-1}{y_n 2^n}" xmlns="http://www.w3.org/2000/svg" width="67.016px" height="53.920px" viewBox="0 -1733 3702.8 2978.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-26-TEX-LO-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path id="MJX-26-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-26-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-26-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-26-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-26-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-26-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-26-TEX-I-1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-26-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(43.8,0)"><use data-c="2211" xlink:href="#MJX-26-TEX-LO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1087.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-26-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-26-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-26-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-26-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-26-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-26-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D466" xlink:href="#MJX-26-TEX-I-1D466"></use></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-26-TEX-I-1D45B"></use></g></g><g data-mml-node="msup" transform="translate(997.3,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-26-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(533,413) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-26-TEX-I-1D45B"></use></g></g></g></g></g></svg>
+    </span>
+</p>
+<p class="indent">
+    2 *Constraints:* `T` and `U` are unsigned integer types ([basic.fundamental]).
+</p>
+<p class="indent">
+    3 *Returns:*
+    <span title="\bigoplus_{n=0}^{N-1}{x y_n 2^n}">
+        <svg title="\bigoplus_{n=0}^{N-1}{x y_n 2^n}" xmlns="http://www.w3.org/2000/svg" width="77.368px" height="53.880px" viewBox="0 -1732 4274.8 2976.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-23-TEX-LO-2A01" d="M668 944Q697 949 744 949Q803 949 814 948Q916 937 1006 902T1154 826T1262 730T1336 638T1380 563Q1454 415 1454 250Q1454 113 1402 -14T1258 -238T1036 -391T755 -449Q608 -449 477 -392T255 -240T110 -16T56 250Q56 387 105 510T239 723T434 871T668 944ZM706 299V850H704Q519 832 386 725T198 476Q181 433 169 379T156 300Q156 299 431 299H706ZM1116 732Q1054 778 982 807T871 842T810 849L804 850V299H1079Q1354 299 1354 300Q1354 311 1352 329T1336 402T1299 506T1228 620T1116 732ZM706 -350V201H431Q156 201 156 200Q156 189 158 171T174 98T211 -6T282 -120T395 -232Q428 -257 464 -277T527 -308T587 -328T636 -339T678 -346T706 -350ZM1354 200Q1354 201 1079 201H804V-350Q808 -349 838 -345T887 -338T940 -323T1010 -295Q1038 -282 1067 -265T1144 -208T1229 -121T1301 0T1349 158Q1354 188 1354 200Z"></path><path id="MJX-23-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-23-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-23-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-23-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-23-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-23-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-23-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-23-TEX-I-1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-23-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(10.3,0)"><use data-c="2A01" xlink:href="#MJX-23-TEX-LO-2A01"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1086.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-23-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-23-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-23-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1149) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-23-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-23-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-23-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-23-TEX-I-1D465"></use></g><g data-mml-node="msub" transform="translate(572,0)"><g data-mml-node="mi"><use data-c="1D466" xlink:href="#MJX-23-TEX-I-1D466"></use></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-23-TEX-I-1D45B"></use></g></g><g data-mml-node="msup" transform="translate(1569.3,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-23-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(533,413) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-23-TEX-I-1D45B"></use></g></g></g></g></g></svg>
+    </span>
+    modulo 2<sup>*N*</sup>.
+    <br/>[*Note*: `x * y` equals
+    <span title="\sum_{n=0}^{N-1}{x y_n 2^n}">
+        <svg alt="\sum_{n=0}^{N-1}{x y_n 2^n}" xmlns="http://www.w3.org/2000/svg" width="77.368px" height="53.920px" viewBox="0 -1733 4274.8 2978.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-30-TEX-LO-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path id="MJX-30-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-30-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-30-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-30-TEX-I-1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path id="MJX-30-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-30-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-30-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-30-TEX-I-1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-30-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="munderover"><g data-mml-node="mo" transform="translate(43.8,0)"><use data-c="2211" xlink:href="#MJX-30-TEX-LO-2211"></use></g><g data-mml-node="TeXAtom" transform="translate(101.8,-1087.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-30-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="3D" xlink:href="#MJX-30-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1378,0)"><use data-c="30" xlink:href="#MJX-30-TEX-N-30"></use></g></g><g data-mml-node="TeXAtom" transform="translate(0,1150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D441" xlink:href="#MJX-30-TEX-I-1D441"></use></g><g data-mml-node="mo" transform="translate(888,0)"><use data-c="2212" xlink:href="#MJX-30-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(1666,0)"><use data-c="31" xlink:href="#MJX-30-TEX-N-31"></use></g></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1698.3,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-30-TEX-I-1D465"></use></g><g data-mml-node="msub" transform="translate(572,0)"><g data-mml-node="mi"><use data-c="1D466" xlink:href="#MJX-30-TEX-I-1D466"></use></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-30-TEX-I-1D45B"></use></g></g><g data-mml-node="msup" transform="translate(1569.3,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-30-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(533,413) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-30-TEX-I-1D45B"></use></g></g></g></g></g></svg>
+    </span>
+    modulo 2<sup>*N*</sup>.
+    &mdash; *end note*]
+</p>
+
+
+</blockquote>
+
+
+<pre class=biblio>
+{
+    "Intel1": {
+        "authors": ["Shay Gueron", "Michael E. Kounavis"],
+        "title": "Intel® Carry-Less Multiplication Instruction and its Usage for Computing the GCM Mode",
+        "href": "https://www.intel.com/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20.pdf",
+        "publisher": "Intel Corporation"
+    },
+    "Intel2": {
+        "authors": ["Intel Corporation"],
+        "title": " Intel® 64 and IA-32 Architectures Software Developer's Manual",
+        "href": "https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4",
+        "publisher": "Intel Corporation"
+    },
+    "Schultke1": {
+        "authors": ["Jan Schultke"],
+        "title": "C++26 Bit permutations reference implementation",
+        "href": "https://github.com/Eisenwave/cxx26-bit-permutations",
+        "publisher": "GitHub"
+    },
+    "P3104": {
+        "authors": ["Jan Schultke"],
+        "title": "Bit permutations",
+        "href": "https://eisenwave.github.io/cpp-proposals/bit-permutations.html",
+        "publisher": "GitHub"
+    },
+    "P3018R0": {
+        "authors": ["Andreas Weis"],
+        "title": "Low-Level Integer Arithmetic",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3018r0.pdf",
+        "publisher": "WG21"
+    },
+    "Wikipedia1": {
+        "authors": ["Wikipedia community"],
+        "title": "Carry-less product",
+        "href": "https://en.wikipedia.org/wiki/Carry-less_product",
+        "publisher": "Wikimedia Foundation"
+    }
+}
+</pre>
