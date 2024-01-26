@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="00c0acab05bee4238b9450442722df4f38211fda" name="revision">
+  <meta content="d3f71664c0fbbe9ad1d701b57e5d7ef4670a4b3b" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -1929,6 +1929,50 @@ a[href].issue-return {
     text-decoration: none;
 }
 </style>
+<style>/* Boilerplate: style-line-highlighting */
+:root {
+    --highlight-hover-bg: rgba(0, 0, 0, .05);
+}
+.line-numbered {
+    display: grid !important;
+    grid-template-columns: min-content 1fr;
+    grid-auto-flow: rows;
+}
+.line-numbered > *,
+.line-numbered::before,
+.line-numbered::after {
+    grid-column: 1/-1;
+}
+.line-no {
+    grid-column: 1;
+    color: gray;
+}
+.line {
+    grid-column: 2;
+}
+.line.highlight-line {
+    background: var(--highlight-hover-bg);
+}
+.line-no.highlight-line {
+    background: var(--highlight-hover-bg);
+    color: #444;
+    font-weight: bold;
+}
+.line-no.highlight-line[data-line]::before {
+    padding: 0 .5em 0 .1em;
+    content: attr(data-line);
+}
+.line-no.highlight-line[data-line-end]::after {
+    padding: 0 .5em 0 .1em;
+    content: attr(data-line-end);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --highlight-hover-bg: rgba(255, 255, 255, .05);
+    }
+}
+</style>
 <style>/* Boilerplate: style-md-lists */
 /* This is a weird hack for me not yet following the commonmark spec
    regarding paragraph and lists. */
@@ -2152,7 +2196,12 @@ This operation is also known as GF(2) polynomial multiplication.</p>
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
+    <li>
+     <a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
+     <ol class="toc">
+      <li><a href="#motivating-examples"><span class="secno">2.1</span> <span class="content">Motivating examples</span></a>
+      <li><a href="#constant-time-hilbert-curve"><span class="secno">2.2</span> <span class="content">Space filling curves in O(1)</span></a>
+     </ol>
     <li>
      <a href="#possible-implementation"><span class="secno">3</span> <span class="content">Possible implementation</span></a>
      <ol class="toc">
@@ -2213,6 +2262,51 @@ Specifically, the form <code class="highlight"><c- n>clmul</c-><c- p>(</c-><c- n
    </ul>
    <p>Carry-less multiplication is of such great utility that there is widespread hardware support,
 some of it dating back more than a decade.</p>
+   <h3 class="heading settled" data-level="2.1" id="motivating-examples"><span class="secno">2.1. </span><span class="content">Motivating examples</span><a class="self-link" href="#motivating-examples"></a></h3>
+   <h3 class="heading settled" data-level="2.2" id="constant-time-hilbert-curve"><span class="secno">2.2. </span><span class="content">Space filling curves in O(1)</span><a class="self-link" href="#constant-time-hilbert-curve"></a></h3>
+   <p>The special form <code class="highlight"><c- n>clmul</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- mi>-1</c-><c- p>)</c-></code> can be used to accelerate the computation of Hilbert curves.
+To properly understand this example, I will explain the basic notion of space-filling curves.</p>
+   <p>We can fill space using a 2D curve by mapping the index <code class="highlight"><c- n>i</c-></code> on the curve onto Cartesian
+coordinates <code class="highlight"><c- n>x</c-></code> and <code class="highlight"><c- n>y</c-></code>.
+A naive curve that fills a 4x4 square can be computed as follows:</p>
+<pre class="language-cpp highlight"><c- k>struct</c-> <c- nc>pos</c-> <c- p>{</c-> <c- b>uint32_t</c-> <c- n>x</c-><c- p>,</c-> <c- n>y</c-><c- p>;</c-> <c- p>};</c->
+
+<c- n>pos</c-> <c- nf>naive_curve</c-><c- p>(</c-><c- b>uint32_t</c-> <c- n>i</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- p>{</c-> <c- n>i</c-> <c- o>%</c-> <c- mi>4</c-><c- p>,</c-> <c- n>i</c-> <c- o>/</c-> <c- mi>4</c-> <c- p>};</c-> <c- p>}</c->
+</pre>
+   <p>When mapping the index <code class="highlight"><c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>,</c-> <c- mi>1</c-><c- p>,</c-> <c- p>...,</c-> <c- mh>0xf</c-></code> onto the returned 2D coordinates,
+we obtain the following pattern:</p>
+<pre class="language-text highlight">0 1 2 3
+4 5 6 7
+8 9 a b
+c d e f
+</pre>
+   <p>This is a suboptimal curve because especially for large squares, the gaps between two points on the
+curve can be very large.
+If we use this curve to store images, this is problematic for processing
+because two adjacent pixels can be very far apart in memory, which is bad for cache locality.</p>
+   <p>A <a href="https://en.wikipedia.org/wiki/Hilbert_curve">Hilbert curve</a> is a family of space-filling curves where the distance between two adjacent
+elements is <code class="highlight"><c- mi>1</c-></code>:</p>
+<pre class="language-text highlight">0 1 e f
+3 2 d c
+4 7 8 b
+5 6 9 a
+</pre>
+   <p>De-interleaving bits of <code class="highlight"><c- n>i</c-></code> into <code class="highlight"><c- n>x</c-></code> and <code class="highlight"><c- n>y</c-></code> yields a <a href="https://en.wikipedia.org/wiki/Z-order_curve">Z-order curve</a>,
+and performing further transformations yields a <a href="https://en.wikipedia.org/wiki/Hilbert_curve">Hilbert curve</a>.</p>
+   <div class="example" id="example-8ffb0de7">
+    <a class="self-link" href="#example-8ffb0de7"></a> <code class="highlight"><c- n>clmul</c-></code> can be used to compute the bitwise parity for each bit and the bits to its right.
+In Hilbert curve computation, this turns O(log N) bitwise operations into O(1). 
+<pre class="highlight line-numbered"><span class="line-no"></span><span class="line"><c- n>pos</c-> <c- nf>hilbert_to_xy</c-><c- p>(</c-><c- b>uint32_t</c-> <c- n>i</c-><c- p>)</c-></span><span class="line-no"></span><span class="line"><c- p>{</c-></span><span class="line-no"></span><span class="line">    <c- c1>// Using functions from P3104: Bit permutations, we de-interleave the bits of i.</c-></span><span class="line-no"></span><span class="line">    <c- b>uint32_t</c-> <c- n>i0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>bit_compressr</c-><c- p>(</c-><c- n>i</c-><c- p>,</c-> <c- mh>0x55555555u</c-><c- p>);</c-> <c- c1>// abcdefgh -> bdfh</c-></span><span class="line-no"></span><span class="line">    <c- b>uint32_t</c-> <c- n>i1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>bit_compressr</c-><c- p>(</c-><c- n>i</c-><c- p>,</c-> <c- mh>0xaaaaaaaau</c-><c- p>);</c-> <c- c1>// abcdefgh -> aceg</c-></span><span class="line-no"></span><span class="line">    </span><span class="line-no"></span><span class="line">    <c- c1>// Undo the permutation that Hilbert curves apply on top of Z-order curves.</c-></span><span class="line-no"></span><span class="line">    <c- b>uint32_t</c-> <c- n>A</c-> <c- o>=</c-> <c- n>i0</c-> <c- o>&amp;</c-> <c- n>i1</c-><c- p>;</c-></span><span class="line-no"></span><span class="line">    <c- b>uint32_t</c-> <c- n>B</c-> <c- o>=</c-> <c- n>i0</c-> <c- o>^</c-> <c- n>i1</c-> <c- o>^</c-> <c- mh>0xffffu</c-><c- p>;</c-></span><span class="line-no highlight-line" data-line="10"></span><span class="line highlight-line">    <c- b>uint32_t</c-> <c- n>C</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>clmul</c-><c- p>(</c-><c- n>A</c-><c- p>,</c-> <c- mh>0xffffu</c-><c- p>)</c-> <c- o>>></c-> <c- mi>16</c-><c- p>;</c-></span><span class="line-no highlight-line" data-line="11"></span><span class="line highlight-line">    <c- b>uint32_t</c-> <c- n>D</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>clmul</c-><c- p>(</c-><c- n>B</c-><c- p>,</c-> <c- mh>0xffffu</c-><c- p>)</c-> <c- o>>></c-> <c- mi>16</c-><c- p>;</c-></span><span class="line-no"></span><span class="line">    </span><span class="line-no"></span><span class="line">    <c- b>uint32_t</c-> <c- n>a</c-> <c- o>=</c-> <c- n>C</c-> <c- o>^</c-> <c- p>(</c-><c- n>i0</c-> <c- o>&amp;</c-> <c- n>D</c-><c- p>);</c-></span><span class="line-no"></span><span class="line">    <c- k>return</c-> <c- p>{</c-> <c- p>.</c-><c- n>x</c-> <c- o>=</c-> <c- n>a</c-> <c- o>^</c-> <c- n>i1</c-><c- p>,</c-> <c- p>.</c-><c- n>y</c-> <c- o>=</c-> <c- n>a</c-> <c- o>^</c-> <c- n>i0</c-> <c- o>^</c-> <c- n>i1</c-> <c- p>};</c-></span><span class="line-no"></span><span class="line"><c- p>}</c-></span></pre>
+    <p>This specific example is taken from <a data-link-type="biblio" href="#biblio-rawrunprotected1" title="2D Hilbert curves in O(1)">[rawrunprotected1]</a>. <a data-link-type="biblio" href="#biblio-warren1" title="Hacker&apos;s Delight, Second Edition">[Warren1]</a> explains the basis behind this computation of Hilbert curves using bitwise operations.</p>
+   </div>
+   <p>When working with space filling curves, the inverse operation is also common:
+mapping the Cartesian coordinates onto an index on the curve.
+In the case of Z-order curve,
+aka. Morton curves, this can be done by simply interleaving the bits of <code class="highlight"><c- n>x</c-></code> and <code class="highlight"><c- n>y</c-></code>.</p>
+   <div class="example" id="example-1328fb51">
+    <a class="self-link" href="#example-1328fb51"></a> <code class="highlight"><c- n>clmul</c-></code> can be used to implement bit-interleaving in order to generate a <a href="https://en.wikipedia.org/wiki/Z-order_curve">Z-order curves</a>. 
+<pre class="highlight line-numbered"><span class="line-no"></span><span class="line"><c- b>uint32_t</c-> <c- nf>xy_to_morton</c-><c- p>(</c-><c- b>uint32_t</c-> <c- n>x</c-><c- p>,</c-> <c- b>uint32_t</c-> <c- n>y</c-><c- p>)</c-></span><span class="line-no"></span><span class="line"><c- p>{</c-></span><span class="line-no"></span><span class="line">    <c- c1>// With P3014: Bit permutations, interleaving can also be implemented using</c-></span><span class="line-no"></span><span class="line">    <c- c1>// bit_expandr(x, 0x55555555)</c-></span><span class="line-no highlight-line" data-line="5"></span><span class="line highlight-line">    <c- b>uint32_t</c-> <c- n>lo</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>clmul</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- n>x</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- mi>0</c-><c- p>;</c-> <c- c1>// abcd -> 0a0b0c0d</c-></span><span class="line-no highlight-line" data-line="6"></span><span class="line highlight-line">    <c- b>uint32_t</c-> <c- n>hi</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>clmul</c-><c- p>(</c-><c- n>y</c-><c- p>,</c-> <c- n>y</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- mi>1</c-><c- p>;</c-> <c- c1>// abcd -> a0b0c0d0</c-></span><span class="line-no"></span><span class="line">    <c- k>return</c-> <c- n>hi</c-> <c- o>|</c-> <c- n>lo</c-><c- p>;</c-></span><span class="line-no"></span><span class="line"><c- p>}</c-></span></pre>
+   </div>
    <h2 class="heading settled" data-level="3" id="possible-implementation"><span class="secno">3. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
    <p>A branchless naive implementation looks as follows:</p>
 <pre class="language-cpp highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- p>,</c-> <c- n>unsigned_integral</c-> <c- n>U</c-><c- o>></c->
@@ -2481,8 +2575,12 @@ However, <a data-link-type="biblio" href="#biblio-p3018r0" title="Low-Level Inte
    <dd>Andreas Weis. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3018r0.pdf"><cite>Low-Level Integer Arithmetic</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3018r0.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3018r0.pdf</a>
    <dt id="biblio-p3104">[P3104]
    <dd>Jan Schultke. <a href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html"><cite>Bit permutations</cite></a>. URL: <a href="https://eisenwave.github.io/cpp-proposals/bit-permutations.html">https://eisenwave.github.io/cpp-proposals/bit-permutations.html</a>
+   <dt id="biblio-rawrunprotected1">[RAWRUNPROTECTED1]
+   <dd>rawrunprotected. <a href="http://threadlocalmutex.com/?p=188"><cite>2D Hilbert curves in O(1)</cite></a>. URL: <a href="http://threadlocalmutex.com/?p=188">http://threadlocalmutex.com/?p=188</a>
    <dt id="biblio-schultke1">[Schultke1]
    <dd>Jan Schultke. <a href="https://github.com/Eisenwave/cxx26-bit-permutations"><cite>C++26 Bit permutations reference implementation</cite></a>. URL: <a href="https://github.com/Eisenwave/cxx26-bit-permutations">https://github.com/Eisenwave/cxx26-bit-permutations</a>
+   <dt id="biblio-warren1">[Warren1]
+   <dd>Henry S. Warren, Jr. <a href="https://doc.lagout.org/security/Hackers%20Delight.pdf"><cite>Hacker's Delight, Second Edition</cite></a>. URL: <a href="https://doc.lagout.org/security/Hackers%20Delight.pdf">https://doc.lagout.org/security/Hackers%20Delight.pdf</a>
    <dt id="biblio-wikipedia1">[Wikipedia1]
    <dd>Wikipedia community. <a href="https://en.wikipedia.org/wiki/Carry-less_product"><cite>Carry-less product</cite></a>. URL: <a href="https://en.wikipedia.org/wiki/Carry-less_product">https://en.wikipedia.org/wiki/Carry-less_product</a>
   </dl>

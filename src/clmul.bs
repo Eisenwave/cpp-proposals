@@ -56,6 +56,91 @@ Carry-less multiplication is an important operation in a number of use cases:
 Carry-less multiplication is of such great utility that there is widespread hardware support,
 some of it dating back more than a decade.
 
+## Motivating examples ## {#motivating-examples}
+
+## Space filling curves in O(1) ## {#constant-time-hilbert-curve}
+
+The special form `clmul(x, -1)` can be used to accelerate the computation of Hilbert curves.
+To properly understand this example, I will explain the basic notion of space-filling curves.
+
+We can fill space using a 2D curve by mapping the index `i` on the curve onto Cartesian
+coordinates `x` and `y`.
+A naive curve that fills a 4x4 square can be computed as follows:
+```cpp
+struct pos { uint32_t x, y; };
+
+pos naive_curve(uint32_t i) { return { i % 4, i / 4 }; }
+```
+When mapping the index `i = 0, 1, ..., 0xf` onto the returned 2D coordinates,
+we obtain the following pattern:
+```text
+0 1 2 3
+4 5 6 7
+8 9 a b
+c d e f
+```
+This is a suboptimal curve because especially for large squares, the gaps between two points on the
+curve can be very large.
+If we use this curve to store images, this is problematic for processing
+because two adjacent pixels can be very far apart in memory, which is bad for cache locality.
+
+A [Hilbert curve](https://en.wikipedia.org/wiki/Hilbert_curve)
+is a family of space-filling curves where the distance between two adjacent
+elements is `1`:
+```text
+0 1 e f
+3 2 d c
+4 7 8 b
+5 6 9 a
+```
+De-interleaving bits of `i` into `x` and `y`
+yields a [Z-order curve](https://en.wikipedia.org/wiki/Z-order_curve),
+and performing further transformations yields a
+[Hilbert curve](https://en.wikipedia.org/wiki/Hilbert_curve).
+
+<div class="example">
+`clmul` can be used to compute the bitwise parity for each bit and the bits to its right.
+In Hilbert curve computation, this turns O(log N) bitwise operations into O(1).
+<pre line-highlight=10-11>
+pos hilbert_to_xy(uint32_t i)
+{
+    // Using functions from P3104: Bit permutations, we de-interleave the bits of i.
+    uint32_t i0 = std::bit_compressr(i, 0x55555555u); // abcdefgh -&gt; bdfh
+    uint32_t i1 = std::bit_compressr(i, 0xaaaaaaaau); // abcdefgh -&gt; aceg
+    
+    // Undo the permutation that Hilbert curves apply on top of Z-order curves.
+    uint32_t A = i0 & i1;
+    uint32_t B = i0 ^ i1 ^ 0xffffu;
+    uint32_t C = std::clmul(A, 0xffffu) &gt;&gt; 16;
+    uint32_t D = std::clmul(B, 0xffffu) &gt;&gt; 16;
+    
+    uint32_t a = C ^ (i0 & D);
+    return { .x = a ^ i1, .y = a ^ i0 ^ i1 };
+}
+</pre>
+This specific example is taken from [[rawrunprotected1]].
+[[Warren1]] explains the basis behind this computation of Hilbert curves using bitwise operations.
+</div>
+
+When working with space filling curves, the inverse operation is also common:
+mapping the Cartesian coordinates onto an index on the curve.
+In the case of Z-order curve,
+aka. Morton curves, this can be done by simply interleaving the bits of `x` and `y`.
+
+<div class="example">
+`clmul` can be used to implement bit-interleaving in order to generate a
+[Z-order curves](https://en.wikipedia.org/wiki/Z-order_curve).
+<pre line-highlight=5-6>
+uint32_t xy_to_morton(uint32_t x, uint32_t y)
+{
+    // With P3014: Bit permutations, interleaving can also be implemented using
+    // bit_expandr(x, 0x55555555)
+    uint32_t lo = std::clmul(x, x) &lt;&lt; 0; // abcd -&gt; 0a0b0c0d
+    uint32_t hi = std::clmul(y, y) &lt;&lt; 1; // abcd -&gt; a0b0c0d0
+    return hi | lo;
+}
+</pre>
+</div>
 
 # Possible implementation # {#possible-implementation}
 
@@ -325,6 +410,16 @@ template&lt;class T, class U&gt;
         "title": "Carry-less product",
         "href": "https://en.wikipedia.org/wiki/Carry-less_product",
         "publisher": "Wikimedia Foundation"
+    },
+    "Warren1": {
+        "authors": ["Henry S. Warren, Jr"],
+        "title": "Hacker's Delight, Second Edition",
+        "href": "https://doc.lagout.org/security/Hackers%20Delight.pdf"
+    },
+    "rawrunprotected1": {
+        "authors": ["rawrunprotected"],
+        "title": "2D Hilbert curves in O(1)",
+        "href": "http://threadlocalmutex.com/?p=188"
     }
 }
 </pre>
