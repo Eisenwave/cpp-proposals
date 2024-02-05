@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5ab0fd238d6fc9aa12acb90d0ceea893a5670832" name="revision">
+  <meta content="d90f9b479b22344283955d07301a8b2a8e2212ff" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2227,7 +2227,7 @@ Changing the behavior of <code class="highlight"><c- n>to_string</c-></code> wou
 <ins><c- k>constexpr</c-> <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- d>/* integer type >= int */</c-><c- p>);</c->
 <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- d>/* floating-point type */</c-><c- p>);</c-></ins>
 </pre>
-   <p class="note" role="note"><span class="marker">Note:</span> In the original overload set, the behavior described in <a href="#sharp-edges-of-to-string">§ 2.2 The sharp edges of to_string</a> is a consequence of <code class="highlight"><c- n>to_string</c-><c- p>(</c->true<c- p>)</c-></code> and <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code> calling <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- b>int</c-><c- p>)</c-></code> because only an integer promotion, not a conversion is required.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> In the original overload set, the behavior described in <a href="#sharp-edges-of-to-string">§ 2.2 The sharp edges of to_string</a> is a consequence of <code class="highlight"><c- n>to_string</c-><c- p>(</c->true<c- p>)</c-></code> and <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code> calling <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- b>int</c-><c- p>)</c-></code>.</p>
    <p>Existing well-formed code is not made invalid, and the behavior of existing calls to <code class="highlight"><c- n>to_string</c-></code> is not altered.
 This proposal only adds additional overloads for extended integer types and extended floating-point
 types.</p>
@@ -2284,13 +2284,17 @@ after additionally applying the changes described in <a data-link-type="biblio" 
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c-></del>
 <ins>  <c- k>constexpr</c-> <c- n>to_string</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>type</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>);</c->
   <c- n>to_string</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>val</c-><c- p>);</c-></ins></pre>
-    <p class="indent"> For the function with parameter <em>integer-type-least-int</em>, the implementation provides an overload for each
-    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater.
+    <p class="indent">
+     <ins> For the function with parameter <em>integer-type-least-int</em>, the implementation provides an overload for each
+    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is greater or equal to <code class="highlight"><c- b>int</c-></code>.
     For the function with parameter <em>floating-point-type</em>, the implementation provides an overload
-    for each cv-unqualified floating-point type. </p>
+    for each cv-unqualified floating-point type. </ins>
+    </p>
     <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
-    <p class="indent"> <em>Remarks</em>: Despite <code class="highlight"><c- n>format</c-></code> not being marked <code class="highlight"><c- k>constexpr</c-></code>, the call to <code class="highlight"><c- n>format</c-></code> does not
-    disqualify a call to <code class="highlight"><c- n>to_string</c-></code> from being a constant expression, as if <code class="highlight"><c- n>to_string</c-></code> called <code class="highlight"><c- n>to_chars</c-></code> directly instead of calling it through <code class="highlight"><c- n>format</c-></code>. </p>
+    <p class="indent">
+     <ins> <em>Remarks</em>: Despite <code class="highlight"><c- n>format</c-></code> not being marked <code class="highlight"><c- k>constexpr</c-></code>, the call to <code class="highlight"><c- n>format</c-></code> does not
+    disqualify a call to <code class="highlight"><c- n>to_string</c-></code> from being a constant expression, as if <code class="highlight"><c- n>to_string</c-></code> called <code class="highlight"><c- n>to_chars</c-></code> directly instead of calling it through <code class="highlight"><c- n>format</c-></code>. </ins>
+    </p>
    </blockquote>
   </main>
 <script>

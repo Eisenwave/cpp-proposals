@@ -102,8 +102,7 @@ string to_string(/* floating-point type */);</ins>
 </pre>
 
 Note: In the original overload set, the behavior described in [[#sharp-edges-of-to-string]]
-      is a consequence of `to_string(true)` and `to_string('a')` calling `to_string(int)`
-      because only an integer promotion, not a conversion is required.
+      is a consequence of `to_string(true)` and `to_string('a')` calling `to_string(int)`.
 
 Existing well-formed code is not made invalid, and the behavior of existing calls to `to_string` 
 is not altered.
@@ -205,21 +204,21 @@ Update subclause 23.4.5 [string.conversions] as follows:
   string to_string(long double val);</del>
 <ins>  constexpr to_string(<i>integer-type-least-int</i> val);
   to_string(<i>floating-point-type</i> val);</ins></pre>
-<p class="indent">
+  
+<p class="indent"><ins>
     For the function with parameter *integer-type-least-int*, the implementation provides an overload for each
-    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is that of `int`
-    or greater.
+    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is greater or equal to `int`.
     For the function with parameter *floating-point-type*, the implementation provides an overload
     for each cv-unqualified floating-point type.
-</p>
+</ins></p>
 <p class="indent">
     *Returns*: `format("{}", val)`.
 </p>
-<p class="indent">
+<p class="indent"><ins>
     *Remarks*: Despite `format` not being marked `constexpr`, the call to `format` does not
     disqualify a call to `to_string` from being a constant expression, as if `to_string` called
     `to_chars` directly instead of calling it through `format`.
-</p>
+</ins></p>
 </blockquote>
 
 
