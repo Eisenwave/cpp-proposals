@@ -101,14 +101,33 @@ string to_string(long double val);</del>
 string to_string(/* floating-point type */);</ins>
 </pre>
 
+(Analogous for `to_wstring`)
+
 Note: In the original overload set, the behavior described in [[#sharp-edges-of-to-string]]
       is a consequence of `to_string(true)` and `to_string('a')` calling `to_string(int)`.
 
-Existing well-formed code is not made invalid, and the behavior of existing calls to `to_string` 
+No existing well-formed code is made invalid, and the behavior of existing calls to `to_string` 
 is not altered.
 This proposal only adds additional overloads for extended integer types and extended floating-point
 types.
 
+# Implementation experience # {#implementation-experience}
+
+libstdc++ already implements
+<a href="https://github.com/gcc-mirror/gcc/blob/f1412546ac8999b7f6eeeee8cf967ce3f31794c2/libstdc%2B%2B-v3/include/bits/basic_string.h#L4240"><code>to_string(int)</code></a>
+as an inline function which uses the `constexpr` function
+<a href="https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/charconv.h#L81">
+<code>detail::__to_chars_10_impl</code>
+</a>.
+Similarly, overloads for other integer types and floating-point types are inline functions which
+rely on a `to_chars`-like implementation.
+
+To make `to_string` `constexpr` requires the addition of `_GLIBCXX26_CONSTEXPR`, but no major
+changes to existing code are necessary.
+This demonstrates the feasability of implementing this proposal.
+
+libc++ is most significantly affected because `to_string` is not yet an inline function.
+This ABI change can be mitigated with `[[gnu::used]]`.
 
 
 # Design decisions # {#design-decisions}
@@ -135,6 +154,9 @@ This requires awkward wording which "magically" bridges this gap.
 This is preferable to re-defining `to_string` in terms of `to_chars` directly because presumably,
 `format` will be `constexpr` sooner or later.
 We can then simply remove the bridge wording.
+
+
+
 
 
 # Proposed wording # {#proposed-wording}
@@ -187,6 +209,32 @@ In subclause 23.4.2 [string.syn], update the synopsis as follows:
   string to_string(long double val);</del>
 <ins>  constexpr to_string(<i>integer-type-least-int</i> val);
   to_string(<i>floating-point-type</i> val);</pre>
+[...]
+<pre><del>
+  wstring to_wstring(int val);
+  wstring to_wstring(unsigned val);
+  wstring to_wstring(long val);
+  wstring to_wstring(unsigned long val);
+  wstring to_wstring(long long val);
+  wstring to_wstring(unsigned long long val);
+  wstring to_wstring(float val);
+  wstring to_wstring(double val);
+  wstring to_wstring(long double val);</del>
+<ins>  constexpr to_wstring(<i>integer-type-least-int</i> val);
+  to_wstring(<i>floating-point-type</i> val);</pre>
+</blockquote>
+
+In subcluse 23.4.2 [string.syn], add a paragraph:
+
+<blockquote>
+<ins>
+    For each function with a parameter of type *integer-type-least-int*,
+    the implementation provides an overload for each cv-unqualified
+    integer type ([basic.fundamental]) whose conversion rank is greater or equal to `int`.
+    For each function with a parameter of type *floating-point-type*,
+    the implementation provides an overload for each cv-unqualified
+    floating-point type.
+</ins>
 </blockquote>
 
 Update subclause 23.4.5 [string.conversions] as follows:
@@ -204,23 +252,38 @@ Update subclause 23.4.5 [string.conversions] as follows:
   string to_string(long double val);</del>
 <ins>  constexpr to_string(<i>integer-type-least-int</i> val);
   to_string(<i>floating-point-type</i> val);</ins></pre>
-  
-<p class="indent"><ins>
-    For the function with parameter *integer-type-least-int*, the implementation provides an overload for each
-    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is greater or equal to `int`.
-    For the function with parameter *floating-point-type*, the implementation provides an overload
-    for each cv-unqualified floating-point type.
-</ins></p>
+
 <p class="indent">
     *Returns*: `format("{}", val)`.
 </p>
 <p class="indent"><ins>
     *Remarks*: Despite `format` not being marked `constexpr`, the call to `format` does not
-    disqualify a call to `to_string` from being a constant expression, as if `to_string` called
-    `to_chars` directly instead of calling it through `format`.
+    disqualify a call to `to_string` from being a constant expression.
+</ins></p>
+
+[...]
+
+<pre><del>
+  wstring to_wstring(int val);
+  wstring to_wstring(unsigned val);
+  wstring to_wstring(long val);
+  wstring to_wstring(unsigned long val);
+  wstring to_wstring(long long val);
+  wstring to_wstring(unsigned long long val);
+  wstring to_wstring(float val);
+  wstring to_wstring(double val);
+  wstring to_wstring(long double val);</del>
+<ins>  constexpr to_wstring(<i>integer-type-least-int</i> val);
+  to_wstring(<i>floating-point-type</i> val);</ins></pre>
+
+<p class="indent">
+    *Returns*: `format(L"{}", val)`.
+</p>
+<p class="indent"><ins>
+    *Remarks*: Despite `format` not being marked `constexpr`, the call to `format` does not
+    disqualify a call to `to_wstring` from being a constant expression.
 </ins></p>
 </blockquote>
-
 
 <pre class=biblio>
 {
