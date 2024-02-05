@@ -17,7 +17,7 @@ Abstract: This proposal seeks to add additional overloads to `std::to_string`.
 # Introduction # {#introduction}
 
 Since the changes in [[P2587R3]] have been accepted into the standard, `to_string` is no longer
-locale-dependent and defined to forward its arguments to `format` like:
+locale-dependent, but defined to forward its arguments to `format` like:
 ```cpp
 string to_string(T x) {
     return format("{}", x);

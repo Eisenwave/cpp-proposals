@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e4f888f9fffaea1e14768ea23f097fbfea1bea73" name="revision">
+  <meta content="6507f1ae89e1da8a249063438de2822cd46dc46c" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2163,7 +2163,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p>Since the changes in <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> have been accepted into the standard, <code class="highlight"><c- n>to_string</c-></code> is no longer
-locale-dependent and defined to forward its arguments to <code class="highlight"><c- n>format</c-></code> like:</p>
+locale-dependent, but defined to forward its arguments to <code class="highlight"><c- n>format</c-></code> like:</p>
 <pre class="language-cpp highlight"><c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- n>T</c-> <c- n>x</c-><c- p>)</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>x</c-><c- p>);</c->
 <c- p>}</c->
