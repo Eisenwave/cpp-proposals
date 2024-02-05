@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5e7494e7b113ec7069a95d39b58632a454fd9405" name="revision">
+  <meta content="5ab0fd238d6fc9aa12acb90d0ceea893a5670832" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2144,7 +2144,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#sharp-edges-of-to-string"><span class="secno">2.2</span> <span class="content">The sharp edges of <code class="highlight"><c- n>to_string</c-></code></span></a>
      </ol>
     <li><a href="#impact-on-the-standard"><span class="secno">3</span> <span class="content">Impact on the standard</span></a>
-    <li><a href="#design-decisions"><span class="secno">4</span> <span class="content">Design decisions</span></a>
+    <li>
+     <a href="#design-decisions"><span class="secno">4</span> <span class="content">Design decisions</span></a>
+     <ol class="toc">
+      <li><a href="#constexpr-challenges"><span class="secno">4.1</span> <span class="content"><code class="highlight"><c- k>constexpr</c-></code> challenges</span></a>
+     </ol>
     <li><a href="#proposed-wording"><span class="secno">5</span> <span class="content">Proposed wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2164,12 +2168,14 @@ locale-dependent and defined to forward its arguments to <code class="highlight"
 <c- p>}</c->
 </pre>
    <p>Furthermore, <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>x</c-><c- p>)</c-></code> for any floating-point type and integer type
-(though <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>bool</c-></code> behave specially) forwards to <code class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>x</c-><c- p>)</c-></code>, as specified in [[format.string.std\]](https://eel.is/c++draft/format.string.std).</p>
+(though <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>bool</c-></code> behave specially) forwards to <code class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>x</c-><c- p>)</c-></code>, as specified in <a href="https://eel.is/c++draft/format.string.std">[format.string.std]</a></p>
    <p>However, not every integer type can be used with <code class="highlight"><c- n>to_string</c-></code>, and neither can every floating-point type.
 This has become an artificial restriction that makes use of <code class="highlight"><c- n>to_string</c-></code> in generic code more
 fragile.
 Therefore, I propose expanding <code class="highlight"><c- n>to_string</c-></code> to take any integer type and any floating-point type.</p>
-   <p>Furthermore, <code class="highlight"><c- n>to_string</c-></code> can be made <code class="highlight"><c- k>constexpr</c-></code> because it is entirely defined in terms of calling <code class="highlight"><c- k>constexpr</c-></code> functions.</p>
+   <p>Furthermore, <code class="highlight"><c- n>to_string</c-></code> can be made <code class="highlight"><c- k>constexpr</c-></code> for integer types
+because it is indirectly defined in terms of <code class="highlight"><c- n>to_chars</c-></code>,
+which is <code class="highlight"><c- k>constexpr</c-></code> for integers since <a data-link-type="biblio" href="#biblio-p2291r3" title="Add Constexpr Modifiers to Functions to_chars and from_chars for Integral Types in Header">[P2291R3]</a>.</p>
    <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p><code class="highlight"><c- n>to_string</c-></code> is a frequently used function. <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> has identified ~11 thousand uses in total.
 Compared to <code class="highlight"><c- n>format</c-></code>, it has the potential to be a much more lightweight dependency,
@@ -2181,7 +2187,7 @@ and also communicates the intent <em>"convert this to a string"</em> more clearl
     <li data-md>
      <p><code class="highlight"><c- n>to_string</c-></code> does not explicitly support aliases such as <code class="highlight"><c- b>uint32_t</c-></code>, and these aliases are not
 guaranteed to use standard integer types.
-Therefore, anyone using <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- b>uint32_t</c-><c- p>)</c-></code> is unknowingly relying on implementation details.</p>
+Therefore, anyone using <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- b>uint32_t</c-><c- p>)</c-></code> is inadvertently relying on implementation details.</p>
     <li data-md>
      <p><code class="highlight"><c- n>to_string</c-></code> does not have overloads for the extended floating-point types in <code class="highlight"><c- o>&lt;</c-><c- n>stdfloat</c-><c- o>></c-></code>.
 This is an artifical restriction because <code class="highlight"><c- n>to_chars</c-></code> must support them, and <code class="highlight"><c- n>to_string</c-></code> simply
@@ -2219,7 +2225,7 @@ Changing the behavior of <code class="highlight"><c- n>to_string</c-></code> wou
 <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
 <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c-></del>
 <ins><c- k>constexpr</c-> <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- d>/* integer type >= int */</c-><c- p>);</c->
-<c- k>constexpr</c-> <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- d>/* floating-point type */</c-><c- p>);</c-></ins>
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- d>/* floating-point type */</c-><c- p>);</c-></ins>
 </pre>
    <p class="note" role="note"><span class="marker">Note:</span> In the original overload set, the behavior described in <a href="#sharp-edges-of-to-string">§ 2.2 The sharp edges of to_string</a> is a consequence of <code class="highlight"><c- n>to_string</c-><c- p>(</c->true<c- p>)</c-></code> and <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code> calling <code class="highlight"><c- n>to_string</c-><c- p>(</c-><c- b>int</c-><c- p>)</c-></code> because only an integer promotion, not a conversion is required.</p>
    <p>Existing well-formed code is not made invalid, and the behavior of existing calls to <code class="highlight"><c- n>to_string</c-></code> is not altered.
@@ -2236,6 +2242,13 @@ Notably:</p>
 to <code class="highlight"><c- b>int</c-></code>, as in the original design.</p>
    </ul>
    <p>The design strategy in this proposal mirrors that in <a data-link-type="biblio" href="#biblio-p1467r9" title="Extended floating-point types and standard names">[P1467R9]</a>, which expanded the set <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- b>float</c-><c- p>)</c-></code>, <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- b>double</c-><c- p>)</c-></code>, <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-><c- p>)</c-></code> to <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i><c- p>)</c-></code> in a similar way.</p>
+   <h3 class="heading settled" data-level="4.1" id="constexpr-challenges"><span class="secno">4.1. </span><span class="content"><code class="highlight"><c- k>constexpr</c-></code> challenges</span><a class="self-link" href="#constexpr-challenges"></a></h3>
+   <p>There is no obstacle that would make <code class="highlight"><c- k>constexpr</c-> <c- n>to_string</c-></code> unimplementable for any type,
+at the time of writing.</p>
+   <p>However, there is the odd issue that <code class="highlight"><c- n>to_string</c-></code> is defined in terms of <code class="highlight"><c- n>format</c-></code> (which is not <code class="highlight"><c- k>constexpr</c-></code>), which is defined in terms of <code class="highlight"><c- n>to_chars</c-></code> (which is <code class="highlight"><c- k>constexpr</c-></code>).
+This requires awkward wording which "magically" bridges this gap.</p>
+   <p>This is preferable to re-defining <code class="highlight"><c- n>to_string</c-></code> in terms of <code class="highlight"><c- n>to_chars</c-></code> directly because presumably, <code class="highlight"><c- n>format</c-></code> will be <code class="highlight"><c- k>constexpr</c-></code> sooner or later.
+We can then simply remove the bridge wording.</p>
    <h2 class="heading settled" data-level="5" id="proposed-wording"><span class="secno">5. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>,
 after additionally applying the changes described in <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a>.</p>
@@ -2256,7 +2269,7 @@ after additionally applying the changes described in <a data-link-type="biblio" 
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c-></del>
 <ins>  <c- k>constexpr</c-> <c- n>to_string</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>type</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>);</c->
-  <c- k>constexpr</c-> <c- n>to_string</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>val</c-><c- p>);</c-></ins></pre>
+  <c- n>to_string</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>val</c-><c- p>);</c-></ins></pre>
    </blockquote>
    <p>Update subclause 23.4.5 [string.conversions] as follows:</p>
    <blockquote>
@@ -2270,12 +2283,14 @@ after additionally applying the changes described in <a data-link-type="biblio" 
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c-></del>
 <ins>  <c- k>constexpr</c-> <c- n>to_string</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>type</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>);</c->
-  <c- k>constexpr</c-> <c- n>to_string</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>val</c-><c- p>);</c-></ins></pre>
+  <c- n>to_string</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>val</c-><c- p>);</c-></ins></pre>
     <p class="indent"> For the function with parameter <em>integer-type-least-int</em>, the implementation provides an overload for each
     cv-unqualified integer type ([basic.fundamental]) whose conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater.
     For the function with parameter <em>floating-point-type</em>, the implementation provides an overload
     for each cv-unqualified floating-point type. </p>
     <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
+    <p class="indent"> <em>Remarks</em>: Despite <code class="highlight"><c- n>format</c-></code> not being marked <code class="highlight"><c- k>constexpr</c-></code>, the call to <code class="highlight"><c- n>format</c-></code> does not
+    disqualify a call to <code class="highlight"><c- n>to_string</c-></code> from being a constant expression, as if <code class="highlight"><c- n>to_string</c-></code> called <code class="highlight"><c- n>to_chars</c-></code> directly instead of calling it through <code class="highlight"><c- n>format</c-></code>. </p>
    </blockquote>
   </main>
 <script>
@@ -2417,6 +2432,8 @@ after additionally applying the changes described in <a data-link-type="biblio" 
   <dl>
    <dt id="biblio-p1467r9">[P1467R9]
    <dd>David Olsen, Michał Dominiak, Ilya Burylov. <a href="https://wg21.link/p1467r9"><cite>Extended floating-point types and standard names</cite></a>. 22 April 2022. URL: <a href="https://wg21.link/p1467r9">https://wg21.link/p1467r9</a>
+   <dt id="biblio-p2291r3">[P2291R3]
+   <dd>Daniil Goncharov, Karaev Alexander. <a href="https://wg21.link/p2291r3"><cite>Add Constexpr Modifiers to Functions to_chars and from_chars for Integral Types in Header</cite></a>. 23 September 2021. URL: <a href="https://wg21.link/p2291r3">https://wg21.link/p2291r3</a>
    <dt id="biblio-p2587r3">[P2587R3]
    <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2587r3.html#biblio-codesearch"><cite>to_string or not to_string</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2587r3.html#biblio-codesearch">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2587r3.html#biblio-codesearch</a>
   </dl>

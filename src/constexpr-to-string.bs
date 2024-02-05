@@ -25,15 +25,17 @@ string to_string(T x) {
 ```
 Furthermore, `format("{}", x)` for any floating-point type and integer type
 (though `char` and `bool` behave specially) forwards to
-`to_chars(first, last, x)`, as specified in [\[format.string.std\]](https://eel.is/c++draft/format.string.std).
+`to_chars(first, last, x)`, as specified in
+<a href="https://eel.is/c++draft/format.string.std">[format.string.std]</a>
 
 However, not every integer type can be used with `to_string`, and neither can every floating-point type.
 This has become an artificial restriction that makes use of `to_string` in generic code more
 fragile.
 Therefore, I propose expanding `to_string` to take any integer type and any floating-point type.
 
-Furthermore, `to_string` can be made `constexpr` because it is entirely defined in terms of calling
-`constexpr` functions.
+Furthermore, `to_string` can be made `constexpr` for integer types
+because it is indirectly defined in terms of `to_chars`,
+which is `constexpr` for integers since [[P2291R3]].
 
 # Motivation and scope # {#motivation-and-scope}
 
@@ -50,7 +52,7 @@ In its current state, `to_string` has some problems that make it harder to use t
 
 1. `to_string` does not explicitly support aliases such as `uint32_t`, and these aliases are not
     guaranteed to use standard integer types.
-    Therefore, anyone using `to_string(uint32_t)` is unknowingly relying on implementation details.
+    Therefore, anyone using `to_string(uint32_t)` is inadvertently relying on implementation details.
 
 2. `to_string` does not have overloads for the extended floating-point types in `<stdfloat>`.
     This is an artifical restriction because `to_chars` must support them, and `to_string` simply
@@ -96,7 +98,7 @@ string to_string(float val);
 string to_string(double val);
 string to_string(long double val);</del>
 <ins>constexpr string to_string(/* integer type >= int */);
-constexpr string to_string(/* floating-point type */);</ins>
+string to_string(/* floating-point type */);</ins>
 </pre>
 
 Note: In the original overload set, the behavior described in [[#sharp-edges-of-to-string]]
@@ -121,6 +123,20 @@ Notably:
 The design strategy in this proposal mirrors that in [[P1467R9]], which expanded the set
 `sqrt(float)`, `sqrt(double)`, `sqrt(long double)` to <code>sqrt(<i>floating-point-type</i>)</code>
 in a similar way.
+
+## `constexpr` challenges ## {#constexpr-challenges}
+
+There is no obstacle that would make `constexpr to_string` unimplementable for any type,
+at the time of writing.
+
+However, there is the odd issue that `to_string` is defined in terms of `format` (which is not
+`constexpr`), which is defined in terms of `to_chars` (which is `constexpr`).
+This requires awkward wording which "magically" bridges this gap.
+
+This is preferable to re-defining `to_string` in terms of `to_chars` directly because presumably,
+`format` will be `constexpr` sooner or later.
+We can then simply remove the bridge wording.
+
 
 # Proposed wording # {#proposed-wording}
 
@@ -171,7 +187,7 @@ In subclause 23.4.2 [string.syn], update the synopsis as follows:
   string to_string(double val);
   string to_string(long double val);</del>
 <ins>  constexpr to_string(<i>integer-type-least-int</i> val);
-  constexpr to_string(<i>floating-point-type</i> val);</pre>
+  to_string(<i>floating-point-type</i> val);</pre>
 </blockquote>
 
 Update subclause 23.4.5 [string.conversions] as follows:
@@ -188,7 +204,7 @@ Update subclause 23.4.5 [string.conversions] as follows:
   string to_string(double val);
   string to_string(long double val);</del>
 <ins>  constexpr to_string(<i>integer-type-least-int</i> val);
-  constexpr to_string(<i>floating-point-type</i> val);</ins></pre>
+  to_string(<i>floating-point-type</i> val);</ins></pre>
 <p class="indent">
     For the function with parameter *integer-type-least-int*, the implementation provides an overload for each
     cv-unqualified integer type ([basic.fundamental]) whose conversion rank is that of `int`
@@ -198,6 +214,11 @@ Update subclause 23.4.5 [string.conversions] as follows:
 </p>
 <p class="indent">
     *Returns*: `format("{}", val)`.
+</p>
+<p class="indent">
+    *Remarks*: Despite `format` not being marked `constexpr`, the call to `format` does not
+    disqualify a call to `to_string` from being a constant expression, as if `to_string` called
+    `to_chars` directly instead of calling it through `format`.
 </p>
 </blockquote>
 
