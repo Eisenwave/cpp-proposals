@@ -25,3 +25,7 @@ Author: Jan Schultke
 ## NP: Carry-less product: `std::clmul`
 
 - [Latest](clmul.html)
+
+## NP: Better, `constexpr to_string`
+
+- [Latest](constexpr-to-string.html)

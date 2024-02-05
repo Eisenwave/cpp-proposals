@@ -1,0 +1,213 @@
+<pre class='metadata'>
+Title: Better, `constexpr to_string`
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-02-05
+Group: WG21
+Audience: LEWGI, LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/clmul.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.bs)
+Markup Shorthands: markdown on
+Abstract: This proposal seeks to add additional overloads to `std::to_string`.
+</pre>
+
+
+# Introduction # {#introduction}
+
+Since the changes in [[P2587R3]] have been accepted into the standard, `to_string` is no longer
+locale-dependent and defined to forward its arguments to `format` like:
+```cpp
+string to_string(T x) {
+    return format("{}", x);
+}
+```
+Furthermore, `format("{}", x)` for any floating-point type and integer type
+(though `char` and `bool` behave specially) forwards to
+`to_chars(first, last, x)`, as specified in [\[format.string.std\]](https://eel.is/c++draft/format.string.std).
+
+However, not every integer type can be used with `to_string`, and neither can every floating-point type.
+This has become an artificial restriction that makes use of `to_string` in generic code more
+fragile.
+Therefore, I propose expanding `to_string` to take any integer type and any floating-point type.
+
+Furthermore, `to_string` can be made `constexpr` because it is entirely defined in terms of calling
+`constexpr` functions.
+
+# Motivation and scope # {#motivation-and-scope}
+
+`to_string` is a frequently used function.
+[[P2587R3]] has identified ~11 thousand uses in total.
+Compared to `format`, it has the potential to be a much more lightweight dependency,
+and also communicates the intent *"convert this to a string"* more clearly than `format("{}", ...)`.
+
+That is to say, it is not obsoleted by `format`, and it deserves attention and care.
+
+## The inconveniences of `to_string` ## {#inconveniences-of-to-string}
+
+In its current state, `to_string` has some problems that make it harder to use than necessary:
+
+1. `to_string` does not explicitly support aliases such as `uint32_t`, and these aliases are not
+    guaranteed to use standard integer types.
+    Therefore, anyone using `to_string(uint32_t)` is unknowingly relying on implementation details.
+
+2. `to_string` does not have overloads for the extended floating-point types in `<stdfloat>`.
+    This is an artifical restriction because `to_chars` must support them, and `to_string` simply
+    forwards to `to_chars` for standard floating-point types.
+
+3. `to_string` is not marked `constexpr` despite no longer depending on locale.
+
+This proposal seeks to remove these inconveniences.
+
+## The sharp edges of `to_string` ## {#sharp-edges-of-to-string}
+
+It should be noted that `to_string` has a few surprising, sharp edges:
+- `to_string(true)` yields `"1"`, however, `format("{}", true)` yields `"true"`.
+- `to_string('a')` yields `"97"`, however, `format("{}", 'a')` yields `"a"`.
+
+While I personally dislike this status quo, it is not within the scope of this proposal to alter
+the existing behavior.
+If the user prefers a different behavior for `char` and `bool`, they can use a different form
+of formatting.
+
+`to_string` has never been a fully-fledged customization point for stringification, only a
+function which converts a handful of types.
+For a general stringification customization point, the user must either use `format`, or wrap
+`to_string` in some other function.
+Changing the behavior of `to_string` would not obsolete this, so it is very difficult to justify.
+
+Issue: It should be decided whether semantic changes to `to_string(char)` and `to_string(bool)`
+       are worth pursuing.
+
+
+
+# Impact on the standard # {#impact-on-the-standard}
+
+The overload set of `to_string` would be altered as follows:
+<pre>
+<del>string to_string(int val);
+string to_string(unsigned val);
+string to_string(long val);
+string to_string(unsigned long val);
+string to_string(long long val);
+string to_string(unsigned long long val);
+string to_string(float val);
+string to_string(double val);
+string to_string(long double val);</del>
+<ins>constexpr string to_string(/* integer type >= int */);
+constexpr string to_string(/* floating-point type */);</ins>
+</pre>
+
+Note: In the original overload set, the behavior described in [[#sharp-edges-of-to-string]]
+      is a consequence of `to_string(true)` and `to_string('a')` calling `to_string(int)`
+      because only an integer promotion, not a conversion is required.
+
+Existing well-formed code is not made invalid, and the behavior of existing calls to `to_string` 
+is not altered.
+This proposal only adds additional overloads for extended integer types and extended floating-point
+types.
+
+
+
+# Design decisions # {#design-decisions}
+
+The overload set is altered so that the lowest minimal changes to `to_string` are made.
+Notably:
+- `to_string` remains a non-template function.
+- `to_string` does not receive overloads for `short` or `signed char`, but relies on promotion
+    to `int`, as in the original design.
+
+The design strategy in this proposal mirrors that in [[P1467R9]], which expanded the set
+`sqrt(float)`, `sqrt(double)`, `sqrt(long double)` to <code>sqrt(<i>floating-point-type</i>)</code>
+in a similar way.
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: none;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The proposed changes are relative to the working draft of the standard as of [[!N4917]],
+after additionally applying the changes described in [[P2587R3]].
+
+Update subclause 17.3.2 [version.syn], paragraph 2 as follows:
+
+<blockquote>
+<pre>
+#define __cpp_lib_to_string  <del>202306L</del><ins>20XXXXL</ins>
+</pre>
+</blockquote>
+
+In subclause 23.4.2 [string.syn], update the synopsis as follows:
+
+<blockquote>
+<pre><del>
+  string to_string(int val);
+  string to_string(unsigned val);
+  string to_string(long val);
+  string to_string(unsigned long val);
+  string to_string(long long val);
+  string to_string(unsigned long long val);
+  string to_string(float val);
+  string to_string(double val);
+  string to_string(long double val);</del>
+<ins>  constexpr to_string(<i>integer-type-least-int</i> val);
+  constexpr to_string(<i>floating-point-type</i> val);</pre>
+</blockquote>
+
+Update subclause 23.4.5 [string.conversions] as follows:
+
+<blockquote>
+<pre><del>
+  string to_string(int val);
+  string to_string(unsigned val);
+  string to_string(long val);
+  string to_string(unsigned long val);
+  string to_string(long long val);
+  string to_string(unsigned long long val);
+  string to_string(float val);
+  string to_string(double val);
+  string to_string(long double val);</del>
+<ins>  constexpr to_string(<i>integer-type-least-int</i> val);
+  constexpr to_string(<i>floating-point-type</i> val);</ins></pre>
+<p class="indent">
+    For the function with parameter *integer-type-least-int*, the implementation provides an overload for each
+    cv-unqualified integer type ([basic.fundamental]) whose conversion rank is that of `int`
+    or greater.
+    For the function with parameter *floating-point-type*, the implementation provides an overload
+    for each cv-unqualified floating-point type.
+</p>
+<p class="indent">
+    *Returns*: `format("{}", val)`.
+</p>
+</blockquote>
+
+
+<pre class=biblio>
+{
+    "P2587R3": {
+        "authors": ["Victor Zverovich"],
+        "title": "to_string or not to_string",
+        "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2587r3.html#biblio-codesearch"
+    }
+}
+</pre>
