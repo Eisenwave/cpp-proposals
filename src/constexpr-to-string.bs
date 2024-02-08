@@ -7,8 +7,8 @@ Date: 2024-02-05
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
-ED: https://eisenwave.github.io/cpp-proposals/clmul.html
-!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.bs)
+ED: https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/constexpr-to-string.bs)
 Markup Shorthands: markdown on
 Abstract: This proposal seeks to add additional overloads to `std::to_string`.
 </pre>
