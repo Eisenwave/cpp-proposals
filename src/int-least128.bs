@@ -18,6 +18,9 @@ Abstract: This proposal standardizes 128-bit integers.
 
 128-bit integers have countless practical uses, and are already implemented in the form of compiler
 extensions such as `__int128`, and the C23 standard type `_BitInt(128)`.
+To implement [[P1522R1]], all major implementations have defined
+`std::iota_view<std::uint64_t>::difference_type` to be a 128-bit integer type,
+making 128-bit integers quasi-standard already.
 
 This paper seeks to standardize the existing practice of providing 128-bit integers.
 The goal is to obtain a mandatory 128-bit integer type with no core language changes

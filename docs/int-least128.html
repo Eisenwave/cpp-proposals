@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="51a1d800018c018c961d774b4304ee1ac1344a42" name="revision">
+  <meta content="c64dfad123b7050b0ce5551e5f8eec9afa68d0b5" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2199,7 +2199,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p>128-bit integers have countless practical uses, and are already implemented in the form of compiler
-extensions such as <code class="highlight"><c- b>__int128</c-></code>, and the C23 standard type <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code>.</p>
+extensions such as <code class="highlight"><c- b>__int128</c-></code>, and the C23 standard type <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code>.
+To implement <a data-link-type="biblio" href="#biblio-p1522r1" title="Iterator Difference Type and Integer Overflow">[P1522R1]</a>, all major implementations have defined <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- o>>::</c-><c- n>difference_type</c-></code> to be a 128-bit integer type,
+making 128-bit integers quasi-standard already.</p>
    <p>This paper seeks to standardize the existing practice of providing 128-bit integers.
 The goal is to obtain a mandatory 128-bit integer type with no core language changes
 and strong support from the C++ standard library.
@@ -2776,6 +2778,8 @@ and by proxy, pave the way for 128-bit extended integers.</p>
   <dl>
    <dt id="biblio-n3047">[N3047]
    <dd>ISO. <a href="https://www.iso-9899.info/n3047.html"><cite>N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)</cite></a>. URL: <a href="https://www.iso-9899.info/n3047.html">https://www.iso-9899.info/n3047.html</a>
+   <dt id="biblio-p1522r1">[P1522R1]
+   <dd>Eric Niebler. <a href="https://wg21.link/p1522r1"><cite>Iterator Difference Type and Integer Overflow</cite></a>. 28 July 2019. URL: <a href="https://wg21.link/p1522r1">https://wg21.link/p1522r1</a>
    <dt id="biblio-p3018r0">[P3018R0]
    <dd>Andreas Weis. <a href="https://wg21.link/p3018r0"><cite>Low-Level Integer Arithmetic</cite></a>. 15 October 2023. URL: <a href="https://wg21.link/p3018r0">https://wg21.link/p3018r0</a>
    <dt id="biblio-schultke1">[Schultke1]
