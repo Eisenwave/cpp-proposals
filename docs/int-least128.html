@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c64dfad123b7050b0ce5551e5f8eec9afa68d0b5" name="revision">
+  <meta content="846593d9f6f72e7bcf87eb5874a0f1f4b2145483" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2206,10 +2206,9 @@ making 128-bit integers quasi-standard already.</p>
 The goal is to obtain a mandatory 128-bit integer type with no core language changes
 and strong support from the C++ standard library.
 To accomplish this, the mandatory aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> are proposed.</p>
-   <p>While the definition of these aliases is trivial, requiring them also implies
+   <p>While the definition of these aliases is trivial, mandating them also implies
 library support from <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>limits</c-><c- o>></c-></code>, and other facilities.
-Such library support is crucial for a fully-fledged and useful 128-bit type.
-[[##library-impact]] demonstrates that the necessary support is not overwhelming
+Such library support is crucial for a fully-fledged and useful 128-bit type. <a href="#library-impact">§ 3.3 Impact on the library</a> demonstrates that the necessary support is not overwhelming
 to implement.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The implementation optionally provides <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-></code> aliases.</p>
    <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>

@@ -28,10 +28,10 @@ and strong support from the C++ standard library.
 To accomplish this, the mandatory aliases `std::int_least128_t` and `std::uint_least128_t`
 are proposed.
 
-While the definition of these aliases is trivial, requiring them also implies
+While the definition of these aliases is trivial, mandating them also implies
 library support from `<format>`, `<bit>`, `<cmath>`, `<limits>`, and other facilities.
 Such library support is crucial for a fully-fledged and useful 128-bit type.
-[[##library-impact]] demonstrates that the necessary support is not overwhelming
+[[#library-impact]] demonstrates that the necessary support is not overwhelming
 to implement.
 
 Note: The implementation optionally provides `std::int128_t` and `std::uint128_t` aliases.
