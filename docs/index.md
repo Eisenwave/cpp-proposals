@@ -29,3 +29,7 @@ Author: Jan Schultke
 ## NP: Better, `constexpr to_string`
 
 - [Latest](constexpr-to-string.html)
+
+## NP: `std::int_least128_t`
+
+- [Latest](int-least128.html)
