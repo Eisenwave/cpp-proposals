@@ -5,7 +5,7 @@ Revision: 0
 Status: NP
 Date: 2024-02-05
 Group: WG21
-Audience: LEWGI, LEWG
+Audience: LEWGI, LWG
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/int-least128.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/int-least128.bs)
@@ -19,13 +19,21 @@ Abstract: This proposal standardizes 128-bit integers.
 128-bit integers have countless practical uses, and are already implemented in the form of compiler
 extensions such as `__int128`, and the C23 standard type `_BitInt(128)`.
 
-This paper seeks to standardize the existing practice of providing 128-bit integers in the form
-of the mandatory aliases `int_least128_t` and `uint_least128_t`.
-The implementation can also provide `int128_t` and `uint128_t`.
+This paper seeks to standardize the existing practice of providing 128-bit integers.
+The goal is to obtain a mandatory 128-bit integer type with no core language changes
+and strong support from the C++ standard library.
+To accomplish this, the mandatory aliases `std::int_least128_t` and `std::uint_least128_t`
+are proposed.
 
-While it may seem trivial at first, the challenging part of this proposal is review and possibly
-revision of many standard library features interact with integers, such as `<iostream>`,
-`std::to_chars`, `std::printf`, `<bit>`, `<cmath>`, etc.
+While the definition of these aliases is trivial, requiring them also implies
+library support from `<format>`, `<bit>`, `<cmath>`, `<limits>`, and other facilities.
+Such library support is crucial for a fully-fledged and useful 128-bit type.
+[[##library-impact]] demonstrates that the necessary support is not overwhelming
+to implement.
+
+Note: The implementation optionally provides `std::int128_t` and `std::uint128_t` aliases.
+
+
 
 
 # Motivation and scope # {#motivation-and-scope}
@@ -48,6 +56,8 @@ the widest integer type.
 Introducing a wider integer would be an ABI break because to comply with the C standard wording,
 `intmax_t` would need to be 128-bit as well.
 This restriction was lifted in C23, allowing `intmax_t` to be only as wide as `long long`.
+C++ inherits this "relaxed" `std::intmax_t`.
+See [[#c-compatibility]] for more details.
 
 ## Use cases ## {#use-cases}
 
@@ -92,6 +102,9 @@ For example:
 - RISC-V provides the `clmul` and `clmulh` instructions to compute the low and high part of a
     carry-less multiplication.
     In fact, x86, ARM, and RISC-V all provide a way to compute a carry-less 128-bit product. 
+
+Some operating systems also provide 128-bit operations.
+For example, the Windows API provides a `Multiply128` function.
 
 ### Multi-precision operations ### {#multi-precision-operations}
 
@@ -166,7 +179,7 @@ integer compared to multi-precision operations using two 64-bit integers.
 
 # Impact on the standard # {#impact-on-the-standard}
 
-It merely mandates the following integer types in `<cstdint>`:
+First and foremost, this proposal mandates the following integer types in `<cstdint>`:
 ```cpp
 using int_least128_t  = /* signed integer type */;
 using uint_least128_t = /* unsigned integer type */;
@@ -174,13 +187,42 @@ using uint_least128_t = /* unsigned integer type */;
 using int_fast128_t   = /* signed integer type */;
 using uint_fast128_t  = /* unsigned integer type */;
 
-using int128_t = /* implementation-defined */; // optional
-using uint128_t = /* implementation-defined */; // optional
+using int128_t = /* signed integer type */; // optional
+using uint128_t = /* unsigned integer type */; // optional
 
 // The corresponding macros for MIN and MAX must also be defined ...
 ```
 This change in itself is almost no change at all.
 The implementation can already provide `int_least128_t` while complying with the C++11 standard.
+However, this change has far-reaching ramifications which are examined below.
+
+## C Compatibility ## {#c-compatibility}
+
+Any attempt of standardizing 128-bit integers must also keep possible compatibility with the C
+standard in mind.
+C does not guarantee a `int_least128_t` alias, but `intmax_t` may present a potential point of
+conflict.
+
+[[N3047]], 7.22.1.5 [Greatest-width integer types] currently defines `intmax_t` as follows:
+
+<blockquote>
+The following type designates a signed integer type, other than a bit-precise integer type, capable of
+representing any value of any signed integer type with the possible exceptions of signed bit-precise
+integer types and of signed extended integer types that are wider than `long long` and that are
+referred by the type definition for an exact width integer type:
+```cpp
+intmax_t
+```
+</blockquote>
+
+For `intmax_t` to not be `int_least128_t` in the C standard, there must exist an `int128_t`
+alias for the same type.
+GCC already provides an `__int128` type which satisfies the padding-free requirement and could
+be exposed as `int128_t`.
+
+In conclusion, it is possible to mandate a `std::int_least128_t` alias without sacrificing
+C-compatibility.
+
 
 ## Impact on the core language ## {#core-impact}
 
@@ -190,6 +232,10 @@ However, it is worth noting that the existence of `std::uint_least128_t` leads t
 - The result of the `sizeof` operator can be a 128-bit integer.
 - The underlying type of enumerations can be a 128-bit integer.
 - Previously ill-formed integer literals could now be of 128-bit integer type.
+- The conditions in `#if` preprocessing directives are evaluated as if operands had the same
+    representation as `intmax_t` or `uintmax_t`,
+    which means that 128-bit integers cannot be used in this context, or the values
+    would be truncated.
 
 However, none of this is a new issue introduced by this proposal.
 Any compliant implementation could already have produced this behavior,
@@ -222,19 +268,20 @@ Whether to do so is a QoI issue.
 
 **Issue:** `std::to_integer` would need 128-bit support.<br>
 **Action:** ✔️ No impact on the standard.
-Require support. `std::to_integer` is equivalent to a single `static_cast`.
+
+Note: An implementation is trivial.
+      `std::to_integer` is equivalent to a single `static_cast`.
 
 **Issue:** `<version>` would likely need a 128-bit integer feature-testing macro.<br>
 **Action:** ⚠️ Add a macro.
 
 **Issue:** `<numeric_limits>` would need a trait for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard.
-Require a `std::numeric_limits` specialization.
-Note that GNU-style compilers already provide `std::numeric_limits<__int128>` as an extension.
+**Action:** ✔️ No impact on the standard; require a `std::numeric_limits` specialization.
+
+Note: GCC already provides `std::numeric_limits<__int128>` as an extension.
 
 **Issue:** `<climits>` would need additional constants for 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-Defining these constants takes little implementation effort.
 
 **Issue:** `<cstdint>` would need need to explicitly require support for 128-bit integers
 in its synopsys.<br>
@@ -244,12 +291,14 @@ in its synopsys.<br>
 
 **Issue:** `std::is_integral` needs to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-GCC already implements `std::is_integral<__int128>`, and the implementation of this trait
-is not difficult in general.
+
+Note: GCC already implements `std::is_integral<__int128>`.
+Implementing this trait is not difficult in general.
 
 **Issue:** `std::rank<T>::value` could be a 128-bit integer.<br>
 **Action:** ✔️ No impact on the standard.
-This depends on whether `std::size_t` is a 128-bit integer, and this decision is QoI.
+
+Note: This depends on whether `std::size_t` is a 128-bit integer, and this decision is QoI.
 
 **Issue:** `std::make_signed` and `std::make_unsigned` require 128-bit support.<br>
 **Action:** ✔️ No impact on the standard.
@@ -259,8 +308,10 @@ GCC already implements `std::make_{un}signed<__int128>`.
 `std::intmax_t` is no longer the widest integer type and changing the type of NTTP to
 `std::uint_least128_t` would be an ABI break because the type of template argument participates
 in name mangling.<br>
-**Action:** ❌ Potential ABI break or significant portions of `<chrono>` would become unusable
-with 128-bit integers.
+**Action:** ✔️ No impact on the standard.
+
+Note: Unfortunately ratios beyond 2<sup>64</sup> or 2<sup>-64</sup>
+cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 
 ### General utilities library ### {#library-impact-utilities}
 
@@ -270,8 +321,9 @@ Existing implementations are generic and could support 128-bit integers with no 
 
 **Issue:** `std::integer_sequence` would need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-The implementation of `std::integer_sequence` or `std::make_integer_sequence` does not depend
-on specific integer width.
+
+Note: The implementation of `std::integer_sequence` or `std::make_integer_sequence` does not depend
+on a specific integer width.
 
 **Issue:** `std::bitset` could receive an additional constructor taking `std::uint_least128_t`.<br>
 **Action:** ⚠️ Add such a constructor.
@@ -281,11 +333,16 @@ on specific integer width.
 
 **Issue:** `std::to_chars` and `std::from_chars` would need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-Note that a 128-bit stringification can be implemented in terms of 1-3 64-bit stringifications.
+
+Note: 128-bit stringification can be implemented in terms of one to three 64-bit stringifications
+      and integer divisions with constant divisor.
+      In the special case where the base of conversion is a power of two, no integer division is
+      needed, and a 64-bit implementation can be repurposed.
 
 **Issue:** `<format>` facilities need to support 128-bit integers.<br>
 **Action:** ⚠️ To be investigated.
-The locale-independent forms are simply implemented in terms of `std::to_chars` and are not
+
+Note: The locale-independent forms are simply implemented in terms of `std::to_chars` and are not
 affected.
 However, it needs to be clear whether locale support for 128-bit integers would constitute
 an ABI break.
@@ -300,7 +357,8 @@ fallback case of initializing a value with `handle(v)`.<br>
 
 **Issue:** Bit manipulation functions in `<bit>` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-For most functions, a 128-bit implementation simply combines the results of calling the 64-bit
+
+Note: For most functions, a 128-bit implementation simply combines the results of calling the 64-bit
 variant for the low and high bits.
 For example, `popcount(std::uint128_t x)` returns
 `popcount<std::uint64_t>(x >> 64) + popcount<std::uint64_t>(x)`.
@@ -325,7 +383,8 @@ All these issues are either QoI or don't impact existing implementations substan
 Generally, 128-bit integers would be a valid `difference_type` and an implementation needs to
 consider this when defining concepts that use integers in any way.<br>
 **Action:** ✔️ No impact on the standard.
-As long as `std::is_integral` and by proxy, `std::integral` are correct, the existing wording
+
+Note: As long as `std::is_integral` (and by proxy, `std::integral`) is correct, the existing wording
 should be unaffected.
 
 
@@ -343,20 +402,23 @@ The standard recommends to use a type which is sufficiently wide to store the pr
 of sizes of underlying ranges.
 A similar issue arises for `std::cartesian_product_view::iterator`.<br>
 **Action:** ✔️ No impact on the standard.
-The choice of integer type used to be (and still is) implementation-defined.
+
+Note: The choice of integer type used to be (and still is) implementation-defined.
 
 
 ### Algorithms library ### {#library-impact-algorithms}
 
 **Issue:** `std::gcd`, `std::lcm`, and `std::midpoint` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-For GCD computation, algorithms which don't rely on integer division exist, such as Binary GCD.
+
+Note: For GCD computation, algorithms which don't rely on integer division exist, such as Binary GCD.
 Therefore, a reasonably fast 128-bit version is possible.
 `std::midpoint` can be implemented in a width-agnostic way.
 
 **Issue:** Saturating arithmetic functions and `saturate_cast` need to support 128-bit integers.
 **Action:** ✔️ No impact on the standard.
-Existing 64-bit implementations that don't rely on 128-bit types can be equally used for 128-bit
+
+Note: Existing 64-bit implementations that don't rely on 128-bit types can be equally used for 128-bit
 types.
 
 ### Numerics library ### {#library-impact-numerics}
@@ -364,7 +426,8 @@ types.
 **Issue:** Various random number generators and `std::uniform_int_distribution` need to support
 128-bit types.<br>
 **Action:** ✔️ No impact on the standard.
-The implementation of random number generators does not usually rely on bit widths being lower
+
+Note: The implementation of random number generators does not usually rely on bit widths being lower
 than 128-bit.
 Some generators such as linear congruential engines rely heavily on modulo division,
 which is very expensive for 128-bit integers.
@@ -373,58 +436,79 @@ which is always the case in generators, though not in distributions.
 
 **Issue:** `std::seed_seq` needs to support `std::initializer_list<std::uint128_t>`.<br>
 **Action:** ✔️ No impact on the standard.
-This can be implemented by splitting each 128-bit integer into two 64-bit integers and
+
+Note: This can be implemented by splitting each 128-bit integer into two 64-bit integers and
 repurposing and existing implementation.
 
 **Issue:** `std::valarray` needs to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-`std::valarray` does not rely on using integer types specifically.
+
+Note: `std::valarray` does not rely on using integer types specifically.
 Treating 128-bit integers specially and utilizing hardware resources is a QoI issue.
 
 **Issue:** For most `<cmath>` functions, an additional overload taking 128-bit integers would
 need to be defined.<br>
 **Action:** ✔️ No impact on the standard.
-The overload taking `std::uint_least128_t` would convert to `double`, like other functions.
+
+Note: The overload taking `std::uint_least128_t` would convert to `double`, like other functions.
 `double` is more than enough to represent the maximum 128-bit integer value, however,
 it should be considered whether `long double` should be used to minimize loss of precision.
 
 **Issue:** `std::abs` should receive an additional 128-bit overload.<br>
 **Action:** ⚠️ Add an overload `std::uint_least128_t abs(std::uint_least128_t)`.
-Without such an overload, `std::uint_least128_t` would delegate to `abs(double)`.
+
+Note: Without such an overload, `std::uint_least128_t` would delegate to `abs(double)`.
 
 **Issue:** The `<linalg>` library may need 128-bit support.<br>
 **Action:** ✔️ No impact on the standard.
-The linear algebra library operates on `std::mdspan` of any type.
+
+Note: The linear algebra library operates on `std::mdspan` of any type.
 Treating 128-bit integers specially and utilizing hardware resources is a QoI issue.
 
 ### Time library ### {#library-impact-time}
 
 **Issue:** Significant portions of `<chrono>` use `std::ratio`, which has `std::intmax_t` template
 parameters.<br>
-**Action:** ❌ Potential ABI break. See [[#library-impact-metaprogramming]].
+**Action:** ✔️ No impact on the standard.
+
+<div class="note">
+<span class="marker">Note:</span>
+`std::ratio` cannot represent certain extreme ratios
+if `std::intmax_t` is narrower than `std::uint_least128_t`.
+However, the time library is generally safe to use, even if the representation of say,
+`std::duration` is wider than the types used in a `std::ratio` fraction.
+      
+If there is future interest, types such as `std::duration`
+could be relaxed to work with *ratio-like* types,
+so that a new 128-bit `std::ratio`-style type could be used as well,
+not just `std::ratio` itself.
+However, this is a significant extension of the time library and not part of this proposal.
+</div>
 
 ### Localization library ### {#library-impact-localization}
 
 **Issue:** `std::num_get` and `std::num_put` could use `std::uint_least128_t` overloads for `do_get`.<br>
 **Action:** ✔️ No impact on the standard.
-Potential ABI break if changes were made.
+
+Note: This would be a an ABI break if changes were made.
 `std::format` and `std::print` provide sufficient alternatives which can be supported without
 breaking ABI.
-Therefore, I recommend leaving the existing facilities untouched.
 
 ### Input/output library ### {#library-impact-io}
 
 **Issue:** `std::num_get` and `std::num_put` don't support 128-bit integers.
 By proxy, extraction and insertion with `operator>>` would not work.<br>
 **Action:** ✔️ No impact on the standard.
-The standard doesn't require these to work for all integer types, only for standard integer types.
+
+Note: The standard doesn't require these to work for all integer types, only for standard integer types.
 Any change would be an ABI break, so these facilities could be left untouched.
 Unfortunately, the user won't be able to `std::cout << std::uint_least128_t{...}`, however,
 the language provides sufficient alternatives.
 
 **Issue:** `std::printf` and `std::scanf` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
-If `std::to_chars` and `std::format` are already mandated, it is reasonable to expect `std::printf`
+
+Note: If `std::to_chars` and `std::format` are already mandated, it is reasonable to expect `std::printf`
 support as well.
 `PRIoLEAST128` would also need to be defined, but this has no impact on the existing wording.
 
@@ -433,7 +517,8 @@ support as well.
 
 **Issue:** `std::atomic` needs to support `std::uint_least128_t`.<br>
 **Action:** ✔️ No impact on the standard.
-`std::atomic` specializations are already defined for all integer types.
+
+Note: `std::atomic` specializations are already defined for all integer types.
 On x86_64, all `.fetch` operations would fall back onto CAS-and-retry loops
 utilizing the `cmpxchg16b` instruction.
 This would be no better than using a `std::atomic<std::array<std::byte, 16>>`.
@@ -444,7 +529,17 @@ However, these are generally QoI issues and there is no restriction that would p
 **Action:** ⚠️ Define aliases following the same convention as `std::atomic_uint_least64_t`.
 
 
+
+
+
 # Design considerations # {#design-considerations}
+
+The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
+A `std::least_uint128_t` alias is the only option that does not involve any changes
+to the core language.
+Therefore, it is the obvious design choice for this proposal.
+
+However, there are a few possible alternatives which were considered:
 
 ## Why no standard integer type? ## {#standard-integers}
 
@@ -455,19 +550,31 @@ One question that needs addressing is:
 
 Firstly, naming might be a problem here.
 A standard integer type would likely warrant the ability to name it by keyword, and an
-ever increasing sequence of `long`s isn't an attractive solution.
+ever-increasing sequence of `long`s isn't an attractive solution.
+Even with a concise keyword such as `_Uint128`, it is unclear what advantage such a keyword
+would have over a type alias, other than saving one `#include` directive.
 
-Also, it is useful to keep `std::uint_least128_t` a second-class citizen by not making it a
-standard integer.
+Secondly, it is useful to keep `std::uint_least128_t` a second-class citizen by not making it a
+standard integer type.
 This makes it possible to say that certain library facilities are only required to support
 standard integer types, not extended integer types.
-
 For example, the widening operations proposed in [[P3018R0]] could be required only to
 take standard integer inputs, so that 128-bit integers don't also require 128-to-256-bit
 widening operations.
 
+Thirdly, as already stated in [[#c-compatibility]], C's `intmax_t` must be the
+widest standard integer type.
+To not break ABI and be C-compatible, `std::int_least128_t` must be
+an extended integer type.
 
-## Why not bit-precise integers? ## {#bit-precise-integers}
+## Why no mandatory `std::int128_t` type? ## {#exact-width-integers}
+
+Mandating any exact `std::intN_t` inadvertently restricts what size a byte can have
+because exact-width types cannot have any padding.
+`std::int128_t` implies that the width of a byte is a power of two &le; 128,
+and historically, C++ has not restricted implementations to a specific byte size.
+
+## Why no bit-precise integers? ## {#bit-precise-integers}
 
 Instead of settling for 128-bit integers, it would also be possible to integrate
 bit-precise integers (C's `_BitInt(N)` type) into the C++ standard.
@@ -481,15 +588,12 @@ In essence, this is asking:
 
 Firstly, this would be an enormously ambitious and time-intensive undertaking, with huge impact
 on the standard.
-I simply lack the ambition to attempt this.
-Therefore, the proposal focuses on 128-bit integers.
-
-Secondly, `_BitInt` doesn't actually satisfy the goals of this proposal for multiple reasons:
+Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple reasons:
 
 1. `_BitInt` in C23 isn't required to support 128 bits at all (see [[#c-library-support]]).
     Only 64 bits (or as much as `long long` is wide) are required.
-    In other words, `_BitInt` doesn't automatically give you 128-bit support and does not solve
-    the problem in itself.
+    See [[#c-library-support]] for more details.
+    In other words, `_BitInt` doesn't automatically give you 128-bit support.
 
 2. It is not reasonable to expect full library support for any bit size.
     Even C doesn't require `_BitInt` support for its bit-manipulation functions, `printf`, and
@@ -497,52 +601,49 @@ Secondly, `_BitInt` doesn't actually satisfy the goals of this proposal for mult
     The C++ standard library dwarfs that of C.
     It is even less realistic to expect full support from all C++ numeric functions,
     input/output facilities etc.
-    However, it is realistic to extend library support to 128 bits at least.
+    However, it is realistic to extend library support to *just* 128 bits.
 
-3. `_BitInt` creates a parallel system to the existing standard and extended integer types.
+3. Even if library support for specifically 128-bit bit-precise integers was added,
+    this would be very strange to specify in the standard.
+    Perhaps `_BitInt(128)` would be treated differently from other bit-precise types and given more support from
+    `std::format` and other functions, but this would be a somewhat arbitrary type, compared
+    to standard integer types, which have minimum sizes, not exact sizes.
+    Alternatively, support would be provided through a `_BitInt(N >= 128)` type, but to easily
+    refer to it, one would need a `std::bit_int_least128_t` alias
+    (Note that defining `int_least128_t = _BitInt(128)` would likely compromise C compatibility).
+    At that point, we're just getting `std::int_least128_t` with extra steps.
+
+4. `_BitInt` creates a parallel system to the existing standard and extended integer types.
     It would be highly unusual if the widening operations proposed in [[P3018R0]] could yield
     bit-precise integers for standard integer inputs.
-
-This proposal makes some changes which will make it easier to integrate bit-precise
-integers into the standard in the future.
 
 ### Summary of differences ### {#bitint-vs-uint128}
 
 <table>
 <tr>
-    <th></th><th>Bit-precise integers</th><th>`std::uint_least128_t`</td>
+    <th></th><th>Bit-precise integers</th><th>`std::int_least128_t`</td>
 </tr>
 <tr>
     <th>128-bit support mandatory</th><td>❌</td><td>✔️</td>
 </tr>
 <tr>
-    <th>Easy to standardize</th><td>❌</td><td>✔️</td>
+    <th>No core language changes</th><td>❌</td><td>✔️</td>
 </tr>
 <tr>
     <th>Extensive library support</th><td>❌</td><td>✔️</td>
 </tr>
+<tr>
+    <th>Integrates easily into the<br>existing hierarchy of standard integers</th><td>❌</td><td>✔️</td>
+</tr>
 </table>
 
 
-## C library support ## {#c-library-support}
+### C library support for bit-precise integers ### {#c-library-support}
 
 The C23 standard currently does not mandate "full" library support for bit-precise integers.
 For example, `printf` would require a `PRIuLEASTN` format specifier macro to print `uint_least128_t`,
 but the existence of `_BitInt(128)` does not imply the existence of `uint_least128_t` or such
 a macro.
-
-Therefore, requiring `uint_least128_t` implies stronger support that goes extends beyond what the
-C standard mandates.
-While this requires some implementation effort, none if it is unreasonable, especially considering
-that C++ already provides generic utilities like `std::to_chars`, which are commonly implemented
-to work with any width.
-In general, none of the required C library support is an unreasonable hurdle.
-Much of it is trivial to provide, at least if the underlying implementation is already generic.
-
-Therefore, this proposal makes no special exemptions for `int_least128_t` support in this area.
-In other words, `std::printf` is required to print `std::int_least128_t`.
-
-
 
 
 
@@ -590,6 +691,11 @@ WIP
 
 <pre class=biblio>
 {
+    "N3047": {
+        "title": "N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)",
+        "href": "https://www.iso-9899.info/n3047.html",
+        "authors": ["ISO"]
+    },
     "Schultke1": {
         "title": "Better, constexpr to_string",
         "href": "https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html",
