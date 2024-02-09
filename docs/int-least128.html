@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="82f55c0c13af182e71dd02cab31702d804b7c099" name="revision">
+  <meta content="ca4d97dfbcb41dc5570893263a7b44a85ccf5eb5" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2199,7 +2199,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
        <a href="#bit-precise-integers"><span class="secno">5.3</span> <span class="content">Why no bit-precise integers?</span></a>
        <ol class="toc">
         <li><a href="#bitint-vs-uint128"><span class="secno">5.3.1</span> <span class="content">Summary of differences</span></a>
-        <li><a href="#c-library-support"><span class="secno">5.3.2</span> <span class="content">C library support for bit-precise integers</span></a>
+        <li><a href="#div"><span class="secno">5.3.2</span> <span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span></a>
+        <li><a href="#c-library-support"><span class="secno">5.3.3</span> <span class="content">C library support for bit-precise integers</span></a>
        </ol>
      </ol>
     <li>
@@ -2213,7 +2214,17 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#existing-bit-int"><span class="secno">6.1.3</span> <span class="content"><code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code></span></a>
        </ol>
      </ol>
-    <li><a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
+    <li>
+     <a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
+     <ol class="toc">
+      <li><a href="#proposed-version"><span class="secno">7.1</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code></span></a>
+      <li><a href="#proposed-cstdint"><span class="secno">7.2</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span></a>
+      <li><a href="#proposed-bitset"><span class="secno">7.3</span> <span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span></a>
+      <li><a href="#proposed-format"><span class="secno">7.4</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span></a>
+      <li><a href="#proposed-numeric-conversions"><span class="secno">7.5</span> <span class="content">Numeric conversions</span></a>
+      <li><a href="#proposed-abs"><span class="secno">7.6</span> <span class="content">Absolute values</span></a>
+      <li><a href="#proposed-atomic"><span class="secno">7.7</span> <span class="content">Atomic operations</span></a>
+     </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2425,16 +2436,17 @@ One common issue is that aliases such as <code class="highlight"><c- n>size_type
 containers, iterators, and other types can be a 128-bit integer.
 Whether to define them as such is a QoI issue in general, and won’t be discussed further.</p>
    <h4 class="heading settled" data-level="3.3.1" id="library-impact-language-support"><span class="secno">3.3.1. </span><span class="content">Language support library</span><a class="self-link" href="#library-impact-language-support"></a></h4>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> needs an overload for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard (see <a href="#div">§ 5.3.2 Why no std::div?</a>).</p>
    <p><strong>Issue:</strong> Certain type aliases such as <code class="highlight"><c- b>ptrdiff_t</c-></code> and <code class="highlight"><c- b>size_t</c-></code> could now be defined as a 128-bit type.<br> <strong>Action:</strong> ✔️ No impact on the standard.
 Whether to do so is a QoI issue.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code> would need 128-bit support.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> An implementation is trivial. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code> is equivalent to a single <code class="highlight"><c- k>static_cast</c-></code>.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> would likely need a 128-bit integer feature-testing macro.<br> <strong>Action:</strong> ⚠️ Add a macro.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> would likely need a 128-bit integer feature-testing macro.<br> <strong>Action:</strong> ⚠️ Add a macro (see <a href="#proposed-version">§ 7.1 Header &lt;version></a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>numeric_limits</c-><c- o>></c-></code> would need a trait for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard; require a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-></code> specialization.</p>
    <p class="note" role="note"><span class="marker">Note:</span> GCC already provides <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- b>__int128</c-><c- o>></c-></code> as an extension.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>climits</c-><c- o>></c-></code> would need additional constants for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code> would need need to explicitly require support for 128-bit integers
-in its synopsys.<br> <strong>Action:</strong> ⚠️ Define aliases such as <code class="highlight"><c- n>int_least128_t</c-></code> and explicitly state that 128 bits are supported.</p>
+in its synopsys.<br> <strong>Action:</strong> ⚠️ Define aliases (see <a href="#proposed-cstdint">§ 7.2 Header &lt;cstdint></a>).</p>
    <h4 class="heading settled" data-level="3.3.2" id="library-impact-metaprogramming"><span class="secno">3.3.2. </span><span class="content">Metaprogramming library</span><a class="self-link" href="#library-impact-metaprogramming"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> GCC already implements <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-><c- o>&lt;</c-><c- b>__int128</c-><c- o>></c-></code>.
@@ -2452,8 +2464,8 @@ Existing implementations are generic and could support 128-bit integers with no 
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integer_sequence</c-></code> would need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integer_sequence</c-></code> or <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_integer_sequence</c-></code> does not depend
 on a specific integer width.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor (see <a href="#proposed-bitset">§ 7.3 Class template bitset</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function (see <a href="#proposed-bitset">§ 7.3 Class template bitset</a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> would need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> 128-bit stringification can be implemented in terms of one to three 64-bit stringifications
       and integer divisions with constant divisor.
@@ -2464,16 +2476,17 @@ on a specific integer width.</p>
 affected.
 However, it needs to be clear whether locale support for 128-bit integers would constitute
 an ABI break.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> and <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec_integral</c-></code> could possibly support 128-bit integers.<br> <strong>Action:</strong> ⚠️ Add support for 128-bit integers.
-This is not an ABI break.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> and <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec_integral</c-></code> could possibly support 128-bit integers.<br> <strong>Action:</strong> ⚠️ Add support for 128-bit integers (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_arg</c-></code> may need direct support for 128-bit integers rather than using the
-fallback case of initializing a value with <code class="highlight"><c- n>handle</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>.<br> <strong>Action:</strong> ⚠️ To be investigated.</p>
+fallback case of initializing a value with <code class="highlight"><c- n>handle</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>.<br> <strong>Action:</strong> ⚠️ To be investigated (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
    <p><strong>Issue:</strong> Bit manipulation functions in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> For most functions, a 128-bit implementation simply combines the results of calling the 64-bit
 variant for the low and high bits.
 For example, <code class="highlight"><c- n>popcount</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- n>x</c-><c- p>)</c-></code> returns <code class="highlight"><c- n>popcount</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- o>></c-><c- p>(</c-><c- n>x</c-> <c- o>>></c-> <c- mi>64</c-><c- p>)</c-> <c- o>+</c-> <c- n>popcount</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- o>></c-><c- p>(</c-><c- n>x</c-><c- p>)</c-></code>.</p>
-   <p><strong>Issue:</strong> It would be convenient if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> support 128-bit types.<br> <strong>Action:</strong> ⚠️ Support should be provided.
-However, this issue is dealt with in <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>, not in this proposal.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> needs to support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 7.5 Numeric conversions</a>).</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This issue is also dealt with in <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
+That proposal also marks the functions returning integers <code class="highlight"><c- k>constexpr</c-></code>, so it is
+a superset of the changes proposed here.</p>
    <h4 class="heading settled" data-level="3.3.4" id="library-impact-containers"><span class="secno">3.3.4. </span><span class="content">Containers library</span><a class="self-link" href="#library-impact-containers"></a></h4>
    <p><strong>Issue:</strong> The extents and index types of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> could be 128-bit integers.
 This is also the case for type aliases of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>strided_slice</c-></code>.
@@ -2524,7 +2537,7 @@ Treating 128-bit integers specially and utilizing hardware resources is a QoI is
 need to be defined.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The overload taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would convert to <code class="highlight"><c- b>double</c-></code>, like other functions. <code class="highlight"><c- b>double</c-></code> is more than enough to represent the maximum 128-bit integer value, however,
 it should be considered whether <code class="highlight"><c- b>long</c-> <c- b>double</c-></code> should be used to minimize loss of precision.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-> <c- n>abs</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-><c- p>)</c-></code>.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload (see <a href="#proposed-abs">§ 7.6 Absolute values</a>).</p>
    <p class="note" role="note"><span class="marker">Note:</span> Without such an overload, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would delegate to <code class="highlight"><c- n>abs</c-><c- p>(</c-><c- b>double</c-><c- p>)</c-></code>.</p>
    <p><strong>Issue:</strong> The <code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code> library may need 128-bit support.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The linear algebra library operates on <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> of any type.
@@ -2561,7 +2574,7 @@ On x86_64, all <code class="highlight"><c- p>.</c-><c- n>fetch</c-></code> opera
 utilizing the <code class="highlight"><c- n>cmpxchg16b</c-></code> instruction.
 This would be no better than using a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- mi>16</c-><c- o>>></c-></code>.
 However, these are generally QoI issues and there is no restriction that would prevent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> specializations, even if hardware support is very limited.</p>
-   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases following the same convention as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>atomic_uint_least64_t</c-></code>.</p>
+   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases following the same convention as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>atomic_uint_least64_t</c-></code> (see <a href="#proposed-atomic">§ 7.7 Atomic operations</a>).</p>
    <h2 class="heading settled" data-level="4" id="implementation-impact"><span class="secno">4. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
    <p>The following table summarizes the affected standard library parts and the estimated effort
 required to implement the proposed changes.
@@ -2736,9 +2749,9 @@ on the standard.
 Secondly, <code class="highlight"><c- b>_BitInt</c-></code> does not satisfy the goals of this proposal for multiple reasons:</p>
    <ol>
     <li data-md>
-     <p><code class="highlight"><c- b>_BitInt</c-></code> in C23 isn’t required to support 128 bits at all (see <a href="#c-library-support">§ 5.3.2 C library support for bit-precise integers</a>).
+     <p><code class="highlight"><c- b>_BitInt</c-></code> in C23 isn’t required to support 128 bits at all (see <a href="#c-library-support">§ 5.3.3 C library support for bit-precise integers</a>).
 Only 64 bits (or as much as <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is wide) are required.
-See <a href="#c-library-support">§ 5.3.2 C library support for bit-precise integers</a> for more details.
+See <a href="#c-library-support">§ 5.3.3 C library support for bit-precise integers</a> for more details.
 In other words, <code class="highlight"><c- b>_BitInt</c-></code> doesn’t automatically give you 128-bit support.</p>
     <li data-md>
      <p>It is not reasonable to expect full library support for any bit size.
@@ -2786,7 +2799,21 @@ bit-precise integers for standard integer inputs.</p>
       <td>❌
       <td>✔️
    </table>
-   <h4 class="heading settled" data-level="5.3.2" id="c-library-support"><span class="secno">5.3.2. </span><span class="content">C library support for bit-precise integers</span><a class="self-link" href="#c-library-support"></a></h4>
+   <h4 class="heading settled" data-level="5.3.2" id="div"><span class="secno">5.3.2. </span><span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span><a class="self-link" href="#div"></a></h4>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> is a function which returns the quotient and remainder of an integer division in one
+operation.
+This proposal intentionally doesn’t extend support to 128-bit types because each overload of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> returns a different type.
+Namely, the current overloads for <code class="highlight"><c- b>int</c-></code>, <code class="highlight"><c- b>long</c-></code>, and <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> return <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>div_t</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>ldiv_t</c-></code>, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lldiv_t</c-></code> respectively.</p>
+   <p>This scheme isn’t easy to generalize to 128-bit integers or other extended integer types.
+A possibly approach would be to define a class template <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div_result</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> and re-define
+the concrete types to be aliases for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div_result</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-></code> etc.
+However, this is arguably a breaking change because it alters what template argument deduction
+is possible from these types.</p>
+   <p>Furthermore, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> is arguably useless.
+Optimizing compilers recognize separate uses of <code class="highlight"><c- n>x</c-> <c- o>/</c-> <c- n>y</c-></code> and <code class="highlight"><c- n>x</c-> <c- o>%</c-> <c- n>y</c-></code> and fuse them into a single
+division which yields both quotient and remainder, at least on platforms where this is possible.
+There is no motivation for putting substantial work into a useless relic.</p>
+   <h4 class="heading settled" data-level="5.3.3" id="c-library-support"><span class="secno">5.3.3. </span><span class="content">C library support for bit-precise integers</span><a class="self-link" href="#c-library-support"></a></h4>
    <p>The C23 standard currently does not mandate "full" library support for bit-precise integers.
 For example, <code class="highlight"><c- n>printf</c-></code> would require a <code class="highlight"><c- n>PRIuLEASTN</c-></code> format specifier macro to print <code class="highlight"><c- n>uint_least128_t</c-></code>,
 but the existence of <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> does not imply the existence of <code class="highlight"><c- n>uint_least128_t</c-></code> or such
@@ -2829,6 +2856,7 @@ GNU-family implementations support more than 128 bits already.</p>
    <p>It is reasonable to expect that given enough time, <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> will become
 widely supported by existing implementations.</p>
    <h2 class="heading settled" data-level="7" id="proposed-wording"><span class="secno">7. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h3 class="heading settled" data-level="7.1" id="proposed-version"><span class="secno">7.1. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-version"></a></h3>
    <p>In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:</p>
    <blockquote>
 <pre class="highlight"><ins><c- cp>#define __cpp_lib_atomic_int128 20XXXX</c-></ins>
@@ -2837,6 +2865,7 @@ widely supported by existing implementations.</p>
 <ins><c- cp>#define __cpp_lib_int128        20XXXX</c-></ins>
 </pre>
    </blockquote>
+   <h3 class="heading settled" data-level="7.2" id="proposed-cstdint"><span class="secno">7.2. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-cstdint"></a></h3>
    <p>In subclause 17.4.1 [cstdint.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><c- c1>// all freestanding</c->
@@ -2904,6 +2933,7 @@ The exact-width types <code class="highlight"><c- n>intN_t</c-></code> and <code
     <ins>, and <code class="highlight"><c- mi>128</c-></code></ins>
      are also optional; [...] 
    </blockquote>
+   <h3 class="heading settled" data-level="7.3" id="proposed-bitset"><span class="secno">7.3. </span><span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span><a class="self-link" href="#proposed-bitset"></a></h3>
    <p>In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">    <c- c1>// [bitset.cons], constructors</c->
@@ -2966,7 +2996,9 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
      . 
     </p>
    </blockquote>
+   <h3 class="heading settled" data-level="7.4" id="proposed-format"><span class="secno">7.4. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-format"></a></h3>
    <p class="issue" id="issue-e55e0f12"><a class="self-link" href="#issue-e55e0f12"></a> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P.</p>
+   <h3 class="heading settled" data-level="7.5" id="proposed-numeric-conversions"><span class="secno">7.5. </span><span class="content">Numeric conversions</span><a class="self-link" href="#proposed-numeric-conversions"></a></h3>
    <p>Wording for <code class="highlight"><c- n>to_string</c-></code> requires no changes after <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
 However, should those changes not be accepted,
 update subclause 23.4.2 [string.syn] as follows:</p>
@@ -3004,14 +3036,15 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     </p>
     <p class="indent"> 7 <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
+   <h3 class="heading settled" data-level="7.6" id="proposed-abs"><span class="secno">7.6. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
    <p>In subclause 28.7.1 [cmath.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">  <c- c1>// [c.math.abs], absolute values</c->
-<del>  <c- k>constexpr</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>int</c-> <c- n>j</c-><c- p>);</c->                                             <c- c1>// freestanding</c->
-  <c- k>constexpr</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                                   <c- c1>// freestanding</c->
-  <c- k>constexpr</c-> <c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                         <c- c1>// freestanding</c-></del>
-<ins>  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>)</c-> <c- o>-></c-> <c- k>decltype</c-><c- p>(</c-><c- n>j</c-><c- p>);</c->        <c- c1>// freestanding</c-></ins>
-  <c- k>constexpr</c-> <i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>j</c-><c- p>);</c->             <c- c1>// freestanding-deleted</c->
+<del>  <c- k>constexpr</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>int</c-> <c- n>j</c-><c- p>);</c->                                         <c- c1>// freestanding</c->
+  <c- k>constexpr</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                               <c- c1>// freestanding</c->
+  <c- k>constexpr</c-> <c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                     <c- c1>// freestanding</c-></del>
+<ins>  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>)</c-> <c- o>-></c-> <c- k>decltype</c-><c- p>(</c-><c- n>j</c-><c- p>);</c->    <c- c1>// freestanding</c-></ins>
+  <c- k>constexpr</c-> <i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>j</c-><c- p>);</c->         <c- c1>// freestanding-deleted</c->
 </pre>
    </blockquote>
    <p>In subclause 28.7.2 [c.math.abs], make the following changes:</p>
@@ -3030,7 +3063,50 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
-   <p class="issue" id="issue-9dda1774"><a class="self-link" href="#issue-9dda1774"></a> Wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> is W.I.P.</p>
+   <h3 class="heading settled" data-level="7.7" id="proposed-atomic"><span class="secno">7.7. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
+   <p>In subclause 33.5.2 [atomics.syn], update the synopsis as follows:</p>
+   <blockquote>
+<pre class="highlight"><c- c1>// all freestanding</c->
+<c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+  <c- p>[...]</c->
+
+  <c- k>using</c-> <c- n>atomic_int8_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int8_t</c-><c- o>></c-><c- p>;</c->           <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint8_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint8_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int16_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int16_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint16_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint16_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int32_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint32_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint32_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int64_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int64_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint64_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint64_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int128_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int128_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint128_t</c->      <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint128_t</c-><c- o>></c-><c- p>;</c->        <c- c1>// freestanding</c-></ins>
+
+  <c- k>using</c-> <c- b>atomic_int_least8_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least8_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least8_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least16_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least16_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least16_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least32_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least32_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least32_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least64_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least64_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least64_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int_least128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_least128_t</c-><c- o>></c-><c- p>;</c->  <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint_least128_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_least128_t</c-><c- o>></c-><c- p>;</c-> <c- c1>// freestanding</c-></ins>
+
+  <c- k>using</c-> <c- b>atomic_int_fast8_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast8_t</c-><c- o>></c-><c- p>;</c->      <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast8_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast16_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast16_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast16_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast32_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast32_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast32_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast64_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast64_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast64_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int_fast128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_fast128_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint_fast128_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_fast128_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c-></ins>
+
+  <c- p>[...]</c->
+<c- p>}</c->
+</pre>
+   </blockquote>
   </main>
 <script>
 (function() {
@@ -3178,5 +3254,4 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <div class="issue"> Feedback from Microsoft is needed regarding how to proceed with standardization.
 If a pass-by-register ABI for 128-bit types is targeted, changes to <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i></code> must be made. <a class="issue-return" href="#issue-e3f19398" title="Jump to section">↵</a></div>
    <div class="issue"> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-e55e0f12" title="Jump to section">↵</a></div>
-   <div class="issue"> Wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-9dda1774" title="Jump to section">↵</a></div>
   </div>

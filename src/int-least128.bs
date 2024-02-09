@@ -270,6 +270,9 @@ Whether to define them as such is a QoI issue in general, and won't be discussed
 
 ### Language support library ### {#library-impact-language-support}
 
+**Issue:** `std::div` needs an overload for 128-bit integers.<br>
+**Action:** ✔️ No impact on the standard (see [[#div]]).
+
 **Issue:** Certain type aliases such as `ptrdiff_t` and `size_t` could now be defined as a 128-bit type.<br>
 **Action:** ✔️ No impact on the standard.
 Whether to do so is a QoI issue.
@@ -281,7 +284,7 @@ Note: An implementation is trivial.
       `std::to_integer` is equivalent to a single `static_cast`.
 
 **Issue:** `<version>` would likely need a 128-bit integer feature-testing macro.<br>
-**Action:** ⚠️ Add a macro.
+**Action:** ⚠️ Add a macro (see [[#proposed-version]]).
 
 **Issue:** `<numeric_limits>` would need a trait for 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard; require a `std::numeric_limits` specialization.
@@ -293,7 +296,7 @@ Note: GCC already provides `std::numeric_limits<__int128>` as an extension.
 
 **Issue:** `<cstdint>` would need need to explicitly require support for 128-bit integers
 in its synopsys.<br>
-**Action:** ⚠️ Define aliases such as `int_least128_t` and explicitly state that 128 bits are supported.
+**Action:** ⚠️ Define aliases (see [[#proposed-cstdint]]).
 
 ### Metaprogramming library ### {#library-impact-metaprogramming}
 
@@ -334,10 +337,10 @@ Note: The implementation of `std::integer_sequence` or `std::make_integer_sequen
 on a specific integer width.
 
 **Issue:** `std::bitset` could receive an additional constructor taking `std::uint_least128_t`.<br>
-**Action:** ⚠️ Add such a constructor.
+**Action:** ⚠️ Add such a constructor (see [[#proposed-bitset]]).
 
 **Issue:** `std::bitset` could receive an additional `to_u128` function, similar to `to_ullong`.<br>
-**Action:** ⚠️ Add such a function.
+**Action:** ⚠️ Add such a function (see [[#proposed-bitset]]).
 
 **Issue:** `std::to_chars` and `std::from_chars` would need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
@@ -356,12 +359,11 @@ However, it needs to be clear whether locale support for 128-bit integers would 
 an ABI break.
 
 **Issue:** `basic_format_parse_context::check_dynamic_spec` and `basic_format_parse_context::check_dynamic_spec_integral` could possibly support 128-bit integers.<br>
-**Action:** ⚠️ Add support for 128-bit integers.
-This is not an ABI break.
+**Action:** ⚠️ Add support for 128-bit integers (see [[#proposed-format]]).
 
 **Issue:** `basic_format_arg` may need direct support for 128-bit integers rather than using the
 fallback case of initializing a value with `handle(v)`.<br>
-**Action:** ⚠️ To be investigated.
+**Action:** ⚠️ To be investigated (see [[#proposed-format]]).
 
 **Issue:** Bit manipulation functions in `<bit>` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
@@ -371,9 +373,12 @@ variant for the low and high bits.
 For example, `popcount(std::uint128_t x)` returns
 `popcount<std::uint64_t>(x >> 64) + popcount<std::uint64_t>(x)`.
 
-**Issue:** It would be convenient if `std::to_string` support 128-bit types.<br>
-**Action:** ⚠️ Support should be provided.
-However, this issue is dealt with in [[Schultke1]], not in this proposal.
+**Issue:** `std::to_string` needs to support 128-bit types.<br>
+**Action:** ⚠️ Add overloads (see [[#proposed-numeric-conversions]]).
+
+Note: This issue is also dealt with in [[Schultke1]].
+That proposal also marks the functions returning integers `constexpr`, so it is
+a superset of the changes proposed here.
 
 ### Containers library ### {#library-impact-containers}
 
@@ -463,7 +468,7 @@ Note: The overload taking `std::uint_least128_t` would convert to `double`, like
 it should be considered whether `long double` should be used to minimize loss of precision.
 
 **Issue:** `std::abs` should receive an additional 128-bit overload.<br>
-**Action:** ⚠️ Add an overload `std::uint_least128_t abs(std::uint_least128_t)`.
+**Action:** ⚠️ Add an overload (see [[#proposed-abs]]).
 
 Note: Without such an overload, `std::uint_least128_t` would delegate to `abs(double)`.
 
@@ -534,7 +539,8 @@ However, these are generally QoI issues and there is no restriction that would p
 `std::atomic<std::int_least128_t>` specializations, even if hardware support is very limited.
 
 **Issue:** There should be additional aliases `std::atomic_uint_least128_t` et al. aliases.<br>
-**Action:** ⚠️ Define aliases following the same convention as `std::atomic_uint_least64_t`.
+**Action:** ⚠️ Define aliases following the same convention as `std::atomic_uint_least64_t`
+(see [[#proposed-atomic]]).
 
 
 # Impact on implementations # {#implementation-impact}
@@ -774,6 +780,26 @@ Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple rea
 </tr>
 </table>
 
+### Why no `std::div`? ### {#div}
+
+`std::div` is a function which returns the quotient and remainder of an integer division in one
+operation.
+This proposal intentionally doesn't extend support to 128-bit types because each overload of
+`std::div` returns a different type.
+Namely, the current overloads for `int`, `long`, and `long long`
+return `std::div_t`, `std::ldiv_t`, and `std::lldiv_t` respectively.
+
+This scheme isn't easy to generalize to 128-bit integers or other extended integer types.
+A possibly approach would be to define a class template `std::div_result<T>` and re-define
+the concrete types to be aliases for `std::div_result<int>` etc.
+However, this is arguably a breaking change because it alters what template argument deduction
+is possible from these types.
+
+Furthermore, `std::div` is arguably useless.
+Optimizing compilers recognize separate uses of `x / y` and `x % y` and fuse them into a single
+division which yields both quotient and remainder, at least on platforms where this is possible.
+There is no motivation for putting substantial work into a useless relic.
+
 ### C library support for bit-precise integers ### {#c-library-support}
 
 The C23 standard currently does not mandate "full" library support for bit-precise integers.
@@ -868,6 +894,8 @@ del {
 }
 </style>
 
+## Header `<version>` ## {#proposed-version}
+
 In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:
 
 <blockquote>
@@ -878,6 +906,8 @@ In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:
 <ins>#define __cpp_lib_int128        20XXXX</ins>
 </pre>
 </blockquote>
+
+## Header `<cstdint>` ## {#proposed-cstdint}
 
 In subclause 17.4.1 [cstdint.syn], update the synopsis as follows:
 
@@ -945,6 +975,8 @@ The exact-width types `intN_t` and `uintN_t` for *N* =
 `8`, `16`, `32`, <del>and</del> `64`<ins>, and `128`</ins>
 are also optional; [...]
 </blockquote>
+
+## Class template `bitset` ## {#proposed-bitset}
 
 In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
 <blockquote>
@@ -1014,7 +1046,11 @@ cannot be represented as <del>type `unsigned long long`</del><ins>the return typ
 </p>
 </blockquote>
 
+## Header `<format>` ## {#proposed-format}
+
 Issue: Wording for `<format>` is W.I.P.
+
+## Numeric conversions ## {#proposed-numeric-conversions}
 
 Wording for `to_string` requires no changes after [[Schultke1]].
 However, should those changes not be accepted,
@@ -1060,15 +1096,17 @@ conversion rank is that of `int` or greater.</ins>
 </p>
 </blockquote>
 
+## Absolute values ## {#proposed-abs}
+
 In subclause 28.7.1 [cmath.syn], update the synopsis as follows:
 <blockquote>
 <pre>
   // [c.math.abs], absolute values
-<del>  constexpr int abs(int j);                                             // freestanding
-  constexpr long int abs(long int j);                                   // freestanding
-  constexpr long long int abs(long long int j);                         // freestanding</del>
-<ins>  constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);        // freestanding</ins>
-  constexpr <i>floating-point-type</i> abs(<i>floating-point-type</i> j);             // freestanding-deleted
+<del>  constexpr int abs(int j);                                         // freestanding
+  constexpr long int abs(long int j);                               // freestanding
+  constexpr long long int abs(long long int j);                     // freestanding</del>
+<ins>  constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);    // freestanding</ins>
+  constexpr <i>floating-point-type</i> abs(<i>floating-point-type</i> j);         // freestanding-deleted
 </pre>
 </blockquote>
 
@@ -1090,7 +1128,54 @@ conversion rank is that of `int` or greater.</ins>
 </p>
 </blockquote>
 
-Issue: Wording for `std::atomic<std::int_least128_t>` is W.I.P.
+## Atomic operations ## {#proposed-atomic}
+
+In subclause 33.5.2 [atomics.syn], update the synopsis as follows:
+
+<blockquote>
+<pre>
+// all freestanding
+namespace std {
+  [...]
+
+  using atomic_int8_t         = atomic&lt;int8_t&gt;;           // freestanding
+  using atomic_uint8_t        = atomic&lt;uint8_t&gt;;          // freestanding
+  using atomic_int16_t        = atomic&lt;int16_t&gt;;          // freestanding
+  using atomic_uint16_t       = atomic&lt;uint16_t&gt;;         // freestanding
+  using atomic_int32_t        = atomic&lt;int32_t&gt;;          // freestanding
+  using atomic_uint32_t       = atomic&lt;uint32_t&gt;;         // freestanding
+  using atomic_int64_t        = atomic&lt;int64_t&gt;;          // freestanding
+  using atomic_uint64_t       = atomic&lt;uint64_t&gt;;         // freestanding
+<ins>  using atomic_int128_t       = atomic&lt;int128_t&gt;;         // freestanding</ins>
+<ins>  using atomic_uint128_t      = atomic&lt;uint128_t&gt;;        // freestanding</ins>
+
+  using atomic_int_least8_t   = atomic&lt;int_least8_t&gt;;     // freestanding
+  using atomic_uint_least8_t  = atomic&lt;uint_least8_t&gt;;    // freestanding
+  using atomic_int_least16_t  = atomic&lt;int_least16_t&gt;;    // freestanding
+  using atomic_uint_least16_t = atomic&lt;uint_least16_t&gt;;   // freestanding
+  using atomic_int_least32_t  = atomic&lt;int_least32_t&gt;;    // freestanding
+  using atomic_uint_least32_t = atomic&lt;uint_least32_t&gt;;   // freestanding
+  using atomic_int_least64_t  = atomic&lt;int_least64_t&gt;;    // freestanding
+  using atomic_uint_least64_t = atomic&lt;uint_least64_t&gt;;   // freestanding
+<ins>  using atomic_int_least128_t  = atomic&lt;int_least128_t&gt;;  // freestanding</ins>
+<ins>  using atomic_uint_least128_t = atomic&lt;uint_least128_t&gt;; // freestanding</ins>
+
+  using atomic_int_fast8_t    = atomic&lt;int_fast8_t&gt;;      // freestanding
+  using atomic_uint_fast8_t   = atomic&lt;uint_fast8_t&gt;;     // freestanding
+  using atomic_int_fast16_t   = atomic&lt;int_fast16_t&gt;;     // freestanding
+  using atomic_uint_fast16_t  = atomic&lt;uint_fast16_t&gt;;    // freestanding
+  using atomic_int_fast32_t   = atomic&lt;int_fast32_t&gt;;     // freestanding
+  using atomic_uint_fast32_t  = atomic&lt;uint_fast32_t&gt;;    // freestanding
+  using atomic_int_fast64_t   = atomic&lt;int_fast64_t&gt;;     // freestanding
+  using atomic_uint_fast64_t  = atomic&lt;uint_fast64_t&gt;;    // freestanding
+<ins>  using atomic_int_fast128_t  = atomic&lt;int_fast128_t&gt;;    // freestanding</ins>
+<ins>  using atomic_uint_fast128_t = atomic&lt;uint_fast128_t&gt;;   // freestanding</ins>
+
+  [...]
+}
+</pre>
+</blockquote>
+
 
 <pre class=biblio>
 {
