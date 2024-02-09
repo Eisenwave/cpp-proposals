@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="286fe2d51e8ffa3d178ab02524e82cb46d4379ea" name="revision">
+  <meta content="59913a9e092cc379358553c033a2e073b1511c99" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2503,12 +2503,10 @@ on a specific integer width.</p>
       and integer divisions with constant divisor.
       In the special case where the base of conversion is a power of two, no integer division is
       needed, and a 64-bit implementation can be repurposed.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> facilities need to support 128-bit integers.<br> <strong>Action:</strong> ⚠️ To be investigated.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> facilities need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> GCC already supports <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> for <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The locale-independent forms are simply implemented in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and are not
-affected.
-However, it needs to be clear whether locale support for 128-bit integers would constitute
-an ABI break.</p>
+affected.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> and <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec_integral</c-></code> could possibly support 128-bit integers.<br> <strong>Action:</strong> ⚠️ Add support for 128-bit integers (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_arg</c-></code> may need direct support for 128-bit integers rather than using the
 fallback case of initializing a value with <code class="highlight"><c- n>handle</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>.<br> <strong>Action:</strong> ⚠️ To be investigated (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
@@ -2598,7 +2596,13 @@ Any change would be an ABI break, so these facilities could be left untouched.
 Unfortunately, the user won’t be able to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-><c- p>{...}</c-></code>, however,
 the language provides sufficient alternatives.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> If <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> are already mandated, it is reasonable to expect <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> support as well. <code class="highlight"><c- n>PRIoLEAST128</c-></code> would also need to be defined, but this has no impact on the existing wording.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>PRI</c-><c- o>*</c-><c- n>LEAST128</c-></code> would also need to be defined, but this has no impact on the existing wording.</p>
+   <div class="example" id="example-800bb11b">
+    <a class="self-link" href="#example-800bb11b"></a> With the changes from <a data-link-type="biblio" href="#biblio-n2680" title="Specific width length modifier">[N2680]</a> included, an alternative way of printing 128-bit
+integers is: 
+<pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-><c- p>(</c-><c- s>"%w128d</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- p>{</c-><c- mi>123</c-><c- p>});</c->
+</pre>
+   </div>
    <h4 class="heading settled" data-level="3.3.12" id="concurrency-support-library"><span class="secno">3.3.12. </span><span class="content">Concurrency support library</span><a class="self-link" href="#concurrency-support-library"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> needs to support <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> specializations are already defined for all integer types.
@@ -2606,7 +2610,7 @@ On x86_64, all <code class="highlight"><c- p>.</c-><c- n>fetch</c-></code> opera
 utilizing the <code class="highlight"><c- n>cmpxchg16b</c-></code> instruction.
 This would be no better than using a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- mi>16</c-><c- o>>></c-></code>.
 However, these are generally QoI issues and there is no restriction that would prevent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> specializations, even if hardware support is very limited.</p>
-   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases following the same convention as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>atomic_uint_least64_t</c-></code> (see <a href="#proposed-atomic">§ 7.8 Atomic operations</a>).</p>
+   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases (see <a href="#proposed-atomic">§ 7.8 Atomic operations</a>).</p>
    <h2 class="heading settled" data-level="4" id="implementation-impact"><span class="secno">4. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
    <h3 class="heading settled" data-level="4.1" id="estimated-implementation-effort"><span class="secno">4.1. </span><span class="content">Estimated implementation effort</span><a class="self-link" href="#estimated-implementation-effort"></a></h3>
    <p>The following table summarizes the affected standard library parts and the estimated effort
@@ -2901,6 +2905,8 @@ widely supported by existing implementations.</p>
 <ins><c- cp>#define __cpp_lib_to_string_int128 20XXXX</c-></ins>
 </pre>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> Feature-detection for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code> is intentionally omitted
+because the user can detect whether <code class="highlight"><c- n>PRI</c-><c- o>*</c-><c- n>LEAST128</c-></code>, <code class="highlight"><c- n>SCN</c-><c- o>*</c-><c- n>FAST128</c-></code> etc. are defined.</p>
    <h3 class="heading settled" data-level="7.2" id="proposed-cstdint"><span class="secno">7.2. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-cstdint"></a></h3>
    <p>In subclause 17.4.1 [cstdint.syn], update the synopsis as follows:</p>
    <blockquote>
@@ -3302,6 +3308,8 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <dd>Junekey Jeon. <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf"><cite>Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm</cite></a>. URL: <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf">https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf</a>
    <dt id="biblio-fast_float">[FAST_FLOAT]
    <dd>Daniel Lemire et al.. <a href="https://github.com/fastfloat/fast_float"><cite>fast_float number parsing library: 4x faster than strtod</cite></a>. URL: <a href="https://github.com/fastfloat/fast_float">https://github.com/fastfloat/fast_float</a>
+   <dt id="biblio-n2680">[N2680]
+   <dd>Robert C. Seacord. <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf"><cite>Specific width length modifier</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf</a>
    <dt id="biblio-n3047">[N3047]
    <dd>ISO. <a href="https://www.iso-9899.info/n3047.html"><cite>N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)</cite></a>. URL: <a href="https://www.iso-9899.info/n3047.html">https://www.iso-9899.info/n3047.html</a>
    <dt id="biblio-p1522r1">[P1522R1]
