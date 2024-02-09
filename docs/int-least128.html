@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="3325781c4d1a6ea81b8fe7abd80f9a8b8142c410" name="revision">
+  <meta content="f0e943a3ea66571bfa2edcd99b6a69f0e224df6d" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2901,8 +2901,8 @@ The exact-width types <code class="highlight"><c- n>intN_t</c-></code> and <code
 <c- p>[...]</c->
     <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c->        <c- n>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
     <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c->   <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
-<ins>    <c- k>constexpr</c-> <c- n>uint_least128_t</c-> <c- nf>to_least128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins>    <c- k>constexpr</c-> <c- n>uint_fast128_t</c->  <c- nf>to_fast128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
+<ins>    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+      <c- k>constexpr</c-> <c- n>T</c-> <c- n>to</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
    </blockquote>
    <p>In subclause 22.9.2.2 [template.bitset.const], update the constructors as follows:</p>
@@ -2940,9 +2940,12 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
 <pre class="highlight"><del><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
 <ins><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c->      <c- nf>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 <ins><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins><c- k>constexpr</c-> <c- n>uint_least128_t</c->    <c- nf>to_least128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins><c- k>constexpr</c-> <c- n>uint_fast128_t</c->     <c- nf>to_fast128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-</pre>
+<ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+<ins>  <c- k>constexpr</c-> <c- n>T</c-> <c- n>to</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
+</ins></pre>
+    <p class="indent">
+     <ins><em>Constraints</em>: <code class="highlight"><c- n>T</c-></code> is an unsigned integer type ([basic.fundamental]).</ins>
+    </p>
     <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>x</c-></code>. </p>
     <p class="indent">
       <em>Throws</em>: <code class="highlight"><c- n>overflow_error</c-></code> if the integral value <code class="highlight"><c- n>x</c-></code> corresponding to the bits in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> cannot be represented as 

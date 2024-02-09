@@ -940,8 +940,8 @@ In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
 [...]
     constexpr unsigned long        to_ulong() const;
     constexpr unsigned long long   to_ullong() const;
-<ins>    constexpr uint_least128_t to_least128() const;</ins>
-<ins>    constexpr uint_fast128_t  to_fast128() const;</ins>
+<ins>    template&lt;class T&gt;
+      constexpr T to() const;</ins>
 </pre>
 </blockquote>
 
@@ -983,9 +983,12 @@ cannot be represented as type `unsigned long`.</del>
 <del>constexpr unsigned long long to_ullong() const;</del>
 <ins>constexpr unsigned long      to_ulong() const;</ins>
 <ins>constexpr unsigned long long to_ullong() const;</ins>
-<ins>constexpr uint_least128_t    to_least128() const;</ins>
-<ins>constexpr uint_fast128_t     to_fast128() const;</ins>
+<ins>template&lt;class T&gt;
+<ins>  constexpr T to() const;</ins>
 </pre>
+<p class="indent">
+<ins>*Constraints*: `T` is an unsigned integer type ([basic.fundamental]).</ins>
+</p>
 <p class="indent">
 *Returns*: `x`.
 </p>
