@@ -85,8 +85,10 @@ This obstacle is especially unfortunate considering that hardware often supports
 widening operations directly.
 For example:
 
-- The x86 `mul` (unsigned multiply) instruction stores the result of a 64-bit multiplication
+- The x86_64 `mul` (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
     in the register pair `rdx:rax`.
+- The x86_64 `div` (unsigned divide) instruction stores quotient and remainder of a 128-to-64-bit division
+    in `rax` and `rdx` respectively.
 - RISC-V provides the `clmul` and `clmulh` instructions to compute the low and high part of a
     carry-less multiplication.
     In fact, x86, ARM, and RISC-V all provide a way to compute a carry-less 128-bit product. 

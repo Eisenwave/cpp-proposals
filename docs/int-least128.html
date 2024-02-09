@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="956f28c3ab098c22add577346d7a4da9d4eccef4" name="revision">
+  <meta content="61b80a863c284e177e6e5ad6885257a31d9663ca" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2275,8 +2275,11 @@ widening operations directly.
 For example:</p>
    <ul>
     <li data-md>
-     <p>The x86 <code class="highlight"><c- n>mul</c-></code> (unsigned multiply) instruction stores the result of a 64-bit multiplication
+     <p>The x86_64 <code class="highlight"><c- n>mul</c-></code> (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
 in the register pair <code class="highlight"><c- nl>rdx</c-><c- p>:</c-><c- n>rax</c-></code>.</p>
+    <li data-md>
+     <p>The x86_64 <code class="highlight"><c- n>div</c-></code> (unsigned divide) instruction stores quotient and remainder of a 128-to-64-bit division
+in <code class="highlight"><c- n>rax</c-></code> and <code class="highlight"><c- n>rdx</c-></code> respectively.</p>
     <li data-md>
      <p>RISC-V provides the <code class="highlight"><c- n>clmul</c-></code> and <code class="highlight"><c- n>clmulh</c-></code> instructions to compute the low and high part of a
 carry-less multiplication.
