@@ -309,7 +309,7 @@ Whether to define them as such is a QoI issue in general, and won't be discussed
 ### Language support library ### {#library-impact-language-support}
 
 **Issue:** `std::div` needs an overload for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard (see [[#div]]).
+**Action:** ✔️ No impact on the standard because we don't support it (see [[#div]]).
 
 **Issue:** Certain type aliases such as `ptrdiff_t` and `size_t` could now be defined as a 128-bit type.<br>
 **Action:** ✔️ No impact on the standard.
@@ -391,6 +391,8 @@ Note: 128-bit stringification can be implemented in terms of one to three 64-bit
 **Issue:** `<format>` facilities need to support 128-bit integers.<br>
 **Action:** ⚠️ To be investigated.
 
+Note: GCC already supports `std::format` for `__int128`.
+
 Note: The locale-independent forms are simply implemented in terms of `std::to_chars` and are not
 affected.
 However, it needs to be clear whether locale support for 128-bit integers would constitute
@@ -441,12 +443,12 @@ should be unaffected.
 
 ### Ranges library ### {#library-impact-ranges}
 
-**Issue:** `std::iota_view<W>::iterator::difference_type` where `W` is an integral type is defined to be
-a wider integer type if such a type exists, and `iter_difference_t<W>` is not wider.
-This causes an issue for existing implementations that don't consider 128-bit integers to exist,
-and for `W = std::uint_least128_t`, this may necessitate a &ge; 129-bit integer.
-Similarly, `std::repeat_view::iterator::difference_type` is affected.<br>
-**Action:** ⚠️ To be investigated.
+**Issue:** <code>std::ranges::iota_view&lt;long long&gt;::<i>iterator</i>::difference_type</code>
+is required to be a 128-bit integer if `long long` is not 128-bit, and such a type exists.
+This is not the the case in libc++ and MSVC STL at this time,
+where `difference_type` is `long long` and `class std::_Signed128` respectively.<br>
+**Action:** ❌ Propose changes to prevent breaking ABI
+(see [[#iota-view-abi-break]] and [[#proposed-iota]]).
 
 **Issue:** `std::cartesian_product_view::size` may now return a 128-bit integer.
 The standard recommends to use a type which is sufficiently wide to store the product
@@ -583,6 +585,8 @@ However, these are generally QoI issues and there is no restriction that would p
 
 # Impact on implementations # {#implementation-impact}
 
+## Estimated implementation effort ## {#estimated-implementation-effort}
+
 The following table summarizes the affected standard library parts and the estimated effort
 required to implement the proposed changes.
 Entries rated "low / none" may require no changes at all, either because existing
@@ -679,13 +683,17 @@ if only `std::is_integral_v` was `true` for an existing 128-bit type.
 </tr>
 </table>
 
-## Microsoft ABI break for `std::ranges::iota_view::iterator::difference_type` ## {#iota-view-abi-break}
+## ABI break for <code>std::ranges::iota_view::<i>iterator</i>::difference_type</code> ## {#iota-view-abi-break}
 
-libc++ and libstdc++ define `std::ranges::iota_view<std::size_t>::iterator::difference_type`
-to be `__int128`.
+libstdc++ defines `difference_type` for `std::ranges::iota_view<long long>` to be `__int128`.
 Since a `std::int_least128_t` alias would likely be defined as `__int128`, there is no ABI impact.
 
-However, MSVC uses a class type `std::_Signed128`.
+### Affected implementations ### {#abi-break-affected-implementations}
+
+By contrast, the `difference_type` for `std::ranges::iota_view<long long>` in libc++
+is `long long`.
+
+The MSVC STL uses a class type `std::_Signed128`.
 Even trivially copyable classes aren't passed via register in the Microsoft x86_64 ABI,
 so this type is passed via the stack.
 
@@ -694,23 +702,20 @@ A possible option would be to use the same ABI as `__int128`, which is to pass
 results via `rdx` and `rax`.
 It would also be possible to share an ABI with `__m128i`, which is to pass via `xmm` registers.
 
-The ABI break stems from the fact that <code><i>IOTA-DIFF-T</i>(W)</code> for `W = std::size_t` is defined
-to be:
+### Cause of ABI break ### {#abi-break-cause}
+
+The ABI break stems from the fact that <code><i>IOTA-DIFF-T</i>(W)</code>
+for `W = long long` is defined to be:
 
 > a signed integer type of width greater than the width of `W` if such a type exists.
 
 Currently, no such type exists, but if `std::int_least128_t` did exist, it would no longer be valid
-to use a class type as a `difference_type` in this case.
-This would constitute an ABI break.
-A possible solution which keeps ABI-compatibility is to reword this as:
+to use a class type or `long long` as a `difference_type`.
 
-> a signed <ins>standard</ins> integer type of width greater than the width of `W` if such a type exists.
+### Possible solution ### {#abi-break-possible-solution}
 
-This would still require `int` to have a difference type of say, `long`,
-but `long long` would not be required to have a difference type of `std::int_least128_t`.
-
-Issue: Feedback from Microsoft is needed regarding how to proceed with standardization.
-If a pass-by-register ABI for 128-bit types is targeted, changes to <code><i>IOTA-DIFF-T</i></code> must be made.
+See [[#proposed-iota]] for a proposed solution which resolves this issue without requiring
+action from implementors.
 
 
 # Design considerations # {#design-considerations}
@@ -938,10 +943,20 @@ In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:
 
 <blockquote>
 <pre>
-<ins>#define __cpp_lib_atomic_int128 20XXXX</ins>
-#define __cpp_lib_bitset <del>202306L</del><ins>20XXXX</ins>
-<ins>#define __cpp_lib_bitset_int128 20XXXX</ins>
-<ins>#define __cpp_lib_int128        20XXXX</ins>
+<ins>#define __cpp_lib_atomic_int128    20XXXX</ins>
+#define __cpp_lib_bitops    <del>201907L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_bitops_int128    20XXXX</ins>
+#define __cpp_lib_bitset    <del>202306L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_bitset_int128    20XXXX</ins>
+#define __cpp_lib_format    <del>202311L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_format_int128    20XXXX</ins>
+#define __cpp_lib_gcd_lcm   <del>201606L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_gcd_lcm_int128   20XXXX</ins>
+<ins>#define __cpp_lib_int128           20XXXX</ins>
+#define __cpp_lib_to_chars  <del>202306L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_to_chars_int128  20XXXX</ins>
+#define __cpp_lib_to_string <del>202306L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_to_string_int128 20XXXX</ins>
 </pre>
 </blockquote>
 
@@ -1038,11 +1053,11 @@ In subclause 22.9.2.2 [template.bitset.const], update the constructors as follow
 <ins>constexpr bitset(<i>unsigned-integer-least-llong</i> val) noexcept;</ins>
 </pre>
 <p class="indent">
-<ins>2 The implementation provides one overload for every unsigned integer type whose
+<ins>The implementation provides one overload for every unsigned integer type whose
 conversion rank is that of `unsigned long long` or greater.</ins>
 </p>
 <p class="indent">
-<del>2</del><ins>3</ins> *Effects*: Initializes the first `M` bit positions to the corresponding bit values in val.
+*Effects*: Initializes the first `M` bit positions to the corresponding bit values in val.
 `M` is the smaller of `N` and the number of bits in the value representation
 ([basic.types.general]) of <del>`unsigned long long`</del><ins>the type of `val`</ins>.
 If `M < N`, the remaining bit positions are initialized to zero.
@@ -1133,6 +1148,27 @@ conversion rank is that of `int` or greater.</ins>
 7 *Returns*: `format("{}", val)`.
 </p>
 </blockquote>
+
+## Iota view ## {#proposed-iota}
+
+In subclause 26.6.4.2 [ranges.iota.view], update paragraph 1 as follows:
+<blockquote>
+Let <code><i>IOTA-DIFF-T(W)</i></code> be defined as follows:
+- If `W` is not an integral type, or if it is an integral type and `sizeof(iter_difference_t<W>)`
+    is greater than `sizeof(W)`, then <code><i>IOTA-DIFF-T(W)</i></code> denotes `iter_difference_t<W>`.
+- Otherwise, <code><i>IOTA-DIFF-T(W)</i></code> is a signed <ins>standard</ins> integer type of width greater than the width of `W` if such a type exists.
+- Otherwise, <code><i>IOTA-DIFF-T(W)</i></code> is an unspecified signed-integer-like type ([iterator.concept.winc]) of width not less than the width of `W`.
+    <br>[*Note* 1: It is unspecified whether this type satisfies `weakly_incrementable`.
+    — *end note*]
+
+</blockquote>
+
+Note: This change resolves the potential ABI break explained in [[#iota-view-abi-break]].
+This change purely increases implementor freedom.
+An extended integer type still models signed-integer-like, so GCC's existing implementation
+using `__int128` remains valid.
+However, a wider extended integer type is no longer the mandatory difference type (if it exists)
+as per the second bullet.
 
 ## Absolute values ## {#proposed-abs}
 

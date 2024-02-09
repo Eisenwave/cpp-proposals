@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="215c99afc44fc202f45006982e4cdd0d9de03c77" name="revision">
+  <meta content="286fe2d51e8ffa3d178ab02524e82cb46d4379ea" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2189,7 +2189,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#implementation-impact"><span class="secno">4</span> <span class="content">Impact on implementations</span></a>
      <ol class="toc">
-      <li><a href="#iota-view-abi-break"><span class="secno">4.1</span> <span class="content">Microsoft ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><c- n>iterator</c-><c- o>::</c-><c- n>difference_type</c-></code></span></a>
+      <li><a href="#estimated-implementation-effort"><span class="secno">4.1</span> <span class="content">Estimated implementation effort</span></a>
+      <li>
+       <a href="#iota-view-abi-break"><span class="secno">4.2</span> <span class="content">ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code></span></a>
+       <ol class="toc">
+        <li><a href="#abi-break-affected-implementations"><span class="secno">4.2.1</span> <span class="content">Affected implementations</span></a>
+        <li><a href="#abi-break-cause"><span class="secno">4.2.2</span> <span class="content">Cause of ABI break</span></a>
+        <li><a href="#abi-break-possible-solution"><span class="secno">4.2.3</span> <span class="content">Possible solution</span></a>
+       </ol>
      </ol>
     <li>
      <a href="#design-considerations"><span class="secno">5</span> <span class="content">Design considerations</span></a>
@@ -2223,8 +2230,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#proposed-bitset"><span class="secno">7.3</span> <span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span></a>
       <li><a href="#proposed-format"><span class="secno">7.4</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span></a>
       <li><a href="#proposed-numeric-conversions"><span class="secno">7.5</span> <span class="content">Numeric conversions</span></a>
-      <li><a href="#proposed-abs"><span class="secno">7.6</span> <span class="content">Absolute values</span></a>
-      <li><a href="#proposed-atomic"><span class="secno">7.7</span> <span class="content">Atomic operations</span></a>
+      <li><a href="#proposed-iota"><span class="secno">7.6</span> <span class="content">Iota view</span></a>
+      <li><a href="#proposed-abs"><span class="secno">7.7</span> <span class="content">Absolute values</span></a>
+      <li><a href="#proposed-atomic"><span class="secno">7.8</span> <span class="content">Atomic operations</span></a>
      </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2460,7 +2468,7 @@ One common issue is that aliases such as <code class="highlight"><c- n>size_type
 containers, iterators, and other types can be a 128-bit integer.
 Whether to define them as such is a QoI issue in general, and won’t be discussed further.</p>
    <h4 class="heading settled" data-level="3.3.1" id="library-impact-language-support"><span class="secno">3.3.1. </span><span class="content">Language support library</span><a class="self-link" href="#library-impact-language-support"></a></h4>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> needs an overload for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard (see <a href="#div">§ 5.3.2 Why no std::div?</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> needs an overload for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard because we don’t support it (see <a href="#div">§ 5.3.2 Why no std::div?</a>).</p>
    <p><strong>Issue:</strong> Certain type aliases such as <code class="highlight"><c- b>ptrdiff_t</c-></code> and <code class="highlight"><c- b>size_t</c-></code> could now be defined as a 128-bit type.<br> <strong>Action:</strong> ✔️ No impact on the standard.
 Whether to do so is a QoI issue.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code> would need 128-bit support.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
@@ -2496,6 +2504,7 @@ on a specific integer width.</p>
       In the special case where the base of conversion is a power of two, no integer division is
       needed, and a 64-bit implementation can be repurposed.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> facilities need to support 128-bit integers.<br> <strong>Action:</strong> ⚠️ To be investigated.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> GCC already supports <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> for <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The locale-independent forms are simply implemented in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and are not
 affected.
 However, it needs to be clear whether locale support for 128-bit integers would constitute
@@ -2525,11 +2534,10 @@ consider this when defining concepts that use integers in any way.<br> <strong>A
    <p class="note" role="note"><span class="marker">Note:</span> As long as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-></code> (and by proxy, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integral</c-></code>) is correct, the existing wording
 should be unaffected.</p>
    <h4 class="heading settled" data-level="3.3.6" id="library-impact-ranges"><span class="secno">3.3.6. </span><span class="content">Ranges library</span><a class="self-link" href="#library-impact-ranges"></a></h4>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- n>W</c-><c- o>>::</c-><c- n>iterator</c-><c- o>::</c-><c- n>difference_type</c-></code> where <code class="highlight"><c- n>W</c-></code> is an integral type is defined to be
-a wider integer type if such a type exists, and <code class="highlight"><c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>W</c-><c- o>></c-></code> is not wider.
-This causes an issue for existing implementations that don’t consider 128-bit integers to exist,
-and for <code class="highlight"><c- n>W</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>, this may necessitate a ≥ 129-bit integer.
-Similarly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>repeat_view</c-><c- o>::</c-><c- n>iterator</c-><c- o>::</c-><c- n>difference_type</c-></code> is affected.<br> <strong>Action:</strong> ⚠️ To be investigated.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code> is required to be a 128-bit integer if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is not 128-bit, and such a type exists.
+This is not the the case in libc++ and MSVC STL at this time,
+where <code class="highlight"><c- n>difference_type</c-></code> is <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>_Signed128</c-></code> respectively.<br> <strong>Action:</strong> ❌ Propose changes to prevent breaking ABI
+(see <a href="#iota-view-abi-break">§ 4.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> and <a href="#proposed-iota">§ 7.6 Iota view</a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cartesian_product_view</c-><c- o>::</c-><c- n>size</c-></code> may now return a 128-bit integer.
 The standard recommends to use a type which is sufficiently wide to store the product
 of sizes of underlying ranges.
@@ -2561,7 +2569,7 @@ Treating 128-bit integers specially and utilizing hardware resources is a QoI is
 need to be defined.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The overload taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would convert to <code class="highlight"><c- b>double</c-></code>, like other functions. <code class="highlight"><c- b>double</c-></code> is more than enough to represent the maximum 128-bit integer value, however,
 it should be considered whether <code class="highlight"><c- b>long</c-> <c- b>double</c-></code> should be used to minimize loss of precision.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload (see <a href="#proposed-abs">§ 7.6 Absolute values</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload (see <a href="#proposed-abs">§ 7.7 Absolute values</a>).</p>
    <p class="note" role="note"><span class="marker">Note:</span> Without such an overload, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would delegate to <code class="highlight"><c- n>abs</c-><c- p>(</c-><c- b>double</c-><c- p>)</c-></code>.</p>
    <p><strong>Issue:</strong> The <code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code> library may need 128-bit support.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The linear algebra library operates on <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> of any type.
@@ -2598,8 +2606,9 @@ On x86_64, all <code class="highlight"><c- p>.</c-><c- n>fetch</c-></code> opera
 utilizing the <code class="highlight"><c- n>cmpxchg16b</c-></code> instruction.
 This would be no better than using a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- mi>16</c-><c- o>>></c-></code>.
 However, these are generally QoI issues and there is no restriction that would prevent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> specializations, even if hardware support is very limited.</p>
-   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases following the same convention as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>atomic_uint_least64_t</c-></code> (see <a href="#proposed-atomic">§ 7.7 Atomic operations</a>).</p>
+   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases following the same convention as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>atomic_uint_least64_t</c-></code> (see <a href="#proposed-atomic">§ 7.8 Atomic operations</a>).</p>
    <h2 class="heading settled" data-level="4" id="implementation-impact"><span class="secno">4. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="estimated-implementation-effort"><span class="secno">4.1. </span><span class="content">Estimated implementation effort</span><a class="self-link" href="#estimated-implementation-effort"></a></h3>
    <p>The following table summarizes the affected standard library parts and the estimated effort
 required to implement the proposed changes.
 Entries rated "low / none" may require no changes at all, either because existing
@@ -2695,36 +2704,29 @@ if only <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral_v</
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code>
       <td>⚠️ high
    </table>
-   <h3 class="heading settled" data-level="4.1" id="iota-view-abi-break"><span class="secno">4.1. </span><span class="content">Microsoft ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><c- n>iterator</c-><c- o>::</c-><c- n>difference_type</c-></code></span><a class="self-link" href="#iota-view-abi-break"></a></h3>
-   <p>libc++ and libstdc++ define <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>size_t</c-><c- o>>::</c-><c- n>iterator</c-><c- o>::</c-><c- n>difference_type</c-></code> to be <code class="highlight"><c- b>__int128</c-></code>.
+   <h3 class="heading settled" data-level="4.2" id="iota-view-abi-break"><span class="secno">4.2. </span><span class="content">ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code></span><a class="self-link" href="#iota-view-abi-break"></a></h3>
+   <p>libstdc++ defines <code class="highlight"><c- n>difference_type</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>></c-></code> to be <code class="highlight"><c- b>__int128</c-></code>.
 Since a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> alias would likely be defined as <code class="highlight"><c- b>__int128</c-></code>, there is no ABI impact.</p>
-   <p>However, MSVC uses a class type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>_Signed128</c-></code>.
+   <h4 class="heading settled" data-level="4.2.1" id="abi-break-affected-implementations"><span class="secno">4.2.1. </span><span class="content">Affected implementations</span><a class="self-link" href="#abi-break-affected-implementations"></a></h4>
+   <p>By contrast, the <code class="highlight"><c- n>difference_type</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>></c-></code> in libc++
+is <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>.</p>
+   <p>The MSVC STL uses a class type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>_Signed128</c-></code>.
 Even trivially copyable classes aren’t passed via register in the Microsoft x86_64 ABI,
 so this type is passed via the stack.</p>
    <p>This may be undesirable for a future Microsoft 128-bit integer type.
 A possible option would be to use the same ABI as <code class="highlight"><c- b>__int128</c-></code>, which is to pass
 results via <code class="highlight"><c- n>rdx</c-></code> and <code class="highlight"><c- n>rax</c-></code>.
 It would also be possible to share an ABI with <code class="highlight"><c- kr>__m128i</c-></code>, which is to pass via <code class="highlight"><c- n>xmm</c-></code> registers.</p>
-   <p>The ABI break stems from the fact that <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i><c- p>(</c-><c- n>W</c-><c- p>)</c-></code> for <code class="highlight"><c- n>W</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- b>size_t</c-></code> is defined
-to be:</p>
+   <h4 class="heading settled" data-level="4.2.2" id="abi-break-cause"><span class="secno">4.2.2. </span><span class="content">Cause of ABI break</span><a class="self-link" href="#abi-break-cause"></a></h4>
+   <p>The ABI break stems from the fact that <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i><c- p>(</c-><c- n>W</c-><c- p>)</c-></code> for <code class="highlight"><c- n>W</c-> <c- o>=</c-> <c- b>long</c-> <c- b>long</c-></code> is defined to be:</p>
    <blockquote>
     <p>a signed integer type of width greater than the width of <code class="highlight"><c- n>W</c-></code> if such a type exists.</p>
    </blockquote>
    <p>Currently, no such type exists, but if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> did exist, it would no longer be valid
-to use a class type as a <code class="highlight"><c- n>difference_type</c-></code> in this case.
-This would constitute an ABI break.
-A possible solution which keeps ABI-compatibility is to reword this as:</p>
-   <blockquote>
-    <p>
-     a signed 
-     <ins>standard</ins>
-      integer type of width greater than the width of <code class="highlight"><c- n>W</c-></code> if such a type exists.
-    </p>
-   </blockquote>
-   <p>This would still require <code class="highlight"><c- b>int</c-></code> to have a difference type of say, <code class="highlight"><c- b>long</c-></code>,
-but <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> would not be required to have a difference type of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code>.</p>
-   <p class="issue" id="issue-e3f19398"><a class="self-link" href="#issue-e3f19398"></a> Feedback from Microsoft is needed regarding how to proceed with standardization.
-If a pass-by-register ABI for 128-bit types is targeted, changes to <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i></code> must be made.</p>
+to use a class type or <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> as a <code class="highlight"><c- n>difference_type</c-></code>.</p>
+   <h4 class="heading settled" data-level="4.2.3" id="abi-break-possible-solution"><span class="secno">4.2.3. </span><span class="content">Possible solution</span><a class="self-link" href="#abi-break-possible-solution"></a></h4>
+   <p>See <a href="#proposed-iota">§ 7.6 Iota view</a> for a proposed solution which resolves this issue without requiring
+action from implementors.</p>
    <h2 class="heading settled" data-level="5" id="design-considerations"><span class="secno">5. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
 A <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>least_uint128_t</c-></code> alias is the only option that does not involve any changes
@@ -2883,10 +2885,20 @@ widely supported by existing implementations.</p>
    <h3 class="heading settled" data-level="7.1" id="proposed-version"><span class="secno">7.1. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-version"></a></h3>
    <p>In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:</p>
    <blockquote>
-<pre class="highlight"><ins><c- cp>#define __cpp_lib_atomic_int128 20XXXX</c-></ins>
-<c- cp>#define __cpp_lib_bitset </c-><del><c- cp>202306L</c-></del><ins><c- cp>20XXXX</c-></ins>
-<ins><c- cp>#define __cpp_lib_bitset_int128 20XXXX</c-></ins>
-<ins><c- cp>#define __cpp_lib_int128        20XXXX</c-></ins>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_atomic_int128    20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_bitops    </c-><del><c- cp>201907L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_bitops_int128    20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_bitset    </c-><del><c- cp>202306L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_bitset_int128    20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_format    </c-><del><c- cp>202311L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_format_int128    20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_gcd_lcm   </c-><del><c- cp>201606L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_gcd_lcm_int128   20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_int128           20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_to_chars  </c-><del><c- cp>202306L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_to_chars_int128  20XXXX</c-></ins>
+<c- cp>#define __cpp_lib_to_string </c-><del><c- cp>202306L</c-></del><ins><c- cp>20XXXX</c-></ins>
+<ins><c- cp>#define __cpp_lib_to_string_int128 20XXXX</c-></ins>
 </pre>
    </blockquote>
    <h3 class="heading settled" data-level="7.2" id="proposed-cstdint"><span class="secno">7.2. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-cstdint"></a></h3>
@@ -2977,12 +2989,10 @@ The exact-width types <code class="highlight"><c- n>intN_t</c-></code> and <code
 <ins><c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- b>unsigned</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- n>llong</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
 </pre>
     <p class="indent">
-     <ins>2 The implementation provides one overload for every unsigned integer type whose
+     <ins>The implementation provides one overload for every unsigned integer type whose
 conversion rank is that of <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> or greater.</ins>
     </p>
     <p class="indent">
-     <del>2</del>
-     <ins>3</ins>
       <em>Effects</em>: Initializes the first <code class="highlight"><c- n>M</c-></code> bit positions to the corresponding bit values in val. <code class="highlight"><c- n>M</c-></code> is the smaller of <code class="highlight"><c- n>N</c-></code> and the number of bits in the value representation
 ([basic.types.general]) of 
      <del><code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code></del>
@@ -3060,7 +3070,31 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     </p>
     <p class="indent"> 7 <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
-   <h3 class="heading settled" data-level="7.6" id="proposed-abs"><span class="secno">7.6. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
+   <h3 class="heading settled" data-level="7.6" id="proposed-iota"><span class="secno">7.6. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
+   <p>In subclause 26.6.4.2 [ranges.iota.view], update paragraph 1 as follows:</p>
+   <blockquote>
+     Let <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> be defined as follows: 
+    <ul>
+     <li data-md>
+      <p>If <code class="highlight"><c- n>W</c-></code> is not an integral type, or if it is an integral type and <code class="highlight"><c- k>sizeof</c-><c- p>(</c-><c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>W</c-><c- o>></c-><c- p>)</c-></code> is greater than <code class="highlight"><c- k>sizeof</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></code>, then <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> denotes <code class="highlight"><c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>W</c-><c- o>></c-></code>.</p>
+     <li data-md>
+      <p>
+       Otherwise, <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> is a signed 
+       <ins>standard</ins>
+        integer type of width greater than the width of <code class="highlight"><c- n>W</c-></code> if such a type exists.
+      </p>
+     <li data-md>
+      <p>Otherwise, <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> is an unspecified signed-integer-like type ([iterator.concept.winc]) of width not less than the width of <code class="highlight"><c- n>W</c-></code>. <br>[<em>Note</em> 1: It is unspecified whether this type satisfies <code class="highlight"><c- n>weakly_incrementable</c-></code>.
+— <em>end note</em>]</p>
+    </ul>
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> This change resolves the potential ABI break explained in <a href="#iota-view-abi-break">§ 4.2 ABI break for std::ranges::iota_view::iterator::difference_type</a>.
+This change purely increases implementor freedom.
+An extended integer type still models signed-integer-like, so GCC’s existing implementation
+using <code class="highlight"><c- b>__int128</c-></code> remains valid.
+However, a wider extended integer type is no longer the mandatory difference type (if it exists)
+as per the second bullet.</p>
+   <h3 class="heading settled" data-level="7.7" id="proposed-abs"><span class="secno">7.7. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
    <p>In subclause 28.7.1 [cmath.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">  <c- c1>// [c.math.abs], absolute values</c->
@@ -3087,7 +3121,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
-   <h3 class="heading settled" data-level="7.7" id="proposed-atomic"><span class="secno">7.7. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
+   <h3 class="heading settled" data-level="7.8" id="proposed-atomic"><span class="secno">7.8. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
    <p>In subclause 33.5.2 [atomics.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><c- c1>// all freestanding</c->
@@ -3283,7 +3317,5 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
   </dl>
   <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue"> Feedback from Microsoft is needed regarding how to proceed with standardization.
-If a pass-by-register ABI for 128-bit types is targeted, changes to <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i></code> must be made. <a class="issue-return" href="#issue-e3f19398" title="Jump to section">↵</a></div>
    <div class="issue"> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-e55e0f12" title="Jump to section">↵</a></div>
   </div>
