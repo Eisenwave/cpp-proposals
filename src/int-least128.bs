@@ -16,28 +16,25 @@ Abstract: This proposal standardizes 128-bit integers.
 
 # Introduction # {#introduction}
 
-128-bit integers have countless practical uses, and are already implemented in the form of compiler
-extensions such as `__int128`, and the C23 standard type `_BitInt(128)`.
-To implement [[P1522R1]], all major implementations have defined
-`std::iota_view<std::uint64_t>::difference_type` to be a 128-bit integer type,
-making 128-bit integers quasi-standard already.
+128-bit integers have countless practical uses, and all major implementations
+(MSVC, GCC, LLVM) expose 128-bit integers as a language extension already.
+There has been great interest in standardizing integers beyond 64 bits for a long time,
+and with the new wording in the C standard for `intmax_t` (see [[#c-compatibility]]),
+one of the last obstacles has been removed.
 
-This paper seeks to standardize the existing practice of providing 128-bit integers.
-The goal is to obtain a mandatory 128-bit integer type with no core language changes
+The goal of this paper is to obtain a mandatory &ge; 128-bit integer type with no core language changes
 and strong support from the C++ standard library.
 To accomplish this, the mandatory aliases `std::int_least128_t` and `std::uint_least128_t`
 are proposed.
 
+Note: The implementation optionally provides `std::int128_t` and `std::uint128_t` aliases.
+
 While the definition of these aliases is trivial, mandating them also implies
 library support from `<format>`, `<bit>`, `<cmath>`, `<limits>`, and other facilities.
 Such library support is crucial for a fully-fledged and useful 128-bit type.
-[[#library-impact]] demonstrates that the necessary support is not overwhelming
-to implement.
-
-Note: The implementation optionally provides `std::int128_t` and `std::uint128_t` aliases.
-
-
-
+[[#library-impact]] demonstrates that the impact on the standard is not overwhelming,
+and [[#implementation-impact]] summarizes the impact on implementations,
+which is equally manageable.
 
 # Motivation and scope # {#motivation-and-scope}
 
@@ -48,19 +45,7 @@ There are two essential reasons for standardizing a 128-bit integer type:
 2. 128-bit integers are already implemented in multiple compilers, and quasi-mandated by the C23
     standard through the `_BitInt(128)` and `unsigned _BitInt(128)` types.
     That is, if the implementation defines `BITINT_MAXWIDTH >= 128`.
-    Therefore, this proposal is merely standardizing existing practice.
-
-For some readers, there may be an obvious question on their mind:
-
-> If 128-bit integers are so useful, why haven't they been proposed sooner?
-
-One significant problem which has been brought up historically is C's `intmax_t`, which had been
-the widest integer type.
-Introducing a wider integer would be an ABI break because to comply with the C standard wording,
-`intmax_t` would need to be 128-bit as well.
-This restriction was lifted in C23, allowing `intmax_t` to be only as wide as `long long`.
-C++ inherits this "relaxed" `std::intmax_t`.
-See [[#c-compatibility]] for more details.
+    See [[#existing-128-bit-integers]] for more.
 
 ## Use cases ## {#use-cases}
 
@@ -156,6 +141,16 @@ bit-representation of the floating-point number through an unsigned integer.
 
 The C++ standard provides `std::float128_t`, but no matching 128-bit integer type,
 which makes this more difficult.
+
+<div class="example">
+Using 128-bit integers, `std::signbit` can be implemented as follows:
+
+```cpp
+bool signbit(float128_t x) {
+    return bit_cast<uint128_t>(x) >> 127;
+}
+```
+</div>
 
 ### Financial systems ### {#financial-systems}
 
@@ -532,7 +527,136 @@ However, these are generally QoI issues and there is no restriction that would p
 **Action:** ⚠️ Define aliases following the same convention as `std::atomic_uint_least64_t`.
 
 
+# Impact on implementations # {#implementation-impact}
 
+The following table summarizes the affected standard library parts and the estimated effort
+required to implement the proposed changes.
+Entries rated "low / none" may require no changes at all, either because existing
+implementations already support 128-bit integers, or would hypothetically support them
+if only `std::is_integral_v` was `true` for an existing 128-bit type.
+
+<table>
+<tr>
+    <th>Affected Library Part</th><th>Estimated Effort</th>
+</tr>
+<tr>
+    <td>`std::to_integer`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`<version>`</td><td>low</td>
+</tr>
+<tr>
+    <td>`<limits>`</td><td>low</td>
+</tr>
+<tr>
+    <td>`<climits>`</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::is_integral`</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::make_{un}signed`</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::cmp_xxx`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::integer_sequence`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::bitset::bitset`</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::bitset::to_u128`</td><td>low</td>
+</tr>
+<tr>
+    <td>`<charconv>`</td><td>⚠️ high</td>
+</tr>
+<tr>
+    <td>`<format>`</td><td>⚠️ high</td>
+</tr>
+<tr>
+    <td>`<bit>`</td><td>⚠️ high</td>
+</tr>
+<tr>
+    <td>`std::to_string`</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::iota_view`</td><td>❌ possible ABI break</td>
+</tr>
+<tr>
+    <td>`std::gcd`, `std::lcm`</td><td>⚠️ high</td>
+</tr>
+<tr>
+    <td>`std::midpoint`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::xxx_sat`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::saturate_cast`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`<random>` generators</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::uniform_int_distribution`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::seed_seq`</td><td>low / none</td>
+</tr>
+<tr>
+    <td>`std::valarray`</td><td>depends on QoI</td>
+</tr>
+<tr>
+    <td>`<cmath>` overloads</td><td>low</td>
+</tr>
+<tr>
+    <td>`std::abs`</td><td>low</td>
+</tr>
+<tr>
+    <td>`<linalg>`</td><td>depends on QoI</td>
+</tr>
+<tr>
+    <td>`std::printf`, `std::scanf`</td><td>⚠️ high</td>
+</tr>
+<tr>
+    <td>`std::atomic`</td><td>⚠️ high</td>
+</tr>
+</table>
+
+## Microsoft ABI break for `std::ranges::iota_view::iterator::difference_type` ## {#iota-view-abi-break}
+
+libc++ and libstdc++ define `std::ranges::iota_view<std::size_t>::iterator::difference_type`
+to be `__int128`.
+Since a `std::int_least128_t` alias would likely be defined as `__int128`, there is no ABI impact.
+
+However, MSVC uses a class type `std::_Signed128`.
+Even trivially copyable classes aren't passed via register in the Microsoft x86_64 ABI,
+so this type is passed via the stack.
+
+This may be undesirable for a future Microsoft 128-bit integer type.
+A possible option would be to use the same ABI as `__int128`, which is to pass
+results via `rdx` and `rax`.
+It would also be possible to share an ABI with `__m128i`, which is to pass via `xmm` registers.
+
+The ABI break stems from the fact that <code><i>IOTA-DIFF-T</i>(W)</code> for `W = std::size_t` is defined
+to be:
+
+> a signed integer type of width greater than the width of `W` if such a type exists.
+
+Currently, no such type exists, but if `std::int_least128_t` did exist, it would no longer be valid
+to use a class type as a `difference_type` in this case.
+This would constitute an ABI break.
+A possible solution which keeps ABI-compatibility is to reword this as:
+
+> a signed <ins>standard</ins> integer type of width greater than the width of `W` if such a type exists.
+
+This would still require `int` to have a difference type of say, `long`,
+but `long long` would not be required to have a difference type of `std::int_least128_t`.
+
+Issue: Feedback from Microsoft is needed regarding how to proceed with standardization.
+If a pass-by-register ABI for 128-bit types is targeted, changes to <code><i>IOTA-DIFF-T</i></code> must be made.
 
 
 # Design considerations # {#design-considerations}
@@ -640,7 +764,6 @@ Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple rea
 </tr>
 </table>
 
-
 ### C library support for bit-precise integers ### {#c-library-support}
 
 The C23 standard currently does not mandate "full" library support for bit-precise integers.
@@ -653,17 +776,54 @@ a macro.
 
 # Implementation experience # {#implementation-experience}
 
-GCC and clang already provide 128-bit integers in the form of a `__int128` type.
+## Existing 128-bit integer types ## {#existing-128-bit-integers}
 
-Furthermore, any implementation of the C23 standard must also support
+### `__int128` ### {#existing-int-128}
+
+GCC and clang already provide the 128-bit integer types in the form of
+`__int128` and `unsigned __int128`.
+
+### `std::_Signed128`, `std::_Unsigned128` ### {#existing-msvc-128}
+
+The MSVC STL provides the class types `std::_Signed128` and `std::_Unsigned128` defined in
+<a href="https://github.com/microsoft/STL/blob/main/stl/inc/__msvc_int128.hpp">`<__msvc_int128.hpp>`</a>.
+These types implement all arithmetic operations and integer comparisons.
+
+They satisfy the *integer-like* constraint and have been added to implement
+[[P1522R1]].
+`std::iota_view::difference_type` is possibly defined as `std::_Signed128`.
+
+
+### `_BitInt(128)` ### {#existing-bit-int}
+
+The C23 standard requires support for bit-precise integers
 `_BitInt(N <= BITINT_MAXWIDTH)` where `BITINT_MAXWIDTH <= ULLONG_WIDTH`.
-While this doesn't strictly force support for 128-bit integers, clang &le; 15 supports
-`BITINT_MAXWIDTH == 128`, and clang &ge; 16 even provides support for more than 128 bits.
+While this doesn't strictly force support for 128-bit integers,
+GNU-family implementations support more than 128 bits already.
 
-It is reasonable to expect any C23 implementation to provide at least 128-bit-precise support,
-and by proxy, pave the way for 128-bit extended integers.
+As of February 2024, the support is as follows:
+<table>
+<tr>
+    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th>
+</tr>
+<tr>
+    <td>Clang 14</td><td>`128`</td>
+<tr>
+</tr>
+    <td>Clang 16</td><td>`8388608`</td>
+<tr>
+</tr>
+    <td>GCC 14</td><td>`65535`</td>
+<tr>
+</tr>
+    <td>MSVC 19.38</td><td>❌</td>
+</tr>
+</table>
 
+Note: Clang has supported `_BitInt` as an `_ExtInt` compiler extension prior to C standardization.
 
+It is reasonable to expect that given enough time, `_BitInt(128)` will become
+widely supported by existing implementations.
 
 
 # Proposed wording # {#proposed-wording}
