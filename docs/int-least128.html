@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4bb70cec7d128ef7a2f3bab01818da51c567af63" name="revision">
+  <meta content="215c99afc44fc202f45006982e4cdd0d9de03c77" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2365,15 +2365,21 @@ a monetary amount of up to 184.5 quadrillion dollars can be represented.
 However, this amount shrinks dramatically when using smaller fractions.</p>
    <p>For example, the smallest fraction of a Bitcoin is a Satoshi, where one Bitcoin equals
 a million Satoshis.
-A signed 64-bit integer can only losslessly represent approximately 10<sup>13</sup> Bitcoins.</p>
+A signed 64-bit integer can only losslessly represent approximately 10 trillion Bitcoins.
+In 2009, a bitcoin was worth less than a penny, and a monetary value of only
+92 billion USD could be represented in Satoshis.
+Essentially, 64-bit integers are insufficient when combining high precision with
+exponential price fluctuations.</p>
    <p>Similarly, since 2005, stock markets are legally required to accept
-price increments of $0.0001 when the price of a stock ≤ $1 (see <a data-link-type="biblio" href="#biblio-sec" title="Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS">[SEC]</a>).
-At this precision, it is impossible to represent a
-100 trillion Zimbabwe Dollar banknote.</p>
+price increments of $0.0001 when the price of a stock is ≤ $1 (see <a data-link-type="biblio" href="#biblio-sec" title="Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS">[SEC]</a>).
+At this precision, 1.84 quadrillion dollars can be represented.
+Using a uniform precision of ten thousandths would prove problematic when
+applied to other currencies such as Yen, forcing the complexity of variable precision
+on the developer.</p>
    <p><a data-link-type="biblio" href="#biblio-tigerbeetle" title="64-Bit Bank Balances ‘Ought to be Enough for Anybody’?">[TigerBeetle]</a> discusses why 64-bit integers have been retired in favor of 128-bit
 integers to store financial amounts and balances in the TigerBeetle financial
 accounting database.
-The aforementioned sub-penny requirement is part of motivation.</p>
+The aforementioned sub-penny requirement is part of the motivation.</p>
    <h4 class="heading settled" data-level="2.1.10" id="database-systems"><span class="secno">2.1.10. </span><span class="content">Database systems</span><a class="self-link" href="#database-systems"></a></h4>
    <p>A 128-bit integer can be used to represent a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> (Universally Unique Identifier).
 While 64-bit integers are often sufficient as a unique identifier, it is quite likely that two

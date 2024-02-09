@@ -186,17 +186,23 @@ However, this amount shrinks dramatically when using smaller fractions.
 
 For example, the smallest fraction of a Bitcoin is a Satoshi, where one Bitcoin equals
 a million Satoshis.
-A signed 64-bit integer can only losslessly represent approximately 10<sup>13</sup> Bitcoins.
+A signed 64-bit integer can only losslessly represent approximately 10 trillion Bitcoins.
+In 2009, a bitcoin was worth less than a penny, and a monetary value of only
+92 billion USD could be represented in Satoshis.
+Essentially, 64-bit integers are insufficient when combining high precision with
+exponential price fluctuations.
 
 Similarly, since 2005, stock markets are legally required to accept
-price increments of $0.0001 when the price of a stock &le; $1 (see [[SEC]]).
-At this precision, it is impossible to represent a
-100 trillion Zimbabwe Dollar banknote.
+price increments of $0.0001 when the price of a stock is &le; $1 (see [[SEC]]).
+At this precision, 1.84 quadrillion dollars can be represented.
+Using a uniform precision of ten thousandths would prove problematic when
+applied to other currencies such as Yen, forcing the complexity of variable precision
+on the developer.
 
 [[TigerBeetle]] discusses why 64-bit integers have been retired in favor of 128-bit
 integers to store financial amounts and balances in the TigerBeetle financial
 accounting database.
-The aforementioned sub-penny requirement is part of motivation.
+The aforementioned sub-penny requirement is part of the motivation.
 
 ### Database systems ### {#database-systems}
 
