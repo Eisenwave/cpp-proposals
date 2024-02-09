@@ -74,8 +74,11 @@ To motivate this proposal, I will briefly introduce a few use cases of 128-bit i
 
 Some random number generators produce 128-bit numbers.
 
-For example, the CSRPNG (cryptographically secure pseudo-random number generator)
-Fortuna uses a block cipher to produce random numbers.
+For example, the
+<a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSRPNG</a>
+(cryptographically secure pseudo-random number generator)
+[Fortuna](https://en.wikipedia.org/wiki/Fortuna_(PRNG))
+uses a block cipher to produce random numbers.
 When a 128-bit block cipher is used, the output is naturally 128-bit as well.
 Fortuna is used in the implementation of `/dev/random` in FreeBSD 11, and in AppleOSes since 2020.
 
@@ -142,7 +145,8 @@ When counting nanoseconds, a maximum value of 2<sup>63</sup>-1 can only represen
 
 This makes 64-bit integers insufficient for some time calculations, where 128-bit integers
 would suffice.
-Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off.
+Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off
+between resolution and range.
 
 ### Floating-point operations ### {#floating-point-operations}
 
@@ -162,19 +166,47 @@ bool signbit(float128_t x) {
 ```
 </div>
 
+### Float-to-string/String-to-float conversion ### {#float-string-conversion}
+
+The [[Dragonbox]] binary-to-decimal conversion algorithm requires an integer type
+that is twice the width of the converted floating-point number.
+To convert a floating-point number in
+[binary64](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+format, a 128-bit integer type is used.
+
+Similarly, [[fast_float]] uses 128-bit numbers as part of decimal-to-binary conversions.
+This library provides an efficient `from_chars` implementation.
+
 ### Financial systems ### {#financial-systems}
 
-128-bit integers can be used to represent huge monetary values.
+128-bit integers can be used to represent huge monetary values with high accuracies.
+When representing cents of a dollar as a 64-bit integer,
+a monetary amount of up to 184.5 quadrillion dollars can be represented.
+However, this amount shrinks dramatically when using smaller fractions.
+
 For example, the smallest fraction of a Bitcoin is a Satoshi, where one Bitcoin equals
 a million Satoshis.
 A signed 64-bit integer can only losslessly represent approximately 10<sup>13</sup> Bitcoins.
 
+Similarly, since 2005, stock markets are legally required to accept
+price increments of $0.0001 when the price of a stock &le; $1 (see [[SEC]]).
+At this precision, it is impossible to represent a
+100 trillion Zimbabwe Dollar banknote.
+
+[[TigerBeetle]] discusses why 64-bit integers have been retired in favor of 128-bit
+integers to store financial amounts and balances in the TigerBeetle financial
+accounting database.
+The aforementioned sub-penny requirement is part of motivation.
+
 ### Database systems ### {#database-systems}
 
-A 128-bit integer can be used to represent a UUID (Universally Unique Identifier).
+A 128-bit integer can be used to represent a
+<a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a>
+(Universally Unique Identifier).
 While 64-bit integers are often sufficient as a unique identifier, it is quite likely that two
 identical identifiers are chosen by a random number generator over a long period of time,
-especially considering the Birthday Paradox.
+especially considering the
+[Birthday Problem](https://en.wikipedia.org/wiki/Birthday_problem).
 Therefore, at least 128 bits are typically used for such applications.
 
 ### Networking ### {#networking}
@@ -1179,6 +1211,21 @@ namespace std {
 
 <pre class=biblio>
 {
+    "Dragonbox": {
+        "title": "Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm",
+        "href": "https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf",
+        "authors": ["Junekey Jeon"]
+    },
+    "fast_float": {
+        "title": "fast_float number parsing library: 4x faster than strtod",
+        "href": "https://github.com/fastfloat/fast_float",
+        "authors": ["Daniel Lemire et al."]
+    },
+    "TigerBeetle": {
+        "title": "64-Bit Bank Balances ‘Ought to be Enough for Anybody’?",
+        "href": "https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/",
+        "authors": ["Rafael Batiati"]
+    },
     "N3047": {
         "title": "N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)",
         "href": "https://www.iso-9899.info/n3047.html",
@@ -1188,6 +1235,11 @@ namespace std {
         "title": "Better, constexpr to_string",
         "href": "https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html",
         "authors": ["Jan Schultke"]
+    },
+    "SEC": {
+        "title": "Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS",
+        "href": "https://www.sec.gov/divisions/marketreg/subpenny612faq.htm",
+        "authors": ["U.S. Securities and Exchange Commission"]
     }
 }
 </pre>
