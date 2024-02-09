@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0029c03e658e574b3d93c1afb5ef98d3f4f54570" name="revision">
+  <meta content="cfda53f2cd7a834ab7f601fc32fdf47e5f095678" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2896,12 +2896,13 @@ The exact-width types <code class="highlight"><c- n>intN_t</c-></code> and <code
    <blockquote>
 <pre class="highlight">    <c- c1>// [bitset.cons], constructors</c->
     <c- k>constexpr</c-> <c- n>bitset</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
-    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
-    <ins><c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><c- n>uint_least128_t</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
+<del>    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></del>
+<ins>    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- b>unsigned</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- n>llong</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
 <c- p>[...]</c->
-    <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- n>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
-    <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
-    <ins><c- k>constexpr</c-> <c- n>uint_least128_t</c-> <c- nf>to_u128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
+    <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c->        <c- n>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c->   <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
+<ins>    <c- k>constexpr</c-> <c- n>uint_least128_t</c-> <c- nf>to_least128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
+<ins>    <c- k>constexpr</c-> <c- n>uint_fast128_t</c->  <c- nf>to_fast128</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
    </blockquote>
    <p>In subclause 22.9.2.2 [template.bitset.const], update the constructors as follows:</p>
