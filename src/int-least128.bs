@@ -415,7 +415,7 @@ Note: For GCD computation, algorithms which don't rely on integer division exist
 Therefore, a reasonably fast 128-bit version is possible.
 `std::midpoint` can be implemented in a width-agnostic way.
 
-**Issue:** Saturating arithmetic functions and `saturate_cast` need to support 128-bit integers.
+**Issue:** Saturating arithmetic functions and `saturate_cast` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
 
 Note: Existing 64-bit implementations that don't rely on 128-bit types can be equally used for 128-bit
@@ -843,7 +843,7 @@ svg {
 ins {
     background: rgba(136, 255, 93, 0.2);
     color: inherit;
-    text-decoration: none;
+    text-decoration: underlined;
 }
 del {
     background: rgba(255, 93, 93, 0.2);
@@ -852,7 +852,226 @@ del {
 }
 </style>
 
-WIP
+In subclause 17.3.2 [version.syn], update the feature-testing macros as follows:
+
+<blockquote>
+<pre>
+<ins>#define __cpp_lib_atomic_int128 20XXXX</ins>
+#define __cpp_lib_bitset <del>202306L</del><ins>20XXXX</ins>
+<ins>#define __cpp_lib_bitset_int128 20XXXX</ins>
+<ins>#define __cpp_lib_int128        20XXXX</ins>
+</pre>
+</blockquote>
+
+In subclause 17.4.1 [cstdint.syn], update the synopsis as follows:
+
+<blockquote>
+<pre>
+// all freestanding
+namespace std {
+  using int8_t          = <i>signed integer type</i>;   // optional
+  using int16_t         = <i>signed integer type</i>;   // optional
+  using int32_t         = <i>signed integer type</i>;   // optional
+  using int64_t         = <i>signed integer type</i>;   // optional
+  <ins>using int128_t        = <i>signed integer type</i>;   // optional</ins>
+  using intN_t          = <i>see below</i>;             // optional
+
+  using int_fast8_t     = <i>signed integer type</i>;
+  using int_fast16_t    = <i>signed integer type</i>;
+  using int_fast32_t    = <i>signed integer type</i>;
+  using int_fast64_t    = <i>signed integer type</i>;
+  <ins>using int_fast128_t   = <i>signed integer type</i>;</ins>
+  using int_fastN_t     = <i>see below</i>;             // optional
+
+  using int_least8_t    = <i>signed integer type</i>;
+  using int_least16_t   = <i>signed integer type</i>;
+  using int_least32_t   = <i>signed integer type</i>;
+  using int_least64_t   = <i>signed integer type</i>;
+  <ins>using int_least128_t  = <i>signed integer type</i>;</ins>
+  using int_leastN_t    = <i>see below</i>;             // optional
+
+  using intmax_t        = <i>signed integer type</i>;
+  using intptr_t        = <i>signed integer type</i>;   // optional
+
+  using uint8_t         = <i>unsigned integer type</i>; // optional
+  using uint16_t        = <i>unsigned integer type</i>; // optional
+  using uint32_t        = <i>unsigned integer type</i>; // optional
+  using uint64_t        = <i>unsigned integer type</i>; // optional
+  <ins>using uint128_t       = <i>unsigned integer type</i>; // optional</ins>
+  using uintN_t         = <i>see below</i>;             // optional
+
+  using uint_fast8_t    = <i>unsigned integer type</i>;
+  using uint_fast16_t   = <i>unsigned integer type</i>;
+  using uint_fast32_t   = <i>unsigned integer type</i>;
+  using uint_fast64_t   = <i>unsigned integer type</i>;
+  <ins>using uint_fast128_t  = <i>unsigned integer type</i>;</ins>
+  using uint_fastN_t    = <i>see below</i>;             // optional
+
+  using uint_least8_t   = <i>unsigned integer type</i>;
+  using uint_least16_t  = <i>unsigned integer type</i>;
+  using uint_least32_t  = <i>unsigned integer type</i>;
+  using uint_least64_t  = <i>unsigned integer type</i>;
+  <ins>using uint_least128_t = <i>unsigned integer type</i>;</ins>
+  using uint_leastN_t   = <i>see below</i>;             // optional
+
+  using uintmax_t       = <i>unsigned integer type</i>;
+  using uintptr_t       = <i>unsigned integer type</i>; // optional
+}
+</pre>
+</blockquote>
+
+In subclause 17.4.1 [cstdint.syn], update paragraph 3 as follows:
+
+<blockquote>
+All types that use the placeholder *N* are optional when *N* is not
+`8`, `16`, `32`, <del>or</del> `64`<ins>, or `128`</ins>.
+The exact-width types `intN_t` and `uintN_t` for *N* =
+`8`, `16`, `32`, <del>and</del> `64`<ins>, and `128`</ins>
+are also optional; [...]
+</blockquote>
+
+In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
+<blockquote>
+<pre>
+    // [bitset.cons], constructors
+    constexpr bitset() noexcept;
+    constexpr bitset(unsigned long long val) noexcept;
+    <ins>constexpr bitset(uint_least128_t val) noexcept;</ins>
+[...]
+    constexpr unsigned long to_ulong() const;
+    constexpr unsigned long long to_ullong() const;
+    <ins>constexpr uint_least128_t to_u128() const;</ins>
+</pre>
+</blockquote>
+
+In subclause 22.9.2.2 [template.bitset.const], update the constructors as follows:
+<blockquote>
+<pre>
+<del>constexpr bitset(unsigned long long val) noexcept;</del>
+<ins>constexpr bitset(<i>unsigned-integer-least-llong</i> val) noexcept;</ins>
+</pre>
+<p class="indent">
+<ins>2 The implementation provides one overload for every unsigned integer type whose
+conversion rank is that of `int` or greater.</ins>
+</p>
+<p class="indent">
+<del>2</del><ins>3</ins> *Effects*: Initializes the first `M` bit positions to the corresponding bit values in val.
+`M` is the smaller of `N` and the number of bits in the value representation
+([basic.types.general]) of <del>`unsigned long long`</del><ins>the type of `val`</ins>.
+If `M < N`, the remaining bit positions are initialized to zero.
+</p>
+</blockquote>
+
+Note: It is possible that `unsigned long long` is the same type
+as `uint_least128_t`, so the mandate is necessary to prevent a duplicate definition.
+
+In subclause 22.9.2.3 [bitset.members], make the following changes:
+
+<blockquote>
+<pre>
+<del>constexpr unsigned long to_ulong() const;</del>
+</pre>
+<p class="indent">
+<del>*Returns*: `x`.</del>
+</p>
+<p class="indent">
+<del>*Throws*: `overflow_error` if the integral value `x` corresponding to the bits in `*this`
+cannot be represented as type `unsigned long`.</del>
+</p>
+<pre>
+<del>constexpr unsigned long long to_ullong() const;</del>
+<ins>constexpr unsigned long      to_ulong() const;</ins>
+<ins>constexpr unsigned long long to_ullong() const;</ins>
+<ins>constexpr uint_least128_t    to_least128() const;</ins>
+<ins>constexpr uint_fast128_t     to_fast128() const;</ins>
+</pre>
+<p class="indent">
+*Returns*: `x`.
+</p>
+<p class="indent">
+*Throws*: `overflow_error` if the integral value `x` corresponding to the bits in `*this`
+cannot be represented as <del>type `unsigned long long`</del><ins>the return type</ins>.
+</p>
+<pre>
+</blockquote>
+
+Issue: Wording for `<format>` is W.I.P.
+
+Wording for `to_string` requires no changes after [[Schultke1]].
+However, should those changes not be accepted,
+update subclause 23.4.2 [string.syn] as follows:
+
+<blockquote>
+<pre>
+<del>
+  string to_string(int val);
+  string to_string(unsigned val);
+  string to_string(long val);
+  string to_string(unsigned long val);
+  string to_string(long long val);
+  string to_string(unsigned long long val);
+  string to_string(int_least128_t);</del>
+<ins>  string to_string(<i>integer-least-int</i> val);</ins>
+  string to_string(float val);
+  string to_string(double val);
+  string to_string(long double val);
+</pre>
+</blockquote>
+
+Under the same condition, in subclause 23.4.5 [string.conversions], update `to_string`:
+<blockquote>
+<pre>
+<del>  string to_string(int val);
+  string to_string(unsigned val);
+  string to_string(long val);
+  string to_string(unsigned long val);
+  string to_string(long long val);
+  string to_string(unsigned long long val);</del>
+<ins>  string to_string(<i>integer-least-int</i> val);</ins>
+  string to_string(float val);
+  string to_string(double val);
+  string to_string(long double val);
+</pre>
+<p class="indent">
+<ins>The implementation provides one overload for every integer type whose
+conversion rank is that of `int` or greater.</ins>
+</p>
+<p class="indent">
+7 *Returns*: `format("{}", val)`.
+</p>
+</blockquote>
+
+In subclause 28.7.1 [cmath.syn], update the synopsis as follows:
+<blockquote>
+<pre>
+  // [c.math.abs], absolute values
+<del>  constexpr int abs(int j);                                             // freestanding
+  constexpr long int abs(long int j);                                   // freestanding
+  constexpr long long int abs(long long int j);                         // freestanding</del>
+<ins>  constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);        // freestanding</ins>
+  constexpr <i>floating-point-type</i> abs(<i>floating-point-type</i> j);             // freestanding-deleted
+</pre>
+</blockquote>
+
+In subclause 28.7.2 [c.math.abs], make the following changes:
+<blockquote>
+<pre>
+<del>constexpr int abs(int j);
+constexpr long int abs(long int j);
+constexpr long long int abs(long long int j);</del>
+<ins>constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);</ins>
+</pre>
+<p class="indent">
+<ins>The implementation provides one overload for every signed integer type whose
+conversion rank is that of `int` or greater.</ins>
+</p>
+<p class="indent">
+<del>*Effects*: These functions have the semantics specified in the C standard library for the functions `abs`, `labs`, and `llabs`, respectively.</del>
+<ins>*Returns*: `j >= 0 ? j : -j;`.
+</p>
+</blockquote>
+
+Issue: Wording for `std::atomic<std::int_least128_t>` is W.I.P.
 
 <pre class=biblio>
 {
