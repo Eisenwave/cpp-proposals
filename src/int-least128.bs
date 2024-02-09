@@ -953,7 +953,7 @@ In subclause 22.9.2.2 [template.bitset.const], update the constructors as follow
 </pre>
 <p class="indent">
 <ins>2 The implementation provides one overload for every unsigned integer type whose
-conversion rank is that of `int` or greater.</ins>
+conversion rank is that of `unsigned long long` or greater.</ins>
 </p>
 <p class="indent">
 <del>2</del><ins>3</ins> *Effects*: Initializes the first `M` bit positions to the corresponding bit values in val.
