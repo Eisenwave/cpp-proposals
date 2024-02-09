@@ -993,7 +993,6 @@ cannot be represented as type `unsigned long`.</del>
 *Throws*: `overflow_error` if the integral value `x` corresponding to the bits in `*this`
 cannot be represented as <del>type `unsigned long long`</del><ins>the return type</ins>.
 </p>
-<pre>
 </blockquote>
 
 Issue: Wording for `<format>` is W.I.P.

@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="28a3f62b07c42b7d017d6622ba73de68bdef5fa4" name="revision">
+  <meta content="3325781c4d1a6ea81b8fe7abd80f9a8b8142c410" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2950,13 +2950,11 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
      <ins>the return type</ins>
      . 
     </p>
-<pre class="highlight"></pre>
    </blockquote>
-    Issue: Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P.
-
-Wording for <code class="highlight"><c- n>to_string</c-></code> requires no changes after <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
+   <p class="issue" id="issue-e55e0f12"><a class="self-link" href="#issue-e55e0f12"></a> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P.</p>
+   <p>Wording for <code class="highlight"><c- n>to_string</c-></code> requires no changes after <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
 However, should those changes not be accepted,
-update subclause 23.4.2 [string.syn] as follows: 
+update subclause 23.4.2 [string.syn] as follows:</p>
    <blockquote>
 <pre class="highlight"><del>
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
@@ -2972,7 +2970,7 @@ update subclause 23.4.2 [string.syn] as follows:
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
 </pre>
    </blockquote>
-    Under the same condition, in subclause 23.4.5 [string.conversions], update <code class="highlight"><c- n>to_string</c-></code>: 
+   <p>Under the same condition, in subclause 23.4.5 [string.conversions], update <code class="highlight"><c- n>to_string</c-></code>:</p>
    <blockquote>
 <pre class="highlight"><del>  <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
@@ -2991,7 +2989,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     </p>
     <p class="indent"> 7 <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
-    In subclause 28.7.1 [cmath.syn], update the synopsis as follows: 
+   <p>In subclause 28.7.1 [cmath.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">  <c- c1>// [c.math.abs], absolute values</c->
 <del>  <c- k>constexpr</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>int</c-> <c- n>j</c-><c- p>);</c->                                             <c- c1>// freestanding</c->
@@ -3001,7 +2999,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
   <c- k>constexpr</c-> <i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>j</c-><c- p>);</c->             <c- c1>// freestanding-deleted</c->
 </pre>
    </blockquote>
-    In subclause 28.7.2 [c.math.abs], make the following changes: 
+   <p>In subclause 28.7.2 [c.math.abs], make the following changes:</p>
    <blockquote>
 <pre class="highlight"><del><c- k>constexpr</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>int</c-> <c- n>j</c-><c- p>);</c->
 <c- k>constexpr</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->
@@ -3017,7 +3015,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
-    Issue: Wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> is W.I.P. 
+   <p class="issue" id="issue-9dda1774"><a class="self-link" href="#issue-9dda1774"></a> Wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> is W.I.P.</p>
   </main>
 <script>
 (function() {
@@ -3164,4 +3162,6 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
   <div style="counter-reset:issue">
    <div class="issue"> Feedback from Microsoft is needed regarding how to proceed with standardization.
 If a pass-by-register ABI for 128-bit types is targeted, changes to <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i></code> must be made. <a class="issue-return" href="#issue-e3f19398" title="Jump to section">↵</a></div>
+   <div class="issue"> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-e55e0f12" title="Jump to section">↵</a></div>
+   <div class="issue"> Wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-9dda1774" title="Jump to section">↵</a></div>
   </div>
