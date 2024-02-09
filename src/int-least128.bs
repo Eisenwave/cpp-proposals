@@ -36,6 +36,14 @@ Such library support is crucial for a fully-fledged and useful 128-bit type.
 and [[#implementation-impact]] summarizes the impact on implementations,
 which is equally manageable.
 
+Furthermore, the standard library contains a large amount of artificial hurdles
+which make it impossible to provide library support for extended integers.
+Even if there exists an extended 128-bit integer,
+`std::to_string(std::int128_t)` cannot exist,
+`std::bitset` cannot be constructed from it (without truncating to `unsigned long long`),
+`std::abs(std::int128_t)` cannot exist,
+among other issues.
+
 # Motivation and scope # {#motivation-and-scope}
 
 There are two essential reasons for standardizing a 128-bit integer type:
@@ -799,7 +807,7 @@ They satisfy the *integer-like* constraint and have been added to implement
 ### `_BitInt(128)` ### {#existing-bit-int}
 
 The C23 standard requires support for bit-precise integers
-`_BitInt(N <= BITINT_MAXWIDTH)` where `BITINT_MAXWIDTH <= ULLONG_WIDTH`.
+`_BitInt(N <= BITINT_MAXWIDTH)` where `BITINT_MAXWIDTH >= ULLONG_WIDTH`.
 While this doesn't strictly force support for 128-bit integers,
 GNU-family implementations support more than 128 bits already.
 
@@ -831,6 +839,14 @@ widely supported by existing implementations.
 # Proposed wording # {#proposed-wording}
 
 <style>
+th, td, table {
+    border: 1px solid var(--text);
+}
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
 .indent {
     margin-left: 2em;
 }

@@ -1564,8 +1564,16 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f0e943a3ea66571bfa2edcd99b6a69f0e224df6d" name="revision">
+  <meta content="82f55c0c13af182e71dd02cab31702d804b7c099" name="revision">
 <style>
+th, td, table {
+    border: 1px solid var(--text);
+}
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
 .indent {
     margin-left: 2em;
 }
@@ -2230,6 +2238,10 @@ library support from <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c-
 Such library support is crucial for a fully-fledged and useful 128-bit type. <a href="#library-impact">§ 3.3 Impact on the library</a> demonstrates that the impact on the standard is not overwhelming,
 and <a href="#implementation-impact">§ 4 Impact on implementations</a> summarizes the impact on implementations,
 which is equally manageable.</p>
+   <p>Furthermore, the standard library contains a large amount of artificial hurdles
+which make it impossible to provide library support for extended integers.
+Even if there exists an extended 128-bit integer, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> cannot be constructed from it (without truncating to <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>), <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist,
+among other issues.</p>
    <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>There are two essential reasons for standardizing a 128-bit integer type:</p>
    <ol>
@@ -2788,7 +2800,7 @@ a macro.</p>
 These types implement all arithmetic operations and integer comparisons.</p>
    <p>They satisfy the <em>integer-like</em> constraint and have been added to implement <a data-link-type="biblio" href="#biblio-p1522r1" title="Iterator Difference Type and Integer Overflow">[P1522R1]</a>. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><c- n>difference_type</c-></code> is possibly defined as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>_Signed128</c-></code>.</p>
    <h4 class="heading settled" data-level="6.1.3" id="existing-bit-int"><span class="secno">6.1.3. </span><span class="content"><code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code></span><a class="self-link" href="#existing-bit-int"></a></h4>
-   <p>The C23 standard requires support for bit-precise integers <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-> <c- o>&lt;=</c-> <c- n>BITINT_MAXWIDTH</c-><c- p>)</c-></code> where <code class="highlight"><c- n>BITINT_MAXWIDTH</c-> <c- o>&lt;=</c-> <c- n>ULLONG_WIDTH</c-></code>.
+   <p>The C23 standard requires support for bit-precise integers <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-> <c- o>&lt;=</c-> <c- n>BITINT_MAXWIDTH</c-><c- p>)</c-></code> where <code class="highlight"><c- n>BITINT_MAXWIDTH</c-> <c- o>>=</c-> <c- n>ULLONG_WIDTH</c-></code>.
 While this doesn’t strictly force support for 128-bit integers,
 GNU-family implementations support more than 128 bits already.</p>
    <p>As of February 2024, the support is as follows:</p>
