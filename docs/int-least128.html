@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="59913a9e092cc379358553c033a2e073b1511c99" name="revision">
+  <meta content="ce9f09b670ffe9e8a6d1f6beddd52c585b706493" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2122,8 +2122,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="https://eisenwave.github.io/cpp-proposals/int-least128.html">https://eisenwave.github.io/cpp-proposals/int-least128.html</a>
-     <dt>Issue Tracking:
-     <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:janschultke@gmail.com">Jan Schultke</a>
      <dt>Audience:
@@ -2228,18 +2226,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#proposed-version"><span class="secno">7.1</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code></span></a>
       <li><a href="#proposed-cstdint"><span class="secno">7.2</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span></a>
       <li><a href="#proposed-bitset"><span class="secno">7.3</span> <span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span></a>
-      <li><a href="#proposed-format"><span class="secno">7.4</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span></a>
-      <li><a href="#proposed-numeric-conversions"><span class="secno">7.5</span> <span class="content">Numeric conversions</span></a>
-      <li><a href="#proposed-iota"><span class="secno">7.6</span> <span class="content">Iota view</span></a>
-      <li><a href="#proposed-abs"><span class="secno">7.7</span> <span class="content">Absolute values</span></a>
-      <li><a href="#proposed-atomic"><span class="secno">7.8</span> <span class="content">Atomic operations</span></a>
+      <li><a href="#proposed-numeric-conversions"><span class="secno">7.4</span> <span class="content">Numeric conversions</span></a>
+      <li><a href="#proposed-iota"><span class="secno">7.5</span> <span class="content">Iota view</span></a>
+      <li><a href="#proposed-abs"><span class="secno">7.6</span> <span class="content">Absolute values</span></a>
+      <li><a href="#proposed-atomic"><span class="secno">7.7</span> <span class="content">Atomic operations</span></a>
      </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
-    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
    </ol>
   </nav>
   <main>
@@ -2367,7 +2363,7 @@ To convert a floating-point number in <a href="https://en.wikipedia.org/wiki/Dou
    <p>Similarly, <a data-link-type="biblio" href="#biblio-fast_float" title="fast_float number parsing library: 4x faster than strtod">[fast_float]</a> uses 128-bit numbers as part of decimal-to-binary conversions.
 This library provides an efficient <code class="highlight"><c- n>from_chars</c-></code> implementation.</p>
    <h4 class="heading settled" data-level="2.1.9" id="financial-systems"><span class="secno">2.1.9. </span><span class="content">Financial systems</span><a class="self-link" href="#financial-systems"></a></h4>
-   <p>128-bit integers can be used to represent huge monetary values with high accuracies.
+   <p>128-bit integers can be used to represent huge monetary values with high accuracy.
 When representing cents of a dollar as a 64-bit integer,
 a monetary amount of up to 184.5 quadrillion dollars can be represented.
 However, this amount shrinks dramatically when using smaller fractions.</p>
@@ -2432,8 +2428,8 @@ referred by the type definition for an exact width integer type:
    <p>For <code class="highlight"><c- b>intmax_t</c-></code> to not be <code class="highlight"><c- n>int_least128_t</c-></code> in the C standard, there must exist an <code class="highlight"><c- n>int128_t</c-></code> alias for the same type.
 GCC already provides an <code class="highlight"><c- b>__int128</c-></code> type which satisfies the padding-free requirement and could
 be exposed as <code class="highlight"><c- n>int128_t</c-></code>.</p>
-   <p>In conclusion, it is possible to mandate a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> alias without sacrificing
-C-compatibility.</p>
+   <p>In conclusion, it is possible to provide a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> alias with equivalent
+semantics and ABI in C and C++.</p>
    <h3 class="heading settled" data-level="3.2" id="core-impact"><span class="secno">3.2. </span><span class="content">Impact on the core language</span><a class="self-link" href="#core-impact"></a></h3>
    <p>The proposal makes no changes to the core language.
 However, it is worth noting that the existence of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> leads to some oddities:</p>
@@ -2507,14 +2503,19 @@ on a specific integer width.</p>
    <p class="note" role="note"><span class="marker">Note:</span> GCC already supports <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> for <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The locale-independent forms are simply implemented in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and are not
 affected.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> and <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec_integral</c-></code> could possibly support 128-bit integers.<br> <strong>Action:</strong> ⚠️ Add support for 128-bit integers (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_arg</c-></code> may need direct support for 128-bit integers rather than using the
-fallback case of initializing a value with <code class="highlight"><c- n>handle</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>.<br> <strong>Action:</strong> ⚠️ To be investigated (see <a href="#proposed-format">§ 7.4 Header &lt;format></a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> might need 128-bit integers support.<br> <strong>Action:</strong> ✔️ No impact on the standard because it doesn’t.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This function only checks for the type of a dynamic <em>width</em> or <em>precision</em>,
+and the arguments are required to be of standard integer type.
+Realistically the user will never need a 128-bit <em>width</em> or <em>precision</em>.</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_arg</c-></code> may need support for 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard because it doesn’t.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_format_arg</c-><c- o>::</c-><c- n>handle</c-></code> already covers extended integer and floating-point types.
+Also, modifying the <code class="highlight"><c- n>value</c-></code> <code class="highlight"><c- n>variant</c-></code> within a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_format_arg</c-></code> would be
+an avoidable ABI-break.</p>
    <p><strong>Issue:</strong> Bit manipulation functions in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> For most functions, a 128-bit implementation simply combines the results of calling the 64-bit
 variant for the low and high bits.
 For example, <code class="highlight"><c- n>popcount</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- n>x</c-><c- p>)</c-></code> returns <code class="highlight"><c- n>popcount</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- o>></c-><c- p>(</c-><c- n>x</c-> <c- o>>></c-> <c- mi>64</c-><c- p>)</c-> <c- o>+</c-> <c- n>popcount</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- o>></c-><c- p>(</c-><c- n>x</c-><c- p>)</c-></code>.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> needs to support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 7.5 Numeric conversions</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> needs to support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 7.4 Numeric conversions</a>).</p>
    <p class="note" role="note"><span class="marker">Note:</span> This issue is also dealt with in <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
 That proposal also marks the functions returning integers <code class="highlight"><c- k>constexpr</c-></code>, so it is
 a superset of the changes proposed here.</p>
@@ -2535,7 +2536,7 @@ should be unaffected.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code> is required to be a 128-bit integer if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is not 128-bit, and such a type exists.
 This is not the the case in libc++ and MSVC STL at this time,
 where <code class="highlight"><c- n>difference_type</c-></code> is <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>_Signed128</c-></code> respectively.<br> <strong>Action:</strong> ❌ Propose changes to prevent breaking ABI
-(see <a href="#iota-view-abi-break">§ 4.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> and <a href="#proposed-iota">§ 7.6 Iota view</a>).</p>
+(see <a href="#iota-view-abi-break">§ 4.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> and <a href="#proposed-iota">§ 7.5 Iota view</a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cartesian_product_view</c-><c- o>::</c-><c- n>size</c-></code> may now return a 128-bit integer.
 The standard recommends to use a type which is sufficiently wide to store the product
 of sizes of underlying ranges.
@@ -2567,7 +2568,7 @@ Treating 128-bit integers specially and utilizing hardware resources is a QoI is
 need to be defined.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The overload taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would convert to <code class="highlight"><c- b>double</c-></code>, like other functions. <code class="highlight"><c- b>double</c-></code> is more than enough to represent the maximum 128-bit integer value, however,
 it should be considered whether <code class="highlight"><c- b>long</c-> <c- b>double</c-></code> should be used to minimize loss of precision.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload (see <a href="#proposed-abs">§ 7.7 Absolute values</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> should receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload (see <a href="#proposed-abs">§ 7.6 Absolute values</a>).</p>
    <p class="note" role="note"><span class="marker">Note:</span> Without such an overload, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> would delegate to <code class="highlight"><c- n>abs</c-><c- p>(</c-><c- b>double</c-><c- p>)</c-></code>.</p>
    <p><strong>Issue:</strong> The <code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code> library may need 128-bit support.<br> <strong>Action:</strong> ✔️ No impact on the standard.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The linear algebra library operates on <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> of any type.
@@ -2610,7 +2611,7 @@ On x86_64, all <code class="highlight"><c- p>.</c-><c- n>fetch</c-></code> opera
 utilizing the <code class="highlight"><c- n>cmpxchg16b</c-></code> instruction.
 This would be no better than using a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- mi>16</c-><c- o>>></c-></code>.
 However, these are generally QoI issues and there is no restriction that would prevent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code> specializations, even if hardware support is very limited.</p>
-   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases (see <a href="#proposed-atomic">§ 7.8 Atomic operations</a>).</p>
+   <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases (see <a href="#proposed-atomic">§ 7.7 Atomic operations</a>).</p>
    <h2 class="heading settled" data-level="4" id="implementation-impact"><span class="secno">4. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
    <h3 class="heading settled" data-level="4.1" id="estimated-implementation-effort"><span class="secno">4.1. </span><span class="content">Estimated implementation effort</span><a class="self-link" href="#estimated-implementation-effort"></a></h3>
    <p>The following table summarizes the affected standard library parts and the estimated effort
@@ -2658,7 +2659,7 @@ if only <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral_v</
       <td>⚠️ high
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>
-      <td>⚠️ high
+      <td>low
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>
       <td>⚠️ high
@@ -2729,7 +2730,7 @@ It would also be possible to share an ABI with <code class="highlight"><c- kr>__
    <p>Currently, no such type exists, but if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> did exist, it would no longer be valid
 to use a class type or <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> as a <code class="highlight"><c- n>difference_type</c-></code>.</p>
    <h4 class="heading settled" data-level="4.2.3" id="abi-break-possible-solution"><span class="secno">4.2.3. </span><span class="content">Possible solution</span><a class="self-link" href="#abi-break-possible-solution"></a></h4>
-   <p>See <a href="#proposed-iota">§ 7.6 Iota view</a> for a proposed solution which resolves this issue without requiring
+   <p>See <a href="#proposed-iota">§ 7.5 Iota view</a> for a proposed solution which resolves this issue without requiring
 action from implementors.</p>
    <h2 class="heading settled" data-level="5" id="design-considerations"><span class="secno">5. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
@@ -3036,9 +3037,7 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
      . 
     </p>
    </blockquote>
-   <h3 class="heading settled" data-level="7.4" id="proposed-format"><span class="secno">7.4. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-format"></a></h3>
-   <p class="issue" id="issue-e55e0f12"><a class="self-link" href="#issue-e55e0f12"></a> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P.</p>
-   <h3 class="heading settled" data-level="7.5" id="proposed-numeric-conversions"><span class="secno">7.5. </span><span class="content">Numeric conversions</span><a class="self-link" href="#proposed-numeric-conversions"></a></h3>
+   <h3 class="heading settled" data-level="7.4" id="proposed-numeric-conversions"><span class="secno">7.4. </span><span class="content">Numeric conversions</span><a class="self-link" href="#proposed-numeric-conversions"></a></h3>
    <p>Wording for <code class="highlight"><c- n>to_string</c-></code> requires no changes after <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
 However, should those changes not be accepted,
 update subclause 23.4.2 [string.syn] as follows:</p>
@@ -3076,7 +3075,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     </p>
     <p class="indent"> 7 <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
-   <h3 class="heading settled" data-level="7.6" id="proposed-iota"><span class="secno">7.6. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
+   <h3 class="heading settled" data-level="7.5" id="proposed-iota"><span class="secno">7.5. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
    <p>In subclause 26.6.4.2 [ranges.iota.view], update paragraph 1 as follows:</p>
    <blockquote>
      Let <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> be defined as follows: 
@@ -3100,7 +3099,7 @@ An extended integer type still models signed-integer-like, so GCC’s existing i
 using <code class="highlight"><c- b>__int128</c-></code> remains valid.
 However, a wider extended integer type is no longer the mandatory difference type (if it exists)
 as per the second bullet.</p>
-   <h3 class="heading settled" data-level="7.7" id="proposed-abs"><span class="secno">7.7. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
+   <h3 class="heading settled" data-level="7.6" id="proposed-abs"><span class="secno">7.6. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
    <p>In subclause 28.7.1 [cmath.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">  <c- c1>// [c.math.abs], absolute values</c->
@@ -3127,7 +3126,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
-   <h3 class="heading settled" data-level="7.8" id="proposed-atomic"><span class="secno">7.8. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
+   <h3 class="heading settled" data-level="7.7" id="proposed-atomic"><span class="secno">7.7. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
    <p>In subclause 33.5.2 [atomics.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><c- c1>// all freestanding</c->
@@ -3323,7 +3322,3 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <dt id="biblio-tigerbeetle">[TigerBeetle]
    <dd>Rafael Batiati. <a href="https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/"><cite>64-Bit Bank Balances ‘Ought to be Enough for Anybody’?</cite></a>. URL: <a href="https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/">https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/</a>
   </dl>
-  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
-  <div style="counter-reset:issue">
-   <div class="issue"> Wording for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> is W.I.P. <a class="issue-return" href="#issue-e55e0f12" title="Jump to section">↵</a></div>
-  </div>

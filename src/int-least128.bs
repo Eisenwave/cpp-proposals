@@ -179,7 +179,7 @@ This library provides an efficient `from_chars` implementation.
 
 ### Financial systems ### {#financial-systems}
 
-128-bit integers can be used to represent huge monetary values with high accuracies.
+128-bit integers can be used to represent huge monetary values with high accuracy.
 When representing cents of a dollar as a 64-bit integer,
 a monetary amount of up to 184.5 quadrillion dollars can be represented.
 However, this amount shrinks dramatically when using smaller fractions.
@@ -266,8 +266,8 @@ alias for the same type.
 GCC already provides an `__int128` type which satisfies the padding-free requirement and could
 be exposed as `int128_t`.
 
-In conclusion, it is possible to mandate a `std::int_least128_t` alias without sacrificing
-C-compatibility.
+In conclusion, it is possible to provide a `std::int_least128_t` alias with equivalent
+semantics and ABI in C and C++.
 
 
 ## Impact on the core language ## {#core-impact}
@@ -396,12 +396,19 @@ Note: GCC already supports `std::format` for `__int128`.
 Note: The locale-independent forms are simply implemented in terms of `std::to_chars` and are not
 affected.
 
-**Issue:** `basic_format_parse_context::check_dynamic_spec` and `basic_format_parse_context::check_dynamic_spec_integral` could possibly support 128-bit integers.<br>
-**Action:** ⚠️ Add support for 128-bit integers (see [[#proposed-format]]).
+**Issue:** `basic_format_parse_context::check_dynamic_spec` might need 128-bit integers support.<br>
+**Action:** ✔️ No impact on the standard because it doesn't.
 
-**Issue:** `basic_format_arg` may need direct support for 128-bit integers rather than using the
-fallback case of initializing a value with `handle(v)`.<br>
-**Action:** ⚠️ To be investigated (see [[#proposed-format]]).
+Note: This function only checks for the type of a dynamic *width* or *precision*,
+and the arguments are required to be of standard integer type.
+Realistically the user will never need a 128-bit *width* or *precision*.
+
+**Issue:** `basic_format_arg` may need support for 128-bit integers.<br>
+**Action:** ✔️ No impact on the standard because it doesn't.
+
+Note: `std::basic_format_arg::handle` already covers extended integer and floating-point types.
+Also, modifying the `value` `variant` within a `std::basic_format_arg` would be
+an avoidable ABI-break.
 
 **Issue:** Bit manipulation functions in `<bit>` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
@@ -633,7 +640,7 @@ if only `std::is_integral_v` was `true` for an existing 128-bit type.
     <td>`<charconv>`</td><td>⚠️ high</td>
 </tr>
 <tr>
-    <td>`<format>`</td><td>⚠️ high</td>
+    <td>`<format>`</td><td>low</td>
 </tr>
 <tr>
     <td>`<bit>`</td><td>⚠️ high</td>
@@ -1103,10 +1110,6 @@ cannot be represented as type `unsigned long`.</del>
 cannot be represented as <del>type `unsigned long long`</del><ins>the return type</ins>.
 </p>
 </blockquote>
-
-## Header `<format>` ## {#proposed-format}
-
-Issue: Wording for `<format>` is W.I.P.
 
 ## Numeric conversions ## {#proposed-numeric-conversions}
 
