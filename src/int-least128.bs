@@ -299,8 +299,8 @@ The following code generates a UUIDv4, represented as an unsigned 128-bit intege
 <pre>
 std::uint128_t random_uuid_v4() {
     return std::experimental::randint&lt;std::uint128_t&gt;(0, -1)
-         & 0xffff'ffff'ffff'003f'ff0f'ffff'ffff'ffff  // clear version and variant
-         | 0x0000'0000'0000'0080'0040'0000'0000'0000; // set to version 4 and IETF variant
+         & 0x<c- mh="">ffff</c->'<c- mh="">ffff</c->'<c- mh="">ffff</c->'<c- mh="">003f</c->'<c- mh="">ff0f</c->'<c- mh="">ffff</c->'<c- mh="">ffff</c->'<c- mh="">ffff</c->  // clear version and variant
+         | 0x<c- mh="">0000</c->'<c- mh="">0000</c->'<c- mh="">0000</c->'<c- mh="">0080</c->'<c- mh="">0040</c->'<c- mh="">0000</c->'<c- mh="">0000</c->'<c- mh="">0000</c->; // set to version 4 and IETF variant
 }
 </pre>
 </div>

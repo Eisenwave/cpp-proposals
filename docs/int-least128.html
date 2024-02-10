@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="28fb0e3dd68d373ea440d9f23166e71c1b07c3b4" name="revision">
+  <meta content="eee5f8e6ca797d3686ea4a904c17eb62e825d7bc" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2456,12 +2456,12 @@ While 64-bit integers are often sufficient as a unique identifier, it is quite l
 identical identifiers are chosen by a random number generator over a long period of time,
 especially considering the <a href="https://en.wikipedia.org/wiki/Birthday_problem">Birthday Problem</a>.
 Therefore, at least 128 bits are typically used for such applications.</p>
-   <div class="example" id="example-0ef296e8">
-    <a class="self-link" href="#example-0ef296e8"></a> The following code generates a UUIDv4, represented as an unsigned 128-bit integer. 
+   <div class="example" id="example-7d167d1f">
+    <a class="self-link" href="#example-7d167d1f"></a> The following code generates a UUIDv4, represented as an unsigned 128-bit integer. 
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- nf>random_uuid_v4</c-><c- p>()</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>experimental</c-><c- o>::</c-><c- n>randint</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-><c- o>></c-><c- p>(</c-><c- mi>0</c-><c- p>,</c-> <c- mi>-1</c-><c- p>)</c->
-         <c- o>&amp;</c-> <c- mh>0xffff</c->’<c- n>ffff</c->’<c- n>ffff</c->’<c- mf>003f</c->’<c- n>ff0f</c->’<c- n>ffff</c->’<c- n>ffff</c->’<c- n>ffff</c->  <c- c1>// clear version and variant</c->
-         <c- o>|</c-> <c- mh>0x0000</c->’<c- mo>0000</c->’<c- mo>0000</c->’<c- mo>00</c-><c- mi>80</c->’<c- mo>0040</c->’<c- mo>0000</c->’<c- mo>0000</c->’<c- mo>0000</c-><c- p>;</c-> <c- c1>// set to version 4 and IETF variant</c->
+         <c- o>&amp;</c-> <c- mh>0x</c-><c- mh><c- mh>ffff</c-></c-><c- mh>'</c-><c- mh><c- mh>ffff</c-></c-><c- mh>'</c-><c- mh><c- mh>ffff</c-></c-><c- mh>'</c-><c- mh><c- mh>003f</c-></c-><c- mh>'</c-><c- mh><c- mh>ff0f</c-></c-><c- mh>'</c-><c- mh><c- mh>ffff</c-></c-><c- mh>'</c-><c- mh><c- mh>ffff</c-></c-><c- mh>'</c-><c- mh><c- mh>ffff</c-></c->  <c- c1>// clear version and variant</c->
+         <c- o>|</c-> <c- mh>0x</c-><c- mh><c- mh>0000</c-></c-><c- mh>'</c-><c- mh><c- mh>0000</c-></c-><c- mh>'</c-><c- mh><c- mh>0000</c-></c-><c- mh>'</c-><c- mh><c- mh>0080</c-></c-><c- mh>'</c-><c- mh><c- mh>0040</c-></c-><c- mh>'</c-><c- mh><c- mh>0000</c-></c-><c- mh>'</c-><c- mh><c- mh>0000</c-></c-><c- mh>'</c-><c- mh><c- mh>0000</c-></c-><c- p>;</c-> <c- c1>// set to version 4 and IETF variant</c->
 <c- p>}</c->
 </pre>
    </div>
