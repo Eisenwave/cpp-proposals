@@ -1564,8 +1564,18 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ca2b08bc7c7a5f6e1726aa651b43d233d754388c" name="revision">
+  <meta content="28fb0e3dd68d373ea440d9f23166e71c1b07c3b4" name="revision">
 <style>
+@media (prefers-color-scheme: dark) {
+  c-[mb], c-[mi], c-[mo], c-[mh] {
+    color: #d59393 !important;
+  }
+
+  blockquote c-[mb], blockquote c-[mi], blockquote c-[mh] {
+    color: var(--text) !important;
+  }
+}
+
 th, td, table {
     border: 1px solid var(--text);
 }
@@ -2153,13 +2163,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#random-number-generation"><span class="secno">2.1.2</span> <span class="content">Random number generation</span></a>
         <li><a href="#widening-operations"><span class="secno">2.1.3</span> <span class="content">Widening operations</span></a>
         <li><a href="#multi-precision-operations"><span class="secno">2.1.4</span> <span class="content">Multi-precision operations</span></a>
-        <li><a href="#double-wide-atomic-operations"><span class="secno">2.1.5</span> <span class="content">Double-wide atomic operations</span></a>
-        <li><a href="#high-precision-clocks"><span class="secno">2.1.6</span> <span class="content">High-precision clocks</span></a>
-        <li><a href="#floating-point-operations"><span class="secno">2.1.7</span> <span class="content">Floating-point operations</span></a>
-        <li><a href="#float-string-conversion"><span class="secno">2.1.8</span> <span class="content">Float-to-string/String-to-float conversion</span></a>
-        <li><a href="#financial-systems"><span class="secno">2.1.9</span> <span class="content">Financial systems</span></a>
-        <li><a href="#database-systems"><span class="secno">2.1.10</span> <span class="content">Database systems</span></a>
-        <li><a href="#networking"><span class="secno">2.1.11</span> <span class="content">Networking</span></a>
+        <li><a href="#fixed-point-operations"><span class="secno">2.1.5</span> <span class="content">Fixed-point operations</span></a>
+        <li><a href="#double-wide-atomic-operations"><span class="secno">2.1.6</span> <span class="content">Double-wide atomic operations</span></a>
+        <li><a href="#high-precision-clocks"><span class="secno">2.1.7</span> <span class="content">High-precision clocks</span></a>
+        <li><a href="#floating-point-operations"><span class="secno">2.1.8</span> <span class="content">Floating-point operations</span></a>
+        <li><a href="#float-string-conversion"><span class="secno">2.1.9</span> <span class="content">Float-to-string/String-to-float conversion</span></a>
+        <li><a href="#financial-systems"><span class="secno">2.1.10</span> <span class="content">Financial systems</span></a>
+        <li><a href="#database-systems"><span class="secno">2.1.11</span> <span class="content">Database systems</span></a>
+        <li><a href="#networking"><span class="secno">2.1.12</span> <span class="content">Networking</span></a>
        </ol>
      </ol>
     <li>
@@ -2271,7 +2282,10 @@ That is, if the implementation defines <code class="highlight"><c- n>BITINT_MAXW
 See <a href="#existing-128-bit-integers">§ 7.1 Existing 128-bit integer types</a> for more.</p>
    </ol>
    <h3 class="heading settled" data-level="2.1" id="use-cases"><span class="secno">2.1. </span><span class="content">Use cases</span><a class="self-link" href="#use-cases"></a></h3>
-   <p>To motivate this proposal, I will briefly introduce a few use cases of 128-bit integers.</p>
+   <p>A GitHub code search for <a href="/int128|int_128/ language:c++"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code></a> yields 150K files,
+and a language-agnostic search for <a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&amp;type=code"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int128</c-><c- o>/</c-></code></a> yields more than a million.</p>
+   <p>While it is impossible to discuss every one of these,
+I will introduce a few use cases of 128-bit integers.</p>
    <h4 class="heading settled" data-level="2.1.1" id="cryptography"><span class="secno">2.1.1. </span><span class="content">Cryptography</span><a class="self-link" href="#cryptography"></a></h4>
    <p>128-bit integers are commonly used in many cryptographic algorithms:</p>
    <ul>
@@ -2291,6 +2305,35 @@ or represented as a pair/array of 128-bit integers.</p>
    <p>For example, the <a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSRPNG</a> (cryptographically secure pseudo-random number generator) <a href="https://en.wikipedia.org/wiki/Fortuna_(PRNG)">Fortuna</a> uses a block cipher to produce random numbers.
 When a 128-bit block cipher is used, the output is naturally 128-bit as well.
 Fortuna is used in the implementation of <code class="highlight"><c- o>/</c-><c- n>dev</c-><c- o>/</c-><c- n>random</c-></code> in FreeBSD 11, and in AppleOSes since 2020.</p>
+   <p>Some PRNGs use a 128-bit state, such as <a href="https://en.wikipedia.org/wiki/Xorshift">xorshift128</a>.</p>
+   <div class="example" id="example-437c4029">
+    <a class="self-link" href="#example-437c4029"></a> The following code is based on <a data-link-type="biblio" href="#biblio-marsaglia" title="Xorshift RNGs">[Marsaglia]</a>, with some changes. 
+<pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-> <c- nf>xor128</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-> <c- n>x</c-><c- p>[</c-><c- mi>4</c-><c- p>])</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-> <c- n>t</c-> <c- o>=</c-> <c- n>x</c-><c- p>[</c-><c- mi>3</c-><c- p>];</c->
+    <c- n>t</c-> <c- o>^=</c-> <c- n>t</c-> <c- o>&lt;&lt;</c-> <c- mi>11</c-><c- p>;</c->
+    <c- n>t</c-> <c- o>^=</c-> <c- n>t</c-> <c- o>>></c-> <c- mi>8</c-><c- p>;</c->
+
+    <c- n>x</c-><c- p>[</c-><c- mi>3</c-><c- p>]</c-> <c- o>=</c-> <c- n>x</c-><c- p>[</c-><c- mi>2</c-><c- p>];</c-> <c- n>x</c-><c- p>[</c-><c- mi>2</c-><c- p>]</c-> <c- o>=</c-> <c- n>x</c-><c- p>[</c-><c- mi>1</c-><c- p>];</c-> <c- n>x</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>=</c-> <c- n>x</c-><c- p>[</c-><c- mi>0</c-><c- p>];</c->
+
+    <c- n>x</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>^=</c-> <c- n>t</c-> <c- o>^</c-> <c- p>(</c-><c- n>x</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>>></c-> <c- mi>19</c-><c- p>);</c->
+    <c- k>return</c-> <c- n>x</c-><c- p>[</c-><c- mi>0</c-><c- p>];</c->
+<c- p>}</c->
+</pre>
+    <p>This can be expressed more elegantly using 128-bit integers:</p>
+<pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-> <c- nf>xor128</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-><c- o>&amp;</c-> <c- n>x</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-> <c- n>t</c-> <c- o>=</c-> <c- n>x</c-> <c- o>>></c-> <c- mi>96</c-><c- p>;</c->
+    <c- n>t</c-> <c- o>^=</c-> <c- n>t</c-> <c- o>&lt;&lt;</c-> <c- mi>11</c-><c- p>;</c->
+    <c- n>t</c-> <c- o>^=</c-> <c- n>t</c-> <c- o>>></c-> <c- mi>8</c-><c- p>;</c->
+
+    <c- n>x</c-> <c- o>=</c-> <c- p>(</c-><c- n>x</c-> <c- o>&lt;&lt;</c-> <c- mi>32</c-><c- p>)</c-> <c- o>|</c-> <c- p>(</c-><c- n>t</c-> <c- o>^</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-><c- p>(</c-><c- n>x</c-><c- p>)</c-> <c- o>^</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint32_t</c-><c- p>(</c-><c- n>x</c-><c- p>)</c-> <c- o>>></c-> <c- mi>19</c-><c- p>)));</c->
+    <c- k>return</c-> <c- n>x</c-><c- p>;</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p>Generally speaking, there is a large amount of code that effectively performs
+128-bit operations, but operates on sequences of 32-bit or 64-bit integers.
+In the above example, it is not immediately obvious that the <code class="highlight"><c- n>x</c-><c- p>[</c-><c- mi>3</c-><c- p>]</c-> <c- o>=</c-> <c- n>x</c-><c- p>[</c-><c- mi>2</c-><c- p>];</c-> <c- p>...</c-></code> line
+is effectively performing a 32-bit shift, whereas <code class="highlight"><c- n>x</c-> <c- o>&lt;&lt;</c-> <c- mi>32</c-></code> is self-documenting.</p>
    <h4 class="heading settled" data-level="2.1.3" id="widening-operations"><span class="secno">2.1.3. </span><span class="content">Widening operations</span><a class="self-link" href="#widening-operations"></a></h4>
    <p><a data-link-type="biblio" href="#biblio-p3018r0" title="Low-Level Integer Arithmetic">[P3018R0]</a> proposed widening operations which yield an integer with double the width of the input.
 An obvious issue is that the language provides no 128-bit integer type, so the widening
@@ -2318,15 +2361,33 @@ For example, the Windows API provides a <code class="highlight"><c- n>Multiply12
    <h4 class="heading settled" data-level="2.1.4" id="multi-precision-operations"><span class="secno">2.1.4. </span><span class="content">Multi-precision operations</span><a class="self-link" href="#multi-precision-operations"></a></h4>
    <p>For various applications (cryptography, various numeric applications, etc.) arithmetic with
 large bit sizes is required.
-For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses bit sizes of 2048 or 4096.</p>
-   <p>This involves addition, multiplication, and division with multi-precision integers, which is
-implemented digit-by-digit.
-For example, to implement multiplication,
-the number can be split into 32-bit or 64-bit digits, and long multiplication can be performed,
-where the high part of the multiplication could be obtained from the high 64-bits of a 128-bit
-result.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> Such a widened 128-bit result could be obtained through <a href="#widening-operations">§ 2.1.3 Widening operations</a> operations.</p>
-   <h4 class="heading settled" data-level="2.1.5" id="double-wide-atomic-operations"><span class="secno">2.1.5. </span><span class="content">Double-wide atomic operations</span><a class="self-link" href="#double-wide-atomic-operations"></a></h4>
+For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses bit sizes of 2048 or 4096.
+"Scripting languages" also commonly use an infinite-precision integer type.
+For example, the <code class="highlight"><c- b>int</c-></code> type in Python has no size limit.</p>
+   <p>Multi-precision operations are implemented through multiple widening operations (see above).
+For example, to implement N-bit multiplication,
+the number can be split into a sequence of 64-bit "digits",
+and long multiplication is performed.
+Since this involves a carry between digits, a 64-to-128-bit widening operation is required.</p>
+   <h4 class="heading settled" data-level="2.1.5" id="fixed-point-operations"><span class="secno">2.1.5. </span><span class="content">Fixed-point operations</span><a class="self-link" href="#fixed-point-operations"></a></h4>
+   <p>While 64-bit integers are sufficient for many calculations, the amount of available bits
+is reduced when the 64 bits are subdivided into an integral and fractional part.</p>
+   <p>Furthermore, fixed-point arithmetic with a double-wide operand can emulate integer division,
+which is a relatively expensive operation to this day.</p>
+   <div class="example" id="example-5318c4f4">
+    <a class="self-link" href="#example-5318c4f4"></a> 128-bit integers allow us to implement a division by three without integer division: 
+<pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-> <c- nf>div3</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-> <c- n>x</c-><c- p>)</c-> <c- p>{</c->
+    <c- c1>// 1 / 3 as a Q63.65 fixed-point number:</c->
+    <c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>uint_fast128_t</c-> <c- n>reciprocal_3</c-> <c- o>=</c-> <c- mh>0xAAAA'AAAA'AAAA'AAAB</c-><c- p>;</c->
+    <c- k>return</c-> <c- p>(</c-><c- n>x</c-> <c- o>*</c-> <c- n>reciprocal_3</c-><c- p>)</c-> <c- o>>></c-> <c- mi>65</c-><c- p>;</c-> <c- c1>// equivalent to return x / 3;</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p>While modern compilers perform this <a href="https://en.wikipedia.org/wiki/Strength_reduction">strength reduction optimization</a> for constant divisors already, they don’t perform it for frequently reused non-constant divisors.</p>
+   <p>For such divisors, it can make sense to pre-compute the reciprocal and shift constants
+and use them many times for faster division.
+Among other libraries, <a data-link-type="biblio" href="#biblio-libdivide" title="libdivide">[libdivide]</a> uses this technique.</p>
+   <h4 class="heading settled" data-level="2.1.6" id="double-wide-atomic-operations"><span class="secno">2.1.6. </span><span class="content">Double-wide atomic operations</span><a class="self-link" href="#double-wide-atomic-operations"></a></h4>
    <p>Some architectures provide double-wide atomic operations.
 For example, x86_64 provides a <code class="highlight"><c- n>cmpxchg16b</c-></code> instruction which can be used to implement a
 128-bit <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>::</c-><c- n>compare_exchange_strong</c-></code>.</p>
@@ -2336,7 +2397,7 @@ simultaneously.</p>
    <p>To be fair, this operation is already exposed through <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- mi>16</c-><c- o>>></c-></code>,
 so 128-bit atomic integers aren’t strictly necessary except for 128-bit <code class="highlight"><c- p>.</c-><c- n>fetch_xxx</c-></code> operations,
 though those don’t have direct hardware support.</p>
-   <h4 class="heading settled" data-level="2.1.6" id="high-precision-clocks"><span class="secno">2.1.6. </span><span class="content">High-precision clocks</span><a class="self-link" href="#high-precision-clocks"></a></h4>
+   <h4 class="heading settled" data-level="2.1.7" id="high-precision-clocks"><span class="secno">2.1.7. </span><span class="content">High-precision clocks</span><a class="self-link" href="#high-precision-clocks"></a></h4>
    <p>64-bit integers are somewhat insufficient for high-precision clocks, if large time spans should
 also be covered.
 When counting nanoseconds, a maximum value of 2<sup>63</sup>-1 can only represent approximately
@@ -2345,7 +2406,9 @@ When counting nanoseconds, a maximum value of 2<sup>63</sup>-1 can only represen
 would suffice.
 Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off
 between resolution and range.</p>
-   <h4 class="heading settled" data-level="2.1.7" id="floating-point-operations"><span class="secno">2.1.7. </span><span class="content">Floating-point operations</span><a class="self-link" href="#floating-point-operations"></a></h4>
+   <p><code class="highlight"><c- n>timespec</c-></code> is effectively a 128-bit type in POSIX (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>timespec</c-></code> in C++), since both the
+seconds and nanoseconds part of the class are 64-bit integers.</p>
+   <h4 class="heading settled" data-level="2.1.8" id="floating-point-operations"><span class="secno">2.1.8. </span><span class="content">Floating-point operations</span><a class="self-link" href="#floating-point-operations"></a></h4>
    <p>The implementation of IEEE 754/IEC-559 floating-point operations often involves examining the
 bit-representation of the floating-point number through an unsigned integer.</p>
    <p>The C++ standard provides <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code>, but no matching 128-bit integer type,
@@ -2357,45 +2420,69 @@ which makes this more difficult.</p>
 <c- p>}</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="2.1.8" id="float-string-conversion"><span class="secno">2.1.8. </span><span class="content">Float-to-string/String-to-float conversion</span><a class="self-link" href="#float-string-conversion"></a></h4>
+   <h4 class="heading settled" data-level="2.1.9" id="float-string-conversion"><span class="secno">2.1.9. </span><span class="content">Float-to-string/String-to-float conversion</span><a class="self-link" href="#float-string-conversion"></a></h4>
    <p>The <a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm">[Dragonbox]</a> binary-to-decimal conversion algorithm requires an integer type
 that is twice the width of the converted floating-point number.
 To convert a floating-point number in <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">binary64</a> format, a 128-bit integer type is used.</p>
    <p>Similarly, <a data-link-type="biblio" href="#biblio-fast_float" title="fast_float number parsing library: 4x faster than strtod">[fast_float]</a> uses 128-bit numbers as part of decimal-to-binary conversions.
 This library provides an efficient <code class="highlight"><c- n>from_chars</c-></code> implementation.</p>
-   <h4 class="heading settled" data-level="2.1.9" id="financial-systems"><span class="secno">2.1.9. </span><span class="content">Financial systems</span><a class="self-link" href="#financial-systems"></a></h4>
+   <h4 class="heading settled" data-level="2.1.10" id="financial-systems"><span class="secno">2.1.10. </span><span class="content">Financial systems</span><a class="self-link" href="#financial-systems"></a></h4>
    <p>128-bit integers can be used to represent huge monetary values with high accuracy.
 When representing cents of a dollar as a 64-bit integer,
 a monetary amount of up to 184.5 quadrillion dollars can be represented.
 However, this amount shrinks dramatically when using smaller fractions.</p>
-   <p>For example, the smallest fraction of a Bitcoin is a Satoshi, where one Bitcoin equals
-a million Satoshis.
-A signed 64-bit integer can only losslessly represent approximately 10 trillion Bitcoins.
-In 2009, a bitcoin was worth less than a penny, and a monetary value of only
-92 billion USD could be represented in Satoshis.
+   <p>For example, the smallest fraction of a Bitcoin is a Satoshi, which is a
+hundred millionth of a Bitcoin.
+A signed 64-bit integer can only losslessly represent approximately 92 billion BTC.
+In 2009, a Bitcoin was worth less than a penny, so a monetary value of only
+920 million USD could be represented in Satoshis.
 Essentially, 64-bit integers are insufficient when combining high precision with
-exponential price fluctuations.</p>
+exponential price fluctuations.
+Rounding is not always a viable solution.</p>
    <p>Similarly, since 2005, stock markets are legally required to accept
 price increments of $0.0001 when the price of a stock is ≤ $1 (see <a data-link-type="biblio" href="#biblio-sec" title="Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS">[SEC]</a>).
 At this precision, 1.84 quadrillion dollars can be represented.
 Using a uniform precision of ten thousandths would prove problematic when
 applied to other currencies such as Yen, forcing the complexity of variable precision
 on the developer.</p>
+   <p><a data-link-type="biblio" href="#biblio-nvidia" title="Implementing High-Precision Decimal Arithmetic with CUDA int128">[NVIDIA]</a> mentions fixed-point accounting calculations as a possible use case of the <code class="highlight"><c- b>__int128</c-></code> type, which is a preview feature of NVIDIA CUDA 11.5.</p>
    <p><a data-link-type="biblio" href="#biblio-tigerbeetle" title="64-Bit Bank Balances ‘Ought to be Enough for Anybody’?">[TigerBeetle]</a> discusses why 64-bit integers have been retired in favor of 128-bit
 integers to store financial amounts and balances in the TigerBeetle financial
 accounting database.
 The aforementioned sub-penny requirement is part of the motivation.</p>
-   <h4 class="heading settled" data-level="2.1.10" id="database-systems"><span class="secno">2.1.10. </span><span class="content">Database systems</span><a class="self-link" href="#database-systems"></a></h4>
+   <h4 class="heading settled" data-level="2.1.11" id="database-systems"><span class="secno">2.1.11. </span><span class="content">Database systems</span><a class="self-link" href="#database-systems"></a></h4>
    <p>A 128-bit integer can be used to represent a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> (Universally Unique Identifier).
 While 64-bit integers are often sufficient as a unique identifier, it is quite likely that two
 identical identifiers are chosen by a random number generator over a long period of time,
 especially considering the <a href="https://en.wikipedia.org/wiki/Birthday_problem">Birthday Problem</a>.
 Therefore, at least 128 bits are typically used for such applications.</p>
-   <h4 class="heading settled" data-level="2.1.11" id="networking"><span class="secno">2.1.11. </span><span class="content">Networking</span><a class="self-link" href="#networking"></a></h4>
+   <div class="example" id="example-0ef296e8">
+    <a class="self-link" href="#example-0ef296e8"></a> The following code generates a UUIDv4, represented as an unsigned 128-bit integer. 
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- nf>random_uuid_v4</c-><c- p>()</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>experimental</c-><c- o>::</c-><c- n>randint</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-><c- o>></c-><c- p>(</c-><c- mi>0</c-><c- p>,</c-> <c- mi>-1</c-><c- p>)</c->
+         <c- o>&amp;</c-> <c- mh>0xffff</c->’<c- n>ffff</c->’<c- n>ffff</c->’<c- mf>003f</c->’<c- n>ff0f</c->’<c- n>ffff</c->’<c- n>ffff</c->’<c- n>ffff</c->  <c- c1>// clear version and variant</c->
+         <c- o>|</c-> <c- mh>0x0000</c->’<c- mo>0000</c->’<c- mo>0000</c->’<c- mo>00</c-><c- mi>80</c->’<c- mo>0040</c->’<c- mo>0000</c->’<c- mo>0000</c->’<c- mo>0000</c-><c- p>;</c-> <c- c1>// set to version 4 and IETF variant</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <h4 class="heading settled" data-level="2.1.12" id="networking"><span class="secno">2.1.12. </span><span class="content">Networking</span><a class="self-link" href="#networking"></a></h4>
    <p>IPv6 addresses can be represented as a 128-bit integer.
 This may be a convenient representation because bitwise operations for masking and accessing
 individual bits or bit groups may be used, and implementing these is much easier using a 128-bit
 integer compared to multi-precision operations using two 64-bit integers.</p>
+   <div class="example" id="example-a484ba65">
+    <a class="self-link" href="#example-a484ba65"></a> An IPv6 address in link-local address format can be identified as follows: 
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- n>ipv6</c-> <c- o>=</c-> <c- d>/* ... */</c-><c- p>;</c->
+<c- k>constexpr</c-> <c- k>auto</c-> <c- n>mask10</c-> <c- o>=</c-> <c- mh>0x3ff</c-><c- p>;</c->
+<c- k>if</c-> <c- p>((</c-><c- n>ipv6</c-> <c- o>&amp;</c-> <c- n>mask10</c-><c- p>)</c-> <c- o>!=</c-> <c- mb>0b1111111010</c-><c- p>)</c-> <c- d>/* wrong prefix */</c-><c- p>;</c->
+
+<c- k>constexpr</c-> <c- k>auto</c-> <c- n>mask54</c-> <c- o>=</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- p>(</c-><c- mi>1</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- mi>54</c-><c- p>)</c-> <c- o>-</c-> <c- mi>1</c-><c- p>;</c->
+<c- k>if</c-> <c- p>((</c-><c- n>ipv6</c-> <c- o>>></c-> <c- mi>10</c-> <c- o>&amp;</c-> <c- n>mask54</c-><c- p>)</c-> <c- o>!=</c-> <c- mi>0</c-><c- p>)</c-> <c- d>/* expected 54 zeros */</c-><c- p>;</c->
+
+<c- k>constexpr</c-> <c- k>auto</c-> <c- n>mask64</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-><c- p>(</c-><c- mi>-1</c-><c- p>);</c->
+<c- n>interface_identifier</c-> <c- o>=</c-> <c- p>(</c-><c- n>data</c-> <c- o>>></c-> <c- mi>64</c-><c- p>)</c-> <c- o>&amp;</c-> <c- n>mask64</c-><c- p>;</c->
+</pre>
+   </div>
    <h2 class="heading settled" data-level="3" id="impact-on-the-standard"><span class="secno">3. </span><span class="content">Impact on the standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>First and foremost, this proposal mandates the following integer types in <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code>:</p>
 <pre class="language-cpp highlight"><c- k>using</c-> <c- n>int_least128_t</c->  <c- o>=</c-> <c- d>/* signed integer type */</c-><c- p>;</c->
@@ -3333,10 +3420,16 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <dd>Junekey Jeon. <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf"><cite>Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm</cite></a>. URL: <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf">https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf</a>
    <dt id="biblio-fast_float">[FAST_FLOAT]
    <dd>Daniel Lemire et al.. <a href="https://github.com/fastfloat/fast_float"><cite>fast_float number parsing library: 4x faster than strtod</cite></a>. URL: <a href="https://github.com/fastfloat/fast_float">https://github.com/fastfloat/fast_float</a>
+   <dt id="biblio-libdivide">[LIBDIVIDE]
+   <dd>Kim Walisch et al.. <a href="https://github.com/ridiculousfish/libdivide"><cite>libdivide</cite></a>. URL: <a href="https://github.com/ridiculousfish/libdivide">https://github.com/ridiculousfish/libdivide</a>
+   <dt id="biblio-marsaglia">[Marsaglia]
+   <dd>George Marsaglia. <a href="https://www.jstatsoft.org/article/download/v008i14/916"><cite>Xorshift RNGs</cite></a>. URL: <a href="https://www.jstatsoft.org/article/download/v008i14/916">https://www.jstatsoft.org/article/download/v008i14/916</a>
    <dt id="biblio-n2680">[N2680]
    <dd>Robert C. Seacord. <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf"><cite>Specific width length modifier</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf</a>
    <dt id="biblio-n3047">[N3047]
    <dd>ISO. <a href="https://www.iso-9899.info/n3047.html"><cite>N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)</cite></a>. URL: <a href="https://www.iso-9899.info/n3047.html">https://www.iso-9899.info/n3047.html</a>
+   <dt id="biblio-nvidia">[NVIDIA]
+   <dd>Conor Hoekstra; Kuhu Shukla; Mark Harris. <a href="https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/"><cite>Implementing High-Precision Decimal Arithmetic with CUDA int128</cite></a>. URL: <a href="https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/">https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/</a>
    <dt id="biblio-p1522r1">[P1522R1]
    <dd>Eric Niebler. <a href="https://wg21.link/p1522r1"><cite>Iterator Difference Type and Integer Overflow</cite></a>. 28 July 2019. URL: <a href="https://wg21.link/p1522r1">https://wg21.link/p1522r1</a>
    <dt id="biblio-p3018r0">[P3018R0]

@@ -57,7 +57,15 @@ There are two essential reasons for standardizing a 128-bit integer type:
 
 ## Use cases ## {#use-cases}
 
-To motivate this proposal, I will briefly introduce a few use cases of 128-bit integers.
+A GitHub code search for
+<a href="/int128|int_128/ language:c++">`/int128|int_128/ language:c++`</a>
+yields 150K files,
+and a language-agnostic search for
+<a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&type=code">`/int128|int128/`</a>
+yields more than a million.
+
+While it is impossible to discuss every one of these,
+I will introduce a few use cases of 128-bit integers.
 
 ### Cryptography ### {#cryptography}
 
@@ -81,6 +89,42 @@ For example, the
 uses a block cipher to produce random numbers.
 When a 128-bit block cipher is used, the output is naturally 128-bit as well.
 Fortuna is used in the implementation of `/dev/random` in FreeBSD 11, and in AppleOSes since 2020.
+
+Some PRNGs use a 128-bit state, such as [xorshift128](https://en.wikipedia.org/wiki/Xorshift).
+<div class=example>
+The following code is based on [[Marsaglia]], with some changes.
+
+```cpp
+std::uint32_t xor128(std::uint32_t x[4]) {
+    std::uint32_t t = x[3];
+    t ^= t << 11;
+    t ^= t >> 8;
+
+    x[3] = x[2]; x[2] = x[1]; x[1] = x[0];
+
+    x[0] ^= t ^ (x[0] >> 19);
+    return x[0];
+}
+```
+
+This can be expressed more elegantly using 128-bit integers:
+```cpp
+std::uint32_t xor128(std::uint128_t& x) {
+    std::uint32_t t = x >> 96;
+    t ^= t << 11;
+    t ^= t >> 8;
+
+    x = (x << 32) | (t ^ (std::uint32_t(x) ^ (std::uint32_t(x) >> 19)));
+    return x;
+}
+```
+</div>
+
+Generally speaking, there is a large amount of code that effectively performs
+128-bit operations, but operates on sequences of 32-bit or 64-bit integers.
+In the above example, it is not immediately obvious that the `x[3] = x[2]; ...` line
+is effectively performing a 32-bit shift, whereas `x << 32` is self-documenting.
+
 
 ### Widening operations ### {#widening-operations}
 
@@ -107,20 +151,48 @@ For example:
 Some operating systems also provide 128-bit operations.
 For example, the Windows API provides a `Multiply128` function.
 
+
 ### Multi-precision operations ### {#multi-precision-operations}
 
 For various applications (cryptography, various numeric applications, etc.) arithmetic with
 large bit sizes is required.
 For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses bit sizes of 2048 or 4096.
+"Scripting languages" also commonly use an infinite-precision integer type.
+For example, the `int` type in Python has no size limit.
 
-This involves addition, multiplication, and division with multi-precision integers, which is
-implemented digit-by-digit.
-For example, to implement multiplication,
-the number can be split into 32-bit or 64-bit digits, and long multiplication can be performed,
-where the high part of the multiplication could be obtained from the high 64-bits of a 128-bit
-result.
+Multi-precision operations are implemented through multiple widening operations (see above).
+For example, to implement N-bit multiplication,
+the number can be split into a sequence of 64-bit "digits",
+and long multiplication is performed.
+Since this involves a carry between digits, a 64-to-128-bit widening operation is required.
 
-Note: Such a widened 128-bit result could be obtained through [[#widening-operations]] operations.
+
+### Fixed-point operations ### {#fixed-point-operations}
+
+While 64-bit integers are sufficient for many calculations, the amount of available bits
+is reduced when the 64 bits are subdivided into an integral and fractional part.
+
+Furthermore, fixed-point arithmetic with a double-wide operand can emulate integer division,
+which is a relatively expensive operation to this day.
+
+<div class=example>
+128-bit integers allow us to implement a division by three without integer division:
+```cpp
+std::uint64_t div3(std::uint64_t x) {
+    // 1 / 3 as a Q63.65 fixed-point number:
+    constexpr std::uint_fast128_t reciprocal_3 = 0xAAAA'AAAA'AAAA'AAAB;
+    return (x * reciprocal_3) >> 65; // equivalent to return x / 3;
+}
+```
+</div>
+
+While modern compilers perform this
+[strength reduction optimization](https://en.wikipedia.org/wiki/Strength_reduction)
+for constant divisors already, they don't perform it for frequently reused non-constant divisors.
+
+For such divisors, it can make sense to pre-compute the reciprocal and shift constants
+and use them many times for faster division.
+Among other libraries, [[libdivide]] uses this technique.
 
 ### Double-wide atomic operations ### {#double-wide-atomic-operations}
 
@@ -147,6 +219,9 @@ This makes 64-bit integers insufficient for some time calculations, where 128-bi
 would suffice.
 Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off
 between resolution and range.
+
+`timespec` is effectively a 128-bit type in POSIX (`std::timespec` in C++), since both the
+seconds and nanoseconds part of the class are 64-bit integers.
 
 ### Floating-point operations ### {#floating-point-operations}
 
@@ -184,13 +259,14 @@ When representing cents of a dollar as a 64-bit integer,
 a monetary amount of up to 184.5 quadrillion dollars can be represented.
 However, this amount shrinks dramatically when using smaller fractions.
 
-For example, the smallest fraction of a Bitcoin is a Satoshi, where one Bitcoin equals
-a million Satoshis.
-A signed 64-bit integer can only losslessly represent approximately 10 trillion Bitcoins.
-In 2009, a bitcoin was worth less than a penny, and a monetary value of only
-92 billion USD could be represented in Satoshis.
+For example, the smallest fraction of a Bitcoin is a Satoshi, which is a
+hundred millionth of a Bitcoin.
+A signed 64-bit integer can only losslessly represent approximately 92 billion BTC.
+In 2009, a Bitcoin was worth less than a penny, so a monetary value of only
+920 million USD could be represented in Satoshis.
 Essentially, 64-bit integers are insufficient when combining high precision with
 exponential price fluctuations.
+Rounding is not always a viable solution.
 
 Similarly, since 2005, stock markets are legally required to accept
 price increments of $0.0001 when the price of a stock is &le; $1 (see [[SEC]]).
@@ -198,6 +274,9 @@ At this precision, 1.84 quadrillion dollars can be represented.
 Using a uniform precision of ten thousandths would prove problematic when
 applied to other currencies such as Yen, forcing the complexity of variable precision
 on the developer.
+
+[[NVIDIA]] mentions fixed-point accounting calculations as a possible use case of the
+`__int128` type, which is a preview feature of NVIDIA CUDA 11.5.
 
 [[TigerBeetle]] discusses why 64-bit integers have been retired in favor of 128-bit
 integers to store financial amounts and balances in the TigerBeetle financial
@@ -215,6 +294,17 @@ especially considering the
 [Birthday Problem](https://en.wikipedia.org/wiki/Birthday_problem).
 Therefore, at least 128 bits are typically used for such applications.
 
+<div class=example>
+The following code generates a UUIDv4, represented as an unsigned 128-bit integer.
+<pre>
+std::uint128_t random_uuid_v4() {
+    return std::experimental::randint&lt;std::uint128_t&gt;(0, -1)
+         & 0xffff'ffff'ffff'003f'ff0f'ffff'ffff'ffff  // clear version and variant
+         | 0x0000'0000'0000'0080'0040'0000'0000'0000; // set to version 4 and IETF variant
+}
+</pre>
+</div>
+
 ### Networking ### {#networking}
 
 IPv6 addresses can be represented as a 128-bit integer.
@@ -222,6 +312,20 @@ This may be a convenient representation because bitwise operations for masking a
 individual bits or bit groups may be used, and implementing these is much easier using a 128-bit
 integer compared to multi-precision operations using two 64-bit integers.
 
+<div class=example>
+An IPv6 address in link-local address format can be identified as follows:
+<pre>
+std::uint128_t ipv6 = /* ... */;
+constexpr auto mask10 = 0x3ff;
+if ((ipv6 & mask10) != 0b1111111010) /* wrong prefix */;
+
+constexpr auto mask54 = (std::uint64_t(1) &lt;&lt; 54) - 1;
+if ((ipv6 >> 10 & mask54) != 0) /* expected 54 zeros */;
+
+constexpr auto mask64 = std::uint64_t(-1);
+interface_identifier = (data &gt;&gt; 64) & mask64;
+</pre>
+</div>
 
 # Impact on the standard # {#impact-on-the-standard}
 
@@ -948,6 +1052,16 @@ widely supported by existing implementations.
 # Proposed wording # {#proposed-wording}
 
 <style>
+@media (prefers-color-scheme: dark) {
+  c-[mb], c-[mi], c-[mo], c-[mh] {
+    color: #d59393 !important;
+  }
+
+  blockquote c-[mb], blockquote c-[mi], blockquote c-[mh] {
+    color: var(--text) !important;
+  }
+}
+
 th, td, table {
     border: 1px solid var(--text);
 }
@@ -1307,6 +1421,16 @@ namespace std {
         "href": "https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/",
         "authors": ["Rafael Batiati"]
     },
+    "libdivide": {
+        "title": "libdivide",
+        "href": "https://github.com/ridiculousfish/libdivide",
+        "authors": ["Kim Walisch et al."]
+    },
+    "Marsaglia": {
+        "title": "Xorshift RNGs",
+        "href": "https://www.jstatsoft.org/article/download/v008i14/916",
+        "authors": ["George Marsaglia"]
+    },
     "N2680": {
         "title": "Specific width length modifier",
         "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf",
@@ -1316,6 +1440,11 @@ namespace std {
         "title": "N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)",
         "href": "https://www.iso-9899.info/n3047.html",
         "authors": ["ISO"]
+    },
+    "NVIDIA": {
+        "title": "Implementing High-Precision Decimal Arithmetic with CUDA int128",
+        "href": "https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/",
+        "authors": ["Conor Hoekstra", "Kuhu Shukla", "Mark Harris"]
     },
     "Schultke1": {
         "title": "Better, constexpr to_string",
