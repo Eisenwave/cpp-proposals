@@ -727,6 +727,37 @@ See [[#proposed-iota]] for a proposed solution which resolves this issue without
 action from implementors.
 
 
+
+
+# Impact on existing code # {#impact-on-existing-code}
+
+With no core language changes and only additional standard library features,
+the impact on existing code should be minimal.
+
+However, this idea is put into question when it comes to integer literals.
+<div class=example>
+<pre>
+auto x = 18446744073709551615; // 2<sup>64</sup>-1
+</pre>
+If the widest signed integer type is a 64-bit type, this code is ill-formed.
+Every compiler handles this differently:
+- clang declares `x` as `unsigned long long` and emits a warning (compliant).
+- GCC declares `x` as `__int128` and emits a misleading warning (compliant).
+- MSVC declares `x` as `unsigned long long` and emits no warning (non-compliant).
+
+</div>
+
+The example demonstrates that in practice, introducing a 128-bit integer may
+impact some existing code.
+To comply with the C++ standard, the type of `18446744073709551615` would have to be
+`std::int_least128_t` assuming that `long long` cannot represent the value.
+
+Hexadecimal literals are not affected in the same way because they
+are required to be of type `unsigned long long` if `long long` cannot represent the value.
+The introduction of a 128-bit integer type would not alter the signedness of existing literals.
+
+
+
 # Design considerations # {#design-considerations}
 
 The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
