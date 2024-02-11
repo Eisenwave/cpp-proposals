@@ -34,9 +34,11 @@ library support from `<format>`, `<bit>`, `<cmath>`, `<limits>`, and other facil
 After extensive investigation, it was determined that the [[#impact-on-the-standard]]
 and [[#implementation-impact]] is relatively low.
 
-However, the standard library contains a large amount of artificial hurdles
+Furthermore, the standard library contains a large amount of artificial hurdles
 which make it impossible to provide library support for extended integers.
-Even if there exists an extended 128-bit integer,
+The current standard already permits the implementation to provide additional
+extended (fundamental) integer types in addition to the standard integers (`int`, `long`, etc.).
+However, even if there exists an extended 128-bit integer,
 `std::to_string(std::int128_t)` cannot exist,
 `std::bitset` cannot be constructed from it (without truncating to `unsigned long long`),
 `std::abs(std::int128_t)` cannot exist,
@@ -346,6 +348,31 @@ bits can be implemented in terms of floating-point division, and this is possibl
 For such instruction selection, the 113-bit division must be recognized by the compiler.
 It is very unlikely that the hundreds of operations
 comprising a software integer division could be recognized as such.
+
+128 bits is obviously more than 113 bits, so not every operation can be performed this way.
+However, modern optimizing compilers keep track of range constraints of values.
+
+<div class=example>
+The optimizer may make the following decisions when performing 128-bit integer division:
+
+- If the divisor is constant, perform strength reduction ([[#fixed-point-operations]]), making the division
+    a shift and multiplication.
+- If the divisor is a power of two, count the trailing zeros and perform a right-shift.
+- Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.
+- Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit ([[#widening-operations]]) division.
+- Otherwise, if both operands are 2<sup>113</sup>-1 or less,
+    and if there is hardware support for 128-bit floating point numbers, perform floating-point division.
+- [...]
+- Otherwise, use a software implementation of 128-bit division.
+
+</div>
+
+ISO C++ does not offer a mechanism through which implementations can be chosen based on
+optimizer knowledge.
+It also does not offer a mechanism through which it can be detected that a divisor is known to the
+optimizer.
+What is easy for the implementation is difficult for the user,
+which makes it very compelling to provide a built-in type.
 
 Note: Historically, floating-point division in hardware was used to implement integer division.
 The x87 circuitry for dividing 80-bit floating-point numbers could be repurposed for 64-bit

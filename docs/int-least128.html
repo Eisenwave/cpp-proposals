@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8fa04fdcf749d47de0614df1b1702bb69e59791c" name="revision">
+  <meta content="29ced16280c22499f95e882cf8575800ed1f5c65" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2292,9 +2292,11 @@ is possible, so standardizing the minimum-width types is standardizing exact-wid
    <p>While the definition of these aliases is trivial, mandating them also implies
 library support from <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>limits</c-><c- o>></c-></code>, and other facilities.
 After extensive investigation, it was determined that the <a href="#impact-on-the-standard">§ 3 Impact on the standard</a> and <a href="#implementation-impact">§ 4 Impact on implementations</a> is relatively low.</p>
-   <p>However, the standard library contains a large amount of artificial hurdles
+   <p>Furthermore, the standard library contains a large amount of artificial hurdles
 which make it impossible to provide library support for extended integers.
-Even if there exists an extended 128-bit integer, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> cannot be constructed from it (without truncating to <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>), <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist,
+The current standard already permits the implementation to provide additional
+extended (fundamental) integer types in addition to the standard integers (<code class="highlight"><c- b>int</c-></code>, <code class="highlight"><c- b>long</c-></code>, etc.).
+However, even if there exists an extended 128-bit integer, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> cannot be constructed from it (without truncating to <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>), <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist,
 among other issues.</p>
    <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>There are two essential reasons for standardizing a 128-bit integer type:</p>
@@ -2524,6 +2526,35 @@ bits can be implemented in terms of floating-point division, and this is possibl
 For such instruction selection, the 113-bit division must be recognized by the compiler.
 It is very unlikely that the hundreds of operations
 comprising a software integer division could be recognized as such.</p>
+   <p>128 bits is obviously more than 113 bits, so not every operation can be performed this way.
+However, modern optimizing compilers keep track of range constraints of values.</p>
+   <div class="example" id="example-d554b1c2">
+    <a class="self-link" href="#example-d554b1c2"></a> The optimizer may make the following decisions when performing 128-bit integer division: 
+    <ul>
+     <li data-md>
+      <p>If the divisor is constant, perform strength reduction (<a href="#fixed-point-operations">§ 2.1.5 Fixed-point operations</a>), making the division
+a shift and multiplication.</p>
+     <li data-md>
+      <p>If the divisor is a power of two, count the trailing zeros and perform a right-shift.</p>
+     <li data-md>
+      <p>Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.</p>
+     <li data-md>
+      <p>Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit (<a href="#widening-operations">§ 2.1.3 Widening operations</a>) division.</p>
+     <li data-md>
+      <p>Otherwise, if both operands are 2<sup>113</sup>-1 or less,
+and if there is hardware support for 128-bit floating point numbers, perform floating-point division.</p>
+     <li data-md>
+      <p>[...]</p>
+     <li data-md>
+      <p>Otherwise, use a software implementation of 128-bit division.</p>
+    </ul>
+   </div>
+   <p>ISO C++ does not offer a mechanism through which implementations can be chosen based on
+optimizer knowledge.
+It also does not offer a mechanism through which it can be detected that a divisor is known to the
+optimizer.
+What is easy for the implementation is difficult for the user,
+which makes it very compelling to provide a built-in type.</p>
    <p class="note" role="note"><span class="marker">Note:</span> Historically, floating-point division in hardware was used to implement integer division.
 The x87 circuitry for dividing 80-bit floating-point numbers could be repurposed for 64-bit
 integer division.
