@@ -424,6 +424,8 @@ The implementation can already provide `int_least128_t` while complying with the
 Challenges only arise when considering the impact of these new types on the rest of the
 standard library, and possibly C compatibility.
 
+Note: A compliant libstdc++ implementation could all aliases as `__int128`.
+
 ## C Compatibility ## {#c-compatibility}
 
 Any attempt of standardizing 128-bit integers must also keep possible compatibility with the C
@@ -618,7 +620,8 @@ Note: The choice of integer type used to be (and still is) implementation-define
 
 **Issue:** Various random number generators and `std::uniform_int_distribution` need to support
 128-bit types.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ No impact on the standard
+(see [[#random-implementation-experience]] for implementation experience).
 
 **Issue:** `std::seed_seq` needs to support `std::initializer_list<std::uint128_t>`.<br>
 **Action:** ✔️ No impact on the standard.
@@ -768,10 +771,10 @@ required to implement the proposed changes.
     <td>Saturating arithmetic</td><td>✔️ no</td><td>[[#saturating-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<random>` generators</td><td>✔️ no</td><td></td>
+    <td>`<random>` generators</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::uniform_int_distribution`</td><td>✔️ no</td><td></td>
+    <td>`std::uniform_int_distribution`</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`std::seed_seq`</td><td>✔️ no</td><td></td>
@@ -839,7 +842,21 @@ to use a class type or `long long` as a `difference_type`.
 See [[#proposed-iota]] for a proposed solution which resolves this issue without requiring
 action from implementors.
 
+### What about `iota_view<std::int_least128_t>`? ### {#iota-view-128}
 
+Besides the option to provide a &ge; 129-bit `difference_type`,
+implementations can also define `difference_type` to be a 128-bit integer.
+
+Neither the *Cpp17RandomAccessIterator* requirement nor the `random_access_iterator` concept
+require the difference between two iterators to be representable using their `difference_type`.
+Therefore, this is a reasonable strategy which is easy to implement.
+Of course, it has the adverse affect that `a - b` is possibly undefined behavior for two iterators.
+
+In practice, will the user ever need a 128-bit `iota_view`, and if so, do they need to represent
+such extreme differences?
+These are quality-of-implementation issues which maintainers will need to consider.
+libstdc++ already supports `std::iota_view<__int128>`, where the `difference_type` is `__int128`.
+Besides QoI questions, this proposal does not introduce any new issues.
 
 
 # Impact on existing code # {#impact-on-existing-code}
@@ -903,6 +920,13 @@ There exists no implementation where `long long` is 128-bit, so no code is reall
 However, there should exist a natural and universally correct way to extend such overload sets,
 so that the effort of "upgrading" to 128-bit is minimal.
 Therefore `std::int_least128_t` should be distinct.
+
+Guaranteeing that `std::int_least128_t` is distinct means that even if `long long`
+is a 128-bit type, it won't be chosen by this alias.
+This breaks the conventions of `<cstdint>` and may be surprising,
+but no implementation with `<cstdint>` aliases beyond `64` exists,
+and no implementation where `long long` is 128-bit exists.
+No existing code is affected; this is a purely academic problem.
 
 Note: Another robust way would be to write
 `void foo(std::same_as<std::int_least128_t> auto)`.
@@ -1079,6 +1103,47 @@ For example, `printf` would require a `PRIuLEASTN` format specifier macro to pri
 but the existence of `_BitInt(128)` does not imply the existence of `uint_least128_t` or such
 a macro.
 
+## Why not make it optional? ## {#why-not-optional}
+
+Instead of making `std::int_least128_t` entirely mandatory, it would also be possible to
+make it an optional type, or to make it mandatory only on hosted implementations.
+This idea may be motivated by two potential issues:
+
+> On freestanding/embedded platforms, the implementation effort of `std::int_least128_t` is too great.
+
+While this concern is valid, C23 requires arbitrary-precision arithmetic through `_BitInt` anyway
+and GCC and clang support `_BitInt(128)` already (see [[#existing-bit-int]] for support).
+Assuming that vendors care about C-compatibility,
+this proposal merely requires vendors to provide `int_least128_t = _BitIntLike(128)`.
+
+Note: `int_least128_t = _BitInt(128)` would be incompatible with the C standard.
+
+The remaining impact is limited to the standard library, and it's almost always possible to
+generalize algorithms to an arbitrary bit size.
+This is especially easy when the implementation can ensure that all integers are padding-free
+and have a size that is a 2<sup>N</sup> multiple of the byte size.
+Only `int_leastN_t` is mandatory (not the exact-width types),
+so the implementation can ensure it.
+
+> `std::int_least128_t` should not be mandatory if it's too slow.
+
+There is also merit to this concern.
+A mandatory type may give the user a false sense of hardware support which simply
+doesn't exist, especially on 32-bit or even 8-bit hardware.
+
+However, this problem is innate to standard integers as well.
+If a user is compiling for a 32-bit architecture, a 64-bit `long long` will have to be
+software-emulated, and 64-bit integer division can have dramatic cost.
+Why should a 64-bit `long long` be mandatory on an 8-bit architecture?
+The answer is: because it's useful to rely on `long long` so we can write portable code,
+even if we try to avoid the type for the sake of performance.
+
+In the end, it's the responsibility of the user to be vaguely aware of hardware capabilities
+and not use integer types that are poorly supported.
+If the user wants to perform a 128-bit integer division on an 8-bit machine,
+the language shouldn't artificially restrict them from doing so.
+The same principle applies to `long long`, `std::int_least128_t`, C23's `_BitInt(1024)`, etc.
+
 
 ## Why no `std::div`? ## {#div}
 
@@ -1109,6 +1174,8 @@ There is no motivation for putting substantial work into a useless relic.
 
 GCC and clang already provide the 128-bit integer types in the form of
 `__int128` and `unsigned __int128`.
+However, this type is not available when compiling for 32-bit targets.
+Clang provides the same support.
 
 ### `__int128` (CUDA) ### {#existing-int-128-cuda}
 
@@ -1136,26 +1203,29 @@ GNU-family implementations support more than 128 bits already.
 As of February 2024, the support is as follows:
 <table>
 <tr>
-    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th>
+    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th><th>Targets</th>
 </tr>
 <tr>
-    <td>Clang 14</td><td>`128`</td>
+    <td>clang 14</td><td>`128`</td><td>all</td>
 <tr>
 </tr>
-    <td>Clang 16</td><td>`8388608`</td>
+    <td>clang 16</td><td>`8388608`</td><td>all</td>
 <tr>
 </tr>
-    <td>GCC 14</td><td>`65535`</td>
+    <td>GCC 14</td><td>`65535`</td><td>64-bit only</td>
 <tr>
 </tr>
-    <td>MSVC 19.38</td><td>❌</td>
+    <td>MSVC 19.38</td><td>❌</td><td>❌</td>
 </tr>
 </table>
 
-Note: Clang has supported `_BitInt` as an `_ExtInt` compiler extension prior to C standardization.
+Note: clang has supported `_BitInt` as an `_ExtInt` compiler extension prior to C standardization.
 
-It is reasonable to expect that given enough time, `_BitInt(128)` will be
+It is possible that given enough time, `_BitInt(128)` will be
 supported by Microsoft as well.
+
+Note: Microsoft Developer Community users have requested support for a 128-bit type
+at [[MSDN]].
 
 
 ## Library implementation experience ## {#library-implementation-experience}
@@ -1255,6 +1325,28 @@ such an implementation may need revision.
 
 `std::lcm` requires no work because mathematically, `gcd(x, y) * lcm(x, y) == x * y`.
 The implementation effort (if any) is limited to `std::gcd`.
+
+### `<random>` ### {#random-implementation-experience}
+
+`std::linear_congruential_engine<T, a, c, m>` requires at least double-wide integers
+to safely perform the operation `(a * x + c) mod m`, where `x` is the LCG state.
+Otherwise, the multiplication and addition could overflow.
+
+libstdc++ solves this issue by performing all operations using `__int128` if available
+(see
+<a href="https://github.com/gcc-mirror/gcc/blob/67d5b10e659c3f4c02b8af507c84d5e764e264b4/libstdc%2B%2B-v3/include/bits/random.h#L83">`<bits/random.h>`</a>),
+and otherwise:
+```cpp
+static_assert(__which < 0, /* needs to be dependent */
+    "sorry, would be too much trouble for a slow result");
+```
+
+Introducing 128-bit integers would force implementations to also provide 256-bit operations
+solely for the purpose of `std::linear_congruential_engine`.
+This can be considered reasonable because C23 requires implementations to provide
+arbitrary-precision arithmetic anyway, and both GCC and clang already implement
+`_BitInt(N)` for `N >= 256` (see [[#existing-bit-int]] for details on support).
+
 
 ### Saturating arithmetic ### {#saturating-implementation-experience}
 
@@ -1707,6 +1799,11 @@ namespace std {
         "title": "Xorshift RNGs",
         "href": "https://www.jstatsoft.org/article/download/v008i14/916",
         "authors": ["George Marsaglia"]
+    },
+    "MSDN": {
+        "title": "Support for 128-bit integer type",
+        "href": "https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048",
+        "authors": ["Colen Garoutte-Carson et al." ]
     },
     "N2680": {
         "title": "Specific width length modifier",
