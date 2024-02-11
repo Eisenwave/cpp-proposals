@@ -34,6 +34,8 @@ library support from `<format>`, `<bit>`, `<cmath>`, `<limits>`, and other facil
 After extensive investigation, it was determined that the [[#impact-on-the-standard]]
 and [[#implementation-impact]] is relatively low.
 
+## Lifting library restrictions ## {#lifting-library-restrictions}
+
 Furthermore, the standard library contains a large amount of artificial hurdles
 which make it impossible to provide library support for extended integers.
 The current standard already permits the implementation to provide additional
@@ -43,6 +45,25 @@ However, even if there exists an extended 128-bit integer,
 `std::bitset` cannot be constructed from it (without truncating to `unsigned long long`),
 `std::abs(std::int128_t)` cannot exist,
 among other issues.
+
+It would not be legal for an implementation to provide such additional overloads because it would
+change the meaning of well-formed programs.
+<div class=example>
+The following code is a compliant C++23 translation unit.
+Assuming that the implementation provides `std::uint128_t` (which is permitted),
+the code is well-formed.
+
+```cpp
+#include <string>
+
+template <typename T>
+concept stringable = requires (T t) { std::to_string(t); };
+
+static_assert(not stringable<std::uint128_t>);
+```
+`std::uint128_t` is not `stringable` because the call to `std::to_string` would be ambiguous.
+Defining an additional `std::to_string` overload would make the assertion fail.
+</div>
 
 # Motivation and scope # {#motivation-and-scope}
 
@@ -61,7 +82,7 @@ A GitHub code search for
 <a href="/int128|int_128/ language:c++">`/int128|int_128/ language:c++`</a>
 yields 150K files,
 and a language-agnostic search for
-<a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&type=code">`/int128|int128/`</a>
+<a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&type=code">`/int128|int_128/`</a>
 yields more than a million.
 
 While it is impossible to discuss every one of these,
@@ -451,7 +472,7 @@ Any compliant implementation could already have produced this behavior,
 assuming it supported 128-bit integers as an optional extended integer type.
 
 While there is certainly software which relies on `std::size_t` and other types not exceeding
-64 bits, not defining `std::size_t` to be a 128-bit type is a QoI (Qualify of Implementation) issue.
+64 bits, not defining `std::size_t` to be a 128-bit type is a QoI (Quality of Implementation) issue.
 Such problems are not within the scope of the standard.
 
 ## Impact on the library ## {#library-impact}

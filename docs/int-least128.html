@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="29ced16280c22499f95e882cf8575800ed1f5c65" name="revision">
+  <meta content="d12fecf985c8701a3cccc7f7112cce1abe7cd8be" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2152,7 +2152,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li>
+     <a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+     <ol class="toc">
+      <li><a href="#lifting-library-restrictions"><span class="secno">1.1</span> <span class="content">Lifting library restrictions</span></a>
+     </ol>
     <li>
      <a href="#motivation-and-scope"><span class="secno">2</span> <span class="content">Motivation and scope</span></a>
      <ol class="toc">
@@ -2292,12 +2296,29 @@ is possible, so standardizing the minimum-width types is standardizing exact-wid
    <p>While the definition of these aliases is trivial, mandating them also implies
 library support from <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code>, <code class="highlight"><c- o>&lt;</c-><c- n>limits</c-><c- o>></c-></code>, and other facilities.
 After extensive investigation, it was determined that the <a href="#impact-on-the-standard">§ 3 Impact on the standard</a> and <a href="#implementation-impact">§ 4 Impact on implementations</a> is relatively low.</p>
+   <h3 class="heading settled" data-level="1.1" id="lifting-library-restrictions"><span class="secno">1.1. </span><span class="content">Lifting library restrictions</span><a class="self-link" href="#lifting-library-restrictions"></a></h3>
    <p>Furthermore, the standard library contains a large amount of artificial hurdles
 which make it impossible to provide library support for extended integers.
 The current standard already permits the implementation to provide additional
 extended (fundamental) integer types in addition to the standard integers (<code class="highlight"><c- b>int</c-></code>, <code class="highlight"><c- b>long</c-></code>, etc.).
 However, even if there exists an extended 128-bit integer, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> cannot be constructed from it (without truncating to <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>), <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> cannot exist,
 among other issues.</p>
+   <p>It would not be legal for an implementation to provide such additional overloads because it would
+change the meaning of well-formed programs.</p>
+   <div class="example" id="example-4f87953e">
+    <a class="self-link" href="#example-4f87953e"></a> The following code is a compliant C++23 translation unit.
+Assuming that the implementation provides <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-></code> (which is permitted),
+the code is well-formed. 
+<pre class="language-cpp highlight"><c- cp>#include</c-> &lt;string>
+
+<c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
+<c- k>concept</c-> <c- nc>stringable</c-> <c- o>=</c-> <c- k>requires</c-> <c- p>(</c-><c- n>T</c-> <c- n>t</c-><c- p>)</c-> <c- p>{</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>t</c-><c- p>);</c-> <c- p>};</c->
+
+<c- k>static_assert</c-><c- p>(</c-><c- k>not</c-> <c- n>stringable</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-><c- o>></c-><c- p>);</c->
+</pre>
+    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-></code> is not <code class="highlight"><c- n>stringable</c-></code> because the call to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> would be ambiguous.
+Defining an additional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> overload would make the assertion fail.</p>
+   </div>
    <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>There are two essential reasons for standardizing a 128-bit integer type:</p>
    <ol>
@@ -2311,7 +2332,7 @@ See <a href="#existing-128-bit-integers">§ 7.1 Existing 128-bit integer types
    </ol>
    <h3 class="heading settled" data-level="2.1" id="use-cases"><span class="secno">2.1. </span><span class="content">Use cases</span><a class="self-link" href="#use-cases"></a></h3>
    <p>A GitHub code search for <a href="/int128|int_128/ language:c++"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code></a> yields 150K files,
-and a language-agnostic search for <a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&amp;type=code"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int128</c-><c- o>/</c-></code></a> yields more than a million.</p>
+and a language-agnostic search for <a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&amp;type=code"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-></code></a> yields more than a million.</p>
    <p>While it is impossible to discuss every one of these,
 I will introduce a few use cases of 128-bit integers.</p>
    <h4 class="heading settled" data-level="2.1.1" id="cryptography"><span class="secno">2.1.1. </span><span class="content">Cryptography</span><a class="self-link" href="#cryptography"></a></h4>
@@ -2618,7 +2639,7 @@ would be truncated.</p>
 Any compliant implementation could already have produced this behavior,
 assuming it supported 128-bit integers as an optional extended integer type.</p>
    <p>While there is certainly software which relies on <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>size_t</c-></code> and other types not exceeding
-64 bits, not defining <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>size_t</c-></code> to be a 128-bit type is a QoI (Qualify of Implementation) issue.
+64 bits, not defining <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>size_t</c-></code> to be a 128-bit type is a QoI (Quality of Implementation) issue.
 Such problems are not within the scope of the standard.</p>
    <h3 class="heading settled" data-level="3.3" id="library-impact"><span class="secno">3.3. </span><span class="content">Impact on the library</span><a class="self-link" href="#library-impact"></a></h3>
    <p>Find below a summary of issues that arise from the introduction of 128-bit integers in the
