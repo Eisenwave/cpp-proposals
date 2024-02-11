@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: <code>std::int_least128_t</code>
-Shortname: Pxxxx
+Shortname: NPxxxx
 Revision: 0
 Status: NP
-Date: 2024-02-05
+Date: 2024-02-11
 Group: WG21
 Audience: LEWGI, LWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -16,10 +16,10 @@ Abstract: This proposal standardizes mandatory 128-bit integers types with stron
 
 # Introduction # {#introduction}
 
-128-bit integers have countless practical uses, and all major implementations
-(MSVC, GCC, LLVM) expose 128-bit integers as a language extension already.
-There has been great interest in standardizing integers beyond 64 bits for a long time,
-and with the new wording in the C standard for `intmax_t` (see [[#c-compatibility]]),
+128-bit integers have numerous practical uses, and all major implementations
+(MSVC, GCC, LLVM) provide 128-bit integers already.
+Among C++ users, there has been great interest in standardizing integers beyond 64 bits for a long time.
+With the new wording in the C23 standard for `intmax_t` (see [[#c-compatibility]]),
 one of the last obstacles has been removed.
 
 The goal of this paper is to obtain a mandatory &ge; 128-bit integer type with no core language changes
@@ -130,12 +130,11 @@ is effectively performing a 32-bit shift, whereas `x << 32` is self-documenting.
 An obvious issue is that the language provides no 128-bit integer type, so the widening
 operations for 64-bit operands could not exist, or would return a type which is not
 considered an integer.
+Extended integer types require extensive library support, so the implementation couldn't
+simply return an extended 128-bit integer type without sufficiently supporting such at type.
 
-Note: Extended integer types require extensive library support, so the implementation couldn't
-      simply return an extended 128-bit integer type without sufficiently supporting such at type.
-
-This obstacle is especially unfortunate considering that hardware often supports 64-to-128-bit
-widening operations directly.
+The lack of a 128-bit destination type for 64-bit widening operations is especially unfortunate
+considering that hardware often supports 64/128-bit mixed operations directly.
 For example:
 
 - The x86_64 `mul` (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
@@ -144,17 +143,17 @@ For example:
     in `rax` and `rdx` respectively.
 - RISC-V provides the `clmul` and `clmulh` instructions to compute the low and high part of a
     carry-less multiplication.
-    In fact, x86, ARM, and RISC-V all provide a way to compute a carry-less 128-bit product. 
+    In fact, x86, ARM, and RISC-V all provide a way to compute a
+    [carry-less 128-bit product](https://en.wikipedia.org/wiki/Carry-less_product). 
 
-Some operating systems also provide 128-bit operations.
+Some operating systems also provide 64/128-bit operations.
 For example, the Windows API provides a `Multiply128` function.
 
 
 ### Multi-precision operations ### {#multi-precision-operations}
 
-For various applications (cryptography, various numeric applications, etc.) arithmetic with
-large bit sizes is required.
-For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses bit sizes of 2048 or 4096.
+For various applications (cryptography, numerics, etc.) arithmetic with large widths is required.
+For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses key sizes of 2048 or 4096.
 "Scripting languages" also commonly use an infinite-precision integer type.
 For example, the `int` type in Python has no size limit.
 
@@ -168,10 +167,11 @@ Since this involves a carry between digits, a 64-to-128-bit widening operation i
 ### Fixed-point operations ### {#fixed-point-operations}
 
 While 64-bit integers are sufficient for many calculations, the amount of available bits
-is reduced when the 64 bits are subdivided into an integral and fractional part.
+is reduced when the 64 bits are divided into an integral and fractional part.
+This may cause issues in [[#financial-systems]].
 
 Furthermore, fixed-point arithmetic with a double-wide operand can emulate integer division,
-which is a relatively expensive operation to this day.
+which is a relatively expensive operation, even with hardware support.
 
 <div class=example>
 128-bit integers allow us to implement a division by three without integer division:
@@ -190,28 +190,32 @@ for constant divisors already, they don't perform it for frequently reused non-c
 
 For such divisors, it can make sense to pre-compute the reciprocal and shift constants
 and use them many times for faster division.
-Among other libraries, [[libdivide]] uses this technique.
+Among other libraries, [[libdivide]] uses this technique
+(using a pair of 64-bit integers, which effectively forms a 128-bit integer).
 
 ### Double-wide atomic operations ### {#double-wide-atomic-operations}
 
 Some architectures provide double-wide atomic operations.
 For example, x86_64 provides a `cmpxchg16b` instruction which can be used to implement a
 128-bit `std::atomic::compare_exchange_strong`.
-
-Such an operation is useful for lock-free data structures, where a simple CAS is often insufficient
+Such an operation is useful for lock-free data structures, where a simple CAS is insufficient
 because two 64-bit pointers or a 64-bit pointer with some metadata have to be compared and swapped
 simultaneously.
 
-To be fair, this operation is already exposed through `std::atomic<std::array<std::byte, 16>>`,
-so 128-bit atomic integers aren't strictly necessary except for 128-bit `.fetch_xxx` operations,
-though those don't have direct hardware support.
+Furthermore, GCC and clang have compiler intrinsics for all `.fetch_xxx` operations,
+such as `__atomic_fetch_add_16`, and `std::atomic<__int128>::operator++` when compiled with clang
+will emit a call to this function.
+However, this is not exposed through the standard, which is unfortunate because
+these operations are lock-free when `cmpxchg16b` is available.
 
-### High-precision clocks ### {#high-precision-clocks}
+### High-precision time calculations ### {#high-precision-clocks}
 
 64-bit integers are somewhat insufficient for high-precision clocks, if large time spans should
 also be covered.
 When counting nanoseconds, a maximum value of 2<sup>63</sup>-1 can only represent approximately
 9 billion seconds, or 7020 years.
+This is enough to keep time for the forseeable future, but is insufficient
+for representing historical data long in the past.
 
 This makes 64-bit integers insufficient for some time calculations, where 128-bit integers
 would suffice.
@@ -254,24 +258,26 @@ This library provides an efficient `from_chars` implementation.
 
 128-bit integers can be used to represent huge monetary values with high accuracy.
 When representing cents of a dollar as a 64-bit integer,
-a monetary amount of up to 184.5 quadrillion dollars can be represented.
-However, this amount shrinks dramatically when using smaller fractions.
+a monetary value of up to 184.5 quadrillion dollars can be represented.
+However, this value shrinks dramatically when using smaller fractions.
 
-For example, the smallest fraction of a Bitcoin is a Satoshi, which is a
-hundred millionth of a Bitcoin.
-A signed 64-bit integer can only losslessly represent approximately 92 billion BTC.
-In 2009, a Bitcoin was worth less than a penny, so a monetary value of only
-920 million USD could be represented in Satoshis.
-Essentially, 64-bit integers are insufficient when combining high precision with
-exponential price fluctuations.
-Rounding is not always a viable solution.
-
-Similarly, since 2005, stock markets are legally required to accept
+Since 2005, stock markets are legally required to accept
 price increments of $0.0001 when the price of a stock is &le; $1 (see [[SEC]]).
 At this precision, 1.84 quadrillion dollars can be represented.
 Using a uniform precision of ten thousandths would prove problematic when
-applied to other currencies such as Yen, forcing the complexity of variable precision
+applied to other currencies such as Yen, which forces the complexity of variable precision
 on the developer.
+
+Even more extremely, the smallest fraction of a Bitcoin is a Satoshi, which is a
+hundred millionth of a Bitcoin.
+2<sup>63</sup> Satoshis equal approximately 92 billion BTC.
+In 2009, a Bitcoin was worth less than a penny, so a monetary value of only
+920 million USD could be represented in Satoshis.
+
+In conclusion, simply storing the smallest relevant fraction as a 64-bit integer is
+often insufficient, especially when this fraction is very small and exponential
+price changes are involved.
+Rounding is not always an acceptable solution in financial applications.
 
 [[NVIDIA]] mentions fixed-point accounting calculations as a possible use case of the
 `__int128` type, which is a preview feature of NVIDIA CUDA 11.5.
@@ -307,8 +313,9 @@ std::uint128_t random_uuid_v4() {
 
 IPv6 addresses can be represented as a 128-bit integer.
 This may be a convenient representation because bitwise operations for masking and accessing
-individual bits or bit groups may be used, and implementing these is much easier using a 128-bit
-integer compared to multi-precision operations using two 64-bit integers.
+individual bits or bit groups may be used.
+Implementing these is much easier using a 128-bit integers compared to multi-precision operations
+using two 64-bit integers.
 
 <div class=example>
 An IPv6 address in link-local address format can be identified as follows:
@@ -324,6 +331,32 @@ constexpr auto mask64 = std::uint64_t(-1);
 interface_identifier = (data &gt;&gt; 64) & mask64;
 </pre>
 </div>
+
+### Future-proofing for hardware support ### {#future-proofing}
+
+When hardware support for 128-bit operations is available, but the source code emulates these
+in software, the burden of fusing multiple 64-bit operations into a single 128-bit operation
+is put on the optimizer.
+
+For example, multiple 64-bit multiplications may be fused into a single 64-to-128-bit
+multiplication.
+x86_64 already provides hardware support in this case (see [[#widening-operations]]), however,
+the language provides no way of expressing such an operation through integer types.
+
+On hardware which provides native support for `std::float128_t`
+(see [[Wikipedia]] for a list), integer division up to 112
+bits can be implemented in terms of floating-point division, and this is possibly the fastest routine.
+For such instruction selection, the 112-bit division must be recognized by the compiler.
+It is very unlikely that the hundreds of operations
+comprising a software integer division could be recognized as such.
+
+It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded in future
+instruction set extensions.
+However, this last point is merely conjecture on my part.
+
+
+
+
 
 # Impact on the standard # {#impact-on-the-standard}
 
@@ -342,15 +375,18 @@ using uint128_t = /* unsigned integer type */; // optional
 ```
 This change in itself is almost no change at all.
 The implementation can already provide `int_least128_t` while complying with the C++11 standard.
-However, this change has far-reaching ramifications which are examined below.
+Challenges only arise when considering the impact of these new types on the rest of the
+standard library, and possibly C compatibility.
 
 ## C Compatibility ## {#c-compatibility}
 
 Any attempt of standardizing 128-bit integers must also keep possible compatibility with the C
 standard in mind.
-C does not guarantee a `int_least128_t` alias, but `intmax_t` may present a potential point of
-conflict.
+In particular, `intmax_t` has historically prevented implementations from providing
+integer types wider than `long long` without breaking ABI compatibility.
+A wider integer type would change the width of `intmax_t`.
 
+C23 has relaxed the definition of `intmax_t`.
 [[N3047]], 7.22.1.5 [Greatest-width integer types] currently defines `intmax_t` as follows:
 
 <blockquote>
@@ -363,13 +399,13 @@ intmax_t
 ```
 </blockquote>
 
-For `intmax_t` to not be `int_least128_t` in the C standard, there must exist an `int128_t`
-alias for the same type.
+For `intmax_t` to not be `int_least128_t`,
+there must exist an `int128_t` alias for the same type.
 GCC already provides an `__int128` type which satisfies the padding-free requirement and could
 be exposed as `int128_t`.
 
 In conclusion, it is possible to provide a `std::int_least128_t` alias with equivalent
-semantics and ABI in C and C++.
+semantics in C and C++, and with no ABI break.
 
 
 ## Impact on the core language ## {#core-impact}
@@ -391,45 +427,38 @@ assuming it supported 128-bit integers as an optional extended integer type.
 
 While there is certainly software which relies on `std::size_t` and other types not exceeding
 64 bits, not defining `std::size_t` to be a 128-bit type is a QoI (Qualify of Implementation) issue.
-Such problems are not within the scope of the standard, and I don't see it as necessary
-to add Recommended Practice paragraphs as protection against malicious implementations.
-
+Such problems are not within the scope of the standard.
 
 ## Impact on the library ## {#library-impact}
-
-To properly integrate 128-bit integers into the standard, it is also necessary to provide
-library support.
-What use is a standard 128-bit integer if it cannot be turned into a string or used in any of the
-standard library math functions?
 
 Find below a summary of issues that arise from the introduction of 128-bit integers in the
 C++ standard library.
 One common issue is that aliases such as `size_type` and `difference_type` within
 containers, iterators, and other types can be a 128-bit integer.
+The same applies to `std::size_t`, `std::ptrdiff_t`, `std::intmax_t`.
+
+The proposal does not force library maintainers to re-define any of these aliases;
+it's just a possibility.
 Whether to define them as such is a QoI issue in general, and won't be discussed further.
 
 ### Language support library ### {#library-impact-language-support}
 
-**Issue:** `std::div` needs an overload for 128-bit integers.<br>
+**Issue:** `std::div` may need an overload for 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard because we don't support it (see [[#div]]).
 
-**Issue:** Certain type aliases such as `ptrdiff_t` and `size_t` could now be defined as a 128-bit type.<br>
-**Action:** ✔️ No impact on the standard.
-Whether to do so is a QoI issue.
-
-**Issue:** `std::to_integer` would need 128-bit support.<br>
+**Issue:** `std::to_integer` may need 128-bit support.<br>
 **Action:** ✔️ No impact on the standard.
 
-**Issue:** `<version>` would likely need a 128-bit integer feature-testing macro.<br>
+**Issue:** `<version>` needs 128-bit integer feature-testing macro.<br>
 **Action:** ⚠️ Add macros (see [[#proposed-version]] for wording).
 
-**Issue:** `<numeric_limits>` would need a trait for 128-bit integers.<br>
+**Issue:** `<numeric_limits>` needs a trait for 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard; require a `std::numeric_limits` specialization.
 
-**Issue:** `<climits>` would need additional constants for 128-bit integers.<br>
+**Issue:** `<climits>` needs additional constants for 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
 
-**Issue:** `<cstdint>` would need need to explicitly require support for 128-bit integers
+**Issue:** `<cstdint>` needs to explicitly require support for 128-bit integers
 in its synopsys.<br>
 **Action:** ⚠️ Define aliases (see [[#proposed-cstdint]] for wording).
 
@@ -442,11 +471,6 @@ in its synopsys.<br>
 **Issue:** `std::make_signed` and `std::make_unsigned` require 128-bit support.<br>
 **Action:** ✔️ No impact on the standard
 (see [[#type-traits-implementation-experience]] for implementation experience).
-
-**Issue:** `std::rank<T>::value` could be a 128-bit integer.<br>
-**Action:** ✔️ No impact on the standard.
-
-Note: This depends on whether `std::size_t` is a 128-bit integer, and this decision is QoI.
 
 **Issue:** `std::ratio` currently accepts non-type template arguments of `std::intmax_t`.
 `std::intmax_t` is no longer the widest integer type and changing the type of NTTP to
@@ -463,7 +487,7 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 **Action:** ✔️ No impact on the standard
 (see [[#safe-comparison-implementation-experience]] for implementation experience).
 
-**Issue:** `std::integer_sequence` would need to support 128-bit integers.<br>
+**Issue:** `std::integer_sequence` needs to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard.
 
 **Issue:** `std::bitset` could receive an additional constructor taking `std::uint_least128_t`.<br>
@@ -472,27 +496,27 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 **Issue:** `std::bitset` could receive an additional `to_u128` function, similar to `to_ullong`.<br>
 **Action:** ⚠️ Add such a function (see [[#proposed-bitset]] for wording).
 
-**Issue:** `std::to_chars` and `std::from_chars` would need to support 128-bit integers.<br>
+**Issue:** `std::to_chars` and `std::from_chars` need to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard
 (see [[#charconv-implementation-experience]] for implementation experience).
 
-**Issue:** `<format>` facilities need to support 128-bit integers.<br>
+**Issue:** `<format>` needs to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard
 (see [[#format-implementation-experience]] for implementation experience).
 
 **Issue:** `basic_format_parse_context::check_dynamic_spec` might need 128-bit integers support.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ No, it doesn't
 (see [[#format-implementation-experience]] for implementation experience).
 
-**Issue:** `basic_format_arg` may need support for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Issue:** `basic_format_arg` might need support for 128-bit integers.<br>
+**Action:** ✔️ No, it doesn't
 (see [[#format-implementation-experience]] for implementation experience).
 
-**Issue:** Bit manipulation functions in `<bit>` need to support 128-bit integers.<br>
+**Issue:** `<bit>` needs to support 128-bit integers.<br>
 **Action:** ✔️ No impact on the standard
 (see [[#bit-implementation-experience]] for implementation experience).
 
-**Issue:** `std::to_string` needs to support 128-bit types.<br>
+**Issue:** `std::to_string` could support 128-bit types.<br>
 **Action:** ⚠️ Add overloads (see [[#proposed-numeric-conversions]] for wording).
 
 ### Containers library ### {#library-impact-containers}
@@ -550,13 +574,6 @@ Note: The choice of integer type used to be (and still is) implementation-define
 128-bit types.<br>
 **Action:** ✔️ No impact on the standard.
 
-Note: The implementation of random number generators does not usually rely on bit widths being lower
-than 128-bit.
-Some generators such as linear congruential engines rely heavily on modulo division,
-which is very expensive for 128-bit integers.
-However, this can be simplified to fixed-point multiplication and bit-shifting for a known modulo,
-which is always the case in generators, though not in distributions.
-
 **Issue:** `std::seed_seq` needs to support `std::initializer_list<std::uint128_t>`.<br>
 **Action:** ✔️ No impact on the standard.
 
@@ -567,11 +584,11 @@ which is always the case in generators, though not in distributions.
 need to be defined.<br>
 **Action:** ✔️ No impact on the standard.
 
-**Issue:** `std::abs` should receive an additional 128-bit overload.<br>
+**Issue:** `std::abs` could receive an additional 128-bit overload.<br>
 **Action:** ⚠️ Add an overload
 (see [[#proposed-abs]] for wording and [[#abs-implementation-experience]] for implementation experience).
 
-**Issue:** The `<linalg>` library may need 128-bit support.<br>
+**Issue:** The `<linalg>` library needs 128-bit support.<br>
 **Action:** ✔️ No impact on the standard
 (see [[#linalg-implementation-experience]] for implementation experience).
 
@@ -645,9 +662,6 @@ std::printf("%w128d\n", std::int_least128_t{123});
 
 The following table summarizes the affected standard library parts and the estimated effort
 required to implement the proposed changes.
-Entries rated "low / none" may require no changes at all, either because existing
-implementations already support 128-bit integers, or would hypothetically support them
-if only `std::is_integral_v` was `true` for an existing 128-bit type.
 
 <table>
 <tr>
@@ -751,6 +765,7 @@ it is assumed that they can be adapted into other libraries with relative ease.
 
 libstdc++ defines `difference_type` for `std::ranges::iota_view<long long>` to be `__int128`.
 Since a `std::int_least128_t` alias would likely be defined as `__int128`, there is no ABI impact.
+Other libraries are not so fortunate.
 
 ### Affected implementations ### {#abi-break-affected-implementations}
 
@@ -760,11 +775,8 @@ is `long long`.
 The MSVC STL uses a class type `std::_Signed128`.
 Even trivially copyable classes aren't passed via register in the Microsoft x86_64 ABI,
 so this type is passed via the stack.
-
-This may be undesirable for a future Microsoft 128-bit integer type.
-A possible option would be to use the same ABI as `__int128`, which is to pass
-results via `rdx` and `rax`.
-It would also be possible to share an ABI with `__m128i`, which is to pass via `xmm` registers.
+Re-defining this to be an integer type would break ABI, assuming that a Microsoft `__int128`
+would be passed via registers.
 
 ### Cause of ABI break ### {#abi-break-cause}
 
@@ -894,12 +906,16 @@ However, there are are a few strong reasons against including them in this propo
 
 It is also unclear whether there should ever be a mandatory 256-bit extended integer type,
 or if support should be provided through 256-bit bit-precise integers.
-Overall, the proposal is more focused if it includes only 128-bit.
+Overall, this proposal is more focused if it includes only 128-bit.
+
+Nevertheless, many of the changes in [[#proposed-wording]] pave the way for a future
+`std::int_least256_t` or even `std::int_least512_t`.
+There would be no wording impact other than defining the necessary aliases and macros.
 
 ## Why no bit-precise integers? ## {#bit-precise-integers}
 
-Instead of settling for 128-bit integers, it would also be possible to integrate
-bit-precise integers (C's `_BitInt(N)` type) into the C++ standard.
+Instead of putting any work into 128-bit integers, it would also be possible to integrate
+bit-precise integers (C's `_BitInt(N)` type, proposed in [[N2763]]) into the C++ standard.
 Therefore, one may ask:
 
 > Why don't we just standardize `_BitInt(N)` and introduce 128-bit integers that way?
@@ -912,9 +928,8 @@ Firstly, this would be an enormously ambitious and time-intensive undertaking, w
 on the standard.
 Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple reasons:
 
-1. `_BitInt` in C23 isn't required to support 128 bits at all (see [[#c-library-support]]).
+1. `_BitInt` in C23 isn't required to support 128 bits at all (see below).
     Only 64 bits (or as much as `long long` is wide) are required.
-    See [[#c-library-support]] for more details.
     In other words, `_BitInt` doesn't automatically give you 128-bit support.
 
 2. It is not reasonable to expect full library support for any bit size.
@@ -966,11 +981,13 @@ Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple rea
 <tr>
     <th>Integrates easily into the<br>existing hierarchy of standard integers</th><td>❌</td><td>✔️</td>
 </tr>
+<tr>
+    <th>Strong C library support required</th><td>❌</td><td>✔️</td>
+</tr>
 </table>
 
-### C library support for bit-precise integers ### {#c-library-support}
 
-The C23 standard currently does not mandate "full" library support for bit-precise integers.
+Note: The C23 standard currently does not mandate "full" library support for bit-precise integers.
 For example, `printf` would require a `PRIuLEASTN` format specifier macro to print `uint_least128_t`,
 but the existence of `_BitInt(128)` does not imply the existence of `uint_least128_t` or such
 a macro.
@@ -1051,7 +1068,7 @@ As of February 2024, the support is as follows:
 Note: Clang has supported `_BitInt` as an `_ExtInt` compiler extension prior to C standardization.
 
 It is reasonable to expect that given enough time, `_BitInt(128)` will become
-widely supported by existing implementations.
+supported by Microsoft as well.
 
 
 ## Library implementation experience ## {#library-implementation-experience}
@@ -1062,7 +1079,7 @@ Assuming that `is_integral` and `make_{un}signed` don't simply delegate to a com
 implementing these traits merely requires adding two specializations such as
 `is_integral<int_least128_t> : false_type`.
 
-See libstdc++' <a href="https://github.com/gcc-mirror/gcc/blob/93e1559bea434a681208e5e7a21513d7da2844d6/libstdc%2B%2B-v3/include/std/type_traits">`<type_traits>`</a>.
+See libstdc++'s <a href="https://github.com/gcc-mirror/gcc/blob/93e1559bea434a681208e5e7a21513d7da2844d6/libstdc%2B%2B-v3/include/std/type_traits">`<type_traits>`</a>.
 
 ### `std::cmp_xxx` ### {#safe-comparison-implementation-experience}
 
@@ -1107,10 +1124,10 @@ would be an avoidable ABI-break.
 ### `<bit>` ### {#bit-implementation-experience}
 
 In [[BitPermutations]], I have implemented the majority of C++ bit manipulation functions
-for *any* bit size, i.e. in a way that is compatible with `_BitInt(N)` for any size.
+for *any* width, i.e. in a way that is compatible with `_BitInt(N)` for any `N`.
 
 Such an extremely generalized implementation is challenging, however, merely extending support
-to 128-bit given a 64-bit implementation is relatively trivial.
+to 128-bit given a 64-bit implementation is simple.
 
 <div class=example>
 Given a 64-bit `std::popcount`, a 128-bit implementation looks as follows:
@@ -1142,10 +1159,14 @@ This algorithm is easily generalized to any width.
 It requires `std::countr_zero` for an efficient implementation, which is easy to implement
 for 128-bit integers, as mentioned above.
 
-Note: Historically, libstdc++ had an implementation of the Euclidean Algorithm,
-which relies on integer division which would have been difficult to extend.
+libc++ uses a naive
+<a href="https://github.com/llvm/llvm-project/blob/b17348c3b541d7fc7ec441c98db75c18d8959910/libcxx/include/__numeric/gcd_lcm.h#L53">`std::gcd`</a>
+implementation based on the Euclidean Algorithm, which relies on integer division.
+Due to the immense cost of integer division for 128-bit integers,
+such an implementation may need revision.
 
-`std::lcm` is also easily generalized because mathematically, `gcd(x, y) * lcm(x, y) == x * y`.
+`std::lcm` requires no work because mathematically, `gcd(x, y) * lcm(x, y) == x * y`.
+The implementation effort (if any) is limited to `std::gcd`.
 
 ### Saturating arithmetic ### {#saturating-implementation-experience}
 
@@ -1268,53 +1289,53 @@ In subclause 17.4.1 [cstdint.syn], update the synopsis as follows:
 <pre>
 // all freestanding
 namespace std {
-  using int8_t          = <i>signed integer type</i>;   // optional
-  using int16_t         = <i>signed integer type</i>;   // optional
-  using int32_t         = <i>signed integer type</i>;   // optional
-  using int64_t         = <i>signed integer type</i>;   // optional
-  <ins>using int128_t        = <i>signed integer type</i>;   // optional</ins>
-  using intN_t          = <i>see below</i>;             // optional
+  using int8_t          = <i>signed integer type</i>;    // optional
+  using int16_t         = <i>signed integer type</i>;    // optional
+  using int32_t         = <i>signed integer type</i>;    // optional
+  using int64_t         = <i>signed integer type</i>;    // optional
+  <ins>using int128_t        = <i>signed integer type</i>;    // optional</ins>
+  using intN_t          = <i>see below</i>;              // optional
 
   using int_fast8_t     = <i>signed integer type</i>;
   using int_fast16_t    = <i>signed integer type</i>;
   using int_fast32_t    = <i>signed integer type</i>;
   using int_fast64_t    = <i>signed integer type</i>;
   <ins>using int_fast128_t   = <i>signed integer type</i>;</ins>
-  using int_fastN_t     = <i>see below</i>;             // optional
+  using int_fastN_t     = <i>see below</i>;              // optional
 
   using int_least8_t    = <i>signed integer type</i>;
   using int_least16_t   = <i>signed integer type</i>;
   using int_least32_t   = <i>signed integer type</i>;
   using int_least64_t   = <i>signed integer type</i>;
   <ins>using int_least128_t  = <i>signed integer type</i>;</ins>
-  using int_leastN_t    = <i>see below</i>;             // optional
+  using int_leastN_t    = <i>see below</i>;              // optional
 
   using intmax_t        = <i>signed integer type</i>;
-  using intptr_t        = <i>signed integer type</i>;   // optional
+  using intptr_t        = <i>signed integer type</i>;    // optional
 
-  using uint8_t         = <i>unsigned integer type</i>; // optional
-  using uint16_t        = <i>unsigned integer type</i>; // optional
-  using uint32_t        = <i>unsigned integer type</i>; // optional
-  using uint64_t        = <i>unsigned integer type</i>; // optional
-  <ins>using uint128_t       = <i>unsigned integer type</i>; // optional</ins>
-  using uintN_t         = <i>see below</i>;             // optional
+  using uint8_t         = <i>unsigned integer type</i>;  // optional
+  using uint16_t        = <i>unsigned integer type</i>;  // optional
+  using uint32_t        = <i>unsigned integer type</i>;  // optional
+  using uint64_t        = <i>unsigned integer type</i>;  // optional
+  <ins>using uint128_t       = <i>unsigned integer type</i>;  // optional</ins>
+  using uintN_t         = <i>see below</i>;              // optional
 
   using uint_fast8_t    = <i>unsigned integer type</i>;
   using uint_fast16_t   = <i>unsigned integer type</i>;
   using uint_fast32_t   = <i>unsigned integer type</i>;
   using uint_fast64_t   = <i>unsigned integer type</i>;
   <ins>using uint_fast128_t  = <i>unsigned integer type</i>;</ins>
-  using uint_fastN_t    = <i>see below</i>;             // optional
+  using uint_fastN_t    = <i>see below</i>;              // optional
 
   using uint_least8_t   = <i>unsigned integer type</i>;
   using uint_least16_t  = <i>unsigned integer type</i>;
   using uint_least32_t  = <i>unsigned integer type</i>;
   using uint_least64_t  = <i>unsigned integer type</i>;
   <ins>using uint_least128_t = <i>unsigned integer type</i>;</ins>
-  using uint_leastN_t   = <i>see below</i>;             // optional
+  using uint_leastN_t   = <i>see below</i>;              // optional
 
   using uintmax_t       = <i>unsigned integer type</i>;
-  using uintptr_t       = <i>unsigned integer type</i>; // optional
+  using uintptr_t       = <i>unsigned integer type</i>;  // optional
 }
 </pre>
 </blockquote>
@@ -1441,7 +1462,7 @@ Under the same condition, in subclause 23.4.5 [string.conversions], update `to_s
 conversion rank is that of `int` or greater.</ins>
 </p>
 <p class="indent">
-7 *Returns*: `format("{}", val)`.
+*Returns*: `format("{}", val)`.
 </p>
 </blockquote>
 
@@ -1589,6 +1610,11 @@ namespace std {
         "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf",
         "authors": ["Robert C. Seacord"]
     },
+    "N2763": {
+        "title": "Adding a Fundamental Type for N-bit integers",
+        "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf",
+        "authors": ["Aaron Ballman", "Melanie Blower", "Tommy Hoffner", "Erich Keane"]
+    },
     "N3047": {
         "title": "N3047 working draft — August 4, 2022 ISO/IEC 9899:2023 (E)",
         "href": "https://www.iso-9899.info/n3047.html",
@@ -1608,6 +1634,11 @@ namespace std {
         "title": "Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS",
         "href": "https://www.sec.gov/divisions/marketreg/subpenny612faq.htm",
         "authors": ["U.S. Securities and Exchange Commission"]
+    },
+    "Wikipedia": {
+        "title": "Quadruple-precision floating-point format - Hardware support",
+        "href": "https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format#Hardware_support",
+        "authors": ["VA"]
     }
 }
 </pre>
