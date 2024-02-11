@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="236dadae085638a84f9bee7ab85d6711878cf641" name="revision">
+  <meta content="d791982036d22de9cfba15ad573cb2420711931d" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2277,6 +2277,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#proposed-abs"><span class="secno">8.6</span> <span class="content">Absolute values</span></a>
       <li><a href="#proposed-atomic"><span class="secno">8.7</span> <span class="content">Atomic operations</span></a>
      </ol>
+    <li><a href="#acknowledgements"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2554,14 +2555,19 @@ It is very unlikely that the hundreds of operations
 comprising a software integer division could be recognized as such.</p>
    <p>128 bits is obviously more than 113 bits, so not every operation can be performed this way.
 However, modern optimizing compilers keep track of range constraints of values.</p>
-   <div class="example" id="example-d554b1c2">
-    <a class="self-link" href="#example-d554b1c2"></a> The optimizer may make the following decisions when performing 128-bit integer division: 
+   <div class="example" id="example-8534733a">
+    <a class="self-link" href="#example-8534733a"></a> The optimizer may make the following decisions when performing 128-bit integer division: 
     <ul>
      <li data-md>
-      <p>If the divisor is constant, perform strength reduction (<a href="#fixed-point-operations">§ 2.1.5 Fixed-point operations</a>), making the division
+      <p>If the divisor is zero, mark the operation undefined behavior for the purpose of
+compiler optimization, or emit <code class="highlight"><c- n>ud2</c-></code>.</p>
+     <li data-md>
+      <p>Otherwise, if the divisor is constant and greater than the dividend, yield zero.</p>
+     <li data-md>
+      <p>Otherwise, if the divisor is constant, perform strength reduction (<a href="#fixed-point-operations">§ 2.1.5 Fixed-point operations</a>), making the division
 a shift and multiplication.</p>
      <li data-md>
-      <p>If the divisor is a power of two, count the trailing zeros and perform a right-shift.</p>
+      <p>Otherwise, if the divisor is a power of two, count the trailing zeros and perform a right-shift.</p>
      <li data-md>
       <p>Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.</p>
      <li data-md>
@@ -3632,6 +3638,10 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
 <c- p>}</c->
 </pre>
    </blockquote>
+   <h2 class="heading settled" data-level="9" id="acknowledgements"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <p>I thank Jonathan Wakely and other participants in the std-proposals mailing list whose feedback
+has helped me improve the quality of this proposal substantially.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a data-link-type="biblio" href="#biblio-std-proposals" title="[std-proposals] 128-bit integers">[std-proposals]</a> for discussion of this proposal.</p>
   </main>
 <script>
 (function() {
@@ -3804,6 +3814,8 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <dd>Jan Schultke. <a href="https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html"><cite>Better, constexpr to_string</cite></a>. URL: <a href="https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html">https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html</a>
    <dt id="biblio-sec">[SEC]
    <dd>U.S. Securities and Exchange Commission. <a href="https://www.sec.gov/divisions/marketreg/subpenny612faq.htm"><cite>Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS</cite></a>. URL: <a href="https://www.sec.gov/divisions/marketreg/subpenny612faq.htm">https://www.sec.gov/divisions/marketreg/subpenny612faq.htm</a>
+   <dt id="biblio-std-proposals">[STD-PROPOSALS]
+   <dd>VA. <a href="https://lists.isocpp.org/std-proposals/2024/02/8972.php"><cite>[std-proposals] 128-bit integers</cite></a>. URL: <a href="https://lists.isocpp.org/std-proposals/2024/02/8972.php">https://lists.isocpp.org/std-proposals/2024/02/8972.php</a>
    <dt id="biblio-tigerbeetle">[TigerBeetle]
    <dd>Rafael Batiati. <a href="https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/"><cite>64-Bit Bank Balances ‘Ought to be Enough for Anybody’?</cite></a>. URL: <a href="https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/">https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/</a>
    <dt id="biblio-wikipedia">[Wikipedia]
