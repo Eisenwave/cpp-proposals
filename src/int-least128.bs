@@ -332,7 +332,16 @@ interface_identifier = (data &gt;&gt; 64) & mask64;
 </pre>
 </div>
 
-### Future-proofing for hardware support ### {#future-proofing}
+## Utilizing hardware support ## {#utilizing-hardware-support}
+
+### Future-proofing for direct 128-bit support ### {#future-proofing}
+
+Hardware support for 64/128-bit mixed operations is already common
+in x86_64 and ARM.
+It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded
+in the forseeable future.
+The RISC-V instruction set architecture has a 128-bit variant named RV128I,
+described in [[RISC-V]], although no implementation of it exists yet.
 
 When hardware support for 128-bit operations is available, but the source code emulates these
 in software, the burden of fusing multiple 64-bit operations into a single 128-bit operation
@@ -343,17 +352,20 @@ multiplication.
 x86_64 already provides hardware support in this case (see [[#widening-operations]]), however,
 the language provides no way of expressing such an operation through integer types.
 
+### Support through 128-bit floating-point ### {#support-through-128-bit-floating-point}
+
 On hardware which provides native support for `std::float128_t`
-(see [[Wikipedia]] for a list), integer division up to 112
+(see [[Wikipedia]] for a list), integer division up to 113
 bits can be implemented in terms of floating-point division, and this is possibly the fastest routine.
-For such instruction selection, the 112-bit division must be recognized by the compiler.
+For such instruction selection, the 113-bit division must be recognized by the compiler.
 It is very unlikely that the hundreds of operations
 comprising a software integer division could be recognized as such.
 
-It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded in future
-instruction set extensions.
-However, this last point is merely conjecture on my part.
-
+Note: Historically, floating-point division in hardware was used to implement integer division.
+The x87 circuitry for dividing 80-bit floating-point numbers could be repurposed for 64-bit
+integer division.
+This strategy is still many times faster than software division.
+Intel desktop processors have received dedicated integer dividers starting with Cannon Lake.
 
 
 
@@ -1067,7 +1079,7 @@ As of February 2024, the support is as follows:
 
 Note: Clang has supported `_BitInt` as an `_ExtInt` compiler extension prior to C standardization.
 
-It is reasonable to expect that given enough time, `_BitInt(128)` will become
+It is reasonable to expect that given enough time, `_BitInt(128)` will be
 supported by Microsoft as well.
 
 
@@ -1154,7 +1166,8 @@ All bit manipulation functions are easily constructed this way.
 
 libstdc++ provides a
 <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/std/numeric#L134">`std::gcd`</a>
-implementation which implements the [Binary GCD algorithm](https://en.wikipedia.org/wiki/Binary_GCD_algorithm).
+implementation which uses the [Binary GCD algorithm](https://en.wikipedia.org/wiki/Binary_GCD_algorithm).
+The MSVC STL has a similar implementation.
 This algorithm is easily generalized to any width.
 It requires `std::countr_zero` for an efficient implementation, which is easy to implement
 for 128-bit integers, as mentioned above.
@@ -1624,6 +1637,11 @@ namespace std {
         "title": "Implementing High-Precision Decimal Arithmetic with CUDA int128",
         "href": "https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/",
         "authors": ["Conor Hoekstra", "Kuhu Shukla", "Mark Harris"]
+    },
+    "RISC-V": {
+        "title": "The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA",
+        "href": "https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view",
+        "authors": ["VA"]
     },
     "Schultke1": {
         "title": "Better, constexpr to_string",

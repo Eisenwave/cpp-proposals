@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4d702d5d48f50c9e80cf15f5d43edc4feea3bec6" name="revision">
+  <meta content="21343c8765f9955f1885f7ebafaea1e755dc1e8d" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2171,7 +2171,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#financial-systems"><span class="secno">2.1.10</span> <span class="content">Financial systems</span></a>
         <li><a href="#database-systems"><span class="secno">2.1.11</span> <span class="content">Database systems</span></a>
         <li><a href="#networking"><span class="secno">2.1.12</span> <span class="content">Networking</span></a>
-        <li><a href="#future-proofing"><span class="secno">2.1.13</span> <span class="content">Future-proofing for hardware support</span></a>
+       </ol>
+      <li>
+       <a href="#utilizing-hardware-support"><span class="secno">2.2</span> <span class="content">Utilizing hardware support</span></a>
+       <ol class="toc">
+        <li><a href="#future-proofing"><span class="secno">2.2.1</span> <span class="content">Future-proofing for direct 128-bit support</span></a>
+        <li><a href="#support-through-128-bit-floating-point"><span class="secno">2.2.2</span> <span class="content">Support through 128-bit floating-point</span></a>
        </ol>
      </ol>
     <li>
@@ -2512,7 +2517,14 @@ using two 64-bit integers.</p>
 <c- n>interface_identifier</c-> <c- o>=</c-> <c- p>(</c-><c- n>data</c-> <c- o>>></c-> <c- mi>64</c-><c- p>)</c-> <c- o>&amp;</c-> <c- n>mask64</c-><c- p>;</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="2.1.13" id="future-proofing"><span class="secno">2.1.13. </span><span class="content">Future-proofing for hardware support</span><a class="self-link" href="#future-proofing"></a></h4>
+   <h3 class="heading settled" data-level="2.2" id="utilizing-hardware-support"><span class="secno">2.2. </span><span class="content">Utilizing hardware support</span><a class="self-link" href="#utilizing-hardware-support"></a></h3>
+   <h4 class="heading settled" data-level="2.2.1" id="future-proofing"><span class="secno">2.2.1. </span><span class="content">Future-proofing for direct 128-bit support</span><a class="self-link" href="#future-proofing"></a></h4>
+   <p>Hardware support for 64/128-bit mixed operations is already common
+in x86_64 and ARM.
+It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded
+in the forseeable future.
+The RISC-V instruction set architecture has a 128-bit variant named RV128I,
+described in <a data-link-type="biblio" href="#biblio-risc-v" title="The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA">[RISC-V]</a>, although no implementation of it exists yet.</p>
    <p>When hardware support for 128-bit operations is available, but the source code emulates these
 in software, the burden of fusing multiple 64-bit operations into a single 128-bit operation
 is put on the optimizer.</p>
@@ -2520,14 +2532,17 @@ is put on the optimizer.</p>
 multiplication.
 x86_64 already provides hardware support in this case (see <a href="#widening-operations">§ 2.1.3 Widening operations</a>), however,
 the language provides no way of expressing such an operation through integer types.</p>
-   <p>On hardware which provides native support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code> (see <a data-link-type="biblio" href="#biblio-wikipedia" title="Quadruple-precision floating-point format - Hardware support">[Wikipedia]</a> for a list), integer division up to 112
+   <h4 class="heading settled" data-level="2.2.2" id="support-through-128-bit-floating-point"><span class="secno">2.2.2. </span><span class="content">Support through 128-bit floating-point</span><a class="self-link" href="#support-through-128-bit-floating-point"></a></h4>
+   <p>On hardware which provides native support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code> (see <a data-link-type="biblio" href="#biblio-wikipedia" title="Quadruple-precision floating-point format - Hardware support">[Wikipedia]</a> for a list), integer division up to 113
 bits can be implemented in terms of floating-point division, and this is possibly the fastest routine.
-For such instruction selection, the 112-bit division must be recognized by the compiler.
+For such instruction selection, the 113-bit division must be recognized by the compiler.
 It is very unlikely that the hundreds of operations
 comprising a software integer division could be recognized as such.</p>
-   <p>It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded in future
-instruction set extensions.
-However, this last point is merely conjecture on my part.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Historically, floating-point division in hardware was used to implement integer division.
+The x87 circuitry for dividing 80-bit floating-point numbers could be repurposed for 64-bit
+integer division.
+This strategy is still many times faster than software division.
+Intel desktop processors have received dedicated integer dividers starting with Cannon Lake.</p>
    <h2 class="heading settled" data-level="3" id="impact-on-the-standard"><span class="secno">3. </span><span class="content">Impact on the standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>First and foremost, this proposal mandates the following integer types in <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code>:</p>
 <pre class="language-cpp highlight"><c- k>using</c-> <c- n>int_least128_t</c->  <c- o>=</c-> <c- d>/* signed integer type */</c-><c- p>;</c->
@@ -3087,7 +3102,7 @@ GNU-family implementations support more than 128 bits already.</p>
       <td>❌
    </table>
    <p class="note" role="note"><span class="marker">Note:</span> Clang has supported <code class="highlight"><c- b>_BitInt</c-></code> as an <code class="highlight"><c- n>_ExtInt</c-></code> compiler extension prior to C standardization.</p>
-   <p>It is reasonable to expect that given enough time, <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> will become
+   <p>It is reasonable to expect that given enough time, <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> will be
 supported by Microsoft as well.</p>
    <h3 class="heading settled" data-level="7.2" id="library-implementation-experience"><span class="secno">7.2. </span><span class="content">Library implementation experience</span><a class="self-link" href="#library-implementation-experience"></a></h3>
    <h4 class="heading settled" data-level="7.2.1" id="type-traits-implementation-experience"><span class="secno">7.2.1. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>type_traits</c-><c- o>></c-></code></span><a class="self-link" href="#type-traits-implementation-experience"></a></h4>
@@ -3140,7 +3155,8 @@ to 128-bit given a 64-bit implementation is simple.</p>
    </div>
    <p>All bit manipulation functions are easily constructed this way.</p>
    <h4 class="heading settled" data-level="7.2.6" id="gcd-implementation-experience"><span class="secno">7.2.6. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code></span><a class="self-link" href="#gcd-implementation-experience"></a></h4>
-   <p>libstdc++ provides a <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/std/numeric#L134"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code></a> implementation which implements the <a href="https://en.wikipedia.org/wiki/Binary_GCD_algorithm">Binary GCD algorithm</a>.
+   <p>libstdc++ provides a <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/std/numeric#L134"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code></a> implementation which uses the <a href="https://en.wikipedia.org/wiki/Binary_GCD_algorithm">Binary GCD algorithm</a>.
+The MSVC STL has a similar implementation.
 This algorithm is easily generalized to any width.
 It requires <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>countr_zero</c-></code> for an efficient implementation, which is easy to implement
 for 128-bit integers, as mentioned above.</p>
@@ -3619,6 +3635,8 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <dd>Mark Hoemmen, Daisy Hollman,Christian Trott,Daniel Sunderland,Nevin Liber,Alicia KlinvexLi-Ta Lo,Damien Lebrun-Grandie,Graham Lopez,Peter Caday,Sarah Knepper,Piotr Luszczek,Timothy Costa. <a href="https://wg21.link/p1673r13"><cite>A free function linear algebra interface based on the BLAS</cite></a>. 18 December 2023. URL: <a href="https://wg21.link/p1673r13">https://wg21.link/p1673r13</a>
    <dt id="biblio-p3018r0">[P3018R0]
    <dd>Andreas Weis. <a href="https://wg21.link/p3018r0"><cite>Low-Level Integer Arithmetic</cite></a>. 15 October 2023. URL: <a href="https://wg21.link/p3018r0">https://wg21.link/p3018r0</a>
+   <dt id="biblio-risc-v">[RISC-V]
+   <dd>VA. <a href="https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view"><cite>The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA</cite></a>. URL: <a href="https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view">https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view</a>
    <dt id="biblio-schultke1">[Schultke1]
    <dd>Jan Schultke. <a href="https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html"><cite>Better, constexpr to_string</cite></a>. URL: <a href="https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html">https://eisenwave.github.io/cpp-proposals/constexpr-to-string.html</a>
    <dt id="biblio-sec">[SEC]
