@@ -126,28 +126,28 @@ is effectively performing a 32-bit shift, whereas `x << 32` is self-documenting.
 
 ### Widening operations ### {#widening-operations}
 
-[[P3018R0]] proposed widening operations which yield an integer with double the width of the input.
-An obvious issue is that the language provides no 128-bit integer type, so the widening
-operations for 64-bit operands could not exist, or would return a type which is not
-considered an integer.
-Extended integer types require extensive library support, so the implementation couldn't
-simply return an extended 128-bit integer type without sufficiently supporting such at type.
-
-The lack of a 128-bit destination type for 64-bit widening operations is especially unfortunate
-considering that hardware often supports 64/128-bit mixed operations directly.
-For example:
+128-bit arithmetic can produce optimal code for mixed 64/128-bit operations,
+for which there is already widespread hardware support.
+For example, this hardware support includes:
 
 - The x86_64 `mul` (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
     in the register pair `rdx:rax`.
 - The x86_64 `div` (unsigned divide) instruction stores quotient and remainder of a 128-to-64-bit division
     in `rax` and `rdx` respectively.
-- RISC-V provides the `clmul` and `clmulh` instructions to compute the low and high part of a
+- The RISC-V `clmul` and `clmulh` instructions to compute the low and high part of a
     carry-less multiplication.
     In fact, x86, ARM, and RISC-V all provide a way to compute a
     [carry-less 128-bit product](https://en.wikipedia.org/wiki/Carry-less_product). 
 
 Some operating systems also provide 64/128-bit operations.
 For example, the Windows API provides a `Multiply128` function.
+
+A more general solution was proposed by [[P3018R0]], which supports widening multiplication through a
+`std::mul_wide` function, which yields the low and high part of the multiplication as a pair
+of integers.
+Such utilities would be useful in generic code where integers of any width can be used,
+but it's obviously more ergonomic to cast operands to `std::int128_t` prior to an
+operation.
 
 
 ### Multi-precision operations ### {#multi-precision-operations}
@@ -193,20 +193,6 @@ and use them many times for faster division.
 Among other libraries, [[libdivide]] uses this technique
 (using a pair of 64-bit integers, which effectively forms a 128-bit integer).
 
-### Double-wide atomic operations ### {#double-wide-atomic-operations}
-
-Some architectures provide double-wide atomic operations.
-For example, x86_64 provides a `cmpxchg16b` instruction which can be used to implement a
-128-bit `std::atomic::compare_exchange_strong`.
-Such an operation is useful for lock-free data structures, where a simple CAS is insufficient
-because two 64-bit pointers or a 64-bit pointer with some metadata have to be compared and swapped
-simultaneously.
-
-Furthermore, GCC and clang have compiler intrinsics for all `.fetch_xxx` operations,
-such as `__atomic_fetch_add_16`, and `std::atomic<__int128>::operator++` when compiled with clang
-will emit a call to this function.
-However, this is not exposed through the standard, which is unfortunate because
-these operations are lock-free when `cmpxchg16b` is available.
 
 ### High-precision time calculations ### {#high-precision-clocks}
 
@@ -876,11 +862,10 @@ would have over a type alias, other than saving one `#include` directive.
 
 Secondly, it is useful to keep `std::uint_least128_t` a second-class citizen by not making it a
 standard integer type.
-This makes it possible to say that certain library facilities are only required to support
-standard integer types, not extended integer types.
-For example, the widening operations proposed in [[P3018R0]] could be required only to
-take standard integer inputs, so that 128-bit integers don't also require 128-to-256-bit
-widening operations.
+For example, in the formatting library, a format string can
+specify a dynamic *width* for an argument, which must be a standard integer.
+A *width* that cannot be represented by a 64-bit number is unreasonable,
+so it makes sense to limit support to standard integers.
 
 Thirdly, as already stated in [[#c-compatibility]], C's `intmax_t` must be the
 widest standard integer type.
@@ -963,8 +948,9 @@ Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple rea
     At that point, we're just getting `std::int_least128_t` with extra steps.
 
 4. `_BitInt` creates a parallel system to the existing standard and extended integer types.
-    It would be highly unusual if the widening operations proposed in [[P3018R0]] could yield
-    bit-precise integers for standard integer inputs.
+    Bit-precise integers have different promotion/conversion rules, and may behave differently
+    in terms of overload resolution when standardized in C++.
+    An extended 128-bit type would integrate more naturally into the existing type system.
 
 ### Comparison of bit-precise integers and 128-bit integers ### {#bitint-vs-uint128}
 
@@ -991,7 +977,7 @@ Secondly, `_BitInt` does not satisfy the goals of this proposal for multiple rea
     <th>Low implementation effort (library)</th><td>❌</td><td>✔️</td>
 </tr>
 <tr>
-    <th>Integrates easily into the<br>existing hierarchy of standard integers</th><td>❌</td><td>✔️</td>
+    <th>Integrates easily into the<br>existing system of standard integers</th><td>❌</td><td>✔️</td>
 </tr>
 <tr>
     <th>Strong C library support required</th><td>❌</td><td>✔️</td>
