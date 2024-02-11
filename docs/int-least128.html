@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d12fecf985c8701a3cccc7f7112cce1abe7cd8be" name="revision">
+  <meta content="b10b756422eb535208db55e4eff3fddafcb1671d" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2220,7 +2220,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <a href="#impact-on-existing-code"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
      <ol class="toc">
       <li><a href="#possible-semantic-changes"><span class="secno">5.1</span> <span class="content">Possible semantic changes</span></a>
-      <li><a href="#possible-assumption-violations"><span class="secno">5.2</span> <span class="content">Possible assumption violations</span></a>
+      <li><a href="#impact-on-overload-sets"><span class="secno">5.2</span> <span class="content">Impact on overload sets</span></a>
+      <li><a href="#possible-assumption-violations"><span class="secno">5.3</span> <span class="content">Possible assumption violations</span></a>
      </ol>
     <li>
      <a href="#design-considerations"><span class="secno">6</span> <span class="content">Design considerations</span></a>
@@ -2933,7 +2934,36 @@ To comply with the C++ standard, the type of <code class="highlight"><c- mi>1844
    <p>Hexadecimal literals are not affected in the same way because they
 are required to be of type <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> cannot represent the value.
 The introduction of a 128-bit integer type would not alter the signedness of existing literals.</p>
-   <h3 class="heading settled" data-level="5.2" id="possible-assumption-violations"><span class="secno">5.2. </span><span class="content">Possible assumption violations</span><a class="self-link" href="#possible-assumption-violations"></a></h3>
+   <h3 class="heading settled" data-level="5.2" id="impact-on-overload-sets"><span class="secno">5.2. </span><span class="content">Impact on overload sets</span><a class="self-link" href="#impact-on-overload-sets"></a></h3>
+   <p>Besides templates, a popular technique for covering multiple integer types is to create an
+"exhaustive" overload sets like:</p>
+<pre class="language-cpp highlight"><c- c1>// support "all" signed integers (anything less than int is promoted)</c->
+<c- b>void</c-> <c- nf>foo</c-><c- p>(</c-><c- b>int</c-><c- p>);</c->
+<c- b>void</c-> <c- nf>foo</c-><c- p>(</c-><c- b>long</c-><c- p>);</c->
+<c- b>void</c-> <c- nf>foo</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-><c- p>);</c->
+</pre>
+   <p>I’m putting "exhaustive" in quotes because such code does not cover extended integer types,
+which can exist.
+Only the implementation knows the whole set of integer types and can ensure completeness.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Creating an overload set from <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>int8_t</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>int16_t</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>int32_t</c-></code>,
+and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>int64_t</c-></code> is not possible because it only covers four out of five standard integer types,
+making some calls ambiguous.</p>
+   <p>While creating sets like these outside of language implementations is not ideal,
+the proposal can minimize the impact by making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> a distinct type from
+standard integer types.
+Otherwise, the following code is possibly ill-formed:</p>
+<pre class="language-cpp highlight"><c- b>void</c-> <c- nf>foo</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-><c- p>)</c-> <c- p>{</c-> <c- p>}</c->
+<c- b>void</c-> <c- nf>foo</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- p>)</c-> <c- p>{</c-> <c- p>}</c->
+</pre>
+   <p>If <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> was the same type as <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>, this code would be ill-formed
+because <code class="highlight"><c- n>foo</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-><c- p>)</c-></code> is being defined twice.
+There exists no implementation where <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is 128-bit, so no code is really affected.
+However, there should exist a natural and universally correct way to extend such overload sets,
+so that the effort of "upgrading" to 128-bit is minimal.
+Therefore <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> should be distinct.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Another robust way would be to write <code class="highlight"><c- b>void</c-> <c- n>foo</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>same_as</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-> <c- k>auto</c-><c- p>)</c-></code>.
+However, this solution is not obvious, and should not be necessary.</p>
+   <h3 class="heading settled" data-level="5.3" id="possible-assumption-violations"><span class="secno">5.3. </span><span class="content">Possible assumption violations</span><a class="self-link" href="#possible-assumption-violations"></a></h3>
    <p>There is obviously a substantial amount of code which assumes that integers are no wider
 than 64 bits.
 There is also a substantial amount of code which assumes that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>intmax_t</c-></code> is
@@ -2948,7 +2978,9 @@ to use it.</p>
 A <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>least_uint128_t</c-></code> alias is the only option that does not involve any changes
 to the core language.
 Therefore, it is the obvious design choice for this proposal.</p>
-   <p>However, there are a few possible alternatives which were considered:</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Unlike the existing <code class="highlight"><c- n>int_leastN_t</c-></code> and <code class="highlight"><c- n>int_fastN_t</c-></code> aliases, this type is distinct.
+See <a href="#impact-on-overload-sets">§ 5.2 Impact on overload sets</a> for rationale, and <a href="#proposed-cstdint">§ 8.2 Header &lt;cstdint></a> for wording.</p>
+   <p>Besides the current approach, there are a few alternatives which have been considered:</p>
    <h3 class="heading settled" data-level="6.1" id="standard-integers"><span class="secno">6.1. </span><span class="content">Why no standard integer type?</span><a class="self-link" href="#standard-integers"></a></h3>
    <p>One question that needs addressing is:</p>
    <blockquote>
@@ -3313,8 +3345,18 @@ The exact-width types <code class="highlight"><c- n>intN_t</c-></code> and <code
     <del>and</del>
      <code class="highlight"><c- mi>64</c-></code>
     <ins>, and <code class="highlight"><c- mi>128</c-></code></ins>
-     are also optional; [...] 
+     are also optional;
+however, if an implementation defines integer types with the corresponding width and no padding bits,
+it defines the corresponding <em>typedef-name</em>s.
+Each of the macros listed in this subclause is defined
+if and only if the implementation defines the corresponding <em>typedef-name</em>. 
    </blockquote>
+   <p>In subclause 17.4.1 [cstdint.syn], add the following paragraph:</p>
+   <blockquote>
+    <ins>None of the types that use the placeholder <em>N</em> are standard integers types ([basic.fundamental])
+if <em>N</em> is greater than 64. <br>[<em>Example</em>: <code class="highlight"><c- n>int_least128_t</c-></code> is an extended integer type. <code class="highlight"><c- b>int_least64_t</c-></code> is an extended integer type or a standard integer type whose width is at least 64.  — <em>end example</em>] </ins>
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> This restriction is intended to address <a href="#impact-on-overload-sets">§ 5.2 Impact on overload sets</a>.</p>
    <h3 class="heading settled" data-level="8.3" id="proposed-bitset"><span class="secno">8.3. </span><span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span><a class="self-link" href="#proposed-bitset"></a></h3>
    <p>In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:</p>
    <blockquote>

@@ -871,6 +871,44 @@ Hexadecimal literals are not affected in the same way because they
 are required to be of type `unsigned long long` if `long long` cannot represent the value.
 The introduction of a 128-bit integer type would not alter the signedness of existing literals.
 
+## Impact on overload sets ## {#impact-on-overload-sets}
+
+Besides templates, a popular technique for covering multiple integer types is to create an
+"exhaustive" overload sets like:
+```cpp
+// support "all" signed integers (anything less than int is promoted)
+void foo(int);
+void foo(long);
+void foo(long long);
+```
+I'm putting "exhaustive" in quotes because such code does not cover extended integer types,
+which can exist.
+Only the implementation knows the whole set of integer types and can ensure completeness.
+
+Note: Creating an overload set from `std::int8_t`, `std::int16_t`, `std::int32_t`,
+and `std::int64_t` is not possible because it only covers four out of five standard integer types,
+making some calls ambiguous.
+
+While creating sets like these outside of language implementations is not ideal,
+the proposal can minimize the impact by making `std::int_least128_t` a distinct type from
+standard integer types.
+Otherwise, the following code is possibly ill-formed:
+```cpp
+void foo(long long) { }
+void foo(std::int_least128_t) { }
+```
+If `std::int_least128_t` was the same type as `long long`, this code would be ill-formed
+because `foo(long long)` is being defined twice.
+There exists no implementation where `long long` is 128-bit, so no code is really affected.
+However, there should exist a natural and universally correct way to extend such overload sets,
+so that the effort of "upgrading" to 128-bit is minimal.
+Therefore `std::int_least128_t` should be distinct.
+
+Note: Another robust way would be to write
+`void foo(std::same_as<std::int_least128_t> auto)`.
+However, this solution is not obvious, and should not be necessary.
+
+
 ## Possible assumption violations ## {#possible-assumption-violations}
 
 There is obviously a substantial amount of code which assumes that integers are no wider
@@ -893,7 +931,10 @@ A `std::least_uint128_t` alias is the only option that does not involve any chan
 to the core language.
 Therefore, it is the obvious design choice for this proposal.
 
-However, there are a few possible alternatives which were considered:
+Note: Unlike the existing `int_leastN_t` and `int_fastN_t` aliases, this type is distinct.
+See [[#impact-on-overload-sets]] for rationale, and [[#proposed-cstdint]] for wording.
+
+Besides the current approach, there are a few alternatives which have been considered:
 
 ## Why no standard integer type? ## {#standard-integers}
 
@@ -1394,8 +1435,23 @@ All types that use the placeholder *N* are optional when *N* is not
 `8`, `16`, `32`, <del>or</del> `64`<ins>, or `128`</ins>.
 The exact-width types `intN_t` and `uintN_t` for *N* =
 `8`, `16`, `32`, <del>and</del> `64`<ins>, and `128`</ins>
-are also optional; [...]
+are also optional;
+however, if an implementation defines integer types with the corresponding width and no padding bits,
+it defines the corresponding *typedef-name*s.
+Each of the macros listed in this subclause is defined
+if and only if the implementation defines the corresponding *typedef-name*.
 </blockquote>
+
+In subclause 17.4.1 [cstdint.syn], add the following paragraph:
+<blockquote>
+<ins>None of the types that use the placeholder *N* are standard integers types ([basic.fundamental])
+if *N* is greater than 64.
+<br>[*Example*: `int_least128_t` is an extended integer type.
+`int_least64_t` is an extended integer type or a standard integer type whose width is at least 64.  — *end example*]
+</ins>
+</blockquote>
+
+Note: This restriction is intended to address [[#impact-on-overload-sets]].
 
 ## Class template `bitset` ## {#proposed-bitset}
 
