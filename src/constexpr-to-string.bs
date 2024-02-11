@@ -55,7 +55,7 @@ In its current state, `to_string` has some problems that make it harder to use t
     Therefore, anyone using `to_string(uint32_t)` is inadvertently relying on implementation details.
 
 2. `to_string` does not have overloads for the extended floating-point types in `<stdfloat>`.
-    This is an artifical restriction because `to_chars` must support them, and `to_string` simply
+    This is an artificial restriction because `to_chars` must support them, and `to_string` simply
     forwards to `to_chars` for standard floating-point types.
 
 3. `to_string` is not marked `constexpr` despite no longer depending on locale.
@@ -122,9 +122,9 @@ as an inline function which uses the `constexpr` function
 Similarly, overloads for other integer types and floating-point types are inline functions which
 rely on a `to_chars`-like implementation.
 
-To make `to_string` `constexpr` requires the addition of `_GLIBCXX26_CONSTEXPR`, but no major
+Making `to_string` `constexpr` requires the addition of `_GLIBCXX26_CONSTEXPR`, but no major
 changes to existing code are necessary.
-This demonstrates the feasability of implementing this proposal.
+This demonstrates the feasibility of implementing this proposal.
 
 libc++ is most significantly affected because `to_string` is not yet an inline function.
 This ABI change can be mitigated with `[[gnu::used]]`.
@@ -224,13 +224,13 @@ In subclause 23.4.2 [string.syn], update the synopsis as follows:
   to_wstring(<i>floating-point-type</i> val);</pre>
 </blockquote>
 
-In subcluse 23.4.2 [string.syn], add a paragraph:
+In subclause 23.4.2 [string.syn], add a paragraph:
 
 <blockquote>
 <ins>
     For each function with a parameter of type *integer-type-least-int*,
     the implementation provides an overload for each cv-unqualified
-    integer type ([basic.fundamental]) whose conversion rank is greater or equal to `int`.
+    integer type ([basic.fundamental]) whose conversion rank is that of `int` or greater.
     For each function with a parameter of type *floating-point-type*,
     the implementation provides an overload for each cv-unqualified
     floating-point type.
