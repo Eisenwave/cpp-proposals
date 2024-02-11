@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9adf62a4909d897b6c9f8c77df012fbd6912f781" name="revision">
+  <meta content="236dadae085638a84f9bee7ab85d6711878cf641" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2452,7 +2452,8 @@ would suffice.
 Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off
 between resolution and range.</p>
    <p><code class="highlight"><c- n>timespec</c-></code> is effectively a 128-bit type in POSIX (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>timespec</c-></code> in C++), since both the
-seconds and nanoseconds part of the class are 64-bit integers.</p>
+seconds and nanoseconds part of the class are 64-bit integers
+(assuming that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>time_t</c-></code> is 64-bit).</p>
    <h4 class="heading settled" data-level="2.1.7" id="floating-point-operations"><span class="secno">2.1.7. </span><span class="content">Floating-point operations</span><a class="self-link" href="#floating-point-operations"></a></h4>
    <p>The implementation of IEEE 754/IEC-559 floating-point operations often involves examining the
 bit-representation of the floating-point number through an unsigned integer.</p>

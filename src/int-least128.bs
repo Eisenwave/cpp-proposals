@@ -232,7 +232,8 @@ Alternatively, 64-bit floating-point numbers can provide a reasonable trade-off
 between resolution and range.
 
 `timespec` is effectively a 128-bit type in POSIX (`std::timespec` in C++), since both the
-seconds and nanoseconds part of the class are 64-bit integers.
+seconds and nanoseconds part of the class are 64-bit integers
+(assuming that `std::time_t` is 64-bit).
 
 ### Floating-point operations ### {#floating-point-operations}
 
