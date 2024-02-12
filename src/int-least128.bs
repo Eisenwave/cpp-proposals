@@ -70,18 +70,20 @@ Defining an additional `std::to_string` overload would make the assertion fail.
 
 # Motivation and scope # {#motivation-and-scope}
 
-There are two essential reasons for standardizing a 128-bit integer type:
+There are compelling reasons for standardizing a 128-bit integer type:
 
-1. 128-bit integers are extremely useful in a variety of domains.
+1. **Utility:** 128-bit integers are extremely useful in a variety of domains.
 
-2. Standardization would unify the many uses under a common name
+2. **Uniformity:** Standardization would unify the many uses under a common name
     and ideally, common ABI.
 
-3. 128-bit integers are already implemented in multiple compilers, and quasi-mandated by the C23
-    standard through the `_BitInt(128)` and `unsigned _BitInt(128)` types.
-    That is, if the implementation defines `BITINT_MAXWIDTH >= 128`.
-    See [[#existing-128-bit-integers]] for more.
+3. **Existing practice:** 128-bit integers are already implemented in multiple compilers
+    (see [[#existing-128-bit-integers]]).
 
+4. **Performance:** It is difficult, if not impossible to optimize 128-bit operations
+    in software as well as the compiler could do for a builtin type (see [[#utilizing-hardware-support]]).
+
+5. **Low impact:** The [[#impact-on-the-standard]] and [[#implementation-impact]] is reasonable.
 
 ## Use cases ## {#use-cases}
 

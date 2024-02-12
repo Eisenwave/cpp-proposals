@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d6aebd41c399dae0709957ceac48844f62401442" name="revision">
+  <meta content="9c3dc4f3643856dc9fba64ba9cbb4fc83d9f2644" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2333,18 +2333,21 @@ the code is well-formed.
 Defining an additional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> overload would make the assertion fail.</p>
    </div>
    <h2 class="heading settled" data-level="3" id="motivation-and-scope"><span class="secno">3. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
-   <p>There are two essential reasons for standardizing a 128-bit integer type:</p>
+   <p>There are compelling reasons for standardizing a 128-bit integer type:</p>
    <ol>
     <li data-md>
-     <p>128-bit integers are extremely useful in a variety of domains.</p>
+     <p><strong>Utility:</strong> 128-bit integers are extremely useful in a variety of domains.</p>
     <li data-md>
-     <p>Standardization would unify the many uses under a common name
+     <p><strong>Uniformity:</strong> Standardization would unify the many uses under a common name
 and ideally, common ABI.</p>
     <li data-md>
-     <p>128-bit integers are already implemented in multiple compilers, and quasi-mandated by the C23
-standard through the <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> types.
-That is, if the implementation defines <code class="highlight"><c- n>BITINT_MAXWIDTH</c-> <c- o>>=</c-> <c- mi>128</c-></code>.
-See <a href="#existing-128-bit-integers">§ 8.1 Existing 128-bit integer types</a> for more.</p>
+     <p><strong>Existing practice:</strong> 128-bit integers are already implemented in multiple compilers
+(see <a href="#existing-128-bit-integers">§ 8.1 Existing 128-bit integer types</a>).</p>
+    <li data-md>
+     <p><strong>Performance:</strong> It is difficult, if not impossible to optimize 128-bit operations
+in software as well as the compiler could do for a builtin type (see <a href="#utilizing-hardware-support">§ 3.2 Utilizing hardware support</a>).</p>
+    <li data-md>
+     <p><strong>Low impact:</strong> The <a href="#impact-on-the-standard">§ 4 Impact on the standard</a> and <a href="#implementation-impact">§ 5 Impact on implementations</a> is reasonable.</p>
    </ol>
    <h3 class="heading settled" data-level="3.1" id="use-cases"><span class="secno">3.1. </span><span class="content">Use cases</span><a class="self-link" href="#use-cases"></a></h3>
    <p>A GitHub code search for <a href="/int128|int_128/ language:c++"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code></a> yields 150K files,
