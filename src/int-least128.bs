@@ -5,8 +5,8 @@ Revision: 0
 Status: NP
 Date: 2024-02-11
 Group: WG21
-Audience: LEWGI, LWG
-Editor: Jan Schultke, janschultke@gmail.com
+Audience: LEWGI, LEWG, EWGI, EWG
+Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/int-least128.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/int-least128.bs)
 Markup Shorthands: markdown on
@@ -67,6 +67,11 @@ static_assert(not stringable<std::uint128_t>);
 `std::uint128_t` is not `stringable` because the call to `std::to_string` would be ambiguous.
 Defining an additional `std::to_string` overload would make the assertion fail.
 </div>
+
+Note: `std::uint128_t` is not a compiler extension; it's an optional feature.
+C23 [[N3047]] subclause 7.22.1.1 [Exact-width integer types] paragraph 3 requires
+implementations to "define the corresponding typedef names" if there exists a
+padding-free integer type with 128 bits.
 
 # Motivation and scope # {#motivation-and-scope}
 
@@ -165,14 +170,41 @@ The [[DEShawResearch]] reference implementation makes use of 128-bit integers.
 for which there is already widespread hardware support.
 Among other instructions, this hardware support includes:
 
-- The x86_64 `mul` (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
-    in the register pair `rdx:rax`.
-- The x86_64 `div` (unsigned divide) instruction stores quotient and remainder of a 128-to-64-bit division
-    in `rax` and `rdx` respectively.
-- The RISC-V `clmul` and `clmulh` instructions to compute the low and high part of a
-    carry-less multiplication.
-    In fact, x86, ARM, and RISC-V all provide a way to compute a
-    [carry-less 128-bit product](https://en.wikipedia.org/wiki/Carry-less_product). 
+<table>
+<tr>
+    <th>Operation</th><th>x86_64</th><th>ARM</th><th>RISC-V</th>
+</tr>
+<tr>
+    <td>64-to-128-bit unsigned multiply</td>
+    <td>`mul`: output to register pair `rdx:rax`</td>
+    <td>`umulh` for high bits, `mul` for low bits</td>
+    <td>`mulhu` for high bits, `mulu` for low bits</td>
+</tr>
+<tr>
+    <td>64-to-128-bit signed multiply</td>
+    <td>`imul`: output to register pair `rdx:rax`</td>
+    <td>`smulh` for high bits, `mul` for low bits</td>
+    <td>`mulsu` for high bits, `muls` for low bits</td>
+</tr>
+<tr>
+    <td>128-to-64-bit unsigned divide</td>
+    <td>`div`: `rax` = quotient, `rdx` = remainder</td>
+    <td>❌</td>
+    <td>`divu` (RV128I)</td>
+</tr>
+<tr>
+    <td>128-to-64-bit signed divide</td>
+    <td>`idiv`: `rax` = quotient, `rdx` = remainder</td>
+    <td>❌</td>
+    <td>`divs` (RV128I)</td>
+</tr>
+<tr>
+    <td>64-to-128-bit [carry-less multiply](https://en.wikipedia.org/wiki/Carry-less_product)</td>
+    <td>`pclmulqdq`: output 128 bits to `xmm` register</td>
+    <td>`pmull` for low bits, `pmull2` for high bits</td>
+    <td>`clmul` for low bits, `clmulh` for high bits</td>
+</tr>
+</table>
 
 Some operating systems also provide 64/128-bit operations.
 For example, the Windows API provides a `Multiply128` function.
@@ -602,19 +634,20 @@ Whether to define them as such is a QoI issue in general, and won't be discussed
 ### Language support library ### {#library-impact-language-support}
 
 **Issue:** `std::div` may need an overload for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard because we don't support it (see [[#div]]).
+**Action:** ✔️ None because we don't support it (see [[#div]]).
 
 **Issue:** `std::to_integer` may need 128-bit support.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None
+(see [[#to-integer-implementation-experience]] for implementation experience).
 
 **Issue:** `<version>` needs 128-bit integer feature-testing macro.<br>
 **Action:** ⚠️ Add macros (see [[#proposed-version]] for wording).
 
 **Issue:** `<numeric_limits>` needs a trait for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard; require a `std::numeric_limits` specialization.
+**Action:** ✔️ None.
 
 **Issue:** `<climits>` needs additional constants for 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 **Issue:** `<cstdint>` needs to explicitly require support for 128-bit integers
 in its synopsys.<br>
@@ -623,18 +656,18 @@ in its synopsys.<br>
 ### Metaprogramming library ### {#library-impact-metaprogramming}
 
 **Issue:** `std::is_integral` needs to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#type-traits-implementation-experience]] for implementation experience).
 
 **Issue:** `std::make_signed` and `std::make_unsigned` require 128-bit support.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#type-traits-implementation-experience]] for implementation experience).
 
 **Issue:** `std::ratio` currently accepts non-type template arguments of `std::intmax_t`.
 `std::intmax_t` is no longer the widest integer type and changing the type of NTTP to
 `std::uint_least128_t` would be an ABI break because the type of template argument participates
 in name mangling.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 Note: Unfortunately, ratios beyond 2<sup>64</sup> or 2<sup>-64</sup>
 cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
@@ -642,11 +675,11 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 ### General utilities library ### {#library-impact-utilities}
 
 **Issue:** Integer comparison functions (`std::cmp_equal` et al.) require 128-bit support.
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#safe-comparison-implementation-experience]] for implementation experience).
 
 **Issue:** `std::integer_sequence` needs to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 **Issue:** `std::bitset` could receive an additional constructor taking `std::uint_least128_t`.<br>
 **Action:** ⚠️ Add such a constructor (see [[#proposed-bitset]] for wording).
@@ -655,23 +688,23 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 **Action:** ⚠️ Add such a function (see [[#proposed-bitset]] for wording).
 
 **Issue:** `std::to_chars` and `std::from_chars` need to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#charconv-implementation-experience]] for implementation experience).
 
 **Issue:** `<format>` needs to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#format-implementation-experience]] for implementation experience).
 
 **Issue:** `basic_format_parse_context::check_dynamic_spec` might need 128-bit integers support.<br>
-**Action:** ✔️ No, it doesn't
+**Action:** ✔️ None, it doesn't
 (see [[#format-implementation-experience]] for implementation experience).
 
 **Issue:** `basic_format_arg` might need support for 128-bit integers.<br>
-**Action:** ✔️ No, it doesn't
+**Action:** ✔️ None, it doesn't
 (see [[#format-implementation-experience]] for implementation experience).
 
 **Issue:** `<bit>` needs to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#bit-implementation-experience]] for implementation experience).
 
 **Issue:** `std::to_string` could support 128-bit types.<br>
@@ -683,7 +716,7 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 This is also the case for type aliases of `std::strided_slice`.
 The exposition-only helper <code><i>integral-constant-like</i></code> now also includes
 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 All these issues are either QoI or don't impact existing implementations substantially.
 
 ### Iterators library ### {#library-impact-iterators}
@@ -692,7 +725,7 @@ All these issues are either QoI or don't impact existing implementations substan
 128-bit integers.
 Generally, 128-bit integers would be a valid `difference_type` and an implementation needs to
 consider this when defining concepts that use integers in any way.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 Note: As long as `std::is_integral` (and by proxy, `std::integral`) is correct, the existing wording
 should be unaffected.
@@ -711,7 +744,7 @@ where `difference_type` is `long long` and `class std::_Signed128` respectively.
 The standard recommends to use a type which is sufficiently wide to store the product
 of sizes of underlying ranges.
 A similar issue arises for `std::cartesian_product_view::iterator`.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 Note: The choice of integer type used to be (and still is) implementation-defined.
 
@@ -719,43 +752,45 @@ Note: The choice of integer type used to be (and still is) implementation-define
 ### Algorithms library ### {#library-impact-algorithms}
 
 **Issue:** `std::gcd`, `std::lcm`, and `std::midpoint` need to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#gcd-implementation-experience]] for implementation experience).
 
 **Issue:** Saturating arithmetic functions and `saturate_cast` need to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#saturating-implementation-experience]] for implementation experience).
 
 ### Numerics library ### {#library-impact-numerics}
 
 **Issue:** Various random number generators and `std::uniform_int_distribution` need to support
 128-bit types.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#random-implementation-experience]] for implementation experience).
 
 **Issue:** `std::seed_seq` needs to support `std::initializer_list<std::uint128_t>`.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None
+(see [[#random-implementation-experience]] for implementation experience).
 
 **Issue:** `std::valarray` needs to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard (see [[#valarray-implementation-experience]] for implementation experience)
+**Action:** ✔️ None (see [[#valarray-implementation-experience]] for implementation experience)
 
 **Issue:** For most `<cmath>` functions, an additional overload taking 128-bit integers would
 need to be defined.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None
+(see [[#cmath-implementation-experience]] for implementation experience.)
 
 **Issue:** `std::abs` could receive an additional 128-bit overload.<br>
 **Action:** ⚠️ Add an overload
 (see [[#proposed-abs]] for wording and [[#abs-implementation-experience]] for implementation experience).
 
 **Issue:** The `<linalg>` library needs 128-bit support.<br>
-**Action:** ✔️ No impact on the standard
+**Action:** ✔️ None
 (see [[#linalg-implementation-experience]] for implementation experience).
 
 ### Time library ### {#library-impact-time}
 
 **Issue:** Significant portions of `<chrono>` use `std::ratio`, which has `std::intmax_t` template
 parameters.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 <div class="note">
 <span class="marker">Note:</span>
@@ -774,7 +809,7 @@ However, this is a significant extension of the time library and not part of thi
 ### Localization library ### {#library-impact-localization}
 
 **Issue:** `std::num_get` and `std::num_put` could use `std::uint_least128_t` overloads for `do_get`.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 Note: This would be a an ABI break if changes were made.
 `std::format` and `std::print` provide sufficient alternatives which can be supported without
@@ -784,7 +819,7 @@ breaking ABI.
 
 **Issue:** `std::num_get` and `std::num_put` don't support 128-bit integers.
 By proxy, extraction and insertion with `operator>>` would not work.<br>
-**Action:** ✔️ No impact on the standard.
+**Action:** ✔️ None.
 
 Note: The standard doesn't require these to work for all integer types, only for standard integer types.
 Any change would be an ABI break, so these facilities could be left untouched.
@@ -792,15 +827,8 @@ Unfortunately, the user won't be able to `std::cout << std::uint_least128_t{...}
 the language provides sufficient alternatives.
 
 **Issue:** `std::printf` and `std::scanf` need to support 128-bit integers.<br>
-**Action:** ✔️ No impact on the standard.
-
-<div class="example">
-With the changes from [[N2680]] included, an alternative way of printing 128-bit
-integers is:
-```cpp
-std::printf("%w128d\n", std::int_least128_t{123});
-```
-</div>
+**Action:** ✔️ None
+(see [[#cstdio-implementation-experience]] for implementation experience).
 
 ### Concurrency support library ### {#concurrency-support-library}
 
@@ -825,7 +853,7 @@ required to implement the proposed changes.
     <th>Affected library part</th><th>Work definitely required</th><th>Impl. experience / Wording</th>
 </tr>
 <tr>
-    <td>`std::to_integer`</td><td>✔️ no</td><td></td>
+    <td>`std::to_integer`</td><td>✔️ no</td><td>[[#to-integer-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`<version>`</td><td>⚠️ changes proposed</td><td>[[#proposed-version]]</td>
@@ -873,7 +901,7 @@ required to implement the proposed changes.
     <td>`std::gcd`, `std::lcm`</td><td>✔️ no</td><td>[[#gcd-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::midpoint`</td><td>✔️ no</td><td></td>
+    <td>`std::midpoint`</td><td>✔️ no</td><td>[[#midpoint-implementation-experience]]</td>
 </tr>
 <tr>
     <td>Saturating arithmetic</td><td>✔️ no</td><td>[[#saturating-implementation-experience]]</td>
@@ -891,7 +919,7 @@ required to implement the proposed changes.
     <td>`std::valarray`</td><td>✔️ no</td><td>[[#valarray-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<cmath>` overloads</td><td>add overloads</td><td></td>
+    <td>`<cmath>` overloads</td><td>✔️ no</td><td>[[#cmath-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`std::abs`</td><td>⚠️ changes proposed</td><td>[[#abs-implementation-experience]]</td>
@@ -1311,19 +1339,19 @@ GNU-family implementations support more than 128 bits already.
 As of February 2024, the support is as follows:
 <table>
 <tr>
-    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th><th>Targets</th>
+    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th><th>Targets</th><th>Languages</th>
 </tr>
 <tr>
-    <td>clang 14</td><td>`128`</td><td>all</td>
+    <td>clang 14</td><td>`128`</td><td>all</td><td>C & C++</td>
 <tr>
 </tr>
-    <td>clang 16</td><td>`8388608`</td><td>all</td>
+    <td>clang 16</td><td>`8388608`</td><td>all</td><td>C & C++</td>
 <tr>
 </tr>
-    <td>GCC 14</td><td>`65535`</td><td>64-bit only</td>
+    <td>GCC 14</td><td>`65535`</td><td>64-bit only</td><td>C</td>
 <tr>
 </tr>
-    <td>MSVC 19.38</td><td>❌</td><td>❌</td>
+    <td>MSVC 19.38</td><td>❌</td><td>❌</td><td>❌</td>
 </tr>
 </table>
 
@@ -1337,6 +1365,10 @@ at [[MSDN]].
 
 
 ## Library implementation experience ## {#library-implementation-experience}
+
+### `std::to_integer` ### {#to-integer-implementation-experience}
+
+`std::to_integer<T>(...)` is equivalent to `static_cast<T>(...)` with constraints.
 
 ### `<type_traits>` ### {#type-traits-implementation-experience}
 
@@ -1455,6 +1487,11 @@ This can be considered reasonable because C23 requires implementations to provid
 arbitrary-precision arithmetic anyway, and both GCC and clang already implement
 `_BitInt(N)` for `N >= 256` (see [[#existing-bit-int]] for details on support).
 
+### `std::midpoint` ### {#midpoint-implementation-experience}
+
+Libstdc++ has a
+<a href="https://github.com/gcc-mirror/gcc/blob/1e94648ab7b370c5867e146c7f59603e2e6ba2e6/libstdc%2B%2B-v3/include/std/numeric#L221">`std::midpoint`</a>
+implementation which is width-agnostic.
 
 ### Saturating arithmetic ### {#saturating-implementation-experience}
 
@@ -1475,6 +1512,19 @@ for any integer `x`.
 Note that an overload must exist for every integer type to avoid calling `std::abs` for
 floating-point types.
 Such an overload is proposed in [[#proposed-abs]].
+
+### `<cmath>` ### {#cmath-implementation-experience}
+
+libstdc++, libc++, and the MSVC STL implement the integral math overloads using SFINAE.
+Effectively, they define function templates using `std::enable_if_t<std::is_integral_v<T>>`.
+
+This is arguably not compliant because it can change the meaning of a well-formed program
+containing:
+```cpp
+requires { std::sqrt<T>(0); } // must be false
+```
+As a positive consequence, no changes are required.
+
 
 ### `std::valarray` ### {#valarray-implementation-experience}
 
@@ -1507,6 +1557,15 @@ LLVM libc currently uses a
 function for stringification.
 This would require replacement, possibly with a function template.
 Other standard libraries may be impacted more significantly.
+
+<div class="note">
+<span class="marker">Note:</span>
+With the changes from [[N2680]] included, an alternative way of printing 128-bit
+integers is:
+```cpp
+std::printf("%w128d\n", std::int_least128_t{123});
+```
+</div>
 
 ### `std::atomic` ### {#atomic-implementation-experience}
 
