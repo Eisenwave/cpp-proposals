@@ -13,6 +13,9 @@ Markup Shorthands: markdown on
 Abstract: This proposal standardizes mandatory 128-bit integers types with strong library support.
 </pre>
 
+# Revision history # {#revision-history}
+
+This is the first revision.
 
 # Introduction # {#introduction}
 
@@ -71,10 +74,14 @@ There are two essential reasons for standardizing a 128-bit integer type:
 
 1. 128-bit integers are extremely useful in a variety of domains.
 
-2. 128-bit integers are already implemented in multiple compilers, and quasi-mandated by the C23
+2. Standardization would unify the many uses under a common name
+    and ideally, common ABI.
+
+3. 128-bit integers are already implemented in multiple compilers, and quasi-mandated by the C23
     standard through the `_BitInt(128)` and `unsigned _BitInt(128)` types.
     That is, if the implementation defines `BITINT_MAXWIDTH >= 128`.
     See [[#existing-128-bit-integers]] for more.
+
 
 ## Use cases ## {#use-cases}
 
@@ -146,12 +153,15 @@ Generally speaking, there is a large amount of code that effectively performs
 In the above example, it is not immediately obvious that the `x[3] = x[2]; ...` line
 is effectively performing a 32-bit shift, whereas `x << 32` is self-documenting.
 
+[[P2075R3]] proposes counter-based Philox engines for the C++ standard library,
+and has been received positively.
+The [[DEShawResearch]] reference implementation makes use of 128-bit integers.
 
 ### Widening operations ### {#widening-operations}
 
 128-bit arithmetic can produce optimal code for mixed 64/128-bit operations,
 for which there is already widespread hardware support.
-For example, this hardware support includes:
+Among other instructions, this hardware support includes:
 
 - The x86_64 `mul` (unsigned multiply) instruction stores the result of a 64-to-128-bit multiplication
     in the register pair `rdx:rax`.
@@ -168,24 +178,62 @@ For example, the Windows API provides a `Multiply128` function.
 A more general solution was proposed by [[P3018R0]], which supports widening multiplication through a
 `std::mul_wide` function, which yields the low and high part of the multiplication as a pair
 of integers.
-Such utilities would be useful in generic code where integers of any width can be used,
-but it's obviously more ergonomic to cast operands to `std::int128_t` prior to an
+Such utilities would be useful in generic code where integers of any width can be used.
+For 64-to-128-bit, it's obviously more ergonomic to cast operands to `std::int128_t` prior to an
 operation.
 
+<div class=example>
+The [[Stockfish]] chess engine has a
+<a href="https://github.com/official-stockfish/Stockfish/blob/7ccde25baf03e77926644b282fed68ba0b5ddf95/src/misc.h#L158">`mul_hi64`</a>
+function which yields the high part
+of a 64-bit multiplication:
 
-### Multi-precision operations ### {#multi-precision-operations}
+```cpp
+inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
+#if defined(__GNUC__) && defined(IS_64BIT)
+    __extension__ using uint128 = unsigned __int128;
+    return (uint128(a) * uint128(b)) >> 64;
+#else
+    // ...
+}
+```
+</div>
+
+#### 64-bit modular arithmetic #### {#safe-modular-arithmetic}
+
+To perform modular arithmetic with a 64-bit modulo, 128-bit integers are needed.
+For example, when computing `(a * x) % m` between 64-bit unsigned integers `a`, `x`, and `m`,
+the multiplication between `a` and `x` is already mod 2<sup>64</sup>,
+and the result would be incorrect unless `m` was a power of two.
+
+128-bit operations are used in implementations of `std::linear_congruential_engine`
+(see [[#random-implementation-experience]] for implementation experience).
+Linear congruential engines use modular arithmetic, and since the user can choose
+a modulo arbitrarily, the issue is unavoidable.
+
+Note: A popular workaround for linear congruential generators is to choose the
+modulo to be 2<sup>64</sup> or 2<sup>32</sup>.
+This means that division is not required at all.
+
+#### Multi-precision operations #### {#multi-precision-operations}
 
 For various applications (cryptography, numerics, etc.) arithmetic with large widths is required.
 For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses key sizes of 2048 or 4096.
 "Scripting languages" also commonly use an infinite-precision integer type.
 For example, the `int` type in Python has no size limit.
 
-Multi-precision operations are implemented through multiple widening operations (see above).
+Multi-precision operations are implemented through multiple widening operations.
 For example, to implement N-bit multiplication,
-the number can be split into a sequence of 64-bit "digits",
+the number can be split into a sequence of 64-bit "limbs",
 and long multiplication is performed.
 Since this involves a carry between digits, a 64-to-128-bit widening operation is required.
 
+[[BoostMultiPrecision]] uses a 128-bit integer as a `double_limb_type`.
+This type is used extensively in the implementation of multi-precision arithmetic.
+
+Note: The introduction of bit-precise integers ([[#bit-precise-integers]]) does not
+obsolete multi-precision libraries because infinite-precision numbers like
+Python's `int` cannot be implement using a constant size.
 
 ### Fixed-point operations ### {#fixed-point-operations}
 
@@ -235,6 +283,10 @@ between resolution and range.
 seconds and nanoseconds part of the class are 64-bit integers
 (assuming that `std::time_t` is 64-bit).
 
+[[Bloomberg]] uses 128-bit integers to safeguard against potential overflow in time
+calculations (see
+<a href="https://github.com/kaidokert/bde/blob/b1c60d6b33e4fa1c596ac6947a7a38fc87286626/groups/bsl/bsls/bsls_timeutil.cpp#L523">`bsls_timeutil.cpp`</a>)
+
 ### Floating-point operations ### {#floating-point-operations}
 
 The implementation of IEEE 754/IEC-559 floating-point operations often involves examining the
@@ -252,6 +304,12 @@ bool signbit(float128_t x) {
 }
 ```
 </div>
+
+[[Bloomberg]] uses 128-bit integers as part of a 128-bit decimal floating point
+implementation, among other uses.
+Decimal floating-point numbers are commonly used in financial applications
+and are standard C23 types (e.g. `_Decimal128`) since [[N2341]].
+In C++, a software implementation is necessary.
 
 ### Float-to-string/String-to-float conversion ### {#float-string-conversion}
 
@@ -297,7 +355,7 @@ integers to store financial amounts and balances in the TigerBeetle financial
 accounting database.
 The aforementioned sub-penny requirement is part of the motivation.
 
-### Database systems ### {#database-systems}
+### Universally unique identifiers ### {#uuid}
 
 A 128-bit integer can be used to represent a
 <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a>
@@ -318,6 +376,9 @@ std::uint128_t random_uuid_v4() {
 }
 </pre>
 </div>
+
+The [[ClickHouse]] database management system defines their `UUID` type through
+<a href="https://github.com/ClickHouse/ClickHouse/blob/fc964d6ddd2f854cbff9d036abf424a2f3b7194f/base/base/UUID.h#L8">`StrongTypedef<UInt128, struct UUIDTag>`</a>.
 
 ### Networking ### {#networking}
 
@@ -341,6 +402,46 @@ constexpr auto mask64 = std::uint64_t(-1);
 interface_identifier = (data &gt;&gt; 64) & mask64;
 </pre>
 </div>
+
+The [[ClickHouse]] database management system defines their `IPv6` type through
+<a href="https://github.com/ClickHouse/ClickHouse/blob/0c35492ed33333a2e39f57d8e3c196d1fd22ae22/base/base/IPv4andIPv6.h#L18">`StrongTypedef<UInt128, struct IPv6Tag>`</a>.
+
+### Bitsets and lookup tables ### {#bitsets-and-lookup-tables}
+
+A popular technique for optimizing small lookup tables in high-performance applications
+is to turn them into a bitset.
+128 bits offer additional space over 64 bits.
+
+<div class=example>
+Axis vectors (`(-1, 0, 0)`, `(1, 0, 0)`, ..., or `(0, 0, 1)`)
+can be represented as integers in range [0, 6).
+This requires three bits of storage, and a lookup table for the cross product of two vectors
+requires 3<sup>3</sup> = 81 bits.
+The cross product can be computed as follows:
+
+```cpp
+unsigned cross(unsigned a, unsigned b) {
+    [[assume(a < 6 && b < 6)]];
+    constexpr std::uint128_t lookup = 0x201'6812'1320'8941'06c4'ec21'a941;
+    return (lookup >> (a * 6 + b * 3)) & 0b111;
+}
+```
+This is significantly faster than computing a cross product between triples of `int` or `float`
+using multiplication and subtraction.
+</div>
+
+Using unsigned integers as lookup tables is a very popular technique in chess engines,
+and commonly referred to as
+[Bitboard](https://en.wikipedia.org/wiki/Bitboard).
+The [[px0]] chess engine uses a 90-bit board, stored in a 128-bit integer.
+
+Note: Compilers can only perform an "array-to-bitset optimization" to a limited extent at this time.
+Clang is the only compiler which performs it, and only for arrays of `bool`.
+
+Note: `std::bitset` does not offer a way to extract ranges of bits, only individual bits.
+Therefore, it would not have been of much help in the example.
+Furthermore, `std::bitset` has runtime checks and potentially throws exceptions,
+which makes it unattractive to some language users.
 
 ## Utilizing hardware support ## {#utilizing-hardware-support}
 
@@ -377,27 +478,30 @@ However, modern optimizing compilers keep track of range constraints of values.
 <div class=example>
 The optimizer may make the following decisions when performing 128-bit integer division:
 
-- If the divisor is zero, mark the operation undefined behavior for the purpose of
+1. If the divisor is zero, mark the operation undefined behavior for the purpose of
     compiler optimization, or emit `ud2`.
-- Otherwise, if the divisor is constant and greater than the dividend, yield zero.
-- Otherwise, if the divisor is constant, perform strength reduction ([[#fixed-point-operations]]), making the division
+2. Otherwise, if the divisor and dividend are constant, compute the result.
+3. Otherwise, if the divisor is constant and greater than the dividend, yield zero.
+4. Otherwise, if the divisor is constant, perform strength reduction ([[#fixed-point-operations]]), making the division
     a shift and multiplication.
-- Otherwise, if the divisor is a power of two, count the trailing zeros and perform a right-shift.
-- Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.
-- Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit ([[#widening-operations]]) division.
-- Otherwise, if both operands are 2<sup>113</sup>-1 or less,
-    and if there is hardware support for 128-bit floating point numbers, perform floating-point division.
-- [...]
-- Otherwise, use a software implementation of 128-bit division.
+5. Otherwise, if the divisor is a power of two, count the trailing zeros and perform a right-shift.
+6. Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.
+7. Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit ([[#widening-operations]]) division.
+8. <b>Otherwise, if both operands are 2<sup>113</sup>-1 or less,
+    and if there is hardware support for 128-bit floating point numbers, perform floating-point division.</b>
+9. Otherwise, use a software implementation of 128-bit division.
 
 </div>
 
 ISO C++ does not offer a mechanism through which implementations can be chosen based on
 optimizer knowledge.
-It also does not offer a mechanism through which it can be detected that a divisor is known to the
-optimizer.
 What is easy for the implementation is difficult for the user,
 which makes it very compelling to provide a built-in type.
+
+Note: The pre-computation in bullet 4 must not be done in C++
+because the cost of computing the reciprocal is as high as the division itself.
+The user must be guaranteed that the entire pre-computation of shift and factor is constant-folded,
+and this is generally impossible because optimization passes are finite.
 
 Note: Historically, floating-point division in hardware was used to implement integer division.
 The x87 circuitry for dividing 80-bit floating-point numbers could be repurposed for 64-bit
@@ -1782,10 +1886,30 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "href": "https://github.com/Eisenwave/cxx26-bit-permutations",
         "authors": ["Jan Schultke et al."]
     },
+    "Bloomberg": {
+        "title": "BDE Libraries",
+        "href": "https://github.com/bloomberg/bde",
+        "authors": ["Bloomberg Finance L.P. et al."]
+    },
+    "BoostMultiPrecision": {
+        "title": "Boost Multiprecision Library",
+        "href": "https://github.com/boostorg/multiprecision",
+        "authors": ["Boost Org"]
+    },
+    "ClickHouse": {
+        "title": "ClickHouse",
+        "href": "https://github.com/ClickHouse/ClickHouse",
+        "authors": ["ClickHouse et al."]
+    },
     "CxxDraft": {
         "title": "C++ Standard Draft",
         "href": "https://github.com/cplusplus/draft/commit/8238252bcec14f76e97133db32721beaec5c749b",
         "authors": ["VA"]
+    },
+    "DEShawResearch": {
+        "title": "Random123: a Library of Counter-Based Random Number Generators",
+        "href": "https://github.com/DEShawResearch/random123",
+        "authors": ["John Salmon et al."]
     },
     "Dragonbox": {
         "title": "Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm",
@@ -1817,6 +1941,11 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "href": "https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048",
         "authors": ["Colen Garoutte-Carson et al." ]
     },
+    "N2341": {
+        "title": "Floating-point extensions for C - Decimal floating-point arithmetic",
+        "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2341.pdf",
+        "authors": ["ISO/IEC"]
+    },
     "N2680": {
         "title": "Specific width length modifier",
         "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2680.pdf",
@@ -1837,6 +1966,11 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "href": "https://developer.nvidia.com/blog/implementing-high-precision-decimal-arithmetic-with-cuda-int128/",
         "authors": ["Conor Hoekstra", "Kuhu Shukla", "Mark Harris"]
     },
+    "px0": {
+        "title": "Px0",
+        "href": "https://github.com/official-pikafish/px0",
+        "authors": ["PikaCat"]
+    },
     "RISC-V": {
         "title": "The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA",
         "href": "https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view",
@@ -1851,6 +1985,11 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "title": "Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS",
         "href": "https://www.sec.gov/divisions/marketreg/subpenny612faq.htm",
         "authors": ["U.S. Securities and Exchange Commission"]
+    },
+    "Stockfish": {
+        "title": "Stockfish",
+        "href": "https://github.com/official-stockfish/Stockfish",
+        "authors": ["Marco Costalba et al."]
     },
     "std-proposals": {
         "title": "[std-proposals] 128-bit integers",
