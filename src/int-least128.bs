@@ -985,7 +985,7 @@ required to implement the proposed changes.
     <td>`<format>`</td><td>✔️ no</td><td>[[#format-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<bit>`</td><td>✔️ no</td><td>[[#bit-implementation-experience]]</td>
+    <td>`<bit>`</td><td>support 128-bit</td><td>[[#bit-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`std::to_string`</td><td>⚠️ changes proposed</td><td>[[#proposed-numeric-conversions]]</td>
