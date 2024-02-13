@@ -63,7 +63,7 @@ which uses the optional `std::int128_t` type.
 struct S {
     template <typename T>
       requires std::same_as<T, long long> || std::same_as<T, std::int128_t>
-    operator T() const; 
+    operator T() const { return 0; }
 };
 
 int main() {
