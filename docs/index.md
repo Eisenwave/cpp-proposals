@@ -30,6 +30,6 @@ Author: Jan Schultke
 
 - [Latest](constexpr-to-string.html)
 
-## NP: `std::int_least128_t`
+## NP3140: `std::int_least128_t`
 
 - [Latest](int-least128.html)
