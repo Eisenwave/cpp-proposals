@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a313990d625a642d4cc00903c278d74a75c44efe" name="revision">
+  <meta content="2b046d238e136768ed8a2952a96ad9772ee710f8" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2346,8 +2346,8 @@ However, even if there exists an extended 128-bit integer, among other issues:</
    </ul>
    <p>It would not be legal for an implementation to provide such additional overloads because it would
 change the meaning of well-formed programs.</p>
-   <div class="example" id="example-d52004e3">
-    <a class="self-link" href="#example-d52004e3"></a> The following code is a well-defined C++23 program
+   <div class="example" id="example-84c74f71">
+    <a class="self-link" href="#example-84c74f71"></a> The following code is a well-defined C++23 program
 which uses the optional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code> type. 
 <pre class="language-cpp highlight"><c- cp>#include</c-> &lt;string>
 <c- cp>#include</c-> &lt;concepts>
@@ -2362,8 +2362,8 @@ which uses the optional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n
     <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>S</c-><c- p>{});</c->
 <c- p>}</c->
 </pre>
-    <p>Assuming that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code> is not the same type as <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>, this code must always
-call <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-><c- p>)</c-></code>.
+    <p>This code must always call <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-><c- p>)</c-></code>.
+Assuming that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code> is not the same type as <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>,
 If the implementation added an overload <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>int128_t</c-><c- p>)</c-></code> in spite of the standard, the call to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> would be ambiguous.</p>
    </div>
    <p>The implementation has <em>some</em> ability to add overloads, stated in [global.functions] paragraph 2:</p>

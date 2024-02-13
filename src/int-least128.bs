@@ -70,8 +70,8 @@ int main() {
     std::to_string(S{});
 }
 ```
-Assuming that `std::int128_t` is not the same type as `long long`, this code must always
-call `std::to_string(long long)`.
+This code must always call `std::to_string(long long)`.
+Assuming that `std::int128_t` is not the same type as `long long`,
 If the implementation added an overload `std::to_string(std::int128_t)`
 in spite of the standard, the call to `std::to_string` would be ambiguous.
 </div>
