@@ -662,18 +662,21 @@ The affected candidates are those listed in Table 40: C headers [tab:c.headers].
     <td>`<stdint.h>`</td><td>Define type aliases</td>
 </tr>
 <tr>
-    <td>`<stdio.h>`</td><td>⚠️ Support 128-bit `printf`/`scanf` </td>
+    <td>`<stdio.h>`</td><td>⚠️ Support 128-bit `printf`/`scanf` optionally </td>
 </tr>
 </table>
 
 There is no impact on other C headers.
 Most of the issues are trivial and have no runtime C library impact.
-The only thing worth noting is that 128-bit support from `printf`/`scanf` is
+The only thing worth noting is that 128-bit support from `printf`/`scanf` would be
 required ([[#cstdio-implementation-experience]] for implementation experience).
-`printf`/`scanf` support cannot be made optional because the C standard requires
-`PRI`/`SCN` macros to exist, and the ability to print/scan with them.
 
-If additionally, a C implementation wanted to support `int_least128_t`,
+Note: This support is made optional, so that C++ implementations are able to keep using
+the system's C library.
+Otherwise, the C++ implementation could only guarantee 128-bit `printf` support
+if it was part of the C++ runtime library.
+
+Note: If additionally, a C implementation wanted to support `int_least128_t`,
 it would need to add extended integer support in a few other places.
 For example, `stdbit.h` requires type-generic functions to support all extended integers.
 
@@ -731,6 +734,10 @@ Whether to define them as such is a QoI issue in general, and won't be discussed
 **Issue:** `<cstdint>` needs to explicitly require support for 128-bit integers
 in its synopsys.<br>
 **Action:** ⚠️ Define aliases (see [[#proposed-cstdint]] for wording).
+
+**Issue:** `<inttypes.h>` needs to support 128-bit only optionally.<br>
+**Action:** ⚠️ Make support optional (see [[#proposed-inttypes]] for wording).
+
 
 ### Metaprogramming library ### {#library-impact-metaprogramming}
 
@@ -912,6 +919,10 @@ the language provides sufficient alternatives
 **Action:** ✔️ None
 (see [[#cstdio-implementation-experience]] for implementation experience).
 
+**Issue:** `<cinttypes>` needs to include the wording changes for `<inttypes.h>`.<br>
+**Action:** ⚠️ Include changes
+(see [[#proposed-cinttypes]] for wording).
+
 ### Concurrency support library ### {#concurrency-support-library}
 
 **Issue:** `std::atomic` needs to support `std::uint_least128_t`.<br>
@@ -945,6 +956,9 @@ required to implement the proposed changes.
 </tr>
 <tr>
     <td>`<climits>`</td><td>add macro constants</td><td></td>
+</tr>
+<tr>
+    <td>`<inttypes.h>`</td><td>⚠️ changes proposed</td><td>[[#proposed-inttypes]]</td>
 </tr>
 <tr>
     <td>`std::is_integral`</td><td>✔️ no</td><td>[[#type-traits-implementation-experience]]</td>
@@ -989,7 +1003,7 @@ required to implement the proposed changes.
     <td>Saturating arithmetic</td><td>✔️ no</td><td>[[#saturating-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<random>` generators</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
+    <td>`<random>` generators</td><td>256-bit arithmetic</td><td>[[#random-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`std::uniform_int_distribution`</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
@@ -1010,7 +1024,10 @@ required to implement the proposed changes.
     <td>`<linalg>`</td><td>✔️ no</td><td>[[#linalg-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::printf`, `std::scanf`</td><td>support 128-bit</td><td>[[#cstdio-implementation-experience]]</td>
+    <td>`std::printf`, `std::scanf`</td><td>✔️ no</td><td>[[#cstdio-implementation-experience]]</td>
+</tr>
+<tr>
+    <td>`<cinttypes>`</td><td>⚠️ changes proposed</td><td>[[#proposed-cinttypes]]</td>
 </tr>
 <tr>
     <td>`std::atomic` specializations</td><td>✔️ no</td><td>[[#atomic-implementation-experience]]</td>
@@ -1757,25 +1774,19 @@ Providing specializations for specific widths is a quality-of-implementation iss
 
 ### `<cstdio>` ### {#cstdio-implementation-experience}
 
+Note: This proposal makes 128-bit `printf`/`scanf` support entirely optional
+(see [[#proposed-inttypes]] for wording).
+
 Similar to `std::to_chars`, extending support to 128-bit integers for printing and parsing
 requires only moderate effort because the underlying algorithm easily generalizes to any bit size.
 The `PRI*LEAST128` et al. macros in `<cinttypes>` would also need to be defined,
 and would expand to an implementation-defined format constant.
-No change to the `printf`/`scanf` grammar is required.
 
 LLVM libc currently uses a
 <a href="https://github.com/llvm/llvm-project/blob/8373ceef8f2ee377d6daf884e2f3ea11408a7fe2/libc/src/stdio/printf_core/int_converter.h#L50">`num_to_strview(uintmax_t, ...)`</a>
 function for stringification.
 This would require replacement, possibly with a function template.
 Other standard libraries may be impacted more significantly.
-
-However, this all assumes that the C++ standard library won't simply forward to the system's
-libc `printf` implementation.
-
-Issue: The only way to guarantee `std::printf` support for 128-bit is to include it in the
-C++ runtime library.
-Feedback from SG22 is required regarding `std::printf` capabilities
-for 128-bit integers.
 
 <div class="note">
 <span class="marker">Note:</span>
@@ -1946,6 +1957,31 @@ if *N* is greater than 64.
 
 Note: This restriction is intended to address [[#impact-on-overload-sets]].
 
+## Header `<inttypes.h>` ## {#proposed-inttypes}
+
+In subclause 17.14 [support.c.headers], add the following subclause:
+
+<blockquote>
+<b><ins>17.14.X Header `<inttypes.h>`</ins></b>
+<p><ins>
+The contents of the C++ header `<inttypes.h>` are the same as the C standard library
+header `<inttypes.h>` with the following exception:
+The definition of the `fprintf` and `fscanf` macros for the corresponding
+integers in the header `<stdint.h>` is optional for any integer with a width greater
+than 64.
+However, if any macro for an integer with width *N* is defined,
+all macros corresponding to integers with the same or lower width as *N* shall be defined.
+<br><br>
+See also: ISO/IEC 9899:2018, 7.8.1
+</ins></p>
+</blockquote>
+
+Note: This effectively makes `printf`/`scanf` 128-bit support optional because without any
+`PRI`/`SCN` macros, the user has no standard way of using these functions with 128-bit integers.
+
+Note: After rebasing on C23, additional restrictions to `stdio.h` must be applied
+so that `%w128d` (see [[N2680]]) is not mandatory in C++.
+
 ## Class template `bitset` ## {#proposed-bitset}
 
 In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
@@ -2115,6 +2151,18 @@ conversion rank is that of `int` or greater.</ins>
 </p>
 </blockquote>
 
+## Header `<cinttypes>`  ## {#proposed-cinttypes}
+
+In subclause 31.13.2 [cinttypes.syn], update paragraph 1 as follows:
+
+<blockquote>
+The contents and meaning of the header `<cinttypes>`
+are the same as the <del>C standard library</del><ins>C++</ins> header `<inttypes.h>`, with the following changes:
+</blockquote>
+
+Note: Unlike the C standard library header, the *C header* has the changes described in
+[[#proposed-inttypes]] applied. 
+
 ## Atomic operations ## {#proposed-atomic}
 
 In subclause 33.5.2 [atomics.syn], update the synopsis as follows:
@@ -2169,6 +2217,8 @@ namespace std {
 
 I thank Jonathan Wakely and other participants in the std-proposals mailing list whose feedback
 has helped me improve the quality of this proposal substantially.
+
+I also thank Lénárd Szolnoki for contributing the example in [[#lifting-library-restrictions]].
 
 Note: See [[std-proposals]] for discussion of this proposal.
 

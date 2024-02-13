@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8744b4fb631b7317e1eee68ac18397a68138b51d" name="revision">
+  <meta content="924ec5558de97d4442dbd9ca3a4934f0869d7a09" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2132,8 +2132,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="https://eisenwave.github.io/cpp-proposals/int-least128.html">https://eisenwave.github.io/cpp-proposals/int-least128.html</a>
-     <dt>Issue Tracking:
-     <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:janschultke@gmail.com">Jan Schultke&lt;janschultke@gmail.com></a>
      <dt>Audience:
@@ -2298,11 +2296,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <ol class="toc">
       <li><a href="#proposed-version"><span class="secno">9.1</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code></span></a>
       <li><a href="#proposed-cstdint"><span class="secno">9.2</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code></span></a>
-      <li><a href="#proposed-bitset"><span class="secno">9.3</span> <span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span></a>
-      <li><a href="#proposed-numeric-conversions"><span class="secno">9.4</span> <span class="content">Numeric conversions</span></a>
-      <li><a href="#proposed-iota"><span class="secno">9.5</span> <span class="content">Iota view</span></a>
-      <li><a href="#proposed-abs"><span class="secno">9.6</span> <span class="content">Absolute values</span></a>
-      <li><a href="#proposed-atomic"><span class="secno">9.7</span> <span class="content">Atomic operations</span></a>
+      <li><a href="#proposed-inttypes"><span class="secno">9.3</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code></span></a>
+      <li><a href="#proposed-bitset"><span class="secno">9.4</span> <span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span></a>
+      <li><a href="#proposed-numeric-conversions"><span class="secno">9.5</span> <span class="content">Numeric conversions</span></a>
+      <li><a href="#proposed-iota"><span class="secno">9.6</span> <span class="content">Iota view</span></a>
+      <li><a href="#proposed-abs"><span class="secno">9.7</span> <span class="content">Absolute values</span></a>
+      <li><a href="#proposed-cinttypes"><span class="secno">9.8</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code></span></a>
+      <li><a href="#proposed-atomic"><span class="secno">9.9</span> <span class="content">Atomic operations</span></a>
      </ol>
     <li><a href="#acknowledgements"><span class="secno">10</span> <span class="content">Acknowledgements</span></a>
     <li>
@@ -2311,7 +2311,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
-    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
    </ol>
   </nav>
   <main>
@@ -2821,13 +2820,17 @@ The affected candidates are those listed in Table 40: C headers [tab:c.headers].
       <td>Define type aliases
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>stdio</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>
-      <td>⚠️ Support 128-bit <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> 
+      <td>⚠️ Support 128-bit <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> optionally 
    </table>
    <p>There is no impact on other C headers.
 Most of the issues are trivial and have no runtime C library impact.
-The only thing worth noting is that 128-bit support from <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> is
-required (<a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a> for implementation experience). <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> support cannot be made optional because the C standard requires <code class="highlight"><c- n>PRI</c-></code>/<code class="highlight"><c- n>SCN</c-></code> macros to exist, and the ability to print/scan with them.</p>
-   <p>If additionally, a C implementation wanted to support <code class="highlight"><c- n>int_least128_t</c-></code>,
+The only thing worth noting is that 128-bit support from <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> would be
+required (<a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a> for implementation experience).</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This support is made optional, so that C++ implementations are able to keep using
+the system’s C library.
+Otherwise, the C++ implementation could only guarantee 128-bit <code class="highlight"><c- n>printf</c-></code> support
+if it was part of the C++ runtime library.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> If additionally, a C implementation wanted to support <code class="highlight"><c- n>int_least128_t</c-></code>,
 it would need to add extended integer support in a few other places.
 For example, <code class="highlight"><c- n>stdbit</c-><c- p>.</c-><c- n>h</c-></code> requires type-generic functions to support all extended integers.</p>
    <h3 class="heading settled" data-level="4.2" id="core-impact"><span class="secno">4.2. </span><span class="content">Impact on the core language</span><a class="self-link" href="#core-impact"></a></h3>
@@ -2870,6 +2873,7 @@ Whether to define them as such is a QoI issue in general, and won’t be discuss
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>climits</c-><c- o>></c-></code> needs additional constants for 128-bit integers.<br> <strong>Action:</strong> ✔️ None.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>cstdint</c-><c- o>></c-></code> needs to explicitly require support for 128-bit integers
 in its synopsys.<br> <strong>Action:</strong> ⚠️ Define aliases (see <a href="#proposed-cstdint">§ 9.2 Header &lt;cstdint></a> for wording).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code> needs to support 128-bit only optionally.<br> <strong>Action:</strong> ⚠️ Make support optional (see <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> for wording).</p>
    <h4 class="heading settled" data-level="4.3.2" id="library-impact-metaprogramming"><span class="secno">4.3.2. </span><span class="content">Metaprogramming library</span><a class="self-link" href="#library-impact-metaprogramming"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#type-traits-implementation-experience">§ 8.2.2 &lt;type_traits></a> for implementation experience).</p>
@@ -2882,8 +2886,8 @@ in name mangling.<br> <strong>Action:</strong> ✔️ None.</p>
    <p><strong>Issue:</strong> Integer comparison functions (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cmp_equal</c-></code> et al.) require 128-bit support. <strong>Action:</strong> ✔️ None
 (see <a href="#safe-comparison-implementation-experience">§ 8.2.3 std::cmp_xxx</a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integer_sequence</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor (see <a href="#proposed-bitset">§ 9.3 Class template bitset</a> for wording).</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function (see <a href="#proposed-bitset">§ 9.3 Class template bitset</a> for wording).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#charconv-implementation-experience">§ 8.2.4 &lt;charconv></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
@@ -2894,7 +2898,7 @@ in name mangling.<br> <strong>Action:</strong> ✔️ None.</p>
 (see <a href="#format-implementation-experience">§ 8.2.5 &lt;format></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#bit-implementation-experience">§ 8.2.6 &lt;bit></a> for implementation experience).</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> could support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 9.4 Numeric conversions</a> for wording).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> could support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 9.5 Numeric conversions</a> for wording).</p>
    <h4 class="heading settled" data-level="4.3.4" id="library-impact-containers"><span class="secno">4.3.4. </span><span class="content">Containers library</span><a class="self-link" href="#library-impact-containers"></a></h4>
    <p><strong>Issue:</strong> The extents and index types of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> could be 128-bit integers.
 This is also the case for type aliases of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>strided_slice</c-></code>.
@@ -2912,7 +2916,7 @@ should be unaffected.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code> is required to be a 128-bit integer if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is not 128-bit, and such a type exists.
 This is not the the case in libc++ and MSVC STL at this time,
 where <code class="highlight"><c- n>difference_type</c-></code> is <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>_Signed128</c-></code> respectively.<br> <strong>Action:</strong> ❌ Propose changes to prevent breaking ABI
-(see <a href="#iota-view-abi-break">§ 5.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> for discussion and <a href="#proposed-iota">§ 9.5 Iota view</a> for wording).</p>
+(see <a href="#iota-view-abi-break">§ 5.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> for discussion and <a href="#proposed-iota">§ 9.6 Iota view</a> for wording).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cartesian_product_view</c-><c- o>::</c-><c- n>size</c-></code> may now return a 128-bit integer.
 The standard recommends to use a type which is sufficiently wide to store the product
 of sizes of underlying ranges.
@@ -2934,7 +2938,7 @@ A similar issue arises for <code class="highlight"><c- n>std</c-><c- o>::</c-><c
 need to be defined.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#cmath-implementation-experience">§ 8.2.12 &lt;cmath></a> for implementation experience.)</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> could receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload
-(see <a href="#proposed-abs">§ 9.6 Absolute values</a> for wording and <a href="#abs-implementation-experience">§ 8.2.11 std::abs</a> for implementation experience).</p>
+(see <a href="#proposed-abs">§ 9.7 Absolute values</a> for wording and <a href="#abs-implementation-experience">§ 8.2.11 std::abs</a> for implementation experience).</p>
    <p><strong>Issue:</strong> The <code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code> library needs 128-bit support.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#linalg-implementation-experience">§ 8.2.14 &lt;linalg></a> for implementation experience).</p>
    <h4 class="heading settled" data-level="4.3.9" id="library-impact-time"><span class="secno">4.3.9. </span><span class="content">Time library</span><a class="self-link" href="#library-impact-time"></a></h4>
@@ -2962,11 +2966,13 @@ the language provides sufficient alternatives
 (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>out</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(...)</c-></code>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a> for implementation experience).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code> needs to include the wording changes for <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>.<br> <strong>Action:</strong> ⚠️ Include changes
+(see <a href="#proposed-cinttypes">§ 9.8 Header &lt;cinttypes></a> for wording).</p>
    <h4 class="heading settled" data-level="4.3.12" id="concurrency-support-library"><span class="secno">4.3.12. </span><span class="content">Concurrency support library</span><a class="self-link" href="#concurrency-support-library"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> needs to support <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ✔️ No impact on the standard
 (see <a href="#atomic-implementation-experience">§ 8.2.16 std::atomic</a> for implementation experience).</p>
    <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases
-(see <a href="#proposed-atomic">§ 9.7 Atomic operations</a> for wording).</p>
+(see <a href="#proposed-atomic">§ 9.9 Atomic operations</a> for wording).</p>
    <h2 class="heading settled" data-level="5" id="implementation-impact"><span class="secno">5. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
    <h3 class="heading settled" data-level="5.1" id="estimated-implementation-effort"><span class="secno">5.1. </span><span class="content">Estimated implementation effort</span><a class="self-link" href="#estimated-implementation-effort"></a></h3>
    <p>The following table summarizes the affected standard library parts and the estimated effort
@@ -2994,6 +3000,10 @@ required to implement the proposed changes.</p>
       <td>add macro constants
       <td>
      <tr>
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>
+      <td>⚠️ changes proposed
+      <td><a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a>
+     <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-></code>
       <td>✔️ no
       <td><a href="#type-traits-implementation-experience">§ 8.2.2 &lt;type_traits></a>
@@ -3012,11 +3022,11 @@ required to implement the proposed changes.</p>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>::</c-><c- n>bitset</c-></code>
       <td>⚠️ changes proposed
-      <td><a href="#proposed-bitset">§ 9.3 Class template bitset</a>
+      <td><a href="#proposed-bitset">§ 9.4 Class template bitset</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>::</c-><c- n>to</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>
       <td>⚠️ changes proposed
-      <td><a href="#proposed-bitset">§ 9.3 Class template bitset</a>
+      <td><a href="#proposed-bitset">§ 9.4 Class template bitset</a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code>
       <td>✔️ no
@@ -3032,11 +3042,11 @@ required to implement the proposed changes.</p>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>
       <td>⚠️ changes proposed
-      <td><a href="#proposed-numeric-conversions">§ 9.4 Numeric conversions</a>
+      <td><a href="#proposed-numeric-conversions">§ 9.5 Numeric conversions</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>iota_view</c-></code>
       <td>✔️ no
-      <td><a href="#proposed-iota">§ 9.5 Iota view</a>
+      <td><a href="#proposed-iota">§ 9.6 Iota view</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code>
       <td>✔️ no
@@ -3051,7 +3061,7 @@ required to implement the proposed changes.</p>
       <td><a href="#saturating-implementation-experience">§ 8.2.10 Saturating arithmetic</a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code> generators
-      <td>✔️ no
+      <td>256-bit arithmetic
       <td><a href="#random-implementation-experience">§ 8.2.8 &lt;random></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uniform_int_distribution</c-></code>
@@ -3079,8 +3089,12 @@ required to implement the proposed changes.</p>
       <td><a href="#linalg-implementation-experience">§ 8.2.14 &lt;linalg></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code>
-      <td>support 128-bit
+      <td>✔️ no
       <td><a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a>
+     <tr>
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code>
+      <td>⚠️ changes proposed
+      <td><a href="#proposed-cinttypes">§ 9.8 Header &lt;cinttypes></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> specializations
       <td>✔️ no
@@ -3088,7 +3102,7 @@ required to implement the proposed changes.</p>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> aliases
       <td>⚠️ changes proposed
-      <td><a href="#proposed-atomic">§ 9.7 Atomic operations</a>
+      <td><a href="#proposed-atomic">§ 9.9 Atomic operations</a>
    </table>
    <p>When deciding <em>"Work definitely required"</em>, this paper does not consider menial changes like
 relaxing <code class="highlight"><c- k>static_assert</c-><c- p>(</c-><c- n>__is_standard_integer</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>)</c-></code> and such,
@@ -3114,7 +3128,7 @@ Re-defining this to be an integer type would break ABI, assuming that a Microsof
    <p>Currently, no such type exists, but if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> did exist, it would no longer be valid
 to use a class type or <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> as a <code class="highlight"><c- n>difference_type</c-></code>.</p>
    <h4 class="heading settled" data-level="5.2.3" id="abi-break-possible-solution"><span class="secno">5.2.3. </span><span class="content">Possible solution</span><a class="self-link" href="#abi-break-possible-solution"></a></h4>
-   <p>See <a href="#proposed-iota">§ 9.5 Iota view</a> for a proposed solution which resolves this issue without requiring
+   <p>See <a href="#proposed-iota">§ 9.6 Iota view</a> for a proposed solution which resolves this issue without requiring
 action from implementors.</p>
    <h4 class="heading settled" data-level="5.2.4" id="iota-view-128"><span class="secno">5.2.4. </span><span class="content">What about <code class="highlight"><c- n>iota_view</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- o>></c-></code>?</span><a class="self-link" href="#iota-view-128"></a></h4>
    <p>Besides the option to provide a ≥ 129-bit <code class="highlight"><c- n>difference_type</c-></code>,
@@ -3650,7 +3664,7 @@ A software implementation of overflow detection may be very tedious as explained
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> can be easily implemented width-agnostically as <code class="highlight"><c- n>x</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>x</c-> <c- o>:</c-> <c- o>-</c-><c- n>x</c-></code> for any integer <code class="highlight"><c- n>x</c-></code>.</p>
    <p>Note that an overload must exist for every integer type to avoid calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> for
 floating-point types.
-Such an overload is proposed in <a href="#proposed-abs">§ 9.6 Absolute values</a>.</p>
+Such an overload is proposed in <a href="#proposed-abs">§ 9.7 Absolute values</a>.</p>
    <h4 class="heading settled" data-level="8.2.12" id="cmath-implementation-experience"><span class="secno">8.2.12. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code></span><a class="self-link" href="#cmath-implementation-experience"></a></h4>
    <p>libstdc++, libc++, and the MSVC STL implement the integral math overloads using SFINAE.
 Effectively, they define function templates using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>enable_if_t</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>is_integral_v</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-></code>.
@@ -3667,20 +3681,15 @@ is generalized by default.
 The corresponding <a href="https://github.com/kokkos/stdBLAS">reference implementation</a> can operate on <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p>Providing specializations for specific widths is a quality-of-implementation issue.</p>
    <h4 class="heading settled" data-level="8.2.15" id="cstdio-implementation-experience"><span class="secno">8.2.15. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code></span><a class="self-link" href="#cstdio-implementation-experience"></a></h4>
+   <p class="note" role="note"><span class="marker">Note:</span> This proposal makes 128-bit <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> support entirely optional
+(see <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> for wording).</p>
    <p>Similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code>, extending support to 128-bit integers for printing and parsing
 requires only moderate effort because the underlying algorithm easily generalizes to any bit size.
 The <code class="highlight"><c- n>PRI</c-><c- o>*</c-><c- n>LEAST128</c-></code> et al. macros in <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code> would also need to be defined,
-and would expand to an implementation-defined format constant.
-No change to the <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> grammar is required.</p>
+and would expand to an implementation-defined format constant.</p>
    <p>LLVM libc currently uses a <a href="https://github.com/llvm/llvm-project/blob/8373ceef8f2ee377d6daf884e2f3ea11408a7fe2/libc/src/stdio/printf_core/int_converter.h#L50"><code class="highlight"><c- n>num_to_strview</c-><c- p>(</c-><c- b>uintmax_t</c-><c- p>,</c-> <c- p>...)</c-></code></a> function for stringification.
 This would require replacement, possibly with a function template.
 Other standard libraries may be impacted more significantly.</p>
-   <p>However, this all assumes that the C++ standard library won’t simply forward to the system’s
-libc <code class="highlight"><c- n>printf</c-></code> implementation.</p>
-   <p class="issue" id="issue-9137d6de"><a class="self-link" href="#issue-9137d6de"></a> The only way to guarantee <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> support for 128-bit is to include it in the
-C++ runtime library.
-Feedback from SG22 is required regarding <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> capabilities
-for 128-bit integers.</p>
    <div class="note" role="note">
      <span class="marker">Note:</span> With the changes from <a data-link-type="biblio" href="#biblio-n2680" title="Specific width length modifier">[N2680]</a> included, an alternative way of printing 128-bit
 integers is: 
@@ -3788,7 +3797,24 @@ if and only if the implementation defines the corresponding <em>typedef-name</em
 if <em>N</em> is greater than 64. <br>[<em>Example</em>: <code class="highlight"><c- n>int_least128_t</c-></code> is an extended integer type. <code class="highlight"><c- b>int_least64_t</c-></code> is an extended integer type or a standard integer type whose width is at least 64.  — <em>end example</em>] </ins>
    </blockquote>
    <p class="note" role="note"><span class="marker">Note:</span> This restriction is intended to address <a href="#impact-on-overload-sets">§ 6.2 Impact on overload sets</a>.</p>
-   <h3 class="heading settled" data-level="9.3" id="proposed-bitset"><span class="secno">9.3. </span><span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span><a class="self-link" href="#proposed-bitset"></a></h3>
+   <h3 class="heading settled" data-level="9.3" id="proposed-inttypes"><span class="secno">9.3. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-inttypes"></a></h3>
+   <p>In subclause 17.14 [support.c.headers], add the following subclause:</p>
+   <blockquote>
+     <b><ins>17.14.X Header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code></ins></b> 
+    <p>
+     <ins> The contents of the C++ header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code> are the same as the C standard library
+header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code> with the following exception:
+The definition of the <code class="highlight"><c- n>fprintf</c-></code> and <code class="highlight"><c- n>fscanf</c-></code> macros for the corresponding
+integers in the header <code class="highlight"><c- o>&lt;</c-><c- n>stdint</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code> is optional for any integer with a width greater
+than 64.
+However, if any macro for an integer with width <em>N</em> is defined,
+all macros corresponding to integers with the same or lower width as <em>N</em> shall be defined. <br><br> See also: ISO/IEC 9899:2018, 7.8.1 </ins>
+    </p>
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> This effectively makes <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> 128-bit support optional because without any <code class="highlight"><c- n>PRI</c-></code>/<code class="highlight"><c- n>SCN</c-></code> macros, the user has no standard way of using these functions with 128-bit integers.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> After rebasing on C23, additional restrictions to <code class="highlight"><c- n>stdio</c-><c- p>.</c-><c- n>h</c-></code> must be applied
+so that <code class="highlight"><c- o>%</c-><c- n>w128d</c-></code> (see <a data-link-type="biblio" href="#biblio-n2680" title="Specific width length modifier">[N2680]</a>) is not mandatory in C++.</p>
+   <h3 class="heading settled" data-level="9.4" id="proposed-bitset"><span class="secno">9.4. </span><span class="content">Class template <code class="highlight"><c- n>bitset</c-></code></span><a class="self-link" href="#proposed-bitset"></a></h3>
    <p>In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">    <c- c1>// [bitset.cons], constructors</c->
@@ -3849,7 +3875,7 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
      . 
     </p>
    </blockquote>
-   <h3 class="heading settled" data-level="9.4" id="proposed-numeric-conversions"><span class="secno">9.4. </span><span class="content">Numeric conversions</span><a class="self-link" href="#proposed-numeric-conversions"></a></h3>
+   <h3 class="heading settled" data-level="9.5" id="proposed-numeric-conversions"><span class="secno">9.5. </span><span class="content">Numeric conversions</span><a class="self-link" href="#proposed-numeric-conversions"></a></h3>
    <p>Wording for <code class="highlight"><c- n>to_string</c-></code> requires no changes after <a data-link-type="biblio" href="#biblio-schultke1" title="Better, constexpr to_string">[Schultke1]</a>.
 However, should those changes not be accepted,
 update subclause 23.4.2 [string.syn] as follows:</p>
@@ -3887,7 +3913,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     </p>
     <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
-   <h3 class="heading settled" data-level="9.5" id="proposed-iota"><span class="secno">9.5. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
+   <h3 class="heading settled" data-level="9.6" id="proposed-iota"><span class="secno">9.6. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
    <p>In subclause 26.6.4.2 [ranges.iota.view], update paragraph 1 as follows:</p>
    <blockquote>
      Let <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-><c- p>(</c-><c- n>W</c-><c- p>)</c-></i></code> be defined as follows: 
@@ -3911,7 +3937,7 @@ An extended integer type still models signed-integer-like, so GCC’s existing i
 using <code class="highlight"><c- b>__int128</c-></code> remains valid.
 However, a wider extended integer type is no longer the mandatory difference type (if it exists)
 as per the second bullet.</p>
-   <h3 class="heading settled" data-level="9.6" id="proposed-abs"><span class="secno">9.6. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
+   <h3 class="heading settled" data-level="9.7" id="proposed-abs"><span class="secno">9.7. </span><span class="content">Absolute values</span><a class="self-link" href="#proposed-abs"></a></h3>
    <p>In subclause 28.7.1 [cmath.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight">  <c- c1>// [c.math.abs], absolute values</c->
@@ -3938,7 +3964,16 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
-   <h3 class="heading settled" data-level="9.7" id="proposed-atomic"><span class="secno">9.7. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
+   <h3 class="heading settled" data-level="9.8" id="proposed-cinttypes"><span class="secno">9.8. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-cinttypes"></a></h3>
+   <p>In subclause 31.13.2 [cinttypes.syn], update paragraph 1 as follows:</p>
+   <blockquote>
+     The contents and meaning of the header <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code> are the same as the 
+    <del>C standard library</del>
+    <ins>C++</ins>
+     header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>, with the following changes: 
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> Unlike the C standard library header, the <em>C header</em> has the changes described in <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> applied.</p>
+   <h3 class="heading settled" data-level="9.9" id="proposed-atomic"><span class="secno">9.9. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
    <p>In subclause 33.5.2 [atomics.syn], update the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><c- c1>// all freestanding</c->
@@ -3985,6 +4020,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
    <h2 class="heading settled" data-level="10" id="acknowledgements"><span class="secno">10. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Jonathan Wakely and other participants in the std-proposals mailing list whose feedback
 has helped me improve the quality of this proposal substantially.</p>
+   <p>I also thank Lénárd Szolnoki for contributing the example in <a href="#lifting-library-restrictions">§ 2.1 Lifting library restrictions</a>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> See <a data-link-type="biblio" href="#biblio-std-proposals" title="[std-proposals] 128-bit integers">[std-proposals]</a> for discussion of this proposal.</p>
   </main>
 <script>
@@ -4183,10 +4219,3 @@ has helped me improve the quality of this proposal substantially.</p>
    <dt id="biblio-wikipedia">[Wikipedia]
    <dd>VA. <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format#Hardware_support"><cite>Quadruple-precision floating-point format - Hardware support</cite></a>. URL: <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format#Hardware_support">https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format#Hardware_support</a>
   </dl>
-  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
-  <div style="counter-reset:issue">
-   <div class="issue"> The only way to guarantee <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> support for 128-bit is to include it in the
-C++ runtime library.
-Feedback from SG22 is required regarding <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> capabilities
-for 128-bit integers. <a class="issue-return" href="#issue-9137d6de" title="Jump to section">↵</a></div>
-  </div>
