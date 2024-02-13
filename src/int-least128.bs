@@ -682,11 +682,14 @@ For example, `stdbit.h` requires type-generic functions to support all extended 
 
 ## Impact on the core language ## {#core-impact}
 
-The proposal makes no changes to the core language.
-The existing semantics of extended integers are sufficient
+The proposal makes no changes to the core language
+because existing semantics of extended integers are sufficient
 (see [[#extended-conversion-rank]] for discussion).
+See also [[#user-defined-literals]].
 
-However, it is worth noting that the existence of `std::uint_least128_t` leads to some oddities:
+### Note on surprising semantics ### {#note-on-surprising-semantics} 
+
+It is worth noting that the existence of `std::uint_least128_t` leads to some oddities:
 
 - The result of the `sizeof` operator can be a 128-bit integer.
 - The underlying type of enumerations can be a 128-bit integer.
@@ -1662,6 +1665,45 @@ I believe these semantics to be sufficiently clear; they don't require any chang
 
 Note: The rules for determining the better overload are based on implicit conversion sequences.
 If the rules for conversions are unchanged, by proxy, overload resolution remains unchanged.
+
+## Do we need new user-defined literals? ## {#user-defined-literals}
+
+No, not necessarily.
+If the user desperately wants to define a user-defined literal which accepts
+128-bit numeric values and beyond, they can write:
+
+<div class=example>
+```cpp
+constexpr int operator""_zero(const char*) {
+    return 0;
+}
+
+int x = 100000000000000000000000000000000000000000000000000000000000000000_zero;
+```
+</div>
+
+Obviously, this forces the user into parsing the input string at compile-time if they want
+to obtain a numeric value.
+A literal operator of the form `operator""_zero(unsigned long long)` circumvents this problem,
+but `long long` is typically not 128-bit.
+Therefore, it could be argued that these rules should be expanded to save the user the trouble
+of parsing.
+
+However, this is not proposed because it lacks motivation.
+User-defined literals have diminishing returns the longer they are:
+- The difference between `0s` and `chrono::seconds{0}` is huge: 800%.
+- The difference between `1000000000s` and `chrono::seconds{1000000000}` is not: ~150%.
+
+The shortest user-defined literal that does not fit into `unsigned long long` is
+`0xfffffffffffffffffs`, which is 20 characters long.
+At this length, how much utility does a user-defined literal provide?
+Very little.
+
+However, if WG21 favors new forms of `operator""` for
+integer types wider than `unsigned long long`, I am open to working on this.
+
+Note: The standard currently does not allow <code>operator""_zero(<i>integer</i>)</code> for any
+<code><i>integer</i></code> except `unsigned long long`.
 
 ## Why no `std::div`? ## {#div}
 

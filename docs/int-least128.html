@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="720acae64b3c33855b00f66677f91bc6d354e199" name="revision">
+  <meta content="7941cef35507e35033502db4510c24c2c184b3e7" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2198,7 +2198,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#int-least128-t-in-c"><span class="secno">4.1.2</span> <span class="content"><code class="highlight"><c- n>int_least128_t</c-></code> in C</span></a>
         <li><a href="#c-library-impact"><span class="secno">4.1.3</span> <span class="content">C library impact</span></a>
        </ol>
-      <li><a href="#core-impact"><span class="secno">4.2</span> <span class="content">Impact on the core language</span></a>
+      <li>
+       <a href="#core-impact"><span class="secno">4.2</span> <span class="content">Impact on the core language</span></a>
+       <ol class="toc">
+        <li><a href="#note-on-surprising-semantics"><span class="secno">4.2.1</span> <span class="content">Note on surprising semantics</span></a>
+       </ol>
       <li>
        <a href="#library-impact"><span class="secno">4.3</span> <span class="content">Impact on the library</span></a>
        <ol class="toc">
@@ -2264,7 +2268,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#software-emulation-acceptable"><span class="secno">7.6.2</span> <span class="content">Software emulation is acceptable</span></a>
        </ol>
       <li><a href="#extended-conversion-rank"><span class="secno">7.7</span> <span class="content">Should extended integer semantics be changed?</span></a>
-      <li><a href="#div"><span class="secno">7.8</span> <span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span></a>
+      <li><a href="#user-defined-literals"><span class="secno">7.8</span> <span class="content">Do we need new user-defined literals?</span></a>
+      <li><a href="#div"><span class="secno">7.9</span> <span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span></a>
      </ol>
     <li>
      <a href="#implementation-experience"><span class="secno">8</span> <span class="content">Implementation experience</span></a>
@@ -2841,10 +2846,12 @@ if it was part of the C++ runtime library.</p>
 it would need to add extended integer support in a few other places.
 For example, <code class="highlight"><c- n>stdbit</c-><c- p>.</c-><c- n>h</c-></code> requires type-generic functions to support all extended integers.</p>
    <h3 class="heading settled" data-level="4.2" id="core-impact"><span class="secno">4.2. </span><span class="content">Impact on the core language</span><a class="self-link" href="#core-impact"></a></h3>
-   <p>The proposal makes no changes to the core language.
-The existing semantics of extended integers are sufficient
-(see <a href="#extended-conversion-rank">§ 7.7 Should extended integer semantics be changed?</a> for discussion).</p>
-   <p>However, it is worth noting that the existence of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> leads to some oddities:</p>
+   <p>The proposal makes no changes to the core language
+because existing semantics of extended integers are sufficient
+(see <a href="#extended-conversion-rank">§ 7.7 Should extended integer semantics be changed?</a> for discussion).
+See also <a href="#user-defined-literals">§ 7.8 Do we need new user-defined literals?</a>.</p>
+   <h4 class="heading settled" data-level="4.2.1" id="note-on-surprising-semantics"><span class="secno">4.2.1. </span><span class="content">Note on surprising semantics</span><a class="self-link" href="#note-on-surprising-semantics"></a></h4>
+   <p>It is worth noting that the existence of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> leads to some oddities:</p>
    <ul>
     <li data-md>
      <p>The result of the <code class="highlight"><c- k>sizeof</c-></code> operator can be a 128-bit integer.</p>
@@ -2874,7 +2881,7 @@ The same applies to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>siz
 it’s just a possibility.
 Whether to define them as such is a QoI issue in general, and won’t be discussed further.</p>
    <h4 class="heading settled" data-level="4.3.1" id="library-impact-language-support"><span class="secno">4.3.1. </span><span class="content">Language support library</span><a class="self-link" href="#library-impact-language-support"></a></h4>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> may need an overload for 128-bit integers.<br> <strong>Action:</strong> ✔️ None because we don’t support it (see <a href="#div">§ 7.8 Why no std::div?</a>).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> may need an overload for 128-bit integers.<br> <strong>Action:</strong> ✔️ None because we don’t support it (see <a href="#div">§ 7.9 Why no std::div?</a>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code> may need 128-bit support.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#to-integer-implementation-experience">§ 8.2.1 std::to_integer</a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> needs 128-bit integer feature-testing macro.<br> <strong>Action:</strong> ⚠️ Add macros (see <a href="#proposed-version">§ 9.1 Header &lt;version></a> for wording).</p>
@@ -3610,7 +3617,40 @@ For example, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int128_t</
    <p>I believe these semantics to be sufficiently clear; they don’t require any change.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The rules for determining the better overload are based on implicit conversion sequences.
 If the rules for conversions are unchanged, by proxy, overload resolution remains unchanged.</p>
-   <h3 class="heading settled" data-level="7.8" id="div"><span class="secno">7.8. </span><span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span><a class="self-link" href="#div"></a></h3>
+   <h3 class="heading settled" data-level="7.8" id="user-defined-literals"><span class="secno">7.8. </span><span class="content">Do we need new user-defined literals?</span><a class="self-link" href="#user-defined-literals"></a></h3>
+   <p>No, not necessarily.
+If the user desperately wants to define a user-defined literal which accepts
+128-bit numeric values and beyond, they can write:</p>
+   <div class="example" id="example-32654a40">
+    <a class="self-link" href="#example-32654a40"></a> 
+<pre class="language-cpp highlight"><c- k>constexpr</c-> <c- b>int</c-> <c- k>operator</c-><c- s>""</c-><c- n>_zero</c-><c- p>(</c-><c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
+<c- p>}</c->
+
+<c- b>int</c-> <c- n>x</c-> <c- o>=</c-> <c- mi>100000000000000000000000000000000000000000000000000000000000000000</c-><c- n>_zero</c-><c- p>;</c->
+</pre>
+   </div>
+   <p>Obviously, this forces the user into parsing the input string at compile-time if they want
+to obtain a numeric value.
+A literal operator of the form <code class="highlight"><c- k>operator</c-><c- s>""</c-><c- n>_zero</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-><c- p>)</c-></code> circumvents this problem,
+but <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is typically not 128-bit.
+Therefore, it could be argued that these rules should be expanded to save the user the trouble
+of parsing.</p>
+   <p>However, this is not proposed because it lacks motivation.
+User-defined literals have diminishing returns the longer they are:</p>
+   <ul>
+    <li data-md>
+     <p>The difference between <code class="highlight"><c- mi>0</c-><c- n>s</c-></code> and <code class="highlight"><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-><c- p>{</c-><c- mi>0</c-><c- p>}</c-></code> is huge: 800%.</p>
+    <li data-md>
+     <p>The difference between <code class="highlight"><c- mi>1000000000</c-><c- n>s</c-></code> and <code class="highlight"><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-><c- p>{</c-><c- mi>1000000000</c-><c- p>}</c-></code> is not: ~150%.</p>
+   </ul>
+   <p>The shortest user-defined literal that does not fit into <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> is <code class="highlight"><c- mh>0xfffffffffffffffff</c-><c- n>s</c-></code>, which is 20 characters long.
+At this length, how much utility does a user-defined literal provide?
+Very little.</p>
+   <p>However, if WG21 favors new forms of <code class="highlight"><c- k>operator</c-><c- s>""</c-></code> for
+integer types wider than <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>, I am open to working on this.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The standard currently does not allow <code class="highlight"><c- k>operator</c-><c- s>""</c-><c- n>_zero</c-><c- p>(</c-><i><c- n>integer</c-></i><c- p>)</c-></code> for any <code class="highlight"><i><c- n>integer</c-></i></code> except <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>.</p>
+   <h3 class="heading settled" data-level="7.9" id="div"><span class="secno">7.9. </span><span class="content">Why no <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code>?</span><a class="self-link" href="#div"></a></h3>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> is a function which returns the quotient and remainder of an integer division in one
 operation.
 This proposal intentionally doesn’t extend support to 128-bit types because each overload of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>div</c-></code> returns a different type.
