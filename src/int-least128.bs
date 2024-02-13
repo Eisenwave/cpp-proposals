@@ -683,6 +683,9 @@ For example, `stdbit.h` requires type-generic functions to support all extended 
 ## Impact on the core language ## {#core-impact}
 
 The proposal makes no changes to the core language.
+The existing semantics of extended integers are sufficient
+(see [[#extended-conversion-rank]] for discussion).
+
 However, it is worth noting that the existence of `std::uint_least128_t` leads to some oddities:
 
 - The result of the `sizeof` operator can be a 128-bit integer.
@@ -1264,103 +1267,254 @@ Nevertheless, many of the changes in [[#proposed-wording]] pave the way for a fu
 `std::int_least256_t` or even `std::int_least512_t`.
 There would be no wording impact other than defining the necessary aliases and macros.
 
+## Why no class type? ## {#why-not-class-type}
+
+Instead of an extended integer type, it would also be possible to provide the user with a
+128-bit class type.
+This could even be done through a general `std::big_int<N>` class.
+However, there are compelling reasons against doing so:
+
+1. `std::int_least128_t` is sufficiently common to where the added cost of class type
+    (overload resolution for operators, function call evaluation in constant expressions, etc.)
+    would be a burden to the user.
+    `__int128` is the "work horse" of any multi-precision library which uses 64-to-128-bit
+    widening operations (see [[#multi-precision-operations]]).
+    This cost could add up quickly.
+
+2. A fundamental type also comes with integer literals, and up to 128-bit, there are still
+    reasonable use cases for integer literals.
+    [[#motivation-and-scope]] shows multiple examples where 128-bit literals were used.
+    It would be ideal to represent an IPv6 address using a hexadecimal literal without
+    having to parse a string representation of such an address.
+
+3. There are 128-bit architectures where the general purpose register size is 128-bit.
+    For example, the RV128I variant of RISC-V is such an architecture.
+    To be fair, there exists no implementation of RV128I yet.
+    Still, it would be unusual not to have a fundamental type that represents the
+    general purpose register.
+
+In essence, 128-bit is still "special" enough to deserve a fundamental type.
+Beyond 128-bit, even hexadecimal literals become hard to read due to their sheer length,
+and we are unlikely to find any ISA with a 256-bit register size,
+even counting theoretical ISAs like RV128I.
+
 ## Why no bit-precise integers? ## {#bit-precise-integers}
 
 Instead of putting any work into 128-bit integers, it would also be possible to integrate
 bit-precise integers (C's `_BitInt(N)` type, proposed in [[N2763]]) into the C++ standard.
-However, this is not proposed, for reasons described below.
 
-### Massive effort ### {#bitint-massive-effort}
+This would be a sufficient alternative if `_BitInt` was a fundamental type,
+had integer literal support, and had strong library support.
+However, there are numerous reasons why `_BitInt` is not the right path for this proposal, described below.
+In short, this proposal argues that `_BitInt` does not bring sufficient value to C++ relative to its
+impact, and would better be exposed via a class type `std::big_int` than a fundamental type.
 
-One may ask:
+### `_BitInt` has no existing C++ work ### {#bitint-lack-of-work}
 
-> Why don't we just standardize `_BitInt(N)` and introduce 128-bit integers that way?
+After enquiry in the std-proposals mailing list, no one has expressed that they are working on
+`_BitInt`, nor has anyone expressed interest on beginning work on this.
+Right now, `_BitInt` is a purely hypothetical feature.
 
-In essence, this is asking:
-
-> Why don't we just build a ten-lane highway instead of a cyclist path?
-
-This be an enormously ambitious and time-intensive undertaking, with huge impact
-on the standard.
-
-It's not obvious whether this is even necessary.
-C is essentially forced into exposing features like `_Atomic`, `_Float128`, `_BitInt`, etc.
-as a keyword and fundamental type, where C++ often opts for templates and aliases.
-
-Currently, multi-precision libraries are able to detect support
-through `#if BITINT_MAXWIDTH >= /* needed size */` and bit-precise integers if available.
-C++ has had high-quality multi-precision libraries such as [[BoostMultiPrecision]]
-for a long time, with an ergonomic interface.
-Is it even possible to justify the extreme standardization effort?
+### `_BitInt` has less motivation in C++ ### {#bitint-lack-of-motivation}
 
 A significant part of the rationale for [[N2709]] was that only `_BitInt` can utilize hardware
 resources optimally on hardware such as FPGAs that have a native 2031-bit type.
 C++ is much less ambitious in its goal of supporting *all* hardware,
 with changes such as C++20 effectively mandating two's complement signed integers.
+C23 supporting `_BitInt` is not rationale for a C++ fundamental type in itself.
+
 Therefore, a limited solution as focusing on 128-bit is not unreasonable.
 
-### The many issues of `_BitInt` in C++ ### {#bitint-issues-in-c++}
+### `_BitInt` should be exposed as a class type ### {#bitint-should-be-class-type}
 
-`_BitInt` does not satisfy the goals of this proposal for multiple reasons:
+By default, all new language features are library features.
+If it's possible to express N-bit integers through a class, then this is the go-to solution.
 
-1. `_BitInt` in C23 isn't required to support 128 bits, only as many bits as `long long` has.
-    In other words, `_BitInt` doesn't automatically give you 128-bit support.
+In C++, it is possible to expose the compiler's `_BitInt` functionality as follows:
+```cpp
+inline constexpr size_t big_int_max_width = BITINT_MAXWIDTH;
 
-2. This proposal only mandates `std::int_least128_t`, not any specific width.
-    Therefore, implementers have the luxury of relying on all integers being padding-free
-    and all integers having a width which is 2<sup>N</sup> times the platform's byte size.
-    Full `_BitInt` support requires tremendously greater implementation effort because these
-    assumptions cannot be made.
+template <size_t N>
+  requires (N <= BITINT_MAXWIDTH)
+struct big_int {
+    _BitInt(N) _M_value;
 
-3. `_BitInt` also breaks assumptions in existing, generic code.
-    C++ users have enjoyed the luxury of padding-free integers on conventional implementations
-    for a very long time, and some code depends on it.
-    It may depend through anti-patterns like using `memcmp` for comparison of `struct`s storing integers,
-    or more justified uses like `std::bit_cast<T>(integer)`.
-    `_BitInt` inevitably breaks assumptions about padding and size, which is a great challenge
-    to both the implementation and C++ users.
-    Therefore, it's unclear whether `_BitInt` would be exposed as a fundamental type at all.
+    // TODO: constructors, operator overloads, etc.
+};
 
-4. It is not reasonable to expect full library support for any bit size.
-    Even C doesn't require `_BitInt` support for its bit-manipulation functions, `printf`, and
-    other utilities.
-    The C++ standard library dwarfs that of C.
-    It is even less realistic to expect full support from all C++ numeric functions,
-    input/output facilities etc.
-    However, it is realistic to extend library support to *just* 128 bits.
+// TODO: define big_uint similarly
 
-5. Even if library support for specifically 128-bit bit-precise integers was added,
-    this would be very strange to specify in the standard.
-    Perhaps `_BitInt(128)` would be treated differently from other bit-precise types and given more support from
-    `std::format` and other functions, but this would be a somewhat arbitrary type, compared
-    to standard integer types, which have minimum sizes, not exact sizes.
-    Alternatively, support would be provided through a `_BitInt(N >= 128)` type, but to easily
-    refer to it, one would need a `std::bit_int_least128_t` alias,
-    or define `std::int_least128_t` to be bit-precise.
-    Both options have significant problems.
+// compatibility macros:
+#ifdef __cplusplus
+#define _BigInt(...) ::std::big_int<__VA_ARGS__>
+#define _BigUint(...) ::std::big_uint<__VA_ARGS__>
+#else
+#define _BigInt(...) _BitInt(__VA_ARGS__)
+#define _BIgUint(...) unsigned _BitInt(__VA_ARGS__)
+#endif
+```
 
-6. `_BitInt` creates a parallel system to the existing standard and extended integer types.
-    Bit-precise integers have different promotion/conversion rules, and may behave differently
-    in terms of overload resolution when standardized in C++.
-    An extended 128-bit type would integrate more naturally into the existing type system.
+Similar to `std::atomic` exposing C's `_Atomic` types, `std::big_int` can expose `_BitInt`.
+Unless an extremely strong case for a new category of integer types in the core language can be
+made, this is the obvious solution.
 
-### Upgrade path unclear ### {#bitint-upgrade-path}
+Of course, a class type is more costly in terms of compilation slowdown as well as
+performance on debug builds and in constant evaluations.
+This is acceptable because `_BitInt` is not a replacement for the existing integers,
+but an infrequently used special-purpose type which only comes into play when no other size
+would suffice; not even 128-bit.
 
-It is important to consider what upgrade path `_BitInt` would offer existing code bases
-where `__int128` is used.
-Bit-precise integers in C have different conversion and promotion rules,
-and it's not obvious whether they should be made stricter in C++.
-There are open questions such as:
+### `_BitInt` is not a replacement for standard integers ### {#bitint-not-replacement}
 
-- Should mixed signed/unsigned comparison be permitted?
-- Should mixed signed/unsigned arithmetic be permitted?
-- Should implicit signed/unsigned conversion be permitted?
-- Should truncating conversion be permitted, or require an explicit cast?
+In C, `_BitInt` is a second-class citizen.
+The overwhelming majority of library functions take `int`, `long`, and other standard integer types.
+Conversion rules are also biased in favor of standard integers.
+For example, `_BitInt(32) {0} + (int) {0}` is of type `int` in C, if `int` is 32-bit.
 
-C simply says yes to all these issues, but that doesn't mean C++ has to be equally permissive.
-These questions need answers, and the more of them are no,
-the less of a drop-in replacement `_BitInt` is for existing uses of `__int128`.
+Standard integers are essentially engraved into the language and have special status, both in C
+and in C++.
+Billions of lines of code use these integers, and this is never going to change.
+Virtually all learning resources in existence teach standard integers or `<cstdint>` aliases,
+which are standard integers in all implementations.
 
+Even if `_BitInt` was a replacement for the existing integers, the transition process would take a century.
+It is better to think of it as an extension of the existing integers.
+
+### `_BitInt` does not guarantee 128-bit support ### {#bitint-128-bit-support}
+
+The whole point of this proposal is to guarantee developers a 128-bit type.
+However, `_BitInt(N)` is only valid for `N <= BITINT_MAXWIDTH`, where `BITINT_MAXWIDTH`
+is guaranteed to be no more than the width of `long long`.
+
+### `_BitInt` requires more library effort ### {#bitint-library-effort}
+
+This proposal only mandates `std::int_least128_t`, not any specific width.
+Therefore, implementers have the luxury of relying on all integers being padding-free
+and all integers having a width which is 2<sup>N</sup> times the platform's byte size.
+
+These assumptions greatly simplify the implementation of various algorithms.
+From personal experience, implementing any functions in `<bit>` is tremendously easier
+when it is guaranteed that integers have a 2<sup>N</sup> width.
+
+Full `_BitInt` library support requires tremendously greater library effort.
+It is unclear what parts of the standard library can be burdened.
+
+### `_BitInt` breaks more existing code ### {#bitint-breaking-code}
+
+`_BitInt` also breaks assumptions in existing, generic code.
+C++ users have enjoyed the luxury of padding-free integers on conventional implementations
+for a very long time, and some code depends on it.
+
+It may depend through anti-patterns like using `memcmp` for comparison of `struct`s storing integers,
+or more justified uses like `std::bit_cast<T>(integer)`.
+`_BitInt` inevitably breaks assumptions about padding and size, which is a great challenge
+to both the implementation and C++ users.
+
+<div class=example>
+The following pseudo-code has undefined behavior if `_BitInt(30)` has padding bits.
+
+```cpp
+template <std::integral T>
+auto to_byte_array(const T& x) {
+    return std::bit_cast<std::array<std::byte, sizeof(T)>>(x);
+}
+
+int main() {
+    _BitInt(30) x = ...;
+    write_buffer_to_file(file, to_byte_array(x));
+}
+```
+Assuming a 4-byte array is returned, `std::bit_cast` one of these bytes would have indeterminate
+value because the corresponding byte in `_BitInt(30)` has padding bits.
+Reading this indeterminate value to store it in a file is undefined behavior.
+</div>
+
+While the assumption that all integers are padding-free is not universally correct,
+C++ users have enjoyed this guarantee for decades, and an unknown amount of code depends on it.
+If `_BitInt` was just another integral type, it could silently break existing code like in the example,
+despite a `std::integral` constraint.
+
+Note: `std::int_least128_t` does not have the same problem because the implementation can define
+it as a type with more than 128 bits which has no padding, if need be.
+
+### `_BitInt` has teachability issues ### {#bitint-teachability}
+
+`_BitInt` has different promotion and conversion rules.
+These rules are not necessarily obvious, especially when bit-precise integers interact with
+other types.
+
+For example, `x + 1` is of type `int` if `x` is of type `_BitInt(32)` or narrower, and `int` is 32-bit.
+Not only does the user have to learn the existing integer conversion and promotion rules,
+the user also has to learn this new `_BitInt` system and how it interacts with the old system.
+This also complicates overload resolution:
+
+<div class=example>
+
+```cpp
+void foo(int);
+void foo(_BitInt(32));
+
+int main() {
+    _BitInt(32) x = 0;
+    foo(x); // calls which?
+}
+```
+If `int` dominates in implicit conversions, should it also dominate in overload resolution so that
+`foo(int)` is selected?
+The answer is not entirely clear.
+</div>
+
+<div class=example>
+
+```cpp
+void foo(int);
+void foo(_BitInt(32));
+
+int main() {
+    foo(1'000'000'000); // calls which?
+}
+```
+On a target where `int` is 16-bit, the integer literal is of type `long`.
+It is possible to convert it to `int` in a narrowing conversion, and possible
+to convert it to `_BitInt(32)` losslessly.
+
+- Should overload resolution prefer the lossless conversion to `_BitInt(32)`?
+    After all, lossless is better.
+- Should the call be ambiguous?
+    After all, that's what normally happens when there are two viable candidates with equally long
+    conversion sequences.
+- Should `foo(int)` be called?
+    After all, standard integers are normally dominant, and `1'000'000'000` could be of type `int`
+    if only `int` was 32-bit.
+
+There is a compelling case for each of these options, and no matter what design choice is made,
+the complexity of the language increases significantly.
+</div>
+
+In conclusion, `_BitInt` would add a lot of language complexity to C++ and therefore make
+the language harder to teach and use.
+
+### `_BitInt` in C may be too permissive ### {#bitint-too-permissive}
+
+Many C++ users have lamented that integers are too permissive.
+As is tradition, C has not restricted the behavior of `_BitInt` substantially:
+- Signed/unsigned mixed comparison are permitted.
+- Signed/unsigned mixed arithmetic is permitted.
+- Implicit truncating conversion is permitted.
+- Implicit signed/unsigned conversion is permitted.
+
+One substantial difference is that `_BitInt` is not promoted to `int`, other than that,
+the semantics are the same as the old integers.
+If `_BitInt` behaves almost the same as standard integers and brings all of this bug-prone
+behavior with it, how can one justify adding it as a new fundamental type?
+
+Of course, C++ could decide to make these semantics more restrictive for its `_BitInt` type,
+similar to how implicit casts from `void*` are only permitted in C, but not in C++.
+However, this would complicate writing C/C++ interoperable code,
+and make the language even less teachable since `_BitInt` semantics become language-specific.
+
+Furthermore, the more distinct the `_BitInt` semantics become, the less of a drop-in replacement for `__int128`
+it becomes:
 <div class=example>
 The following function yields the high 64 bits of a multiplication.
 Similar code can be found in [[Stockfish]] (see also [[#widening-operations]]).
@@ -1376,7 +1530,14 @@ If `u128` is a more restrictive C++ `unsigned _BitInt(128)` which forbids narrow
 this code is ill-formed. 
 </div>
 
-By comparison `std::int_least128_t` has exactly the same rules as existing integers,
+In short, the dilemma is as follows:
+- If `_BitInt` is as permissive as existing integers, it is harder to justify its addition
+    to the language because it innovates too little.
+- If `_BitInt` is more restrictive, its impact on existing code and on language
+    teachability is greater.
+
+There is no obvious path here, only a bottomless potential for discussion.
+By comparison, `std::int_least128_t` has exactly the same rules as existing integers,
 which `__int128` follows.
 The user can use it as a drop-in replacement:
 
@@ -1390,12 +1551,8 @@ using i128 = <del>__int128</del><ins>std::int128_t</ins>;
 </pre>
 </blockquote>
 
-Ultimately, this proposal is intended to help developers in the near future.
-There are countless open issues regarding `_BitInt` and we don't know what will come out the other
-end, after years of standardization work, if anything at all.
-No effort towards its standardization has been made yet, and the required effort is entirely unclear.
 
-### False dichotomy ### {#bitint-false-dichotomy}
+### `_BitInt` false dichotomy ### {#bitint-false-dichotomy}
 
 The `_BitInt` vs. `std::int_least128_t` argument is a false dichotomy.
 Bit-precise integers essentially create a parallel, alternative type system with
@@ -1405,59 +1562,11 @@ Defining any `<cstdint>`/`stdint.h` type alias as a bit-precise integer would be
 to language users, who have certain expectations towards aliases in these headers.
 These expectations have been formed over the past 30 years.
 
-Therefore, I believe it is reasonable to maintain the "legacy" type system in parallel to
-`_BitInt`.
+Therefore, even if all issues regarding `_BitInt` mentioned in this paper are resolved,
+and `_BitInt` becomes a fundamental type,
+I believe it is reasonable to maintain the "legacy" type system in parallel.
 
-### Comparison of bit-precise integers and 128-bit integers ### {#bitint-vs-uint128}
 
-<table>
-<tr>
-    <th></th><th>Bit-precise integers</th><th>`std::int_least128_t`</td>
-</tr>
-<tr>
-    <th>128-bit support mandatory</th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Drop-in replacement for `__int128` <sup>(1)</sup></th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>No core language changes</th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Impl. can guarantee padding-freedom <sup>(2)</sup></th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Impl. can guarantee 2<sup>N</sup> width <sup>(2)</sup></th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Should be fundamental type <sup>(3)</sup></sup></th><td>❓</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Low implementation effort (built-in)</th><td>❌</td><td>❌</td>
-</tr>
-<tr>
-    <th>Low implementation effort (library)</th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Integrates easily into the<br>existing system of standard integers</th><td>❌</td><td>✔️</td>
-</tr>
-<tr>
-    <th>Strong C library support required <sup>(4)</sup></th><td>❌</td><td>✔️</td>
-</tr>
-</table>
-
-<sup>(1)</sup> See [[#bitint-upgrade-path]].
-
-<sup>(2)</sup> See [[#bitint-issues-in-c++]] bullets 2 and 3.
-
-<sup>(3)</sup> There is an ongoing debate about whether `_BitInt` should be exposed as a
-fundamental type, or a class type, similar to `std::atomic`.
-See [[#bitint-issues-in-c++]] bullet 3 for more details.
-
-<sup>(4)</sup> The C23 standard currently does not mandate "full" library support for bit-precise integers.
-For example, `printf` would require a `PRIuLEASTN` format specifier macro to print `uint_least128_t`,
-but the existence of `_BitInt(128)` does not imply the existence of `uint_least128_t` or such
-a macro.
 
 ## Why not make it optional? ## {#why-not-optional}
 
@@ -1516,6 +1625,43 @@ If the user wants to perform a 128-bit integer division on an 8-bit machine,
 the language shouldn't artificially restrict them from doing so.
 The same principle applies to `long long`, `std::int_least128_t`, C23's `_BitInt(1024)`, etc.
 
+## Should extended integer semantics be changed? ## {#extended-conversion-rank}
+
+An interesting question is whether extended integer semantics make sense in the first place,
+or require some form of changes.
+The relevant standard section is 6.8.6 [conv.rank].
+
+In summary:
+
+<table>
+<tr>
+    <th>Relevant Rule</th><th>Example</th>
+</tr>
+<tr>
+    <td>Unsigned integers have the same rank as signed integers of equal width.</td>
+    <td>`std::uint128_t == std::int128_t`</td>
+</tr>
+<tr>
+    <td>Wider integers have greater rank.</td>
+    <td>`std::uint128_t == std::int64_t`</td>
+</tr>
+<tr>
+    <td>Standard integers of equal width have greater rank.</td>
+    <td>`long long > std::int128_t`<br>if `long long` is 128-bit</td>
+</tr>
+<tr>
+    <td>Extended integers with the same width are ranked *implementation-defined*.</td>
+    <td>`std::int_least128_t ?? std::int_fast128_t`<br>if these types are distinct</td>
+</tr>
+</table>
+
+7.4 [expr.arith.conv] decides that for integers of equal rank, the common type is unsigned.
+For example, `std::int128_t{} + std::uint128_t{}` is of type `std::uint128_t{}`.
+
+I believe these semantics to be sufficiently clear; they don't require any change.
+
+Note: The rules for determining the better overload are based on implicit conversion sequences.
+If the rules for conversions are unchanged, by proxy, overload resolution remains unchanged.
 
 ## Why no `std::div`? ## {#div}
 
