@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="7941cef35507e35033502db4510c24c2c184b3e7" name="revision">
+  <meta content="9cffa21f13aec6bff55b72d268c5ae36450822a4" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2239,6 +2239,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#possible-semantic-changes"><span class="secno">6.1</span> <span class="content">Possible semantic changes</span></a>
       <li><a href="#impact-on-overload-sets"><span class="secno">6.2</span> <span class="content">Impact on overload sets</span></a>
       <li><a href="#possible-assumption-violations"><span class="secno">6.3</span> <span class="content">Possible assumption violations</span></a>
+      <li>
+       <a href="#bitset-constructor"><span class="secno">6.4</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> constructor semantic changes</span></a>
+       <ol class="toc">
+        <li><a href="#bitset-constructor-proposed-solution"><span class="secno">6.4.1</span> <span class="content">Proposed solution</span></a>
+       </ol>
      </ol>
     <li>
      <a href="#design-considerations"><span class="secno">7</span> <span class="content">Design considerations</span></a>
@@ -2431,6 +2436,9 @@ AES variants with wider key sizes still use a block size of 128 bits.</p>
      <p>SHA-2 and SHA-3 produce outputs beyond 128-bit, but outputs can be truncated to 128-bit,
 or represented as a pair/array of 128-bit integers.</p>
    </ul>
+   <p>For example, the <code class="highlight"><c- n>AddRoundKey</c-></code> step in AES is simply a 128-bit bitwise XOR.</p>
+   <p>To be fair, the utility of 128-bit integers in cryptographic applications is often limited to
+providing storage for blocks and keys.</p>
    <h4 class="heading settled" data-level="3.1.2" id="random-number-generation"><span class="secno">3.1.2. </span><span class="content">Random number generation</span><a class="self-link" href="#random-number-generation"></a></h4>
    <p>Some random number generators produce 128-bit numbers.</p>
    <p>For example, the <a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSRPNG</a> (cryptographically secure pseudo-random number generator) <a href="https://en.wikipedia.org/wiki/Fortuna_(PRNG)">Fortuna</a> uses a block cipher to produce random numbers.
@@ -2902,7 +2910,8 @@ in name mangling.<br> <strong>Action:</strong> ✔️ None.</p>
    <p><strong>Issue:</strong> Integer comparison functions (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cmp_equal</c-></code> et al.) require 128-bit support. <strong>Action:</strong> ✔️ None
 (see <a href="#safe-comparison-implementation-experience">§ 8.2.3 std::cmp_xxx</a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integer_sequence</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None.</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional constructor taking <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a constructor
+(see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording and <a href="#bitset-constructor">§ 6.4 std::bitset constructor semantic changes</a> for discussion).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
 (see <a href="#charconv-implementation-experience">§ 8.2.4 &lt;charconv></a> for implementation experience).</p>
@@ -3228,6 +3237,47 @@ Assumptions about hardware or integer width limitations cannot hold back languag
 C would be stuck with 32-bit types if that had ever been a convincing rationale.
 Also, the introduction of a 128-bit type does not break existing code unless the user chooses
 to use it.</p>
+   <h3 class="heading settled" data-level="6.4" id="bitset-constructor"><span class="secno">6.4. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> constructor semantic changes</span><a class="self-link" href="#bitset-constructor"></a></h3>
+   <p>The only overload which accepts integers is <code class="highlight"><c- n>bitset</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-><c- p>)</c-></code>.
+Ideally, we would like to construct bitsets from wider integer types, if available. <strong>My proposed solution changes the semantics of this constructor</strong> (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
+   <p>The existing constructor is problematic for multiple reasons:</p>
+   <ol>
+    <li data-md>
+     <p>If extended by a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> overload, a call <code class="highlight"><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>></c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code> would become ambiguous.</p>
+    <li data-md>
+     <p>When called with negative numbers, a sign extension only takes place up to
+the width of <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>.
+Beyond that, the bits are zero-filled.</p>
+   </ol>
+   <div class="example" id="example-fe74c2f2">
+    <a class="self-link" href="#example-fe74c2f2"></a> The following assertion passes: 
+<pre class="language-cpp highlight"><c- cp>#include</c-> &lt;bitset>
+<c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- mi>128</c-><c- o>></c-> <c- n>bits</c-><c- p>(</c-><c- mi>-1</c-><c- p>);</c->
+<c- k>static_assert</c-><c- p>(</c-><c- n>bits</c-><c- p>.</c-><c- n>count</c-><c- p>()</c-> <c- o>==</c-> <c- mi>64</c-><c- p>);</c->
+</pre>
+   </div>
+   <p>The original behavior is very difficult to preserve if we add more overloads.
+If we added an <code class="highlight"><c- n>int_least128_t</c-></code> overload, then <code class="highlight"><c- n>bitset</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code> would be ambiguous.
+Therefore, we must at least have an overload for all integers with a conversion rank
+of <code class="highlight"><c- b>int</c-></code> or greater.</p>
+   <p>However, if so, <code class="highlight"><c- mi>-1</c-></code> under the current definition would result int a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- mi>128</c-><c- o>></c-></code> that has only 32 one-bits (assuming 32-bit <code class="highlight"><c- b>int</c-></code>).
+We could preserve the current behavior exactly if sign-extension occurred up to the width
+of <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code>; beyond that, zero-extension would be used.
+This is not proposed because the design makes no sense outside of its historical context.</p>
+   <h4 class="heading settled" data-level="6.4.1" id="bitset-constructor-proposed-solution"><span class="secno">6.4.1. </span><span class="content">Proposed solution</span><a class="self-link" href="#bitset-constructor-proposed-solution"></a></h4>
+   <p>Therefore, I propose to perform sign-extension for the full size of the <code class="highlight"><c- n>bitset</c-></code>.
+In other words, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>></c-><c- p>(</c-><c- mi>-1</c-><c- p>)</c-></code> would always be a bitset where every bit is set.
+This almost certainly matches the intent of the user.</p>
+   <p>A GitHub code search for <a href="https://github.com/search?type=code&amp;q=%2Fbitset%3C.*%3E%5C%28-%5B0-9%5D%2B%5C%29%2F+language%3Ac%2B%2B"><code class="highlight"><c- o>/</c-><c- n>bitset</c-><c- o>&lt;</c-><c- p>.</c-><c- o>*></c->\<c- p>(</c-><c- o>-</c-><c- p>[</c-><c- mi>0-9</c-><c- p>]</c-><c- o>+</c->\<c- p>)</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code></a> finds 30 uses of constructing a bitset from a negative literal.
+Of the ones which use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code>, all uses are of the form</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>></c-><c- p>(</c-><c- mi>-1</c-><c- p>)</c-></code> where <code class="highlight"><c- n>N</c-></code> is less than 64, or</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>></c-><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- mi>-1</c-><c- p>))</c-></code>.</p>
+   </ul>
+   <p>None of these existing uses would be affected.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording.</p>
    <h2 class="heading settled" data-level="7" id="design-considerations"><span class="secno">7. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
 A <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>least_uint128_t</c-></code> alias is the only option that does not involve any changes
@@ -3963,7 +4013,7 @@ so that <code class="highlight"><c- o>%</c-><c- n>w128d</c-></code> (see <a data
 <pre class="highlight">    <c- c1>// [bitset.cons], constructors</c->
     <c- k>constexpr</c-> <c- n>bitset</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
 <del>    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></del>
-<ins>    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- b>unsigned</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- n>llong</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
+<ins>    <c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
 <c- p>[...]</c->
     <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c->        <c- n>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
     <c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c->   <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
@@ -3971,29 +4021,39 @@ so that <code class="highlight"><c- o>%</c-><c- n>w128d</c-></code> (see <a data
       <c- k>constexpr</c-> <c- n>T</c-> <c- n>to</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
    </blockquote>
+   <p>In subclause 22.9.2.1 [template.bitset.general], add a paragraph:</p>
+   <blockquote>
+    <p class="indent">
+     <ins>For each function with a parameter of type <em>integer-least-int</em>,
+the implementation provides an overload for each cv-unqualified
+integer type ([basic.fundamental]) whose conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater,
+where <i>integer-least-int</i> in the function signature is replaced with that
+unsigned integer type.</ins>
+    </p>
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#bitset-constructor">§ 6.4 std::bitset constructor semantic changes</a> for discussion.</p>
    <p>In subclause 22.9.2.2 [template.bitset.const], update the constructors as follows:</p>
    <blockquote>
 <pre class="highlight"><del><c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></del>
-<ins><c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- b>unsigned</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- n>llong</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
+<ins><c- k>constexpr</c-> <c- n>bitset</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins>
 </pre>
     <p class="indent">
-     <ins>The implementation provides one overload for every unsigned integer type whose
-conversion rank is that of <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> or greater.</ins>
-    </p>
-    <p class="indent">
-      <em>Effects</em>: Initializes the first <code class="highlight"><c- n>M</c-></code> bit positions to the corresponding bit values in val. <code class="highlight"><c- n>M</c-></code> is the smaller of <code class="highlight"><c- n>N</c-></code> and the number of bits in the value representation
-([basic.types.general]) of 
+      <em>Effects</em>: Initializes the first <code class="highlight"><c- n>M</c-></code> bit positions to the corresponding bit values in val. <code class="highlight"><c- n>M</c-></code> is the smaller of <code class="highlight"><c- n>N</c-></code> and the 
+     <del>number of bits in the value representation</del>
+     <ins>width</ins>
+      ([basic.types.general]) of 
      <del><code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code></del>
-     <ins>the type of <code class="highlight"><c- n>val</c-></code></ins>
+     <ins><i>integer-least-int</i></ins>
      .
-If <code class="highlight"><c- n>M</c-> <c- o>&lt;</c-> <c- n>N</c-></code>, the remaining bit positions are initialized to zero. 
+If <code class="highlight"><c- n>M</c-> <c- o>&lt;</c-> <c- n>N</c-></code>, the remaining bit positions are initialized to 
+     <del>zero</del>
+     <ins>one if <code class="highlight"><c- n>val</c-></code> is negative, otherwise to zero</ins>
+     . 
     </p>
    </blockquote>
-   <p class="note" role="note"><span class="marker">Note:</span> It is possible that <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> is the same type
-as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is necessary to prevent a duplicate definition.</p>
    <p>In subclause 22.9.2.3 [bitset.members], make the following changes:</p>
    <blockquote>
-<pre class="highlight"><del><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- nf>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
+<pre class="highlight"><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- nf>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 </pre>
     <p class="indent">
      <del><em>Returns</em>: <code class="highlight"><c- n>x</c-></code>.</del>
@@ -4001,9 +4061,7 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
     <p class="indent">
      <del><em>Throws</em>: <code class="highlight"><c- n>overflow_error</c-></code> if the integral value <code class="highlight"><c- n>x</c-></code> corresponding to the bits in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> cannot be represented as type <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-></code>.</del>
     </p>
-<pre class="highlight"><del><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
-<ins><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c->      <c- nf>to_ulong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
+<pre class="highlight"><c- k>constexpr</c-> <c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- nf>to_ullong</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
 <ins>  <c- k>constexpr</c-> <c- n>T</c-> <c- n>to</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 </ins></pre>
@@ -4023,8 +4081,7 @@ as <code class="highlight"><c- n>uint_least128_t</c-></code>, so the mandate is 
 However, should those changes not be accepted,
 update subclause 23.4.2 [string.syn] as follows:</p>
    <blockquote>
-<pre class="highlight"><del>
-  <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
+<pre class="highlight"><del>  <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
@@ -4035,9 +4092,27 @@ update subclause 23.4.2 [string.syn] as follows:</p>
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>float</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
+<c- p>[...]</c->
+<del>  <c- n>wstring</c-> <c- n>to_wstring</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c-></del>
+<ins>  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>);</c-></ins>
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>float</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
 </pre>
    </blockquote>
-   <p>Under the same condition, in subclause 23.4.5 [string.conversions], update <code class="highlight"><c- n>to_string</c-></code>:</p>
+   <p>In subclause 23.4.2 [string.syn], add a paragraph:</p>
+   <blockquote>
+    <ins>For each function with a parameter of type <em>integer-least-int</em>,
+the implementation provides an overload for each cv-unqualified
+integer type ([basic.fundamental]) whose conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater,
+where <em>integer-least-int</em> in the function signature is replaced with that integer type.</ins>
+   </blockquote>
+   <p>In subclause 23.4.5 [string.conversions], update <code class="highlight"><c- n>to_string</c-></code>:</p>
    <blockquote>
 <pre class="highlight"><del>  <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
@@ -4050,11 +4125,22 @@ update subclause 23.4.2 [string.syn] as follows:</p>
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
   <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
 </pre>
-    <p class="indent">
-     <ins>The implementation provides one overload for every integer type whose
-conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater.</ins>
-    </p>
     <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
+   </blockquote>
+   <p>In subclause 23.4.5 [string.conversions], update <code class="highlight"><c- n>to_wstring</c-></code>:</p>
+   <blockquote>
+<pre class="highlight"><del>  <c- n>wstring</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c-></del>
+<ins>  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><i><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>val</c-><c- p>);</c-></ins>
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>float</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
+  <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
+</pre>
+    <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c->L<c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </p>
    </blockquote>
    <h3 class="heading settled" data-level="9.6" id="proposed-iota"><span class="secno">9.6. </span><span class="content">Iota view</span><a class="self-link" href="#proposed-iota"></a></h3>
    <p>In subclause 26.6.4.2 [ranges.iota.view], update paragraph 1 as follows:</p>
@@ -4087,9 +4173,17 @@ as per the second bullet.</p>
 <del>  <c- k>constexpr</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>int</c-> <c- n>j</c-><c- p>);</c->                                         <c- c1>// freestanding</c->
   <c- k>constexpr</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                               <c- c1>// freestanding</c->
   <c- k>constexpr</c-> <c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- nf>abs</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- b>int</c-> <c- n>j</c-><c- p>);</c->                     <c- c1>// freestanding</c-></del>
-<ins>  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>)</c-> <c- o>-></c-> <c- k>decltype</c-><c- p>(</c-><c- n>j</c-><c- p>);</c->    <c- c1>// freestanding</c-></ins>
-  <c- k>constexpr</c-> <i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>j</c-><c- p>);</c->         <c- c1>// freestanding-deleted</c->
+<ins>  <c- k>constexpr</c-> <i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>);</c-> <c- c1>// freestanding</c-></ins>
+  <c- k>constexpr</c-> <i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- n>floating</c-><c- o>-</c-><c- n>point</c-><c- o>-</c-><c- n>type</c-></i> <c- n>j</c-><c- p>);</c->           <c- c1>// freestanding-deleted</c->
 </pre>
+   </blockquote>
+   <p>In subclause 28.7.1 [cmath.syn], add a paragraph after paragraph 2:</p>
+   <blockquote>
+    <ins>For each function with a parameter of type <em>signed-integer-least-int</em>,
+the implementation provides an overload for each cv-unqualified
+signed integer type ([basic.fundamental]) whose conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater,
+where all uses of <em>signed-integer-least-int</em> in the function signature are replaced with that
+signed integer type.</ins>
    </blockquote>
    <p>In subclause 28.7.2 [c.math.abs], make the following changes:</p>
    <blockquote>
@@ -4099,14 +4193,12 @@ as per the second bullet.</p>
 <ins><c- k>constexpr</c-> <c- k>auto</c-> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>)</c-> <c- o>-></c-> <c- k>decltype</c-><c- p>(</c-><c- n>j</c-><c- p>);</c-></ins>
 </pre>
     <p class="indent">
-     <ins>The implementation provides one overload for every signed integer type whose
-conversion rank is that of <code class="highlight"><c- b>int</c-></code> or greater.</ins>
-    </p>
-    <p class="indent">
      <del><em>Effects</em>: These functions have the semantics specified in the C standard library for the functions <code class="highlight"><c- n>abs</c-></code>, <code class="highlight"><c- n>labs</c-></code>, and <code class="highlight"><c- n>llabs</c-></code>, respectively.</del>
      <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> The floating-point overload set is intentionally not re-defined to return <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-></code>.
+This expression is not equivalent to clearing the sign bit.</p>
    <h3 class="heading settled" data-level="9.8" id="proposed-cinttypes"><span class="secno">9.8. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code></span><a class="self-link" href="#proposed-cinttypes"></a></h3>
    <p>In subclause 31.13.2 [cinttypes.syn], update paragraph 1 as follows:</p>
    <blockquote>
@@ -4115,7 +4207,7 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
     <ins>C++</ins>
      header <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>, with the following changes: 
    </blockquote>
-   <p class="note" role="note"><span class="marker">Note:</span> Unlike the C standard library header, the <em>C header</em> has the changes described in <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> applied.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Unlike the C standard library header, the <em>C++ header</em> has the changes described in <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> applied.</p>
    <h3 class="heading settled" data-level="9.9" id="proposed-atomic"><span class="secno">9.9. </span><span class="content">Atomic operations</span><a class="self-link" href="#proposed-atomic"></a></h3>
    <p>In subclause 33.5.2 [atomics.syn], update the synopsis as follows:</p>
    <blockquote>
@@ -4123,38 +4215,38 @@ conversion rank is that of <code class="highlight"><c- b>int</c-></code> or grea
 <c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- p>[...]</c->
 
-  <c- k>using</c-> <c- n>atomic_int8_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int8_t</c-><c- o>></c-><c- p>;</c->           <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_uint8_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint8_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_int16_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int16_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_uint16_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint16_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_int32_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_uint32_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint32_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_int64_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int64_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- n>atomic_uint64_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint64_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
-<ins>  <c- k>using</c-> <c- n>atomic_int128_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int128_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c-></ins>
-<ins>  <c- k>using</c-> <c- n>atomic_uint128_t</c->      <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint128_t</c-><c- o>></c-><c- p>;</c->        <c- c1>// freestanding</c-></ins>
+  <c- k>using</c-> <c- n>atomic_int8_t</c->          <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int8_t</c-><c- o>></c-><c- p>;</c->           <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint8_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint8_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int16_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int16_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint16_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint16_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int32_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint32_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint32_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_int64_t</c->         <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int64_t</c-><c- o>></c-><c- p>;</c->          <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- n>atomic_uint64_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint64_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int128_t</c->        <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int128_t</c-><c- o>></c-><c- p>;</c->         <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint128_t</c->       <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint128_t</c-><c- o>></c-><c- p>;</c->        <c- c1>// freestanding</c-></ins>
 
-  <c- k>using</c-> <c- b>atomic_int_least8_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_least8_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least8_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_least16_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_least16_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least16_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_least32_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_least32_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least32_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_least64_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_least64_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least64_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
-<ins>  <c- k>using</c-> <c- n>atomic_int_least128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_least128_t</c-><c- o>></c-><c- p>;</c->  <c- c1>// freestanding</c-></ins>
-<ins>  <c- k>using</c-> <c- n>atomic_uint_least128_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_least128_t</c-><c- o>></c-><c- p>;</c-> <c- c1>// freestanding</c-></ins>
+  <c- k>using</c-> <c- b>atomic_int_least8_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least8_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least8_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least16_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least16_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least16_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least32_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least32_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least32_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_least64_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_least64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_least64_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_least64_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int_least128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_least128_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint_least128_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_least128_t</c-><c- o>></c-><c- p>;</c->  <c- c1>// freestanding</c-></ins>
 
-  <c- k>using</c-> <c- b>atomic_int_fast8_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast8_t</c-><c- o>></c-><c- p>;</c->      <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_fast8_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_fast16_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast16_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_fast16_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_fast32_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast32_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_fast32_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_int_fast64_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast64_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
-  <c- k>using</c-> <c- b>atomic_uint_fast64_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
-<ins>  <c- k>using</c-> <c- n>atomic_int_fast128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_fast128_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c-></ins>
-<ins>  <c- k>using</c-> <c- n>atomic_uint_fast128_t</c-> <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_fast128_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c-></ins>
+  <c- k>using</c-> <c- b>atomic_int_fast8_t</c->     <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast8_t</c-><c- o>></c-><c- p>;</c->      <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast8_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast8_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast16_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast16_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast16_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast16_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast32_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast32_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast32_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast32_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_int_fast64_t</c->    <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>int_fast64_t</c-><c- o>></c-><c- p>;</c->     <c- c1>// freestanding</c->
+  <c- k>using</c-> <c- b>atomic_uint_fast64_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- b>uint_fast64_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c->
+<ins>  <c- k>using</c-> <c- n>atomic_int_fast128_t</c->   <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>int_fast128_t</c-><c- o>></c-><c- p>;</c->    <c- c1>// freestanding</c-></ins>
+<ins>  <c- k>using</c-> <c- n>atomic_uint_fast128_t</c->  <c- o>=</c-> <c- n>atomic</c-><c- o>&lt;</c-><c- n>uint_fast128_t</c-><c- o>></c-><c- p>;</c->   <c- c1>// freestanding</c-></ins>
 
   <c- p>[...]</c->
 <c- p>}</c->

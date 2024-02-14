@@ -137,6 +137,11 @@ I will introduce a few use cases of 128-bit integers.
 - SHA-2 and SHA-3 produce outputs beyond 128-bit, but outputs can be truncated to 128-bit,
     or represented as a pair/array of 128-bit integers.
 
+For example, the `AddRoundKey` step in AES is simply a 128-bit bitwise XOR.
+
+To be fair, the utility of 128-bit integers in cryptographic applications is often limited to
+providing storage for blocks and keys.
+
 ### Random number generation ### {#random-number-generation}
 
 Some random number generators produce 128-bit numbers.
@@ -774,7 +779,8 @@ cannot be represented, assuming that `std::intmax_t` is a 64-bit integer.
 **Action:** ✔️ None.
 
 **Issue:** `std::bitset` could receive an additional constructor taking `std::uint_least128_t`.<br>
-**Action:** ⚠️ Add such a constructor (see [[#proposed-bitset]] for wording).
+**Action:** ⚠️ Add such a constructor
+(see [[#proposed-bitset]] for wording and [[#bitset-constructor]] for discussion).
 
 **Issue:** `std::bitset` could receive an additional `to_u128` function, similar to `to_ullong`.<br>
 **Action:** ⚠️ Add such a function (see [[#proposed-bitset]] for wording).
@@ -1173,7 +1179,6 @@ Note: Another robust way would be to write
 `void foo(std::same_as<std::int_least128_t> auto)`.
 However, this solution is not obvious, and should not be necessary.
 
-
 ## Possible assumption violations ## {#possible-assumption-violations}
 
 There is obviously a substantial amount of code which assumes that integers are no wider
@@ -1187,6 +1192,57 @@ C would be stuck with 32-bit types if that had ever been a convincing rationale.
 Also, the introduction of a 128-bit type does not break existing code unless the user chooses
 to use it.
 
+## `std::bitset` constructor semantic changes ## {#bitset-constructor}
+
+The only overload which accepts integers is `bitset(unsigned long long)`.
+Ideally, we would like to construct bitsets from wider integer types, if available.
+**My proposed solution changes the semantics of this constructor** (see
+[[#proposed-bitset]] for wording).
+
+The existing constructor is problematic for multiple reasons:
+
+1. If extended by a `std::int_least128_t` overload, a call `bitset<N>(0)` would become ambiguous.
+2. When called with negative numbers, a sign extension only takes place up to
+    the width of `unsigned long long`.
+    Beyond that, the bits are zero-filled.
+
+<div class=example>
+The following assertion passes:
+
+```cpp
+#include <bitset>
+constexpr std::bitset<128> bits(-1);
+static_assert(bits.count() == 64);
+```
+</div>
+
+The original behavior is very difficult to preserve if we add more overloads.
+If we added an `int_least128_t` overload, then `bitset(0)` would be ambiguous.
+Therefore, we must at least have an overload for all integers with a conversion rank
+of `int` or greater.
+
+However, if so, `-1`  under the current definition would result int a
+`std::bitset<128>` that has only 32 one-bits (assuming 32-bit `int`).
+We could preserve the current behavior exactly if sign-extension occurred up to the width
+of `unsigned long long`; beyond that, zero-extension would be used.
+This is not proposed because the design makes no sense outside of its historical context.
+
+### Proposed solution ### {#bitset-constructor-proposed-solution}
+
+Therefore, I propose to perform sign-extension for the full size of the `bitset`.
+In other words, `std::bitset<N>(-1)` would always be a bitset where every bit is set.
+This almost certainly matches the intent of the user.
+
+A GitHub code search for
+<a href="https://github.com/search?type=code&q=%2Fbitset%3C.*%3E%5C%28-%5B0-9%5D%2B%5C%29%2F+language%3Ac%2B%2B">`/bitset<.*>\(-[0-9]+\)/ language:c++`</a>
+finds 30 uses of constructing a bitset from a negative literal.
+Of the ones which use `std::bitset`, all uses are of the form
+- `std::bitset<N>(-1)` where `N` is less than 64, or
+- `std::bitset<N>(static_cast<T>(-1))`.
+
+None of these existing uses would be affected.
+
+Note: See [[#proposed-bitset]] for wording.
 
 
 # Design considerations # {#design-considerations}
@@ -1673,6 +1729,7 @@ If the user desperately wants to define a user-defined literal which accepts
 128-bit numeric values and beyond, they can write:
 
 <div class=example>
+
 ```cpp
 constexpr int operator""_zero(const char*) {
     return 0;
@@ -1724,7 +1781,6 @@ Furthermore, `std::div` is arguably useless.
 Optimizing compilers recognize separate uses of `x / y` and `x % y` and fuse them into a single
 division which yields both quotient and remainder, at least on platforms where this is possible.
 There is no motivation for putting substantial work into a useless relic.
-
 
 # Implementation experience # {#implementation-experience}
 
@@ -2178,7 +2234,7 @@ In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
     // [bitset.cons], constructors
     constexpr bitset() noexcept;
 <del>    constexpr bitset(unsigned long long val) noexcept;</del>
-<ins>    constexpr bitset(<i>unsigned-integer-least-llong</i> val) noexcept;</ins>
+<ins>    constexpr bitset(<i>integer-least-int</i> val) noexcept;</ins>
 [...]
     constexpr unsigned long        to_ulong() const;
     constexpr unsigned long long   to_ullong() const;
@@ -2187,32 +2243,40 @@ In subclause 22.9.2.1 [template.bitset.general], update the synopsis as follows:
 </pre>
 </blockquote>
 
+In subclause 22.9.2.1 [template.bitset.general], add a paragraph:
+<blockquote>
+<p class="indent">
+<ins>For each function with a parameter of type *integer-least-int*,
+the implementation provides an overload for each cv-unqualified
+integer type ([basic.fundamental]) whose conversion rank is that of `int` or greater,
+where <i>integer-least-int</i> in the function signature is replaced with that
+unsigned integer type.</ins>
+</p>
+</blockquote>
+
+Note: See [[#bitset-constructor]] for discussion.
+
 In subclause 22.9.2.2 [template.bitset.const], update the constructors as follows:
 <blockquote>
 <pre>
 <del>constexpr bitset(unsigned long long val) noexcept;</del>
-<ins>constexpr bitset(<i>unsigned-integer-least-llong</i> val) noexcept;</ins>
+<ins>constexpr bitset(<i>integer-least-int</i> val) noexcept;</ins>
 </pre>
 <p class="indent">
-<ins>The implementation provides one overload for every unsigned integer type whose
-conversion rank is that of `unsigned long long` or greater.</ins>
-</p>
-<p class="indent">
 *Effects*: Initializes the first `M` bit positions to the corresponding bit values in val.
-`M` is the smaller of `N` and the number of bits in the value representation
-([basic.types.general]) of <del>`unsigned long long`</del><ins>the type of `val`</ins>.
-If `M < N`, the remaining bit positions are initialized to zero.
+`M` is the smaller of `N` and the
+<del>number of bits in the value representation</del><ins>width</ins>
+([basic.types.general]) of <del>`unsigned long long`</del><ins><i>integer-least-int</i></ins>.
+If `M < N`, the remaining bit positions are initialized to
+<del>zero</del><ins>one if `val` is negative, otherwise to zero</ins>.
 </p>
 </blockquote>
-
-Note: It is possible that `unsigned long long` is the same type
-as `uint_least128_t`, so the mandate is necessary to prevent a duplicate definition.
 
 In subclause 22.9.2.3 [bitset.members], make the following changes:
 
 <blockquote>
 <pre>
-<del>constexpr unsigned long to_ulong() const;</del>
+constexpr unsigned long to_ulong() const;
 </pre>
 <p class="indent">
 <del>*Returns*: `x`.</del>
@@ -2222,9 +2286,7 @@ In subclause 22.9.2.3 [bitset.members], make the following changes:
 cannot be represented as type `unsigned long`.</del>
 </p>
 <pre>
-<del>constexpr unsigned long long to_ullong() const;</del>
-<ins>constexpr unsigned long      to_ulong() const;</ins>
-<ins>constexpr unsigned long long to_ullong() const;</ins>
+constexpr unsigned long long to_ullong() const;
 <ins>template&lt;class T&gt;
 <ins>  constexpr T to() const;</ins>
 </pre>
@@ -2248,8 +2310,7 @@ update subclause 23.4.2 [string.syn] as follows:
 
 <blockquote>
 <pre>
-<del>
-  string to_string(int val);
+<del>  string to_string(int val);
   string to_string(unsigned val);
   string to_string(long val);
   string to_string(unsigned long val);
@@ -2260,10 +2321,30 @@ update subclause 23.4.2 [string.syn] as follows:
   string to_string(float val);
   string to_string(double val);
   string to_string(long double val);
+[...]
+<del>  wstring to_wstring(int val);
+  wstring to_wstring(unsigned val);
+  wstring to_wstring(long val);
+  wstring to_wstring(unsigned long val);
+  wstring to_wstring(long long val);
+  wstring to_wstring(unsigned long long val);</del>
+<ins>  wstring to_wstring(<i>integer-least-int</i> val);</ins>
+  wstring to_wstring(float val);
+  wstring to_wstring(double val);
+  wstring to_wstring(long double val);
 </pre>
 </blockquote>
 
-Under the same condition, in subclause 23.4.5 [string.conversions], update `to_string`:
+In subclause 23.4.2 [string.syn], add a paragraph:
+
+<blockquote>
+<ins>For each function with a parameter of type *integer-least-int*,
+the implementation provides an overload for each cv-unqualified
+integer type ([basic.fundamental]) whose conversion rank is that of `int` or greater,
+where *integer-least-int* in the function signature is replaced with that integer type.</ins>
+</blockquote>
+
+In subclause 23.4.5 [string.conversions], update `to_string`:
 <blockquote>
 <pre>
 <del>  string to_string(int val);
@@ -2278,11 +2359,26 @@ Under the same condition, in subclause 23.4.5 [string.conversions], update `to_s
   string to_string(long double val);
 </pre>
 <p class="indent">
-<ins>The implementation provides one overload for every integer type whose
-conversion rank is that of `int` or greater.</ins>
-</p>
-<p class="indent">
 *Returns*: `format("{}", val)`.
+</p>
+</blockquote>
+
+In subclause 23.4.5 [string.conversions], update `to_wstring`:
+<blockquote>
+<pre>
+<del>  wstring to_string(int val);
+  wstring to_wstring(unsigned val);
+  wstring to_wstring(long val);
+  wstring to_wstring(unsigned long val);
+  wstring to_wstring(long long val);
+  wstring to_wstring(unsigned long long val);</del>
+<ins>  wstring to_wstring(<i>integer-least-int</i> val);</ins>
+  wstring to_wstring(float val);
+  wstring to_wstring(double val);
+  wstring to_wstring(long double val);
+</pre>
+<p class="indent">
+*Returns*: `format(L"{}", val)`.
 </p>
 </blockquote>
 
@@ -2316,9 +2412,18 @@ In subclause 28.7.1 [cmath.syn], update the synopsis as follows:
 <del>  constexpr int abs(int j);                                         // freestanding
   constexpr long int abs(long int j);                               // freestanding
   constexpr long long int abs(long long int j);                     // freestanding</del>
-<ins>  constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);    // freestanding</ins>
-  constexpr <i>floating-point-type</i> abs(<i>floating-point-type</i> j);         // freestanding-deleted
+<ins>  constexpr <i>signed-integer-least-int</i> abs(<i>signed-integer-least-int</i> j); // freestanding</ins>
+  constexpr <i>floating-point-type</i> abs(<i>floating-point-type</i> j);           // freestanding-deleted
 </pre>
+</blockquote>
+
+In subclause 28.7.1 [cmath.syn], add a paragraph after paragraph 2:
+<blockquote>
+<ins>For each function with a parameter of type *signed-integer-least-int*,
+the implementation provides an overload for each cv-unqualified
+signed integer type ([basic.fundamental]) whose conversion rank is that of `int` or greater,
+where all uses of *signed-integer-least-int* in the function signature are replaced with that
+signed integer type.</ins>
 </blockquote>
 
 In subclause 28.7.2 [c.math.abs], make the following changes:
@@ -2330,14 +2435,13 @@ constexpr long long int abs(long long int j);</del>
 <ins>constexpr auto abs(<i>signed-integer-least-int</i> j) -> decltype(j);</ins>
 </pre>
 <p class="indent">
-<ins>The implementation provides one overload for every signed integer type whose
-conversion rank is that of `int` or greater.</ins>
-</p>
-<p class="indent">
 <del>*Effects*: These functions have the semantics specified in the C standard library for the functions `abs`, `labs`, and `llabs`, respectively.</del>
 <ins>*Returns*: `j >= 0 ? j : -j;`.
 </p>
 </blockquote>
+
+Note: The floating-point overload set is intentionally not re-defined to return `j >= 0 ? j : -j`.
+This expression is not equivalent to clearing the sign bit.
 
 ## Header `<cinttypes>`  ## {#proposed-cinttypes}
 
@@ -2348,7 +2452,7 @@ The contents and meaning of the header `<cinttypes>`
 are the same as the <del>C standard library</del><ins>C++</ins> header `<inttypes.h>`, with the following changes:
 </blockquote>
 
-Note: Unlike the C standard library header, the *C header* has the changes described in
+Note: Unlike the C standard library header, the *C++ header* has the changes described in
 [[#proposed-inttypes]] applied. 
 
 ## Atomic operations ## {#proposed-atomic}
@@ -2361,38 +2465,38 @@ In subclause 33.5.2 [atomics.syn], update the synopsis as follows:
 namespace std {
   [...]
 
-  using atomic_int8_t         = atomic&lt;int8_t&gt;;           // freestanding
-  using atomic_uint8_t        = atomic&lt;uint8_t&gt;;          // freestanding
-  using atomic_int16_t        = atomic&lt;int16_t&gt;;          // freestanding
-  using atomic_uint16_t       = atomic&lt;uint16_t&gt;;         // freestanding
-  using atomic_int32_t        = atomic&lt;int32_t&gt;;          // freestanding
-  using atomic_uint32_t       = atomic&lt;uint32_t&gt;;         // freestanding
-  using atomic_int64_t        = atomic&lt;int64_t&gt;;          // freestanding
-  using atomic_uint64_t       = atomic&lt;uint64_t&gt;;         // freestanding
-<ins>  using atomic_int128_t       = atomic&lt;int128_t&gt;;         // freestanding</ins>
-<ins>  using atomic_uint128_t      = atomic&lt;uint128_t&gt;;        // freestanding</ins>
+  using atomic_int8_t          = atomic&lt;int8_t&gt;;           // freestanding
+  using atomic_uint8_t         = atomic&lt;uint8_t&gt;;          // freestanding
+  using atomic_int16_t         = atomic&lt;int16_t&gt;;          // freestanding
+  using atomic_uint16_t        = atomic&lt;uint16_t&gt;;         // freestanding
+  using atomic_int32_t         = atomic&lt;int32_t&gt;;          // freestanding
+  using atomic_uint32_t        = atomic&lt;uint32_t&gt;;         // freestanding
+  using atomic_int64_t         = atomic&lt;int64_t&gt;;          // freestanding
+  using atomic_uint64_t        = atomic&lt;uint64_t&gt;;         // freestanding
+<ins>  using atomic_int128_t        = atomic&lt;int128_t&gt;;         // freestanding</ins>
+<ins>  using atomic_uint128_t       = atomic&lt;uint128_t&gt;;        // freestanding</ins>
 
-  using atomic_int_least8_t   = atomic&lt;int_least8_t&gt;;     // freestanding
-  using atomic_uint_least8_t  = atomic&lt;uint_least8_t&gt;;    // freestanding
-  using atomic_int_least16_t  = atomic&lt;int_least16_t&gt;;    // freestanding
-  using atomic_uint_least16_t = atomic&lt;uint_least16_t&gt;;   // freestanding
-  using atomic_int_least32_t  = atomic&lt;int_least32_t&gt;;    // freestanding
-  using atomic_uint_least32_t = atomic&lt;uint_least32_t&gt;;   // freestanding
-  using atomic_int_least64_t  = atomic&lt;int_least64_t&gt;;    // freestanding
-  using atomic_uint_least64_t = atomic&lt;uint_least64_t&gt;;   // freestanding
-<ins>  using atomic_int_least128_t  = atomic&lt;int_least128_t&gt;;  // freestanding</ins>
-<ins>  using atomic_uint_least128_t = atomic&lt;uint_least128_t&gt;; // freestanding</ins>
+  using atomic_int_least8_t    = atomic&lt;int_least8_t&gt;;     // freestanding
+  using atomic_uint_least8_t   = atomic&lt;uint_least8_t&gt;;    // freestanding
+  using atomic_int_least16_t   = atomic&lt;int_least16_t&gt;;    // freestanding
+  using atomic_uint_least16_t  = atomic&lt;uint_least16_t&gt;;   // freestanding
+  using atomic_int_least32_t   = atomic&lt;int_least32_t&gt;;    // freestanding
+  using atomic_uint_least32_t  = atomic&lt;uint_least32_t&gt;;   // freestanding
+  using atomic_int_least64_t   = atomic&lt;int_least64_t&gt;;    // freestanding
+  using atomic_uint_least64_t  = atomic&lt;uint_least64_t&gt;;   // freestanding
+<ins>  using atomic_int_least128_t  = atomic&lt;int_least128_t&gt;;   // freestanding</ins>
+<ins>  using atomic_uint_least128_t = atomic&lt;uint_least128_t&gt;;  // freestanding</ins>
 
-  using atomic_int_fast8_t    = atomic&lt;int_fast8_t&gt;;      // freestanding
-  using atomic_uint_fast8_t   = atomic&lt;uint_fast8_t&gt;;     // freestanding
-  using atomic_int_fast16_t   = atomic&lt;int_fast16_t&gt;;     // freestanding
-  using atomic_uint_fast16_t  = atomic&lt;uint_fast16_t&gt;;    // freestanding
-  using atomic_int_fast32_t   = atomic&lt;int_fast32_t&gt;;     // freestanding
-  using atomic_uint_fast32_t  = atomic&lt;uint_fast32_t&gt;;    // freestanding
-  using atomic_int_fast64_t   = atomic&lt;int_fast64_t&gt;;     // freestanding
-  using atomic_uint_fast64_t  = atomic&lt;uint_fast64_t&gt;;    // freestanding
-<ins>  using atomic_int_fast128_t  = atomic&lt;int_fast128_t&gt;;    // freestanding</ins>
-<ins>  using atomic_uint_fast128_t = atomic&lt;uint_fast128_t&gt;;   // freestanding</ins>
+  using atomic_int_fast8_t     = atomic&lt;int_fast8_t&gt;;      // freestanding
+  using atomic_uint_fast8_t    = atomic&lt;uint_fast8_t&gt;;     // freestanding
+  using atomic_int_fast16_t    = atomic&lt;int_fast16_t&gt;;     // freestanding
+  using atomic_uint_fast16_t   = atomic&lt;uint_fast16_t&gt;;    // freestanding
+  using atomic_int_fast32_t    = atomic&lt;int_fast32_t&gt;;     // freestanding
+  using atomic_uint_fast32_t   = atomic&lt;uint_fast32_t&gt;;    // freestanding
+  using atomic_int_fast64_t    = atomic&lt;int_fast64_t&gt;;     // freestanding
+  using atomic_uint_fast64_t   = atomic&lt;uint_fast64_t&gt;;    // freestanding
+<ins>  using atomic_int_fast128_t   = atomic&lt;int_fast128_t&gt;;    // freestanding</ins>
+<ins>  using atomic_uint_fast128_t  = atomic&lt;uint_fast128_t&gt;;   // freestanding</ins>
 
   [...]
 }
