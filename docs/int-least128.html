@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9cffa21f13aec6bff55b72d268c5ae36450822a4" name="revision">
+  <meta content="1df67b64d5bfc91f7efbd285db8f17fe76a1ed31" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2225,7 +2225,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <ol class="toc">
       <li><a href="#estimated-implementation-effort"><span class="secno">5.1</span> <span class="content">Estimated implementation effort</span></a>
       <li>
-       <a href="#iota-view-abi-break"><span class="secno">5.2</span> <span class="content">ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code></span></a>
+       <a href="#iota-view-abi-break"><span class="secno">5.2</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-></code> ABI issue</span></a>
        <ol class="toc">
         <li><a href="#abi-break-affected-implementations"><span class="secno">5.2.1</span> <span class="content">Affected implementations</span></a>
         <li><a href="#abi-break-cause"><span class="secno">5.2.2</span> <span class="content">Cause of ABI break</span></a>
@@ -2293,19 +2293,21 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#to-integer-implementation-experience"><span class="secno">8.2.1</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code></span></a>
         <li><a href="#type-traits-implementation-experience"><span class="secno">8.2.2</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>type_traits</c-><c- o>></c-></code></span></a>
         <li><a href="#safe-comparison-implementation-experience"><span class="secno">8.2.3</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cmp_xxx</c-></code></span></a>
-        <li><a href="#charconv-implementation-experience"><span class="secno">8.2.4</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code></span></a>
-        <li><a href="#format-implementation-experience"><span class="secno">8.2.5</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span></a>
-        <li><a href="#bit-implementation-experience"><span class="secno">8.2.6</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code></span></a>
-        <li><a href="#gcd-implementation-experience"><span class="secno">8.2.7</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code></span></a>
-        <li><a href="#random-implementation-experience"><span class="secno">8.2.8</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code></span></a>
-        <li><a href="#midpoint-implementation-experience"><span class="secno">8.2.9</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code></span></a>
-        <li><a href="#saturating-implementation-experience"><span class="secno">8.2.10</span> <span class="content">Saturating arithmetic</span></a>
-        <li><a href="#abs-implementation-experience"><span class="secno">8.2.11</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code></span></a>
-        <li><a href="#cmath-implementation-experience"><span class="secno">8.2.12</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code></span></a>
-        <li><a href="#valarray-implementation-experience"><span class="secno">8.2.13</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code></span></a>
-        <li><a href="#linalg-implementation-experience"><span class="secno">8.2.14</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code></span></a>
-        <li><a href="#cstdio-implementation-experience"><span class="secno">8.2.15</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code></span></a>
-        <li><a href="#atomic-implementation-experience"><span class="secno">8.2.16</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code></span></a>
+        <li><a href="#bitset-implementation-experience"><span class="secno">8.2.4</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bitset</c-><c- o>></c-></code></span></a>
+        <li><a href="#charconv-implementation-experience"><span class="secno">8.2.5</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code></span></a>
+        <li><a href="#format-implementation-experience"><span class="secno">8.2.6</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span></a>
+        <li><a href="#bit-implementation-experience"><span class="secno">8.2.7</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code></span></a>
+        <li><a href="#to-string-implementation-experience"><span class="secno">8.2.8</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code></span></a>
+        <li><a href="#gcd-implementation-experience"><span class="secno">8.2.9</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code></span></a>
+        <li><a href="#random-implementation-experience"><span class="secno">8.2.10</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code></span></a>
+        <li><a href="#midpoint-implementation-experience"><span class="secno">8.2.11</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code></span></a>
+        <li><a href="#saturating-implementation-experience"><span class="secno">8.2.12</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>xxx_sat</c-></code></span></a>
+        <li><a href="#abs-implementation-experience"><span class="secno">8.2.13</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code></span></a>
+        <li><a href="#cmath-implementation-experience"><span class="secno">8.2.14</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code></span></a>
+        <li><a href="#valarray-implementation-experience"><span class="secno">8.2.15</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code></span></a>
+        <li><a href="#linalg-implementation-experience"><span class="secno">8.2.16</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code></span></a>
+        <li><a href="#cstdio-implementation-experience"><span class="secno">8.2.17</span> <span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code></span></a>
+        <li><a href="#atomic-implementation-experience"><span class="secno">8.2.18</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code></span></a>
        </ol>
      </ol>
     <li>
@@ -2537,7 +2539,7 @@ of a 64-bit multiplication:
 For example, when computing <code class="highlight"><c- p>(</c-><c- n>a</c-> <c- o>*</c-> <c- n>x</c-><c- p>)</c-> <c- o>%</c-> <c- n>m</c-></code> between 64-bit unsigned integers <code class="highlight"><c- n>a</c-></code>, <code class="highlight"><c- n>x</c-></code>, and <code class="highlight"><c- n>m</c-></code>,
 the multiplication between <code class="highlight"><c- n>a</c-></code> and <code class="highlight"><c- n>x</c-></code> is already mod 2<sup>64</sup>,
 and the result would be incorrect unless <code class="highlight"><c- n>m</c-></code> was a power of two.</p>
-   <p>128-bit operations are used in implementations of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>linear_congruential_engine</c-></code> (see <a href="#random-implementation-experience">§ 8.2.8 &lt;random></a> for implementation experience).
+   <p>128-bit operations are used in implementations of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>linear_congruential_engine</c-></code> (see <a href="#random-implementation-experience">§ 8.2.10 &lt;random></a> for implementation experience).
 Linear congruential engines use modular arithmetic, and since the user can choose
 a modulo arbitrarily, the issue is unavoidable.</p>
    <p class="note" role="note"><span class="marker">Note:</span> A popular workaround for linear congruential generators is to choose the
@@ -2845,7 +2847,7 @@ The affected candidates are those listed in Table 40: C headers [tab:c.headers].
    <p>There is no impact on other C headers.
 Most of the issues are trivial and have no runtime C library impact.
 The only thing worth noting is that 128-bit support from <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> would be
-required (<a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a> for implementation experience).</p>
+required (<a href="#cstdio-implementation-experience">§ 8.2.17 &lt;cstdio></a> for implementation experience).</p>
    <p class="note" role="note"><span class="marker">Note:</span> This support is made optional, so that C++ implementations are able to keep using
 the system’s C library.
 Otherwise, the C++ implementation could only guarantee 128-bit <code class="highlight"><c- n>printf</c-></code> support
@@ -2914,15 +2916,15 @@ in name mangling.<br> <strong>Action:</strong> ✔️ None.</p>
 (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording and <a href="#bitset-constructor">§ 6.4 std::bitset constructor semantic changes</a> for discussion).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> could receive an additional <code class="highlight"><c- n>to_u128</c-></code> function, similar to <code class="highlight"><c- n>to_ullong</c-></code>.<br> <strong>Action:</strong> ⚠️ Add such a function (see <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#charconv-implementation-experience">§ 8.2.4 &lt;charconv></a> for implementation experience).</p>
+(see <a href="#charconv-implementation-experience">§ 8.2.5 &lt;charconv></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#format-implementation-experience">§ 8.2.5 &lt;format></a> for implementation experience).</p>
+(see <a href="#format-implementation-experience">§ 8.2.6 &lt;format></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>::</c-><c- n>check_dynamic_spec</c-></code> might need 128-bit integers support.<br> <strong>Action:</strong> ✔️ None, it doesn’t
-(see <a href="#format-implementation-experience">§ 8.2.5 &lt;format></a> for implementation experience).</p>
+(see <a href="#format-implementation-experience">§ 8.2.6 &lt;format></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>basic_format_arg</c-></code> might need support for 128-bit integers.<br> <strong>Action:</strong> ✔️ None, it doesn’t
-(see <a href="#format-implementation-experience">§ 8.2.5 &lt;format></a> for implementation experience).</p>
+(see <a href="#format-implementation-experience">§ 8.2.6 &lt;format></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#bit-implementation-experience">§ 8.2.6 &lt;bit></a> for implementation experience).</p>
+(see <a href="#bit-implementation-experience">§ 8.2.7 &lt;bit></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> could support 128-bit types.<br> <strong>Action:</strong> ⚠️ Add overloads (see <a href="#proposed-numeric-conversions">§ 9.5 Numeric conversions</a> for wording).</p>
    <h4 class="heading settled" data-level="4.3.4" id="library-impact-containers"><span class="secno">4.3.4. </span><span class="content">Containers library</span><a class="self-link" href="#library-impact-containers"></a></h4>
    <p><strong>Issue:</strong> The extents and index types of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>mdspan</c-></code> could be 128-bit integers.
@@ -2941,7 +2943,7 @@ should be unaffected.</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code> is required to be a 128-bit integer if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is not 128-bit, and such a type exists.
 This is not the the case in libc++ and MSVC STL at this time,
 where <code class="highlight"><c- n>difference_type</c-></code> is <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>_Signed128</c-></code> respectively.<br> <strong>Action:</strong> ❌ Propose changes to prevent breaking ABI
-(see <a href="#iota-view-abi-break">§ 5.2 ABI break for std::ranges::iota_view::iterator::difference_type</a> for discussion and <a href="#proposed-iota">§ 9.6 Iota view</a> for wording).</p>
+(see <a href="#iota-view-abi-break">§ 5.2 std::ranges::iota_view ABI issue</a> for discussion and <a href="#proposed-iota">§ 9.6 Iota view</a> for wording).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cartesian_product_view</c-><c- o>::</c-><c- n>size</c-></code> may now return a 128-bit integer.
 The standard recommends to use a type which is sufficiently wide to store the product
 of sizes of underlying ranges.
@@ -2949,23 +2951,23 @@ A similar issue arises for <code class="highlight"><c- n>std</c-><c- o>::</c-><c
    <p class="note" role="note"><span class="marker">Note:</span> The choice of integer type used to be (and still is) implementation-defined.</p>
    <h4 class="heading settled" data-level="4.3.7" id="library-impact-algorithms"><span class="secno">4.3.7. </span><span class="content">Algorithms library</span><a class="self-link" href="#library-impact-algorithms"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code>, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#gcd-implementation-experience">§ 8.2.7 std::gcd, std::lcm</a> for implementation experience).</p>
+(see <a href="#gcd-implementation-experience">§ 8.2.9 std::gcd, std::lcm</a> for implementation experience).</p>
    <p><strong>Issue:</strong> Saturating arithmetic functions and <code class="highlight"><c- n>saturate_cast</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#saturating-implementation-experience">§ 8.2.10 Saturating arithmetic</a> for implementation experience).</p>
+(see <a href="#saturating-implementation-experience">§ 8.2.12 std::xxx_sat</a> for implementation experience).</p>
    <h4 class="heading settled" data-level="4.3.8" id="library-impact-numerics"><span class="secno">4.3.8. </span><span class="content">Numerics library</span><a class="self-link" href="#library-impact-numerics"></a></h4>
    <p><strong>Issue:</strong> Various random number generators and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uniform_int_distribution</c-></code> need to support
 128-bit types.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#random-implementation-experience">§ 8.2.8 &lt;random></a> for implementation experience).</p>
+(see <a href="#random-implementation-experience">§ 8.2.10 &lt;random></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>seed_seq</c-></code> needs to support <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>initializer_list</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-><c- o>></c-></code>.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#random-implementation-experience">§ 8.2.8 &lt;random></a> for implementation experience).</p>
-   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None (see <a href="#valarray-implementation-experience">§ 8.2.13 std::valarray</a> for implementation experience)</p>
+(see <a href="#random-implementation-experience">§ 8.2.10 &lt;random></a> for implementation experience).</p>
+   <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code> needs to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None (see <a href="#valarray-implementation-experience">§ 8.2.15 std::valarray</a> for implementation experience)</p>
    <p><strong>Issue:</strong> For most <code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code> functions, an additional overload taking 128-bit integers would
 need to be defined.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#cmath-implementation-experience">§ 8.2.12 &lt;cmath></a> for implementation experience.)</p>
+(see <a href="#cmath-implementation-experience">§ 8.2.14 &lt;cmath></a> for implementation experience.)</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> could receive an additional 128-bit overload.<br> <strong>Action:</strong> ⚠️ Add an overload
-(see <a href="#proposed-abs">§ 9.7 Absolute values</a> for wording and <a href="#abs-implementation-experience">§ 8.2.11 std::abs</a> for implementation experience).</p>
+(see <a href="#proposed-abs">§ 9.7 Absolute values</a> for wording and <a href="#abs-implementation-experience">§ 8.2.13 std::abs</a> for implementation experience).</p>
    <p><strong>Issue:</strong> The <code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code> library needs 128-bit support.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#linalg-implementation-experience">§ 8.2.14 &lt;linalg></a> for implementation experience).</p>
+(see <a href="#linalg-implementation-experience">§ 8.2.16 &lt;linalg></a> for implementation experience).</p>
    <h4 class="heading settled" data-level="4.3.9" id="library-impact-time"><span class="secno">4.3.9. </span><span class="content">Time library</span><a class="self-link" href="#library-impact-time"></a></h4>
    <p><strong>Issue:</strong> Significant portions of <code class="highlight"><c- o>&lt;</c-><c- n>chrono</c-><c- o>></c-></code> use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ratio</c-></code>, which has <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>intmax_t</c-></code> template
 parameters.<br> <strong>Action:</strong> ✔️ None.</p>
@@ -2990,12 +2992,12 @@ Unfortunately, the user won’t be able to <code class="highlight"><c- n>std</c-
 the language provides sufficient alternatives
 (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>out</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(...)</c-></code>).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code> need to support 128-bit integers.<br> <strong>Action:</strong> ✔️ None
-(see <a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a> for implementation experience).</p>
+(see <a href="#cstdio-implementation-experience">§ 8.2.17 &lt;cstdio></a> for implementation experience).</p>
    <p><strong>Issue:</strong> <code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code> needs to include the wording changes for <code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>.<br> <strong>Action:</strong> ⚠️ Include changes
 (see <a href="#proposed-cinttypes">§ 9.8 Header &lt;cinttypes></a> for wording).</p>
    <h4 class="heading settled" data-level="4.3.12" id="concurrency-support-library"><span class="secno">4.3.12. </span><span class="content">Concurrency support library</span><a class="self-link" href="#concurrency-support-library"></a></h4>
    <p><strong>Issue:</strong> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> needs to support <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code>.<br> <strong>Action:</strong> ✔️ No impact on the standard
-(see <a href="#atomic-implementation-experience">§ 8.2.16 std::atomic</a> for implementation experience).</p>
+(see <a href="#atomic-implementation-experience">§ 8.2.18 std::atomic</a> for implementation experience).</p>
    <p><strong>Issue:</strong> There should be additional aliases <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic_uint_least128_t</c-></code> et al. aliases.<br> <strong>Action:</strong> ⚠️ Define aliases
 (see <a href="#proposed-atomic">§ 9.9 Atomic operations</a> for wording).</p>
    <h2 class="heading settled" data-level="5" id="implementation-impact"><span class="secno">5. </span><span class="content">Impact on implementations</span><a class="self-link" href="#implementation-impact"></a></h2>
@@ -3007,15 +3009,15 @@ required to implement the proposed changes.</p>
      <tr>
       <th>Affected library part
       <th>Work definitely required
-      <th>Impl. experience / Wording
+      <th>Implementation experience
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_integer</c-></code>
       <td>✔️ no
       <td><a href="#to-integer-implementation-experience">§ 8.2.1 std::to_integer</a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code>
-      <td>⚠️ changes proposed
       <td><a href="#proposed-version">§ 9.1 Header &lt;version></a>
+      <td>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>limits</c-><c- o>></c-></code>
       <td>add specializations
@@ -3024,10 +3026,6 @@ required to implement the proposed changes.</p>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>climits</c-><c- o>></c-></code>
       <td>add macro constants
       <td>
-     <tr>
-      <td><code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>
-      <td>⚠️ changes proposed
-      <td><a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_integral</c-></code>
       <td>✔️ no
@@ -3045,96 +3043,84 @@ required to implement the proposed changes.</p>
       <td>✔️ no
       <td>
      <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>::</c-><c- n>bitset</c-></code>
-      <td>⚠️ changes proposed
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>bitset</c-><c- o>></c-></code>
       <td><a href="#proposed-bitset">§ 9.4 Class template bitset</a>
-     <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>::</c-><c- n>to</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>
-      <td>⚠️ changes proposed
-      <td><a href="#proposed-bitset">§ 9.4 Class template bitset</a>
+      <td><a href="#bitset-implementation-experience">§ 8.2.4 &lt;bitset></a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code>
       <td>✔️ no
-      <td><a href="#charconv-implementation-experience">§ 8.2.4 &lt;charconv></a>
+      <td><a href="#charconv-implementation-experience">§ 8.2.5 &lt;charconv></a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>
       <td>✔️ no
-      <td><a href="#format-implementation-experience">§ 8.2.5 &lt;format></a>
+      <td><a href="#format-implementation-experience">§ 8.2.6 &lt;format></a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>
       <td>support 128-bit
-      <td><a href="#bit-implementation-experience">§ 8.2.6 &lt;bit></a>
+      <td><a href="#bit-implementation-experience">§ 8.2.7 &lt;bit></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>
-      <td>⚠️ changes proposed
       <td><a href="#proposed-numeric-conversions">§ 9.5 Numeric conversions</a>
+      <td><a href="#to-string-implementation-experience">§ 8.2.8 std::to_string</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>iota_view</c-></code>
-      <td>✔️ no
       <td><a href="#proposed-iota">§ 9.6 Iota view</a>
+      <td><a href="#iota-view-abi-break">§ 5.2 std::ranges::iota_view ABI issue</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code>
       <td>✔️ no
-      <td><a href="#gcd-implementation-experience">§ 8.2.7 std::gcd, std::lcm</a>
+      <td><a href="#gcd-implementation-experience">§ 8.2.9 std::gcd, std::lcm</a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code>
       <td>✔️ no
-      <td><a href="#midpoint-implementation-experience">§ 8.2.9 std::midpoint</a>
+      <td><a href="#midpoint-implementation-experience">§ 8.2.11 std::midpoint</a>
      <tr>
-      <td>Saturating arithmetic
+      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>xxx_sat</c-></code>
       <td>✔️ no
-      <td><a href="#saturating-implementation-experience">§ 8.2.10 Saturating arithmetic</a>
+      <td><a href="#saturating-implementation-experience">§ 8.2.12 std::xxx_sat</a>
      <tr>
-      <td><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code> generators
-      <td>256-bit arithmetic
-      <td><a href="#random-implementation-experience">§ 8.2.8 &lt;random></a>
-     <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uniform_int_distribution</c-></code>
-      <td>✔️ no
-      <td><a href="#random-implementation-experience">§ 8.2.8 &lt;random></a>
-     <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>seed_seq</c-></code>
-      <td>✔️ no
-      <td><a href="#random-implementation-experience">§ 8.2.8 &lt;random></a>
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code>
+      <td>256-bit LCG
+      <td><a href="#random-implementation-experience">§ 8.2.10 &lt;random></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code>
       <td>✔️ no
-      <td><a href="#valarray-implementation-experience">§ 8.2.13 std::valarray</a>
+      <td><a href="#valarray-implementation-experience">§ 8.2.15 std::valarray</a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code> overloads
       <td>✔️ no
-      <td><a href="#cmath-implementation-experience">§ 8.2.12 &lt;cmath></a>
+      <td><a href="#cmath-implementation-experience">§ 8.2.14 &lt;cmath></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code>
-      <td>⚠️ changes proposed
-      <td><a href="#abs-implementation-experience">§ 8.2.11 std::abs</a>
+      <td><a href="#proposed-abs">§ 9.7 Absolute values</a>
+      <td><a href="#abs-implementation-experience">§ 8.2.13 std::abs</a>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code>
       <td>✔️ no
-      <td><a href="#linalg-implementation-experience">§ 8.2.14 &lt;linalg></a>
+      <td><a href="#linalg-implementation-experience">§ 8.2.16 &lt;linalg></a>
      <tr>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code>
       <td>✔️ no
-      <td><a href="#cstdio-implementation-experience">§ 8.2.15 &lt;cstdio></a>
+      <td><a href="#cstdio-implementation-experience">§ 8.2.17 &lt;cstdio></a>
+     <tr>
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>inttypes</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code>
+      <td><a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a>
+      <td>
      <tr>
       <td><code class="highlight"><c- o>&lt;</c-><c- n>cinttypes</c-><c- o>></c-></code>
-      <td>⚠️ changes proposed
       <td><a href="#proposed-cinttypes">§ 9.8 Header &lt;cinttypes></a>
+      <td>
      <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> specializations
-      <td>✔️ no
-      <td><a href="#atomic-implementation-experience">§ 8.2.16 std::atomic</a>
-     <tr>
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> aliases
-      <td>⚠️ changes proposed
+      <td><code class="highlight"><c- o>&lt;</c-><c- n>atomic</c-><c- o>></c-></code>
       <td><a href="#proposed-atomic">§ 9.9 Atomic operations</a>
+      <td><a href="#atomic-implementation-experience">§ 8.2.18 std::atomic</a>
    </table>
    <p>When deciding <em>"Work definitely required"</em>, this paper does not consider menial changes like
 relaxing <code class="highlight"><c- k>static_assert</c-><c- p>(</c-><c- n>__is_standard_integer</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>)</c-></code> and such,
 which may be present in functions such as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>.</p>
    <p>Also, if there exists at least one standard library which implements these features,
 it is assumed that they can be adapted into other libraries with relative ease.</p>
-   <h3 class="heading settled" data-level="5.2" id="iota-view-abi-break"><span class="secno">5.2. </span><span class="content">ABI break for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>::</c-><i><c- n>iterator</c-></i><c- o>::</c-><c- n>difference_type</c-></code></span><a class="self-link" href="#iota-view-abi-break"></a></h3>
+   <h3 class="heading settled" data-level="5.2" id="iota-view-abi-break"><span class="secno">5.2. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-></code> ABI issue</span><a class="self-link" href="#iota-view-abi-break"></a></h3>
    <p>libstdc++ defines <code class="highlight"><c- n>difference_type</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>iota_view</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>></c-></code> to be <code class="highlight"><c- b>__int128</c-></code>.
 Since a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> alias would likely be defined as <code class="highlight"><c- b>__int128</c-></code>, there is no ABI impact.
 Other libraries are not so fortunate.</p>
@@ -3780,7 +3766,17 @@ implementing these traits merely requires adding two specializations such as <co
    <p>Libstdc++ provides a width-agnostic implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cmp_equal</c-></code> and other safe comparison functions in <a href="https://github.com/gcc-mirror/gcc/blob/93e1559bea434a681208e5e7a21513d7da2844d6/libstdc%2B%2B-v3/include/std/utility#L127"><code class="highlight"><c- o>&lt;</c-><c- n>utility</c-><c- o>></c-></code></a>.</p>
    <p>Being able to extend to a wider type is helpful in principle (e.g. implementing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cmp_equal</c-><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- b>int</c-><c- p>)</c-></code> in terms of a comparison between <code class="highlight"><c- b>long</c-></code>s),
 however, the current implementations don’t make use of this opportunity anyway.</p>
-   <h4 class="heading settled" data-level="8.2.4" id="charconv-implementation-experience"><span class="secno">8.2.4. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code></span><a class="self-link" href="#charconv-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.4" id="bitset-implementation-experience"><span class="secno">8.2.4. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bitset</c-><c- o>></c-></code></span><a class="self-link" href="#bitset-implementation-experience"></a></h4>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for proposed changes.</p>
+   <p>To implement these changes, a constructor and member function template can be defined:</p>
+<pre class="language-cpp highlight"><c- n>bitset</c-><c- p>(</c-><c- n>integral</c-> <c- k>auto</c-><c- p>);</c->
+
+<c- k>template</c-> <c- o>&lt;</c-><c- n>unsigned_integral</c-> <c- n>T</c-><c- o>></c->
+<c- n>T</c-> <c- n>to</c-><c- p>();</c->
+</pre>
+   <p>These are functionally equivalent to the existing <code class="highlight"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></code> constructor
+and <code class="highlight"><c- n>to_ullong</c-></code> function respectively, just generalized.</p>
+   <h4 class="heading settled" data-level="8.2.5" id="charconv-implementation-experience"><span class="secno">8.2.5. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code></span><a class="self-link" href="#charconv-implementation-experience"></a></h4>
    <p>libstdc++ already provides a width-agnostic implementation
 of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> in <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/bits/charconv.h"><code class="highlight"><c- o>&lt;</c-><c- n>bits</c-><c- o>/</c-><c- n>charconv</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code></a>,
 and a width-agnostic implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> in <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/std/charconv"><code class="highlight"><c- o>&lt;</c-><c- n>charconv</c-><c- o>></c-></code></a>.</p>
@@ -3789,7 +3785,7 @@ Stringification uses integer division, which may be a problem.
 However, the divisor is constant.
 Due to strength reduction optimization (see <a href="#fixed-point-operations">§ 3.1.4 Fixed-point operations</a> for an example),
 no extreme cost is incurred no matter the width.</p>
-   <h4 class="heading settled" data-level="8.2.5" id="format-implementation-experience"><span class="secno">8.2.5. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span><a class="self-link" href="#format-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.6" id="format-implementation-experience"><span class="secno">8.2.6. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span><a class="self-link" href="#format-implementation-experience"></a></h4>
    <p>libstdc++ already supports <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> for <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p>The locale-independent forms are simply implemented in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> and are not
 affected by the introduction of 128-bit integers.
@@ -3800,7 +3796,7 @@ Realistically the user will never need a 128-bit <em>width</em> or <em>precision
 which is why no changes are proposed.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_format_arg</c-></code> also requires no changes because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_format_arg</c-><c- o>::</c-><c- n>handle</c-></code> already covers extended integer and floating-point types.
 Also, modifying the <code class="highlight"><c- n>value</c-></code> <code class="highlight"><c- n>variant</c-></code> within a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_format_arg</c-></code> would be an avoidable ABI-break.</p>
-   <h4 class="heading settled" data-level="8.2.6" id="bit-implementation-experience"><span class="secno">8.2.6. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code></span><a class="self-link" href="#bit-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.7" id="bit-implementation-experience"><span class="secno">8.2.7. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code></span><a class="self-link" href="#bit-implementation-experience"></a></h4>
    <p>In <a data-link-type="biblio" href="#biblio-bitpermutations" title="C++26 Bit Permutations">[BitPermutations]</a>, I have implemented the majority of C++ bit manipulation functions
 for <em>any</em> width, i.e. in a way that is compatible with <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> for any <code class="highlight"><c- n>N</c-></code>.</p>
    <p>Such an extremely generalized implementation is challenging, however, merely extending support
@@ -3821,7 +3817,12 @@ to 128-bit given a 64-bit implementation is simple.</p>
 </pre>
    </div>
    <p>All bit manipulation functions are easily constructed this way.</p>
-   <h4 class="heading settled" data-level="8.2.7" id="gcd-implementation-experience"><span class="secno">8.2.7. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code></span><a class="self-link" href="#gcd-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.8" id="to-string-implementation-experience"><span class="secno">8.2.8. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code></span><a class="self-link" href="#to-string-implementation-experience"></a></h4>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#proposed-numeric-conversions">§ 9.5 Numeric conversions</a> for proposed changes.</p>
+   <p>libstdc++ already implements <a href="https://github.com/gcc-mirror/gcc/blob/f1412546ac8999b7f6eeeee8cf967ce3f31794c2/libstdc%2B%2B-v3/include/bits/basic_string.h#L4240"><code class="highlight"><c- n>to_string</c-></code></a> as an inline function which forwards to <a href="https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/charconv.h#L81"> <code class="highlight"><c- n>detail</c-><c- o>::</c-><c- n>__to_chars_10_impl</c-></code> </a>.</p>
+   <p>In general, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> simply needs to forward to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> or a similar function,
+and this is easily generalized.</p>
+   <h4 class="heading settled" data-level="8.2.9" id="gcd-implementation-experience"><span class="secno">8.2.9. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code></span><a class="self-link" href="#gcd-implementation-experience"></a></h4>
    <p>libstdc++ provides a <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/std/numeric#L134"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code></a> implementation which uses the <a href="https://en.wikipedia.org/wiki/Binary_GCD_algorithm">Binary GCD algorithm</a>.
 The MSVC STL has a similar implementation.
 This algorithm is easily generalized to any width.
@@ -3832,7 +3833,7 @@ Due to the immense cost of integer division for 128-bit integers,
 such an implementation may need revision.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>lcm</c-></code> requires no work because mathematically, <code class="highlight"><c- n>gcd</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- n>y</c-><c- p>)</c-> <c- o>*</c-> <c- n>lcm</c-><c- p>(</c-><c- n>x</c-><c- p>,</c-> <c- n>y</c-><c- p>)</c-> <c- o>==</c-> <c- n>x</c-> <c- o>*</c-> <c- n>y</c-></code>.
 The implementation effort (if any) is limited to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>gcd</c-></code>.</p>
-   <h4 class="heading settled" data-level="8.2.8" id="random-implementation-experience"><span class="secno">8.2.8. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code></span><a class="self-link" href="#random-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.10" id="random-implementation-experience"><span class="secno">8.2.10. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>random</c-><c- o>></c-></code></span><a class="self-link" href="#random-implementation-experience"></a></h4>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>linear_congruential_engine</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>a</c-><c- p>,</c-> <c- n>c</c-><c- p>,</c-> <c- n>m</c-><c- o>></c-></code> requires at least double-wide integers
 to safely perform the operation <code class="highlight"><c- p>(</c-><c- n>a</c-> <c- o>*</c-> <c- n>x</c-> <c- o>+</c-> <c- n>c</c-><c- p>)</c-> <c- n>mod</c-> <c- n>m</c-></code>, where <code class="highlight"><c- n>x</c-></code> is the LCG state.
 Otherwise, the multiplication and addition could overflow.</p>
@@ -3846,34 +3847,35 @@ and otherwise:</p>
 solely for the purpose of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>linear_congruential_engine</c-></code>.
 This can be considered reasonable because C23 requires implementations to provide
 arbitrary-precision arithmetic anyway, and both GCC and clang already implement <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> for <code class="highlight"><c- n>N</c-> <c- o>>=</c-> <c- mi>256</c-></code> (see <a href="#existing-bit-int">§ 8.1.4 _BitInt(128)</a> for details on support).</p>
-   <h4 class="heading settled" data-level="8.2.9" id="midpoint-implementation-experience"><span class="secno">8.2.9. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code></span><a class="self-link" href="#midpoint-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.11" id="midpoint-implementation-experience"><span class="secno">8.2.11. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code></span><a class="self-link" href="#midpoint-implementation-experience"></a></h4>
    <p>Libstdc++ has a <a href="https://github.com/gcc-mirror/gcc/blob/1e94648ab7b370c5867e146c7f59603e2e6ba2e6/libstdc%2B%2B-v3/include/std/numeric#L221"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>midpoint</c-></code></a> implementation which is width-agnostic.</p>
-   <h4 class="heading settled" data-level="8.2.10" id="saturating-implementation-experience"><span class="secno">8.2.10. </span><span class="content">Saturating arithmetic</span><a class="self-link" href="#saturating-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.12" id="saturating-implementation-experience"><span class="secno">8.2.12. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>xxx_sat</c-></code></span><a class="self-link" href="#saturating-implementation-experience"></a></h4>
    <p>libstdc++ provides a width-agnostic implementation for all saturating arithmetic functions in <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/bits/sat_arith.h"><code class="highlight"><c- o>&lt;</c-><c- n>bits</c-><c- o>/</c-><c- n>sat_arith</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code></a>.</p>
    <p>Saturating arithmetic is generally done through compiler intrinsics such as <code class="highlight"><c- n>__builtin_mul_overflow</c-></code>.
 These are already supported by GCC and Clang.
 A software implementation of overflow detection may be very tedious as explained in <a data-link-type="biblio" href="#biblio-p0543r3" title="Saturation arithmetic">[P0543R3]</a>, but that isn’t the chosen implementation anyway.</p>
-   <h4 class="heading settled" data-level="8.2.11" id="abs-implementation-experience"><span class="secno">8.2.11. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code></span><a class="self-link" href="#abs-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.13" id="abs-implementation-experience"><span class="secno">8.2.13. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code></span><a class="self-link" href="#abs-implementation-experience"></a></h4>
+   <p class="note" role="note"><span class="marker">Note:</span> See <a href="#proposed-abs">§ 9.7 Absolute values</a> for proposed changes.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> can be easily implemented width-agnostically as <code class="highlight"><c- n>x</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>x</c-> <c- o>:</c-> <c- o>-</c-><c- n>x</c-></code> for any integer <code class="highlight"><c- n>x</c-></code>.</p>
    <p>Note that an overload must exist for every integer type to avoid calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>abs</c-></code> for
 floating-point types.
 Such an overload is proposed in <a href="#proposed-abs">§ 9.7 Absolute values</a>.</p>
-   <h4 class="heading settled" data-level="8.2.12" id="cmath-implementation-experience"><span class="secno">8.2.12. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code></span><a class="self-link" href="#cmath-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.14" id="cmath-implementation-experience"><span class="secno">8.2.14. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cmath</c-><c- o>></c-></code></span><a class="self-link" href="#cmath-implementation-experience"></a></h4>
    <p>libstdc++, libc++, and the MSVC STL implement the integral math overloads using SFINAE.
 Effectively, they define function templates using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>enable_if_t</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>is_integral_v</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-></code>.
 Therefore, no changes are required.</p>
-   <h4 class="heading settled" data-level="8.2.13" id="valarray-implementation-experience"><span class="secno">8.2.13. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code></span><a class="self-link" href="#valarray-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.15" id="valarray-implementation-experience"><span class="secno">8.2.15. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-></code></span><a class="self-link" href="#valarray-implementation-experience"></a></h4>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>valarray</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> does not rely on any specific bit-size, or on <code class="highlight"><c- n>T</c-></code> being any
 type in general.
 While it is possible to provide specializations for specific types that make
 more optimal use of hardware, it is also possible to rely on the
 optimizers auto-vectorization capabilities alone.</p>
-   <h4 class="heading settled" data-level="8.2.14" id="linalg-implementation-experience"><span class="secno">8.2.14. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code></span><a class="self-link" href="#linalg-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.16" id="linalg-implementation-experience"><span class="secno">8.2.16. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>linalg</c-><c- o>></c-></code></span><a class="self-link" href="#linalg-implementation-experience"></a></h4>
    <p>The linear algebra library introduced by <a data-link-type="biblio" href="#biblio-p1673r13" title="A free function linear algebra interface based on the BLAS">[P1673R13]</a> does not rely on any specific widths and
 is generalized by default.
 The corresponding <a href="https://github.com/kokkos/stdBLAS">reference implementation</a> can operate on <code class="highlight"><c- b>__int128</c-></code>.</p>
    <p>Providing specializations for specific widths is a quality-of-implementation issue.</p>
-   <h4 class="heading settled" data-level="8.2.15" id="cstdio-implementation-experience"><span class="secno">8.2.15. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code></span><a class="self-link" href="#cstdio-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.17" id="cstdio-implementation-experience"><span class="secno">8.2.17. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code></span><a class="self-link" href="#cstdio-implementation-experience"></a></h4>
    <p class="note" role="note"><span class="marker">Note:</span> This proposal makes 128-bit <code class="highlight"><c- n>printf</c-></code>/<code class="highlight"><c- n>scanf</c-></code> support entirely optional
 (see <a href="#proposed-inttypes">§ 9.3 Header &lt;inttypes.h></a> for wording).</p>
    <p>Similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code>, extending support to 128-bit integers for printing and parsing
@@ -3889,7 +3891,7 @@ integers is:
 <pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- n>printf</c-><c- p>(</c-><c- s>"%w128d</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-><c- p>{</c-><c- mi>123</c-><c- p>});</c->
 </pre>
    </div>
-   <h4 class="heading settled" data-level="8.2.16" id="atomic-implementation-experience"><span class="secno">8.2.16. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code></span><a class="self-link" href="#atomic-implementation-experience"></a></h4>
+   <h4 class="heading settled" data-level="8.2.18" id="atomic-implementation-experience"><span class="secno">8.2.18. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code></span><a class="self-link" href="#atomic-implementation-experience"></a></h4>
    <p>Libc++ already provides support for fetch-operations for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- b>__int128</c-><c- o>></c-></code>.
 For example, <code class="highlight"><c- p>.</c-><c- n>fetch_add</c-></code> delegates to <code class="highlight"><c- n>__atomic_fetch_add_16</c-></code> in libatomic.</p>
    <p>In general, the <code class="highlight"><c- n>fetch</c-></code> operations that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>long</c-><c- o>></c-></code> provides
@@ -4160,7 +4162,7 @@ where <em>integer-least-int</em> in the function signature is replaced with that
 — <em>end note</em>]</p>
     </ul>
    </blockquote>
-   <p class="note" role="note"><span class="marker">Note:</span> This change resolves the potential ABI break explained in <a href="#iota-view-abi-break">§ 5.2 ABI break for std::ranges::iota_view::iterator::difference_type</a>.
+   <p class="note" role="note"><span class="marker">Note:</span> This change resolves the potential ABI break explained in <a href="#iota-view-abi-break">§ 5.2 std::ranges::iota_view ABI issue</a>.
 This change purely increases implementor freedom.
 An extended integer type still models signed-integer-like, so GCC’s existing implementation
 using <code class="highlight"><c- b>__int128</c-></code> remains valid.

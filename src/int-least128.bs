@@ -955,22 +955,19 @@ required to implement the proposed changes.
 
 <table>
 <tr>
-    <th>Affected library part</th><th>Work definitely required</th><th>Impl. experience / Wording</th>
+    <th>Affected library part</th><th>Work definitely required</th><th>Implementation experience</th>
 </tr>
 <tr>
     <td>`std::to_integer`</td><td>✔️ no</td><td>[[#to-integer-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<version>`</td><td>⚠️ changes proposed</td><td>[[#proposed-version]]</td>
+    <td>`<version>`</td><td>[[#proposed-version]]</td><td></td>
 </tr>
 <tr>
     <td>`<limits>`</td><td>add specializations</td><td></td>
 </tr>
 <tr>
     <td>`<climits>`</td><td>add macro constants</td><td></td>
-</tr>
-<tr>
-    <td>`<inttypes.h>`</td><td>⚠️ changes proposed</td><td>[[#proposed-inttypes]]</td>
 </tr>
 <tr>
     <td>`std::is_integral`</td><td>✔️ no</td><td>[[#type-traits-implementation-experience]]</td>
@@ -985,10 +982,7 @@ required to implement the proposed changes.
     <td>`std::integer_sequence`</td><td>✔️ no</td><td></td>
 </tr>
 <tr>
-    <td>`std::bitset::bitset`</td><td>⚠️ changes proposed</td><td>[[#proposed-bitset]]</td>
-</tr>
-<tr>
-    <td>`std::bitset::to<T>`</td><td>⚠️ changes proposed</td><td>[[#proposed-bitset]]</td>
+    <td>`<bitset>`</td><td>[[#proposed-bitset]]</td><td>[[#bitset-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`<charconv>`</td><td>✔️ no</td><td>[[#charconv-implementation-experience]]</td>
@@ -1000,10 +994,10 @@ required to implement the proposed changes.
     <td>`<bit>`</td><td>support 128-bit</td><td>[[#bit-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::to_string`</td><td>⚠️ changes proposed</td><td>[[#proposed-numeric-conversions]]</td>
+    <td>`std::to_string`</td><td>[[#proposed-numeric-conversions]]</td><td>[[#to-string-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::iota_view`</td><td>✔️ no</td><td>[[#proposed-iota]]</td>
+    <td>`std::iota_view`</td><td>[[#proposed-iota]]</td><td>[[#iota-view-abi-break]]</td>
 </tr>
 <tr>
     <td>`std::gcd`, `std::lcm`</td><td>✔️ no</td><td>[[#gcd-implementation-experience]]</td>
@@ -1012,16 +1006,10 @@ required to implement the proposed changes.
     <td>`std::midpoint`</td><td>✔️ no</td><td>[[#midpoint-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>Saturating arithmetic</td><td>✔️ no</td><td>[[#saturating-implementation-experience]]</td>
+    <td>`std::xxx_sat`</td><td>✔️ no</td><td>[[#saturating-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<random>` generators</td><td>256-bit arithmetic</td><td>[[#random-implementation-experience]]</td>
-</tr>
-<tr>
-    <td>`std::uniform_int_distribution`</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
-</tr>
-<tr>
-    <td>`std::seed_seq`</td><td>✔️ no</td><td>[[#random-implementation-experience]]</td>
+    <td>`<random>`</td><td>256-bit LCG</td><td>[[#random-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`std::valarray`</td><td>✔️ no</td><td>[[#valarray-implementation-experience]]</td>
@@ -1030,7 +1018,7 @@ required to implement the proposed changes.
     <td>`<cmath>` overloads</td><td>✔️ no</td><td>[[#cmath-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`std::abs`</td><td>⚠️ changes proposed</td><td>[[#abs-implementation-experience]]</td>
+    <td>`std::abs`</td><td>[[#proposed-abs]]</td><td>[[#abs-implementation-experience]]</td>
 </tr>
 <tr>
     <td>`<linalg>`</td><td>✔️ no</td><td>[[#linalg-implementation-experience]]</td>
@@ -1039,13 +1027,13 @@ required to implement the proposed changes.
     <td>`std::printf`, `std::scanf`</td><td>✔️ no</td><td>[[#cstdio-implementation-experience]]</td>
 </tr>
 <tr>
-    <td>`<cinttypes>`</td><td>⚠️ changes proposed</td><td>[[#proposed-cinttypes]]</td>
+    <td>`<inttypes.h>`</td><td>[[#proposed-inttypes]]</td><td></td>
 </tr>
 <tr>
-    <td>`std::atomic` specializations</td><td>✔️ no</td><td>[[#atomic-implementation-experience]]</td>
+    <td>`<cinttypes>`</td><td>[[#proposed-cinttypes]]</td><td></td>
 </tr>
 <tr>
-    <td>`std::atomic` aliases</td><td>⚠️ changes proposed</td><td>[[#proposed-atomic]]</td>
+    <td>`<atomic>`</td><td>[[#proposed-atomic]]</td><td>[[#atomic-implementation-experience]]</td>
 </tr>
 </table>
 
@@ -1057,7 +1045,7 @@ Also, if there exists at least one standard library which implements these featu
 it is assumed that they can be adapted into other libraries with relative ease.
 
 
-## ABI break for <code>std::ranges::iota_view::<i>iterator</i>::difference_type</code> ## {#iota-view-abi-break}
+## <code>std::ranges::iota_view</code> ABI issue ## {#iota-view-abi-break}
 
 libstdc++ defines `difference_type` for `std::ranges::iota_view<long long>` to be `__int128`.
 Since a `std::int_least128_t` alias would likely be defined as `__int128`, there is no ABI impact.
@@ -1866,6 +1854,21 @@ Libstdc++ provides a width-agnostic implementation of `std::cmp_equal` and other
 Being able to extend to a wider type is helpful in principle (e.g. implementing `std::cmp_equal(int, int)` in terms of a comparison between `long`s),
 however, the current implementations don't make use of this opportunity anyway.
 
+### `<bitset>` ### {#bitset-implementation-experience}
+
+Note: See [[#proposed-bitset]] for proposed changes.
+
+To implement these changes, a constructor and member function template can be defined:
+
+```cpp
+bitset(integral auto);
+
+template <unsigned_integral T>
+T to();
+```
+These are functionally equivalent to the existing `unsigned long long` constructor
+and `to_ullong` function respectively, just generalized.
+
 ### `<charconv>` ### {#charconv-implementation-experience}
 
 libstdc++ already provides a width-agnostic implementation
@@ -1927,6 +1930,20 @@ int countr_zero(uint128_t x) {
 
 All bit manipulation functions are easily constructed this way.
 
+### `std::to_string` ### {#to-string-implementation-experience}
+
+Note: See [[#proposed-numeric-conversions]] for proposed changes.
+
+libstdc++ already implements
+<a href="https://github.com/gcc-mirror/gcc/blob/f1412546ac8999b7f6eeeee8cf967ce3f31794c2/libstdc%2B%2B-v3/include/bits/basic_string.h#L4240"><code>to_string</code></a>
+as an inline function which forwards to
+<a href="https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/charconv.h#L81">
+<code>detail::__to_chars_10_impl</code>
+</a>.
+
+In general, `std::to_string` simply needs to forward to `std::to_chars` or a similar function,
+and this is easily generalized.
+
 ### `std::gcd`, `std::lcm` ### {#gcd-implementation-experience}
 
 libstdc++ provides a
@@ -1973,7 +1990,7 @@ Libstdc++ has a
 <a href="https://github.com/gcc-mirror/gcc/blob/1e94648ab7b370c5867e146c7f59603e2e6ba2e6/libstdc%2B%2B-v3/include/std/numeric#L221">`std::midpoint`</a>
 implementation which is width-agnostic.
 
-### Saturating arithmetic ### {#saturating-implementation-experience}
+### `std::xxx_sat` ### {#saturating-implementation-experience}
 
 libstdc++ provides a width-agnostic implementation for all saturating arithmetic functions in
 <a href="https://github.com/gcc-mirror/gcc/blob/cff174fabd6c980c09aee95db1d9d5c22421761f/libstdc%2B%2B-v3/include/bits/sat_arith.h">`<bits/sat_arith.h>`</a>.
@@ -1985,6 +2002,8 @@ A software implementation of overflow detection may be very tedious as explained
 [[P0543R3]], but that isn't the chosen implementation anyway.
 
 ### `std::abs` ### {#abs-implementation-experience}
+
+Note: See [[#proposed-abs]] for proposed changes.
 
 `std::abs` can be easily implemented width-agnostically as `x >= 0 ? x : -x`
 for any integer `x`.
