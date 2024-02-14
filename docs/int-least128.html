@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3140R0: std::int_least128_t</title>
+  <title>P3140R1: std::int_least128_t</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6e39ce8bbfad2b64a991b81b33d49e8aaa5a0103" name="revision">
+  <meta content="455930ae9a95dd4e453b12bbd85440fbb210f4e4" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2126,7 +2126,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3140R0<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code></h1>
+   <h1 class="p-name no-ref" id="title">P3140R1<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code></h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-02-11">2024-02-11</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2152,7 +2152,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#revision-history"><span class="secno">1</span> <span class="content">Revision history</span></a>
+    <li>
+     <a href="#revision-history"><span class="secno">1</span> <span class="content">Revision history</span></a>
+     <ol class="toc">
+      <li><a href="#changes-since-r0"><span class="secno">1.1</span> <span class="content">Changes since R0</span></a>
+     </ol>
     <li>
      <a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
      <ol class="toc">
@@ -2339,7 +2343,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="revision-history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#revision-history"></a></h2>
-   <p>This is the first revision.</p>
+   <h3 class="heading settled" data-level="1.1" id="changes-since-r0"><span class="secno">1.1. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes-since-r0"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Fix minor editorial issues.</p>
+    <li data-md>
+     <p>Clarify that the alias definition in <a href="#implementation-effort-not-too-high">§ 7.6.1 Implementation effort is not too high</a> is C++-specific.</p>
+   </ul>
    <h2 class="heading settled" data-level="2" id="introduction"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p>128-bit integers have numerous practical uses, and all major implementations
 (MSVC, GCC, LLVM) provide 128-bit integers already.
@@ -3285,7 +3295,7 @@ Of the ones which use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>b
    <p class="note" role="note"><span class="marker">Note:</span> See <a href="#proposed-bitset">§ 9.4 Class template bitset</a> for wording.</p>
    <h2 class="heading settled" data-level="7" id="design-considerations"><span class="secno">7. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
-A <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>least_uint128_t</c-></code> alias is the only option that does not involve any changes
+A <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint_least128_t</c-></code> alias is the only option that does not involve any changes
 to the core language.
 Therefore, it is the obvious design choice for this proposal.</p>
    <p class="note" role="note"><span class="marker">Note:</span> Unlike the existing <code class="highlight"><c- n>int_leastN_t</c-></code> and <code class="highlight"><c- n>int_fastN_t</c-></code> aliases, this type is distinct.
@@ -3626,8 +3636,12 @@ I will go into these two issues more:</p>
    </blockquote>
    <p>While this concern is valid, C23 requires arbitrary-precision arithmetic through <code class="highlight"><c- b>_BitInt</c-></code> anyway
 and GCC and clang support <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> already (see <a href="#existing-bit-int">§ 8.1.4 _BitInt(128)</a> for support).
-Assuming that vendors care about C-compatibility,
-this proposal merely requires vendors to provide <code class="highlight"><c- n>int_least128_t</c-> <c- o>=</c-> <c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code>.</p>
+Assuming that vendors implement <code class="highlight"><c- b>_BitInt</c-></code> for the purpose of C23 compatibility
+and expose <code class="highlight"><c- b>_BitInt</c-></code> as a C++ extension, they can simply provide:</p>
+<pre class="language-cpp highlight"><c- cp>#ifdef __cplusplus</c->
+<c- k>using</c-> <c- n>int_least128_t</c-> <c- o>=</c-> <c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>);</c->
+<c- cp>#endif</c->
+</pre>
    <p class="note" role="note"><span class="marker">Note:</span> Bit-precise integers have slightly different semantics than extended integers.
 However, these differences don’t matter if <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</c-><c- p>)</c-></code> is the widest integer,
 making it valid to use as <code class="highlight"><c- n>int_least128_t</c-></code>.</p>

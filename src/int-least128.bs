@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: <code>std::int_least128_t</code>
 Shortname: P3140
-Revision: 0
+Revision: 1
 Status: P
 Date: 2024-02-11
 Group: WG21
@@ -15,7 +15,11 @@ Abstract: This proposal standardizes mandatory 128-bit integers types with stron
 
 # Revision history # {#revision-history}
 
-This is the first revision.
+## Changes since R0 ## {#changes-since-r0}
+
+- Fix minor editorial issues.
+- Clarify that the alias definition in [[#implementation-effort-not-too-high]]
+    is C++-specific.
 
 # Introduction # {#introduction}
 
@@ -1256,7 +1260,7 @@ Note: See [[#proposed-bitset]] for wording.
 # Design considerations # {#design-considerations}
 
 The goal of this proposal is to obtain a mandatory 128-bit type with strong library support.
-A `std::least_uint128_t` alias is the only option that does not involve any changes
+A `std::uint_least128_t` alias is the only option that does not involve any changes
 to the core language.
 Therefore, it is the obvious design choice for this proposal.
 
@@ -1660,8 +1664,13 @@ The criticism is:
 
 While this concern is valid, C23 requires arbitrary-precision arithmetic through `_BitInt` anyway
 and GCC and clang support `_BitInt(128)` already (see [[#existing-bit-int]] for support).
-Assuming that vendors care about C-compatibility,
-this proposal merely requires vendors to provide `int_least128_t = _BitInt(128)`.
+Assuming that vendors implement `_BitInt` for the purpose of C23 compatibility
+and expose `_BitInt` as a C++ extension, they can simply provide:
+```cpp
+#ifdef __cplusplus
+using int_least128_t = _BitInt(128);
+#endif
+```
 
 Note: Bit-precise integers have slightly different semantics than extended integers.
 However, these differences don't matter if `_BitInt(128)` is the widest integer,
