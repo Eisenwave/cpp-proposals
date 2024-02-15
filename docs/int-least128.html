@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="41577fa3f939ef1929614a696860d7897a806ea5" name="revision">
+  <meta content="871a1d9d7ef26ce663ebfd238b1f144b91708cea" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2147,7 +2147,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>This proposal standardizes mandatory 128-bit integers types with strong library support.</p>
+   <p>This proposal standardizes mandatory 128-bit integer types with strong library support.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -2349,6 +2349,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <p>Fix minor editorial issues.</p>
     <li data-md>
      <p>Clarify that the alias definition in <a href="#implementation-effort-not-too-high">§ 7.6.1 Implementation effort is not too high</a> is C++-specific.</p>
+    <li data-md>
+     <p>Further clarify <a href="#bitint-breaking-code">§ 7.5.7 _BitInt breaks more existing code</a>.</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="introduction"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p>128-bit integers have numerous practical uses, and all major implementations
@@ -3414,7 +3416,7 @@ resources optimally on hardware such as FPGAs that have a native 2031-bit type.
 C++ is much less ambitious in its goal of supporting <em>all</em> hardware,
 with changes such as C++20 effectively mandating two’s complement signed integers.
 C23 supporting <code class="highlight"><c- b>_BitInt</c-></code> is not rationale for a C++ fundamental type in itself.</p>
-   <p>Therefore, a limited solution as focusing on 128-bit is not unreasonable.</p>
+   <p>Therefore, a limited solution such as focusing on 128-bit is not unreasonable.</p>
    <h4 class="heading settled" data-level="7.5.3" id="bitint-should-be-class-type"><span class="secno">7.5.3. </span><span class="content"><code class="highlight"><c- b>_BitInt</c-></code> should be exposed as a class type</span><a class="self-link" href="#bitint-should-be-class-type"></a></h4>
    <p>By default, all new language features are library features.
 If it’s possible to express N-bit integers through a class, then this is the go-to solution.</p>
@@ -3468,7 +3470,7 @@ which are standard integers in all implementations.</p>
 It is better to think of it as an extension of the existing integers.</p>
    <h4 class="heading settled" data-level="7.5.5" id="bitint-128-bit-support"><span class="secno">7.5.5. </span><span class="content"><code class="highlight"><c- b>_BitInt</c-></code> does not guarantee 128-bit support</span><a class="self-link" href="#bitint-128-bit-support"></a></h4>
    <p>The whole point of this proposal is to guarantee developers a 128-bit type.
-However, <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> is only valid for <code class="highlight"><c- n>N</c-> <c- o>&lt;=</c-> <c- n>BITINT_MAXWIDTH</c-></code>, where <code class="highlight"><c- n>BITINT_MAXWIDTH</c-></code> is guaranteed to be no more than the width of <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>.</p>
+However, <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> is only valid for <code class="highlight"><c- n>N</c-> <c- o>&lt;=</c-> <c- n>BITINT_MAXWIDTH</c-></code>, where <code class="highlight"><c- n>BITINT_MAXWIDTH</c-></code> is not guaranteed to be more than the width of <code class="highlight"><c- b>long</c-> <c- b>long</c-></code>.</p>
    <h4 class="heading settled" data-level="7.5.6" id="bitint-library-effort"><span class="secno">7.5.6. </span><span class="content"><code class="highlight"><c- b>_BitInt</c-></code> requires more library effort</span><a class="self-link" href="#bitint-library-effort"></a></h4>
    <p>This proposal only mandates <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code>, not any specific width.
 Therefore, implementers have the luxury of relying on all integers being padding-free
@@ -3485,8 +3487,8 @@ for a very long time, and some code depends on it.</p>
    <p>It may depend through anti-patterns like using <code class="highlight"><c- n>memcmp</c-></code> for comparison of <code class="highlight"><c- k>struct</c-></code>s storing integers,
 or more justified uses like <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_cast</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- n>integer</c-><c- p>)</c-></code>. <code class="highlight"><c- b>_BitInt</c-></code> inevitably breaks assumptions about padding and size, which is a great challenge
 to both the implementation and C++ users.</p>
-   <div class="example" id="example-d9708717">
-    <a class="self-link" href="#example-d9708717"></a> The following pseudo-code has undefined behavior if <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>30</c-><c- p>)</c-></code> has padding bits. 
+   <div class="example" id="example-cc424630">
+    <a class="self-link" href="#example-cc424630"></a> The following pseudo-code has undefined behavior if <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>30</c-><c- p>)</c-></code> has padding bits. 
 <pre class="language-cpp highlight"><c- k>template</c-> <c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>integral</c-> <c- n>T</c-><c- o>></c->
 <c- k>auto</c-> <c- n>to_byte_array</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>x</c-><c- p>)</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>bit_cast</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>array</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>,</c-> <c- k>sizeof</c-><c- p>(</c-><c- n>T</c-><c- p>)</c-><c- o>>></c-><c- p>(</c-><c- n>x</c-><c- p>);</c->
@@ -3497,14 +3499,17 @@ to both the implementation and C++ users.</p>
     <c- n>write_buffer_to_file</c-><c- p>(</c-><c- n>file</c-><c- p>,</c-> <c- n>to_byte_array</c-><c- p>(</c-><c- n>x</c-><c- p>));</c->
 <c- p>}</c->
 </pre>
-    <p>Assuming a 4-byte array is returned, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_cast</c-></code> one of these bytes would have indeterminate
-value because the corresponding byte in <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>30</c-><c- p>)</c-></code> has padding bits.
+    <p>Assuming a 4-byte array is returned and a byte is 8-bit,
+at least one of these bytes would have indeterminate value.
 Reading this indeterminate value to store it in a file is undefined behavior.</p>
    </div>
+   <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_cast</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- n>x</c-><c- p>)</c-></code> produces indeterminate values in the result object
+or its subobjects for any corresponding padding bits in <code class="highlight"><c- n>x</c-></code>. <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>30</c-><c- p>)</c-></code> in the example has two padding bits, so the corresponding byte(s)
+in the result would be indeterminate (see also 22.15.3 [bit.cast]).</p>
    <p>While the assumption that all integers are padding-free is not universally correct,
 C++ users have enjoyed this guarantee for decades, and an unknown amount of code depends on it.
-If <code class="highlight"><c- b>_BitInt</c-></code> was just another integral type, it could silently break existing code like in the example,
-despite a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integral</c-></code> constraint.</p>
+If <code class="highlight"><c- b>_BitInt</c-></code> was just another integral type which satisfies <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>integral</c-></code>,
+it could silently break existing code like in the example.</p>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> does not have the same problem because the implementation can define
 it as a type with more than 128 bits which has no padding, if need be.</p>
    <h4 class="heading settled" data-level="7.5.8" id="bitint-teachability"><span class="secno">7.5.8. </span><span class="content"><code class="highlight"><c- b>_BitInt</c-></code> has teachability issues</span><a class="self-link" href="#bitint-teachability"></a></h4>

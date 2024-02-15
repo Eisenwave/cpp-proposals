@@ -10,7 +10,7 @@ Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/int-least128.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/int-least128.bs)
 Markup Shorthands: markdown on
-Abstract: This proposal standardizes mandatory 128-bit integers types with strong library support.
+Abstract: This proposal standardizes mandatory 128-bit integer types with strong library support.
 </pre>
 
 # Revision history # {#revision-history}
@@ -20,6 +20,7 @@ Abstract: This proposal standardizes mandatory 128-bit integers types with stron
 - Fix minor editorial issues.
 - Clarify that the alias definition in [[#implementation-effort-not-too-high]]
     is C++-specific.
+- Further clarify [[#bitint-breaking-code]].
 
 # Introduction # {#introduction}
 
@@ -1399,7 +1400,7 @@ C++ is much less ambitious in its goal of supporting *all* hardware,
 with changes such as C++20 effectively mandating two's complement signed integers.
 C23 supporting `_BitInt` is not rationale for a C++ fundamental type in itself.
 
-Therefore, a limited solution as focusing on 128-bit is not unreasonable.
+Therefore, a limited solution such as focusing on 128-bit is not unreasonable.
 
 ### `_BitInt` should be exposed as a class type ### {#bitint-should-be-class-type}
 
@@ -1463,7 +1464,7 @@ It is better to think of it as an extension of the existing integers.
 
 The whole point of this proposal is to guarantee developers a 128-bit type.
 However, `_BitInt(N)` is only valid for `N <= BITINT_MAXWIDTH`, where `BITINT_MAXWIDTH`
-is guaranteed to be no more than the width of `long long`.
+is not guaranteed to be more than the width of `long long`.
 
 ### `_BitInt` requires more library effort ### {#bitint-library-effort}
 
@@ -1503,15 +1504,20 @@ int main() {
     write_buffer_to_file(file, to_byte_array(x));
 }
 ```
-Assuming a 4-byte array is returned, `std::bit_cast` one of these bytes would have indeterminate
-value because the corresponding byte in `_BitInt(30)` has padding bits.
+Assuming a 4-byte array is returned and a byte is 8-bit,
+at least one of these bytes would have indeterminate value.
 Reading this indeterminate value to store it in a file is undefined behavior.
 </div>
 
+Note: `std::bit_cast<T>(x)` produces indeterminate values in the result object
+or its subobjects for any corresponding padding bits in `x`.
+`_BitInt(30)` in the example has two padding bits, so the corresponding byte(s)
+in the result would be indeterminate (see also 22.15.3 [bit.cast]).
+
 While the assumption that all integers are padding-free is not universally correct,
 C++ users have enjoyed this guarantee for decades, and an unknown amount of code depends on it.
-If `_BitInt` was just another integral type, it could silently break existing code like in the example,
-despite a `std::integral` constraint.
+If `_BitInt` was just another integral type which satisfies `std::integral`,
+it could silently break existing code like in the example.
 
 Note: `std::int_least128_t` does not have the same problem because the implementation can define
 it as a type with more than 128 bits which has no padding, if need be.
