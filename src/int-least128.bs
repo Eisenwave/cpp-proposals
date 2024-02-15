@@ -1724,7 +1724,7 @@ In summary:
 </tr>
 <tr>
     <td>Wider integers have greater rank.</td>
-    <td>`std::uint128_t == std::int64_t`</td>
+    <td>`std::uint128_t > std::int64_t`</td>
 </tr>
 <tr>
     <td>Standard integers of equal width have greater rank.</td>

@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="455930ae9a95dd4e453b12bbd85440fbb210f4e4" name="revision">
+  <meta content="41577fa3f939ef1929614a696860d7897a806ea5" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -3685,7 +3685,7 @@ The relevant standard section is 6.8.6 [conv.rank].</p>
       <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- o>==</c-> <c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code>
      <tr>
       <td>Wider integers have greater rank.
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- o>==</c-> <c- n>std</c-><c- o>::</c-><c- b>int64_t</c-></code>
+      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-> <c- o>></c-> <c- n>std</c-><c- o>::</c-><c- b>int64_t</c-></code>
      <tr>
       <td>Standard integers of equal width have greater rank.
       <td><code class="highlight"><c- b>long</c-> <c- b>long</c-> <c- o>></c-> <c- n>std</c-><c- o>::</c-><c- n>int128_t</c-></code><br>if <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> is 128-bit
