@@ -42,7 +42,7 @@ Audience: LEWG-I, LEWG
 
 - [Latest](constexpr-to-string.html)
 
-# P3140: `std::int_least128_t`
+## P3140: `std::int_least128_t`
 
 Audience: LEWG-I, LEWG, EWG-I, EWG, SG22
 
