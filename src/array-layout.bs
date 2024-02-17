@@ -1,0 +1,253 @@
+<pre class='metadata'>
+Title: Specify `std::array` layout
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-02-14
+Group: WG21
+Audience: LEWGI, LEWG
+Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/array-layout.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/array-layout.bs)
+Markup Shorthands: markdown on
+Abstract: This proposal specifies the layout of `std::array` in more detail.
+</pre>
+
+
+# Introduction # {#introduction}
+
+`std::array` is one of the most commonly used containers in the C++ standard library.
+Many developers in the C++ community consider `std::array` to be better style
+than C-style arrays.
+For example, [[CppCoreGuidelines]] *ES.27: Use `std::array` or `stack_array`
+for arrays on the stack* recommends its use.
+
+Furthermore, it is a relatively simple container and commonly implemented as
+class which has a single C-style array member.
+Many C++ developers have come to rely on this, despite the standard not mandating such a layout.
+Perhaps this is the case because it is very easily taught as
+"just a wrapper for a C-style array".
+
+However, the standard wording does not match this intuition.
+`std::array` is under-specified and makes no guarantee regarding a specific layout.
+It does restrict implementations to the point where all standard libraries
+have the same overall design, but does not fully mandate it.
+
+To standardize existing practice and silence any concerns about portability issues,
+this proposal mandates a specific layout for `std::array`.
+
+Note: The C++ built-in array type is commonly referred to as "C-style array".
+This proposal uses this colloquial name to disambiguate.
+
+# Motivation # {#motivation-and-scope}
+
+Currently, [array.overview] specifies that:
+- `array<T, N>` is a class template
+- It is a contiguous container and reversible container.
+- It stores `N` elements of type `T`.
+- It is an aggregate type.
+- It is a structural type if `T` is structural.
+
+This wording is almost specifying `std::array` as a wrapper class for a C-style array.
+Any sane standard library would implement it that way, and in fact,
+all major standard libraries do.
+
+What could an implementation possibly achieve by using the tiny bit of flexibility
+granted by this wording?
+This wording merely serves to confuse the user and make the language less teachable.
+It is material for language lawyers to dismiss some uses of `std::array`
+as non-portable.
+
+## The double-brace dilemma ## {#double-brace-dilemma}
+
+<div class=example>
+It would comply with the current wording to define a specialization such as:
+
+```cpp
+template<class T>
+struct array<T, 2> {
+    T _First, _Second;
+    // ...
+};
+```
+
+If such a specialization was defined, the following could would be ill-formed:
+```cpp
+int main() {
+    std::array<std::array<int, 2>, 2> arr{{
+        {1, 2}, {3, 4}
+    }};
+}
+```
+</div>
+
+The use of double braces is normally correct in the example.
+The outermost pair of braces is list-initialization of `arr`,
+the next pair of braces is for the C-style array within, and the innermost
+braces are for the `std::array<int, 2>` contained within.
+However, if such a specialization existed, then the extra brace pair would initialize
+`_First` and `{1, 2}` would initialize a single `int`, which is ill-formed.
+
+A GitHub code search for
+<a href="https://github.com/search?q=%2Fstd%3A%3Aarray%28%3C.*%3E%29%3F.*%5C%7B%5C%7B%2F+language%3AC%2B%2B+&type=code">`/std::array(<.*>)?.*\{\{/ language:c++`</a>
+finds 64.8K files where double-brace initialization was used with `std::array`.
+These files are making "non-portable" assumptions about the layout
+of `std::array` that are not guaranteed.
+
+## The `to_array` dilemma ## {#to-array-dilemma}
+
+The standard further contributes to the double-brace dilemma in the wording of `std::to_array`.
+Subclause [array.creation] specifies that `to_array`:
+
+> *Returns*: `{{ a[0], …, a[N - 1] }}`.
+
+It unclear what this expression does because the meaning depends on the layout of `std::array`.
+If specializations as shown in [[#double-brace-dilemma]] were defined
+or the implementation "magically" ensured that there are always `N` separate members,
+then this expression would perform list-initialization of the first member,
+and all other members would be value-initialized.
+
+Is this the intended behavior?
+Who knows; the standard doesn't tell us.
+
+Note: I believe that the issue of `to_array` could be resolved by using only one pair
+of braces and relying on brace elision ([dcl.init.aggr]).
+Still, even the C++ standard initializes `std::array` in a way that
+language lawyers can attack as "non-portable".
+
+
+# Impact on the standard # {#impact-on-the-standard}
+
+The layout of `std::array<T, N>` can be specified exactly.
+Namely, it is an empty class when `N` is zero; otherwise it contains a single data member
+of type "array of `N` `T`".
+
+This reduces the amount of normative wording because it automatically is
+an aggregate type and structural type.
+It also "fixes" `to_array` by imbuing it with unambiguous meaning.
+
+# Implementation experience # {#implementation-experience}
+
+All three major standard libraries define the `std::array` data members similarly:
+
+**libstdc++** defines no `std::array<T, N>` specialization, but has a member:
+```
+typename __array_traits<T, N>::_Type        _M_elems;
+```
+`_Type` is `T[N]` for non-empty arrays, and an empty class otherwise.
+
+**libc++** defines a primary `std::array<T, N>` template containing a `T[N]` member.
+The partial specialization `std::array<T, 0>` stores an array of empty class type.
+
+**MSVC STL** follows the same approach as libc++.
+
+Overall, the implementations are very similar, with the notable difference that
+`sizeof(std::array<T, 0>) == 1` is true for libstdc++, and
+`sizeof(std::arrayT, 0>) == sizeof(T)` for others.
+
+
+# Impact on the standard # {#impact-on-the-standard}
+
+The overload set of `to_string` would be altered as follows:
+<pre>
+<del>string to_string(int val);
+string to_string(unsigned val);
+string to_string(long val);
+string to_string(unsigned long val);
+string to_string(long long val);
+string to_string(unsigned long long val);
+string to_string(float val);
+string to_string(double val);
+string to_string(long double val);</del>
+<ins>constexpr string to_string(/* integer type >= int */);
+string to_string(/* floating-point type */);</ins>
+</pre>
+
+(Analogous for `to_wstring`)
+
+Note: In the original overload set, the behavior described in [[#sharp-edges-of-to-string]]
+      is a consequence of `to_string(true)` and `to_string('a')` calling `to_string(int)`.
+
+No existing well-formed code is made invalid, and the behavior of existing calls to `to_string` 
+is not altered.
+This proposal only adds additional overloads for extended integer types and extended floating-point
+types.
+
+# Implementation experience # {#implementation-experience}
+
+libstdc++ already implements
+<a href="https://github.com/gcc-mirror/gcc/blob/f1412546ac8999b7f6eeeee8cf967ce3f31794c2/libstdc%2B%2B-v3/include/bits/basic_string.h#L4240"><code>to_string(int)</code></a>
+as an inline function which uses the `constexpr` function
+<a href="https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/charconv.h#L81">
+<code>detail::__to_chars_10_impl</code>
+</a>.
+Similarly, overloads for other integer types and floating-point types are inline functions which
+rely on a `to_chars`-like implementation.
+
+Making `to_string` `constexpr` requires the addition of `_GLIBCXX26_CONSTEXPR`, but no major
+changes to existing code are necessary.
+This demonstrates the feasibility of implementing this proposal.
+
+libc++ is most significantly affected because `to_string` is not yet an inline function.
+This ABI change can be mitigated with `[[gnu::used]]`.
+
+
+# Design decisions # {#design-decisions}
+
+The overload set is altered so that the lowest minimal changes to `to_string` are made.
+Notably:
+- `to_string` remains a non-template function.
+- `to_string` does not receive overloads for `short` or `signed char`, but relies on promotion
+    to `int`, as in the original design.
+
+The design strategy in this proposal mirrors that in [[P1467R9]], which expanded the set
+`sqrt(float)`, `sqrt(double)`, `sqrt(long double)` to <code>sqrt(<i>floating-point-type</i>)</code>
+in a similar way.
+
+## `constexpr` challenges ## {#constexpr-challenges}
+
+There is no obstacle that would make `constexpr to_string` unimplementable for any type,
+at the time of writing.
+
+However, there is the odd issue that `to_string` is defined in terms of `format` (which is not
+`constexpr`), which is defined in terms of `to_chars` (which is `constexpr`).
+This requires awkward wording which "magically" bridges this gap.
+
+This is preferable to re-defining `to_string` in terms of `to_chars` directly because presumably,
+`format` will be `constexpr` sooner or later.
+We can then simply remove the bridge wording.
+
+
+
+
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: underlined;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+W.I.P.
+
+<pre class=biblio>
+{
+}
+</pre>
