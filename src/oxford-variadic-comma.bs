@@ -7,8 +7,8 @@ Date: 2024-02-17
 Group: WG21
 Audience: EWGI
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
-ED: https://eisenwave.github.io/cpp-proposals/to-signed-unsigned.html
-!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/to-signed-unsigned.bs)
+ED: https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/oxford-variadic-comma.bs)
 Markup Shorthands: markdown on
 Abstract: This proposal seeks to deprecate ellipsis parameters without a preceding comma.
 </pre>
