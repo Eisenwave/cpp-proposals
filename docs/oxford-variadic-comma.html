@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2197e2dec79e8e625d0e8cbf50ccacafe3177193" name="revision">
+  <meta content="71e5663b5efe7e9294b4d6c0e6eac18aa7e0bdb0" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2286,7 +2286,7 @@ modify paragraph 26 as follows:</p>
 In this case, the ellipsis is parsed as part of the <em>abstract-declarator</em> if the type of the parameter either names a
 template parameter pack that has not been expanded or contains <code class="highlight"><c- k>auto</c-></code>;
 otherwise, it is parsed as part of the <em>parameter-declaration-clause</em>.<sup>80</sup> 
-    <ins>Function declarations where this ambiguity arises and
+    <ins>Declarators where this ambiguity arises and
 the ellipsis is parsed as part of the <em>parameter-declaration-clause</em> are deprecated.</ins>
     <p><sup>80)</sup> <small>One can explicitly disambiguate the parse either by introducing a comma
 (so the ellipsis will be parsed as part of the <em>parameter-declaration-clause</em>)
