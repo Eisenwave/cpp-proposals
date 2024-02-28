@@ -28,7 +28,10 @@ T arithmetic_shift_right(T x, int s) {
 
 template<class T>
 T wrapping_add(T x, T y) {
-    return T(std::make_unsigned_t<T>(x) + std::make_unsigned_t<T>(y));
+    constexpr unsigned to_int_promotion_defense = 0;
+    return T(to_int_promotion_defense
+           + std::make_unsigned_t<T>(x)
+           + std::make_unsigned_t<T>(y));
 }
 ```
 
@@ -50,12 +53,21 @@ which deduce `T` from `x`.
 This is concise and always uses the correct type.
 
 A GitHub code search for
-<a href="https://github.com/search?type=code&q=language%3Ac%2B%2B+%2F[^a-zA-Z_.](to_unsigned|to_signed)+*\(%2F">
-`language:c++ /[^a-zA-Z_.](to_unsigned|to_signed) *\(/`
+<a href="https://github.com/search?q=%2F%5B%5Ea-zA-Z_%5D%28to_signed%7Cto_unsigned%29%7Cstatic_cast%3C%28typename%29%3F+%3F%28%28%3A%3A%29%3Fstd%3A%3A%29%3F%28make_signed%7Cmake_unsigned%29%2F+-is%3Afork+language%3Ac%2B%2B&type=code">
+`/[^a-zA-Z_](to_signed|to_unsigned)|static_cast<(typename)? ?((::)?std::)?(make_signed|make_unsigned)/ -is:fork language:c++`
 </a>
-shows that roughly C++ 4400 files already use `to_unsigned` and `to_signed`.
+shows that roughly 6.6K C++ files already use a non-standard `to_unsigned` and `to_signed`,
+or `static_cast` to `make_signed` or `make_unsigned`,
+of which 3.2K C++ files convert via `static_cast`.
 This is impressive considering that the feature doesn't exist in the standard library
 and naming the functions `to_{un}signed` is simply a community convention.
+
+By comparison,
+<a href="https://github.com/search?q=%2F%5B%5Ea-zA-Z_%5D%28to_underlying%29%7Cstatic_cast%3C%28typename%29%3F+%3F%28%28%3A%3A%29%3Fstd%3A%3A%29%3F%28underlying_type%29%2F+-is%3Afork+language%3Ac%2B%2B&type=code">
+`/[^a-zA-Z_](to_underlying)|static_cast<(typename)? ?((::)?std::)?(underlying_type)/ -is:fork language:c++`
+</a>
+yields 22.1K C++ files which use `to_underlying` or `static_cast` to `std::underlying_type`,
+of which 11.6K C++ files convert via `static_cast`.
 
 The proposal [[P1682R3]] for `std::to_underlying` had similar rationale and at the time,
 the author was only able to discover 1000 search results for `to_underlying`.
