@@ -1,0 +1,246 @@
+<pre class='metadata'>
+Title: Modular arithmetic functions
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-02-17
+Group: WG21
+Audience: LEWGI, LEWG
+Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/to-signed-unsigned.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/to-signed-unsigned.bs)
+Markup Shorthands: markdown on
+Abstract: This proposal adds several modular arithmetic functions.
+</pre>
+
+
+# Introduction # {#introduction}
+
+Modular arithmetic is common in a wide variety of numeric use cases, including the standard library.
+C++ already provides strong support for modular arithmetic in the form of the `%` remainder operator.
+However, this operator only covers use cases where there is no interference from
+signed integer overflow or from
+the innately modular arithmetic of unsigned integers.
+
+<div class=example>
+Say we want to compute `80 * 4 mod 100` using 8-bit integers.
+
+- If 8-bit signed integers weren't promoted to `int`, then `80 * 4 = 320` would result
+    in signed integer overflow, which is undefined behavior.
+- If 8-bit unsigned integers weren't promoted to `int`, then `80 * 4` would be performed `mod 256`,
+    resulting in `64`.
+    This is incorrect because `80 * 4 mod 100` equals `20`.
+</div>
+
+Of course, 8-bit integers do get promoted to `int` and we have a few extra bits to spare,
+saving us from overflow or incorrect results.
+However, at some point we lose this luxury.
+We cannot simply convert `std::uintmax_t` to a wider type, at least not always.
+
+Note: Since C23, it is possible for wider integers than `std::uintmax_t` to exist.
+`std:uintmax_t` may be narrower than an extended integer type which is wider than
+`unsigned long long`.
+
+This problem comes up in the implementation of `std::linear_congruential_engine<unsigned long long, a, c, m>`.
+Linear congruential engines advance the state `x` by computing `(a * x + c) mod m`.
+To obtain a correct result, libstdc++ and libc++ use a 128-bit integer type `__uint128`.
+Even 128-bit integers don't generally solve this issue because if the user had a standard 128-bit integer type,
+they would need a 256-bit integer type to perform 128-bit modular arithmetic.
+
+# Proposed solution # {#proposed-solution}
+
+To give the user a general solution to the problem of performing modular arithmetic,
+I propose multiple modular arithmetic functions which perform modular addition, subtraction,
+and exponentiation.
+
+Note: The constraints and implementations are exposition-only.
+
+## `mod_add` ## {#mod-add}
+
+```cpp
+template<unsigned_integral T, unsigned_integral U, unsigned_integral M>
+common_type_t<common_type_t<T, U>, M> mod_add(T x, U y, M m) {
+    using C = common_type_t<common_type_t<T, U>, M>;
+    // Widening addition x + y, yielding the low bits of the sum and a carry bool.
+    auto [lo, carry] = add_wide(C(x), C(y));
+    // Remainder of the division carry:lo / m, where : denotes bit-concatenation.
+    return rem_wide(C(carry), lo, C(m));
+}
+```
+This function computes `(x + y) mod m`.
+
+## `mod_sub` ## {#mod-sub}
+
+```cpp
+template<unsigned_integral T, unsigned_integral U, unsigned_integral M>
+common_type_t<common_type_t<T, U>, M> mod_add(T x, U y, M m) {
+    using C = common_type_t<common_type_t<T, U>, M>;
+    // Implement in terms of mod_add between x and the additive inverse of y.
+    return mod_add(x, C(m) - (C(y) % C(m)), m)
+}
+```
+This function computes `(x - y) mod m`.
+
+```cpp
+template<unsigned_integral T, unsigned_integral M>
+common_type_t<T, M> mod_complement(T x, M m) {
+    using C = common_type_t<T, M>;
+    return m - (x > m ? x % m : x)
+}
+```
+This function computes `(x + y) mod m`.
+
+## `mod_mul` ## {#mod-mul}
+
+```cpp
+// in <numeric>
+template<unsigned_integral T, unsigned_integral U, unsigned_integral M>
+common_type_t<common_type_t<T, U>, M> mod_mul(T x, U y, M m) {
+    using C = common_type_t<common_type_t<T, U>, M>;
+    // Widening multiplication x * y yielding the high and low bits of the multiplication.
+    auto [hi, lo] = mul_wide(C(x), C(y));
+    // Remainder of the division carry:lo / m, where : denotes bit-concatenation.
+    return rem_wide(hi, lo, C(m));
+}
+```
+This function computes `(x * y) mod m`.
+
+## `mod_pow` ## {#mod-pow}
+
+```cpp
+// in <numeric>
+template<unsigned_integral T, unsigned_integral U, unsigned_integral M>
+common_type_t<common_type_t<T, U>, M> mod_pow(T x, U y, M m) {
+    if constexpr (!is_same_v<T, U> || !is_same_v<U, M>) {
+        using C = common_type_t<common_type_t<T, U>, M>;
+        return mod_pow(C(x), C(y), C(m));
+    }
+    else {
+        // T, U, and M are the common type in here.
+        // Implement Square and Multiply algorithm, which performs integer exponentiation
+        // in O(log n) integer operations.
+        x %= m;
+        T result = 1;
+        for (; exp != 0; exp >>= 1) {
+            if (exp & 1) {
+                result = mod_mul(result, x, m);
+            }
+            x = mod_mul(x, x, m);
+        }
+        return result;
+    }
+}
+```
+This function computes `pow(x, y) mod m`.
+
+# Impact on the standard # {#impact-on-the-standard}
+
+This proposal is a pure library extension.
+
+Note: [ranges.syn] already defines an exposition-only function
+<code>*to-unsigned-like*</code>, however, this is more powerful than the proposed function
+because it operates on <code>*unsigned-like*</code> types, not unsigned integer types.
+Therefore, the wording in [ranges] remains unaffected.
+
+# Possible implementation # {#possible-implementation}
+
+```cpp
+template<class T>
+[[nodiscard]] constexpr std::make_signed_t<T> to_signed(T x) noexcept {
+    return static_cast<std::make_signed_t<T>>(x);
+}
+
+template<class T>
+[[nodiscard]] constexpr std::make_unsigned_t<T> to_unsigned(T x) noexcept {
+    return static_cast<std::make_unsigned_t<T>>(x);
+}
+```
+
+
+# Design decisions # {#design-decisions}
+
+This proposal follows precedent:
+Similar to `to_underlying`, the proposed functions are located in `<utility>`.
+The naming scheme is based on `to_underlying` and the 4400 existing uses of `to_{un}signed`
+on GitHub.
+
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: underlined;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The proposed wording is relative to [[!N4950]].
+
+In subclause 17.3.2 [version.syn], add the following feature-testing macro:
+
+<blockquote>
+<pre>
+<ins>#define __cpp_lib_to_signed  20XXXXL // also in &lt;utility&gt;</ins>
+</pre>
+</blockquote>
+
+In subclause 22.2.1 [utility.syn], update the synopsis as follows:
+<blockquote>
+<pre>
+namespace std {
+  [...]
+<ins>  // [utility.signconv]
+  template&lt;class T&gt;
+    constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
+  template&lt;class T&gt;
+    constexpr make_unsigned_t&lt;T&gt; to_unsigned(T value) noexcept;</ins>
+
+  // [utility.underlying], to_underlying
+  template&lt;class T&gt;
+    constexpr underlying_type_t&lt;T&gt; to_underlying(T value) noexcept;
+  [...]
+}
+</pre>
+</blockquote>
+
+In subclause 22.2 [utility.syn], add a subclause prior to [utility.underlying]:
+
+<blockquote>
+<b>22.2.8 Sign conversion functions [utility.signconv]</b>
+<pre>
+template&lt;class T&gt;
+  constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
+</pre>
+<p class=indent>
+1 *Returns*: `static_cast<make_signed_t<T>>(x)`.
+</p>
+<pre>
+template&lt;class T&gt;
+  constexpr make_unsigned_t&lt;T&gt; to_unsigned(T value) noexcept;
+</pre>
+<p class=indent>
+2 *Returns*: `static_cast<make_unsigned_t<T>>(x)`.
+</p>
+</blockquote>
+
+Note: The name of the subclause is based on [meta.trans.sign], sign modifications.
+
+<pre class=biblio>
+{
+}
+</pre>
