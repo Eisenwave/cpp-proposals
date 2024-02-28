@@ -180,9 +180,6 @@ or by introducing a name for the parameter
 (so the ellipsis will be parsed as part of the *declarator-id*).</small>
 </blockquote>
 
-Note: The name of the subclause is based on [meta.trans.sign], sign modifications.
-
-
 <pre class=biblio>
 {
 }
