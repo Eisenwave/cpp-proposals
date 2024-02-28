@@ -10,15 +10,23 @@ Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/oxford-variadic-comma.bs)
 Markup Shorthands: markdown on
-Abstract: This proposal seeks to deprecate ellipsis parameters without a preceding comma.
+Abstract: Deprecate ellipsis parameters without a preceding comma.
+          The syntax `(int...)` is incompatible with C, detrimental to C++,
+          and easily replaceable with `(int, ...)`.
 </pre>
 
+Note: In this proposal, the term *ellipsis parameter* refers to non-template
+variadic parameters, i.e. "C-style varargs", i.e. as in `(/* */, ...)`.
 
 # Introduction # {#introduction}
 
-[[P1219R2]] "Homogeneous variadic function parameters" proposed to make the
-separating comma prior to an ellipsis parameter mandatory.
-The proposal did not pass, but the latter part was strongly favored
+[[P1219R2]] "Homogeneous variadic function parameters" proposed a new feature,
+where the declarator `(int...)` would be interpreted as a
+homogeneous function template parameter pack.
+As part of this, it made it mandatory to separate an ellipsis parameter
+from preceding parameters using a comma.
+
+The proposal did not pass, but the change to commas achieved strong consensus
 by EWGI in Kona 2019.
 
 <blockquote>
@@ -39,27 +47,25 @@ EWGI Poll: Make vararg declaration comma mandatory.
 
 This proposal continues where [[P1219R2]] has has left off.
 Namely, I propose the following behavior:
-<pre line-highlight=10-11>
+<pre line-highlight=8-10>
 // OK, function template parameter pack
-template&lt;class T...&gt; void a(T...);
-
+template&lt;class... Ts&gt; void a(Ts...);
 // OK, abbreviated function template parameter pack
 void b(auto...);
-
 // OK, ellipsis parameter, compatible with C
 void c(int, ...); 
-
+void d(...); 
 // Deprecated, ellipsis parameter, ill-formed in C
-void d(int...);
-
+void e(int...);
+void f(int x...);
 // Ill-formed, but unambiguous
-void d(int... args);
+void g(int... args);
 </pre>
 
 ## History and C compatibility ## {#history}
 
-The active version of the C standard ISO/IEC9899:2018 permits functions
-which accept a variable number of arguments.
+The active version of the C standard ISO/IEC9899:2018
+permit functions which accept a variable number of arguments.
 Such functions must have a *parameter-type-list* containing at least one parameter,
 and the ellipsis parameter must be comma-separated:
 <blockquote>
@@ -68,10 +74,13 @@ and the ellipsis parameter must be comma-separated:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-list* `,` `...`
 </blockquote>
 
+This syntax is unchanged since C89.
+C has never permitted the comma to be omitted.
+
 Such ellipsis parameters were originally introduced in C++ along with function
 prototypes, but without a separating comma.
-Only `printf(char*...)` would have been well-formed in pre-standard C++,
-unlike `printf(char*, ...)`.
+Only `int printf(char*...)` would have been well-formed in pre-standard C++,
+unlike `int printf(char*, ...)`.
 
 For the purpose of C compatibility, C++ later allowed the separating comma,
 resulting in the syntax (unchanged since C++98):
@@ -83,17 +92,17 @@ resulting in the syntax (unchanged since C++98):
 </blockquote>
 
 With the introduction of function template parameter packs in C++11, there arose a
-syntactical ambiguity for `(T...)` between:
+syntactical ambiguity for a declarator `(T...)` between:
 - a parameter pack of type `T...` and
 - a single `T` followed by an ellipsis parameter.
 
-At present, this ambiguity is always resolved in favor of function template
+Currently, this ambiguity is resolved in favor of function template
 parameter packs, if that is well-formed.
 
 
 # Motivation # {#motivation}
 
-The syntax `(int...)` interferes with future standardization.
+The declarator syntax `(int...)` interferes with future standardization.
 This has already impacted [[P1219R2]] and will impact any future proposal which
 attempts to utilize this syntax.
 
@@ -102,25 +111,25 @@ of writing variadic functions in C++.
 Many users associate `(int...)` with a pack, not with an ellipsis parameter.
 Not parsing this syntax as a parameter pack is confusing.
 
-Lastly, as explained above, only the syntax `(int, ...)` is compatible with C,
+Lastly, as explained above, only the declarator `(int, ...)` is compatible with C,
 not `(int...)`.
 The latter syntax is arguably pointless nowadays and only exists for the sake of
 compatibility with pre-standard C++.
 
-## Abominable packs ## {#abominable-packs}
+## `T......` ## {#six-packs}
 
-There is also the *abominable pack* `(auto......)` or `(T......)`, which is a function
-template parameter pack, followed by an ellipsis parameter.
-Abominable packs are confusing because conceptually,
+C++ also allows `(auto......)` or `(T......)`, which is a declarator containing a
+function template parameter pack, followed by an ellipsis parameter.
+Such *parameter-declaration-clause*s are confusing because conceptually,
 they consist of two separate constructs,
 but the syntax strongly suggests that all `.` apply to `auto` or `T`.
 
-Note: In other words, `(auto......)` is equivalent to `(auto..., ...)`.
+Note: In other words, the declarator `(auto......)` is equivalent to `(auto..., ...)`.
 
-Note: Some users believe that abominable packs are entirely useless because one
+Note: Some users believe that this construct is entirely useless because one
 cannot provide any arguments to the ellipsis parameter.
-However, this is false; arguments can be provided if the template arguments
-corresponding to `T...` are explicitly provided, not deduced.
+However, arguments can be provided if `T...` is template type
+pack which belongs to the surrounding class template.
 
 # Impact on the standard # {#impact-on-the-standard}
 
@@ -136,9 +145,21 @@ I do not propose to remove support for ellipsis parameters without a preceding
 comma because there is no feature proposed which requires such removal.
 A deprecation is sufficient at this time.
 
+The declarator `(...)` should remain valid.
+It is compatible with C and unambiguous.
+
 # Proposed wording # {#proposed-wording}
 
 <style>
+th, td, table {
+    border: 1px solid var(--text);
+}
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+    text-align: center;
+}
+
 .indent {
     margin-left: 2em;
 }
@@ -159,27 +180,39 @@ The proposed wording is relative to [[!N4950]].
 
 In subclause 9.3.4.6
 <a href=http://eel.is/c++draft/dcl.fct#26>[dcl.fct]</a>,
-modify paragraph 26 as follows:
+add a paragraph:
 
 
 <blockquote>
-There is a syntactic ambiguity when an ellipsis occurs at the end of a
-*parameter-declaration-clause* without a preceding comma.
-In this case, the ellipsis is parsed as part of the
-*abstract-declarator* if the type of the parameter either names a
-template parameter pack that has not been expanded or contains `auto`;
-otherwise, it is parsed as part of the *parameter-declaration-clause*.<sup>80</sup>
-<ins>Declarators where this ambiguity arises and
-the ellipsis is parsed as part of the
-*parameter-declaration-clause* are deprecated.</ins>
-
-
-<sup>80)</sup>
-<small>One can explicitly disambiguate the parse either by introducing a comma
-(so the ellipsis will be parsed as part of the *parameter-declaration-clause*)
-or by introducing a name for the parameter
-(so the ellipsis will be parsed as part of the *declarator-id*).</small>
+<ins>
+A *parameter-declaration-clause* of the form
+*parameter-declaration-list* `...` is deprecated.
+</ins>
 </blockquote>
+
+In Annex D <a href=http://eel.is/c++draft/depr>[depr]</a>,
+add a subclause:
+
+<blockquote>
+<b>D.X Non-comma-separated ellipsis parameters [depr.ellipsis.comma]</b>
+<p>
+A *parameter-declaration-clause* of the form
+*parameter-declaration-list* `...` is deprecated.
+<br>[*Example*:<pre>void a(auto...);       // OK
+void b(auto, ...);     // OK
+void f(...);           // OK
+void g(int...);        // deprecated
+void h(int, ...);      // OK
+void k(int x...);      // deprecated
+void l(int x, ...);    // OK</pre>— *end example*]
+</p>
+</blockquote>
+
+# Acknowledgements # {#acknowledgements}
+
+I thank Christof Meerwald for contributing proposed wording.
+
+I thank Arthur O'Dwyer for providing extensive editorial feedback.
 
 <pre class=biblio>
 {
