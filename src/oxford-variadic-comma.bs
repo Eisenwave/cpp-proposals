@@ -3,7 +3,7 @@ Title: The Oxford variadic comma
 Shortname: Pxxxx
 Revision: 0
 Status: NP
-Date: 2024-02-17
+Date: 2024-02-28
 Group: WG21
 Audience: EWGI
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
