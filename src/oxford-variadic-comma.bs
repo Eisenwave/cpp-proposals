@@ -169,8 +169,9 @@ In this case, the ellipsis is parsed as part of the
 *abstract-declarator* if the type of the parameter either names a
 template parameter pack that has not been expanded or contains `auto`;
 otherwise, it is parsed as part of the *parameter-declaration-clause*.<sup>80</sup>
-<ins>A disambiguation where the ellipsis is parsed as part of the
-*parameter-declaration-clause* is deprecated.</ins>
+<ins>Function declarations where this ambiguity arises and
+the ellipsis is parsed as part of the
+*parameter-declaration-clause* are deprecated.</ins>
 
 
 <sup>80)</sup>
