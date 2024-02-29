@@ -3,7 +3,7 @@ Title: The Oxford variadic comma
 Shortname: Pxxxx
 Revision: 0
 Status: NP
-Date: 2024-02-28
+Date: 2024-02-29
 Group: WG21
 Audience: EWGI
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
@@ -139,6 +139,19 @@ No new features are proposed or removed,
 no semantics are altered,
 and no existing code is impacted.
 
+# Impact on existing code # {#impact-on-existing-code}
+
+No code becomes ill-formed.
+Any deprecated uses of `T...` can be converted to `T, ...`.
+This transformation is simple enough to be performed by automatic tooling.
+
+I conjecture that a non-trivial amount of code would be deprecated.
+It is hard to find the exact amount because `(T...)`
+could be using an ellipsis parameter or a parameter pack; one doesn't know without compiling.
+This prevents simple syntax-based approaches to searching for occurrences.
+However, I was able to find a few dozen occurrences of `T......`
+using a GitHub code search for `/\(.+\.\.\.\.\.\.\).+\{/ language:c++` and other patterns.
+
 # Design considerations # {#design-considerations}
 
 I do not propose to remove support for ellipsis parameters without a preceding
@@ -184,10 +197,8 @@ add a paragraph:
 
 
 <blockquote>
-<ins>
 A *parameter-declaration-clause* of the form
 *parameter-declaration-list* `...` is deprecated.
-</ins>
 </blockquote>
 
 In Annex D <a href=http://eel.is/c++draft/depr>[depr]</a>,

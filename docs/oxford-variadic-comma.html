@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5b8445b9ce677a3f91c175995abccdc57e7c827e" name="revision">
+  <meta content="678d0399d1dba280396f6056db737b407aad01ec" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2157,7 +2157,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PxxxxR0<br>The Oxford variadic comma</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">New Proposal, <time class="dt-updated" datetime="2024-02-28">2024-02-28</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">New Proposal, <time class="dt-updated" datetime="2024-02-29">2024-02-29</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2195,9 +2195,10 @@ and easily replaceable with <code class="highlight"><c- p>(</c-><c- b>int</c-><c
       <li><a href="#six-packs"><span class="secno">2.1</span> <span class="content"><code class="highlight"><c- n>T</c-><c- p>......</c-></code></span></a>
      </ol>
     <li><a href="#impact-on-the-standard"><span class="secno">3</span> <span class="content">Impact on the standard</span></a>
-    <li><a href="#design-considerations"><span class="secno">4</span> <span class="content">Design considerations</span></a>
-    <li><a href="#proposed-wording"><span class="secno">5</span> <span class="content">Proposed wording</span></a>
-    <li><a href="#acknowledgements"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#impact-on-existing-code"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#design-considerations"><span class="secno">5</span> <span class="content">Design considerations</span></a>
+    <li><a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#acknowledgements"><span class="secno">7</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2292,19 +2293,25 @@ pack which belongs to the surrounding class template.</p>
    <p>No new features are proposed or removed,
 no semantics are altered,
 and no existing code is impacted.</p>
-   <h2 class="heading settled" data-level="4" id="design-considerations"><span class="secno">4. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
+   <h2 class="heading settled" data-level="4" id="impact-on-existing-code"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
+   <p>No code becomes ill-formed.
+Any deprecated uses of <code class="highlight"><c- n>T</c-><c- p>...</c-></code> can be converted to <code class="highlight"><c- n>T</c-><c- p>,</c-> <c- p>...</c-></code>.
+This transformation is simple enough to be performed by automatic tooling.</p>
+   <p>I conjecture that a non-trivial amount of code would be deprecated.
+It is hard to find the exact amount because <code class="highlight"><c- p>(</c-><c- n>T</c-><c- p>...)</c-></code> could be using an ellipsis parameter or a parameter pack; one doesn’t know without compiling.
+This prevents simple syntax-based approaches to searching for occurrences.
+However, I was able to find a few dozen occurrences of <code class="highlight"><c- n>T</c-><c- p>......</c-></code> using a GitHub code search for <code class="highlight"><c- o>/</c->\<c- p>(.</c-><c- o>+</c->\<c- p>.</c->\<c- p>.</c->\<c- p>.</c->\<c- p>.</c->\<c- p>.</c->\<c- p>.</c->\<c- p>).</c-><c- o>+</c->\<c- p>{</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code> and other patterns.</p>
+   <h2 class="heading settled" data-level="5" id="design-considerations"><span class="secno">5. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>I do not propose to remove support for ellipsis parameters without a preceding
 comma because there is no feature proposed which requires such removal.
 A deprecation is sufficient at this time.</p>
    <p>The declarator <code class="highlight"><c- p>(...)</c-></code> should remain valid.
 It is compatible with C and unambiguous.</p>
-   <h2 class="heading settled" data-level="5" id="proposed-wording"><span class="secno">5. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed wording is relative to <a data-link-type="biblio" href="#biblio-n4950" title="Working Draft, Standard for Programming Language C++">[N4950]</a>.</p>
    <p>In subclause 9.3.4.6 <a href="http://eel.is/c++draft/dcl.fct#26">[dcl.fct]</a>,
 add a paragraph:</p>
-   <blockquote>
-    <ins> A <em>parameter-declaration-clause</em> of the form <em>parameter-declaration-list</em> <code class="highlight"><c- p>...</c-></code> is deprecated. </ins>
-   </blockquote>
+   <blockquote> A <em>parameter-declaration-clause</em> of the form <em>parameter-declaration-list</em> <code class="highlight"><c- p>...</c-></code> is deprecated. </blockquote>
    <p>In Annex D <a href="http://eel.is/c++draft/depr">[depr]</a>,
 add a subclause:</p>
    <blockquote>
@@ -2320,7 +2327,7 @@ add a subclause:</p>
     — <em>end example</em>] 
     <p></p>
    </blockquote>
-   <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <h2 class="heading settled" data-level="7" id="acknowledgements"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Christof Meerwald for contributing proposed wording.</p>
    <p>I thank Arthur O’Dwyer for providing extensive editorial feedback.</p>
   </main>
