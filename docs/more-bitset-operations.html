@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3103R0: More bitset operations</title>
+  <title>P3103R1: More bitset operations</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/more-bitset-operations.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="19425a9162b2512058b688fe36395cbe029738e5" name="revision">
+  <meta content="5b0835fd33e4e1a4420af0d7b77c3d47a3288915" name="revision">
 <style>
 th {
     text-align: left;
@@ -2108,8 +2108,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3103R0<br>More bitset operations</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-01-24">2024-01-24</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3103R1<br>More bitset operations</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-02-29">2024-02-29</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2135,17 +2135,22 @@ functions in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#proposed-changes"><span class="secno">2</span> <span class="content">Proposed changes</span></a>
     <li>
-     <a href="#design"><span class="secno">3</span> <span class="content">Design considerations</span></a>
+     <a href="#revision-history"><span class="secno">1</span> <span class="content">Revision history</span></a>
      <ol class="toc">
-      <li><a href="#reverse"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>reverse</c-></code></span></a>
-      <li><a href="#counting-overloads"><span class="secno">3.2</span> <span class="content">Counting overloads</span></a>
+      <li><a href="#changes-since-r0"><span class="secno">1.1</span> <span class="content">Changes since R0</span></a>
      </ol>
-    <li><a href="#impact-on-existing-code"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#implementation-experience"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
-    <li><a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
+    <li><a href="#proposed-changes"><span class="secno">3</span> <span class="content">Proposed changes</span></a>
+    <li>
+     <a href="#design"><span class="secno">4</span> <span class="content">Design considerations</span></a>
+     <ol class="toc">
+      <li><a href="#reverse"><span class="secno">4.1</span> <span class="content"><code class="highlight"><c- n>reverse</c-></code></span></a>
+      <li><a href="#counting-overloads"><span class="secno">4.2</span> <span class="content">Counting overloads</span></a>
+     </ol>
+    <li><a href="#impact-on-existing-code"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#implementation-experience"><span class="secno">6</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2155,7 +2160,15 @@ functions in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <h2 class="heading settled" data-level="1" id="revision-history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#revision-history"></a></h2>
+   <h3 class="heading settled" data-level="1.1" id="changes-since-r0"><span class="secno">1.1. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes-since-r0"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Simplified proposed wording by defining <code class="highlight"><c- n>rotl</c-></code> as an equivalence in terms of <code class="highlight"><c- n>rotr</c-></code>.</p>
+    <li data-md>
+     <p>Fixed minor editorial mistakes.</p>
+   </ul>
+   <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p0553r4" title="Bit operations">[P0553R4]</a> added the bit manipulation library to C++20, which introduced many useful utility
 functions.</p>
    <p>Some of these already have a counterpart in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> (such as <code class="highlight"><c- n>popcount</c-></code> as <code class="highlight"><c- n>bitset</c-><c- o>::</c-><c- n>count</c-></code>),
@@ -2165,7 +2178,7 @@ which is unfortunate because <code class="highlight"><c- n>std</c-><c- o>::</c->
 At the time of writing, it is used in 73K files on GitHub; see <a data-link-type="biblio" href="#biblio-github1" title="std::bitset language:c++">[GitHub1]</a>.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> does not (and should not) expose the underlying integer sequence of the implementation.
 Therefore, it is not possible for the user to implement these operations efficiently themselves.</p>
-   <h2 class="heading settled" data-level="2" id="proposed-changes"><span class="secno">2. </span><span class="content">Proposed changes</span><a class="self-link" href="#proposed-changes"></a></h2>
+   <h2 class="heading settled" data-level="3" id="proposed-changes"><span class="secno">3. </span><span class="content">Proposed changes</span><a class="self-link" href="#proposed-changes"></a></h2>
    <p>For each of the functions from the bit manipulation library that are not yet available
 in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code>, add a member function.
 Add a small amount of further useful member functions.</p>
@@ -2222,29 +2235,29 @@ This can be useful for iterating over all set bits:</p>
 </pre>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>byteswap</c-></code> and <code class="highlight"><c- n>bit_cast</c-></code> counterparts are not proposed, only functions solely
 dedicated to the manipulation of bit sequences.</p>
-   <h2 class="heading settled" data-level="3" id="design"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
+   <h2 class="heading settled" data-level="4" id="design"><span class="secno">4. </span><span class="content">Design considerations</span><a class="self-link" href="#design"></a></h2>
    <p>The naming of the member functions is based on the naming scheme in the <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code> header.</p>
-   <h3 class="heading settled" data-level="3.1" id="reverse"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>reverse</c-></code></span><a class="self-link" href="#reverse"></a></h3>
+   <h3 class="heading settled" data-level="4.1" id="reverse"><span class="secno">4.1. </span><span class="content"><code class="highlight"><c- n>reverse</c-></code></span><a class="self-link" href="#reverse"></a></h3>
    <p><code class="highlight"><c- n>reverse</c-></code> is a notable exception, which does not yet exist in <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.
 This function is added because the method for reversing integers may be tremendously faster than
 doing so bit by bit.
 ARM has a dedicated <code class="highlight"><c- n>RBIT</c-></code> instruction for reversing bits, which could be leveraged.</p>
    <p>I have written a not yet published proposal <a data-link-type="biblio" href="#biblio-schultke1" title="Bit permutations">[Schultke1]</a> which adds a corresponding bit-reversal function to <code class="highlight"><c- o>&lt;</c-><c- n>bit</c-><c- o>></c-></code>.</p>
-   <h3 class="heading settled" data-level="3.2" id="counting-overloads"><span class="secno">3.2. </span><span class="content">Counting overloads</span><a class="self-link" href="#counting-overloads"></a></h3>
+   <h3 class="heading settled" data-level="4.2" id="counting-overloads"><span class="secno">4.2. </span><span class="content">Counting overloads</span><a class="self-link" href="#counting-overloads"></a></h3>
    <p><code class="highlight"><c- n>countl_zero</c-></code>, <code class="highlight"><c- n>countr_zero</c-></code>, <code class="highlight"><c- n>countl_one</c-></code>, and <code class="highlight"><c- n>countr_one</c-></code> are overloaded member functions which take a <code class="highlight"><c- b>size_t</c-></code> argument or nothing.</p>
-   <p>This is preferrable to a single member function with a defaulted argument because the overloads
+   <p>This is preferable to a single member function with a defaulted argument because the overloads
 have different <code class="highlight"><c- k>noexcept</c-></code> specifications.
-The overloads which take no arguments have a wide constract and can be marked <code class="highlight"><c- k>noexcept</c-></code>,
+The overloads which take no arguments have a wide contract and can be marked <code class="highlight"><c- k>noexcept</c-></code>,
 whereas the overloads taking <code class="highlight"><c- b>size_t</c-></code> may throw <code class="highlight"><c- n>out_of_range</c-></code>.</p>
-   <h2 class="heading settled" data-level="4" id="impact-on-existing-code"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact-on-existing-code"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
    <p>The semantics of existing <code class="highlight"><c- n>bitset</c-></code> member functions remain unchanged, and no existing valid code
 is broken.</p>
    <p>This proposal is purely an extension of the functionality of <code class="highlight"><c- n>bitset</c-></code>.</p>
-   <h2 class="heading settled" data-level="5" id="implementation-experience"><span class="secno">5. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
+   <h2 class="heading settled" data-level="6" id="implementation-experience"><span class="secno">6. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-bontus1" title="bitset2: bitset improved">[Bontus1]</a> provides  a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> implementation which supports most proposed features.
 There are no obvious obstacles to implementing the new features in common standard library
 implementations.</p>
-   <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="proposed-wording"><span class="secno">7. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Modify the header synopsis in subclause 17.3.2 [version.syn] as follows:</p>
    <blockquote>
@@ -2313,22 +2326,16 @@ implementations.</p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>rotl</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
     <p></p>
     <p>
-     <ins><em>Effects</em>: Replaces each bit at position <code class="highlight"><c- n>I</c-></code> in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> with
-    the bit at position <code class="highlight"><c- p>(</c-><c- n>N</c-> <c- o>-</c-> <c- n>pos</c-> <c- o>%</c-> <c- n>N</c-> <c- o>+</c-> <c- n>I</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>,
-    where all arithmetic is performed using a hypothetical unsigned integer type
-    which is at least one bit wider than <code class="highlight"><c- b>size_t</c-></code>.</ins>
-    </p>
-    <p>
-     <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
+     <ins><em>Effects</em>: Equivalent to <code class="highlight"><c- n>rotr</c-><c- p>(</c-><c- n>N</c-> <c- o>-</c-> <c- n>pos</c-> <c- o>%</c-> <c- n>N</c-><c- p>)</c-></code>.</ins>
     </p>
     <p><code class="highlight"></code></p>
 <pre class="highlight"><code><ins><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>rotr</c-><c- p>(</c-><c- b>size_t</c-> <c- n>pos</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c-></ins></code></pre>
     <p></p>
     <p>
      <ins><em>Effects</em>: Replaces each bit at position <code class="highlight"><c- n>I</c-></code> in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> with
-    the bit at position <code class="highlight"><c- p>(</c-><c- n>pos</c-> <c- o>+</c-> <c- n>I</c-><c- p>)</c-> <c- o>%</c-> <c- n>N</c-></code>,
-    where all arithmetic is performed using a hypothetical unsigned integer type
-    which is at least one bit wider than <code class="highlight"><c- b>size_t</c-></code>.</ins>
+    the bit at position <code class="highlight"><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- n>U</c-><c- o>></c-><c- p>(</c-><c- n>pos</c-><c- p>)</c-> <c- o>+</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- n>U</c-><c- o>></c-><c- p>(</c-><c- n>I</c-><c- p>))</c-> <c- o>%</c-> <c- n>N</c-></code>,
+    where <code class="highlight"><c- n>U</c-></code> is a hypothetical unsigned integer type whose width is greater
+    than the width of <code class="highlight"><c- b>size_t</c-></code>.</ins>
     </p>
     <p>
      <ins><em>Returns</em>: <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</ins>
@@ -2345,7 +2352,7 @@ implementations.</p>
     </p>
     <p> [...] </p>
     <p><code class="highlight"></code></p>
-<pre class="highlight"><code><c- k>constexpr</c-> <c- n>bitset</c-><c- o>&amp;</c-> <c- nf>count</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
+<pre class="highlight"><code><c- k>constexpr</c-> <c- b>size_t</c-> <c- nf>count</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
     <p></p>
     <p> <em>Returns</em>: A count of the number of bits set in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. </p>
     <p><code class="highlight"></code></p>

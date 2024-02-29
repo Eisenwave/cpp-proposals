@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: More bitset operations
 Shortname: P3103
-Revision: 0
+Revision: 1
 Status: P
-Date: 2024-01-24
+Date: 2024-02-29
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -13,6 +13,14 @@ Markup Shorthands: markdown on
 Abstract: This paper proposes adding a counterpart `std::bitset` member function for the utility
           functions in `<bit>`.
 </pre>
+
+# Revision history # {#revision-history}
+
+## Changes since R0 ## {#changes-since-r0}
+
+- Simplified proposed wording by defining `rotl` as an equivalence in terms of `rotr`.
+- Fixed minor editorial mistakes.
+
 
 # Introduction # {#intro}
 
@@ -130,9 +138,9 @@ which adds a corresponding bit-reversal function to `<bit>`.
 `countl_zero`, `countr_zero`, `countl_one`, and `countr_one`
 are overloaded member functions which take a `size_t` argument or nothing.
 
-This is preferrable to a single member function with a defaulted argument because the overloads
+This is preferable to a single member function with a defaulted argument because the overloads
 have different `noexcept` specifications.
-The overloads which take no arguments have a wide constract and can be marked `noexcept`,
+The overloads which take no arguments have a wide contract and can be marked `noexcept`,
 whereas the overloads taking `size_t` may throw `out_of_range`.
 
 
@@ -248,21 +256,15 @@ Modify subclause 22.9.2.3 [bitset.members] as follows:
 
 <code><pre><ins>constexpr bitset& rotl(size_t pos) noexcept;</ins></pre></code>
 <p>
-    <ins>*Effects*: Replaces each bit at position `I` in `*this` with
-    the bit at position `(N - pos % N + I) % N`,
-    where all arithmetic is performed using a hypothetical unsigned integer type
-    which is at least one bit wider than `size_t`.</ins>
-</p>
-<p>
-    <ins>*Returns*: `*this`.</ins>
+    <ins>*Effects*: Equivalent to `rotr(N - pos % N)`.</ins>
 </p>
 
 <code><pre><ins>constexpr bitset& rotr(size_t pos) noexcept;</ins></pre></code>
 <p>
     <ins>*Effects*: Replaces each bit at position `I` in `*this` with
-    the bit at position `(pos + I) % N`,
-    where all arithmetic is performed using a hypothetical unsigned integer type
-    which is at least one bit wider than `size_t`.</ins>
+    the bit at position `(static_cast<U>(pos) + static_cast<U>(I)) % N`,
+    where `U` is a hypothetical unsigned integer type whose width is greater
+    than the width of `size_t`.</ins>
 </p>
 <p>
     <ins>*Returns*: `*this`.</ins>
@@ -281,7 +283,7 @@ Modify subclause 22.9.2.3 [bitset.members] as follows:
     [...]
 </p>
 
-<code><pre>constexpr bitset& count() noexcept;</pre></code>
+<code><pre>constexpr size_t count() noexcept;</pre></code>
 <p>
     *Returns*: A count of the number of bits set in `*this`.
 </p>
