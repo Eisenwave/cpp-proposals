@@ -45,8 +45,13 @@ EWGI Poll: Make vararg declaration comma mandatory.
 </table>
 </blockquote>
 
-This proposal continues where [[P1219R2]] has has left off.
-Namely, I propose the following behavior:
+Going back to 2016, [[P0281R0]]
+"Remove comma elision in variadic function declarations" also proposed to make the
+variadic comma mandatory.
+Due to its impact on existing code, the proposal did not pass.
+
+My proposal continues where [[P1219R2]] and [[P0281R0]] have left off.
+However, I call for deprecation, not for removal, resulting in the following behavior:
 <pre line-highlight=8-10>
 // OK, function template parameter pack
 template&lt;class... Ts&gt; void a(Ts...);
@@ -61,6 +66,11 @@ void f(int x...);
 // Ill-formed, but unambiguous
 void g(int... args);
 </pre>
+
+[[P1161R3]] "Deprecate uses of the comma operator in subscripting expressions"
+has followed the same strategy.
+It deprecated `array[0, 1]` in C++20 which freed up the syntax for
+[[P2128R6]] "Multidimensional subscript operator" in C++23.
 
 ## History and C compatibility ## {#history}
 
@@ -109,7 +119,13 @@ attempts to utilize this syntax.
 Furthermore, variadic function templates are a much common and flexible way
 of writing variadic functions in C++.
 Many users associate `(int...)` with a pack, not with an ellipsis parameter.
-Not parsing this syntax as a parameter pack is confusing.
+Not parsing this syntax as a parameter pack is confusing and has potential for mistakes:
+```cpp
+template<class Ts>
+void f(Ts...); // well-formed, but equivalent to (Ts, ...)
+```
+Users who are not yet familiar with variadic templates can easily make the mistake
+of omitting `...` after `class`.
 
 Lastly, as explained above, only the declarator `(int, ...)` is compatible with C,
 not `(int...)`.
@@ -154,12 +170,41 @@ using a GitHub code search for `/\(.+\.\.\.\.\.\.\).+\{/ language:c++` and other
 
 # Design considerations # {#design-considerations}
 
+## Why deprecate, not remove? ## {#why-deprecate}
+
 I do not propose to remove support for ellipsis parameters without a preceding
 comma because there is no feature proposed which requires such removal.
 A deprecation is sufficient at this time.
 
+Sudden removal has already been attempted by [[P0281R0]] and did not pass.
+It is unreasonable to suddenly break a large amount of C++ code with little motivation.
+
+The approach of [[P1161R3]] has more grace.
+
+## What about `(...)`? ## {#what-about-single-ellipsis}
+
 The declarator `(...)` should remain valid.
 It is compatible with C and unambiguous.
+
+## *parameter-declaration-clause* ## {#parameter-declaration-clause}
+
+In the discussion of this proposal, some users have expressed discontent with the current
+production for <i>[parameter-declaration-clause](https://eel.is/c++draft/dcl.fct#nt:parameter-declaration-clause)</i>.
+It would be possible to isolate the deprecated case with the following editorial change:
+<blockquote>
+*parameter-declaration-clause*:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list*<sub>*opt*</sub><br>
+<mark>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `...`</mark><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `,` `...`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`...`
+</blockquote>
+
+Of these productions, the second (highlighted) is deprecated.
+If the variadic comma was made mandatory, this rule would simply be removed and the rest left intact.
+
+I believe that this editorial change is beneficial to the proposal and improves readability
+of the *parameter-declaration-clause* production in general.
+
 
 # Proposed wording # {#proposed-wording}
 
@@ -177,6 +222,10 @@ th, td {
     margin-left: 2em;
 }
 
+mark {
+    background: rgba(255, 255, 93, 0.2);
+    color: inherit;
+}
 ins {
     background: rgba(136, 255, 93, 0.2);
     color: inherit;
@@ -191,11 +240,28 @@ del {
 
 The proposed wording is relative to [[!N4950]].
 
+## Editorial changes ## {#editorial-changes}
+
+In subclause 9.3.4.6
+<a href=http://eel.is/c++draft/dcl.fct#26>[dcl.fct]</a>,
+modify paragraph 3 as follows:
+<blockquote>
+*parameter-declaration-clause*:<br>
+<del>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list*<sub>*opt*</sub> `...`<sub>*opt*</sub><br></del>
+<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list*<sub>*opt*</sub></ins><br>
+<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `...`</mark></ins><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `,` `...`<br>
+<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`...`</ins>
+</blockquote>
+
+Update Annex A, subclause 7
+<a href="https://eel.is/c++draft/gram.dcl#:parameter-declaration-clause">[gram.dcl]</a> accordingly.
+
+## Normative changes ## {#normative-changes}
+
 In subclause 9.3.4.6
 <a href=http://eel.is/c++draft/dcl.fct#26>[dcl.fct]</a>,
 add a paragraph:
-
-
 <blockquote>
 A *parameter-declaration-clause* of the form
 *parameter-declaration-list* `...` is deprecated.
@@ -223,7 +289,8 @@ void l(int x, ...);    // OK</pre>— *end example*]
 
 I thank Christof Meerwald for contributing proposed wording.
 
-I thank Arthur O'Dwyer for providing extensive editorial feedback.
+I thank Arthur O'Dwyer for providing extensive editorial feedback,
+including the suggestion to update *parameter-declaration-clause*.
 
 <pre class=biblio>
 {
