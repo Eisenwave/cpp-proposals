@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6b4abdfd7622b281ce6ad367df81b5c08eb0603b" name="revision">
+  <meta content="af03e9bbfaa68f4b32bc2f8e81ff921c3977ae9c" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2370,15 +2370,24 @@ add a paragraph:</p>
 add a subclause:</p>
    <blockquote>
      <b>D.X Non-comma-separated ellipsis parameters [depr.ellipsis.comma]</b> 
-    <p> A <em>parameter-declaration-clause</em> of the form <em>parameter-declaration-list</em> <code class="highlight"><c- p>...</c-></code> is deprecated. <br>[<em>Example</em>:</p>
-<pre class="highlight"><c- b>void</c-> <c- nf>a</c-><c- p>(</c-><c- k>auto</c-><c- p>...);</c->       <c- c1>// OK</c->
-<c- b>void</c-> <c- nf>b</c-><c- p>(</c-><c- k>auto</c-><c- p>,</c-> <c- p>...);</c->     <c- c1>// OK</c->
-<c- b>void</c-> <c- nf>f</c-><c- p>(...);</c->           <c- c1>// OK</c->
-<c- b>void</c-> <c- nf>g</c-><c- p>(</c-><c- b>int</c-><c- p>...);</c->        <c- c1>// deprecated</c->
-<c- b>void</c-> <c- nf>h</c-><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- p>...);</c->      <c- c1>// OK</c->
-<c- b>void</c-> <c- nf>k</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>...);</c->      <c- c1>// deprecated</c->
-<c- b>void</c-> <c- nf>l</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>,</c-> <c- p>...);</c->    <c- c1>// OK</c-></pre>
-    — <em>end example</em>] 
+    <p> A <em>parameter-declaration-clause</em> of the form <em>parameter-declaration-list</em> <code class="highlight"><c- p>...</c-></code> is deprecated. <br>[<em>Example</em>: </p>
+<pre class="highlight"><c- b>void</c-> <c- nf>a</c-><c- p>(...);</c->                <c- c1>// OK</c->
+<c- b>void</c-> <c- nf>b</c-><c- p>(</c-><c- k>auto</c-><c- p>...);</c->            <c- c1>// OK</c->
+<c- b>void</c-> <c- nf>c</c-><c- p>(</c-><c- k>auto</c-><c- p>,</c-> <c- p>...);</c->          <c- c1>// OK</c->
+
+<c- b>void</c-> <c- nf>d_depr</c-><c- p>(</c-><c- k>auto</c-><c- p>......);</c->    <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>d_okay</c-><c- p>(</c-><c- k>auto</c-><c- p>...,</c-> <c- p>...);</c->  <c- c1>// OK</c->
+
+<c- b>void</c-> <c- nf>e_depr</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>...);</c->   <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>e_okay</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>,</c-> <c- p>...);</c-> <c- c1>// OK</c->
+
+<c- b>void</c-> <c- nf>f_depr</c-><c- p>(</c-><c- b>int</c-><c- p>...);</c->        <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>f_okay</c-><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- p>...);</c->      <c- c1>// OK</c->
+
+<c- b>void</c-> <c- nf>g_depr</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>...);</c->      <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>g_okay</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>,</c-> <c- p>...);</c->    <c- c1>// OK</c->
+</pre>
+    — <em>end example</em>]
     <p></p>
    </blockquote>
    <h2 class="heading settled" data-level="7" id="acknowledgements"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>

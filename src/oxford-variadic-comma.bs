@@ -275,13 +275,24 @@ add a subclause:
 <p>
 A *parameter-declaration-clause* of the form
 *parameter-declaration-list* `...` is deprecated.
-<br>[*Example*:<pre>void a(auto...);       // OK
-void b(auto, ...);     // OK
-void f(...);           // OK
-void g(int...);        // deprecated
-void h(int, ...);      // OK
-void k(int x...);      // deprecated
-void l(int x, ...);    // OK</pre>— *end example*]
+<br>[*Example*:
+<pre>
+void a(...);                // OK
+void b(auto...);            // OK
+void c(auto, ...);          // OK
+
+void d_depr(auto......);    // deprecated
+void d_okay(auto..., ...);  // OK
+
+void e_depr(auto...x...);   // deprecated
+void e_okay(auto...x, ...); // OK
+
+void f_depr(int...);        // deprecated
+void f_okay(int, ...);      // OK
+
+void g_depr(int x...);      // deprecated
+void g_okay(int x, ...);    // OK
+</pre>— *end example*]
 </p>
 </blockquote>
 
