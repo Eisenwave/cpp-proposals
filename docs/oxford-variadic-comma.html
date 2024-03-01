@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="292d98c829e82e29bbdc86393f19b884a5caaaa1" name="revision">
+  <meta content="0e101515dbb9da5abdbbb72988d58a86be07c478" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2298,7 +2298,15 @@ Not parsing this syntax as a parameter pack is confusing and has potential for m
 <c- b>void</c-> <c- n>f</c-><c- p>(</c-><c- n>Ts</c-><c- p>...);</c-> <c- c1>// well-formed, but equivalent to (Ts, ...)</c->
 </pre>
    <p>Users who are not yet familiar with variadic templates can easily make the mistake
-of omitting <code class="highlight"><c- p>...</c-></code> after <code class="highlight"><c- k>class</c-></code>.</p>
+of omitting <code class="highlight"><c- p>...</c-></code> after <code class="highlight"><c- k>class</c-></code>.
+Another possible mistake can occur when writing generic lambdas or abbreviated function templates:</p>
+<pre class="language-cpp highlight"><c- c1>// abbreviated variadic function template</c->
+<c- b>void</c-> <c- nf>g</c-><c- p>(</c-><c- k>auto</c-> <c- p>...</c-><c- n>args</c-><c- p>);</c->
+<c- c1>// abbreviated non-variadic function template with ellipsis parameter</c->
+<c- b>void</c-> <c- nf>g</c-><c- p>(</c-><c- k>auto</c-> <c- n>args</c-><c- p>...);</c->
+</pre>
+   <p>These two forms look awfully similar and are both well-formed with different meaning.
+The latter should be deprecated.</p>
    <p>Lastly, as explained above, only the declarator <code class="highlight"><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- p>...)</c-></code> is compatible with C,
 not <code class="highlight"><c- p>(</c-><c- b>int</c-><c- p>...)</c-></code>.
 The latter syntax is arguably pointless nowadays and only exists for the sake of

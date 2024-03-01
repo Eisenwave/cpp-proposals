@@ -126,6 +126,15 @@ void f(Ts...); // well-formed, but equivalent to (Ts, ...)
 ```
 Users who are not yet familiar with variadic templates can easily make the mistake
 of omitting `...` after `class`.
+Another possible mistake can occur when writing generic lambdas or abbreviated function templates:
+```cpp
+// abbreviated variadic function template
+void g(auto ...args);
+// abbreviated non-variadic function template with ellipsis parameter
+void g(auto args...);
+```
+These two forms look awfully similar and are both well-formed with different meaning.
+The latter should be deprecated.
 
 Lastly, as explained above, only the declarator `(int, ...)` is compatible with C,
 not `(int...)`.
