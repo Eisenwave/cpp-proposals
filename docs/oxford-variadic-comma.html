@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="af03e9bbfaa68f4b32bc2f8e81ff921c3977ae9c" name="revision">
+  <meta content="292d98c829e82e29bbdc86393f19b884a5caaaa1" name="revision">
 <style>
 th, td, table {
     border: 1px solid var(--text);
@@ -2378,14 +2378,17 @@ add a subclause:</p>
 <c- b>void</c-> <c- nf>d_depr</c-><c- p>(</c-><c- k>auto</c-><c- p>......);</c->    <c- c1>// deprecated</c->
 <c- b>void</c-> <c- nf>d_okay</c-><c- p>(</c-><c- k>auto</c-><c- p>...,</c-> <c- p>...);</c->  <c- c1>// OK</c->
 
-<c- b>void</c-> <c- nf>e_depr</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>...);</c->   <c- c1>// deprecated</c->
-<c- b>void</c-> <c- nf>e_okay</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>,</c-> <c- p>...);</c-> <c- c1>// OK</c->
+<c- b>void</c-> <c- nf>e_depr</c-><c- p>(</c-><c- k>auto</c-> <c- n>x</c-><c- p>...);</c->     <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>d_okay</c-><c- p>(</c-><c- k>auto</c-> <c- n>x</c-><c- p>,</c-> <c- p>...);</c->   <c- c1>// OK</c->
 
-<c- b>void</c-> <c- nf>f_depr</c-><c- p>(</c-><c- b>int</c-><c- p>...);</c->        <c- c1>// deprecated</c->
-<c- b>void</c-> <c- nf>f_okay</c-><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- p>...);</c->      <c- c1>// OK</c->
+<c- b>void</c-> <c- nf>f_depr</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>...);</c->   <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>f_okay</c-><c- p>(</c-><c- k>auto</c-><c- p>...</c-><c- n>x</c-><c- p>,</c-> <c- p>...);</c-> <c- c1>// OK</c->
 
-<c- b>void</c-> <c- nf>g_depr</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>...);</c->      <c- c1>// deprecated</c->
-<c- b>void</c-> <c- nf>g_okay</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>,</c-> <c- p>...);</c->    <c- c1>// OK</c->
+<c- b>void</c-> <c- nf>g_depr</c-><c- p>(</c-><c- b>int</c-><c- p>...);</c->        <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>g_okay</c-><c- p>(</c-><c- b>int</c-><c- p>,</c-> <c- p>...);</c->      <c- c1>// OK</c->
+
+<c- b>void</c-> <c- nf>h_depr</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>...);</c->      <c- c1>// deprecated</c->
+<c- b>void</c-> <c- nf>h_okay</c-><c- p>(</c-><c- b>int</c-> <c- n>x</c-><c- p>,</c-> <c- p>...);</c->    <c- c1>// OK</c->
 </pre>
     — <em>end example</em>]
     <p></p>

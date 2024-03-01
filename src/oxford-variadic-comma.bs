@@ -284,14 +284,17 @@ void c(auto, ...);          // OK
 void d_depr(auto......);    // deprecated
 void d_okay(auto..., ...);  // OK
 
-void e_depr(auto...x...);   // deprecated
-void e_okay(auto...x, ...); // OK
+void e_depr(auto x...);     // deprecated
+void d_okay(auto x, ...);   // OK
 
-void f_depr(int...);        // deprecated
-void f_okay(int, ...);      // OK
+void f_depr(auto...x...);   // deprecated
+void f_okay(auto...x, ...); // OK
 
-void g_depr(int x...);      // deprecated
-void g_okay(int x, ...);    // OK
+void g_depr(int...);        // deprecated
+void g_okay(int, ...);      // OK
+
+void h_depr(int x...);      // deprecated
+void h_okay(int x, ...);    // OK
 </pre>— *end example*]
 </p>
 </blockquote>
