@@ -21,6 +21,8 @@ Abstract: This proposal standardizes mandatory 128-bit integer types with strong
 - Clarify that the alias definition in [[#implementation-effort-not-too-high]]
     is C++-specific.
 - Further clarify [[#bitint-breaking-code]].
+- Add [[#other-programming-languages]].
+- In [[#proposed-abs]], change "*Returns*:" to "*Effects*: Equivalent to:".
 
 # Introduction # {#introduction}
 
@@ -118,22 +120,6 @@ There are compelling reasons for standardizing a 128-bit integer type:
     in software as well as the compiler could do for a builtin type (see [[#utilizing-hardware-support]]).
 
 5. **Low impact:** The [[#impact-on-the-standard]] and [[#implementation-impact]] is reasonable.
-
-## Other programming languages ## {#other-programming-languages}
-
-Among modern general purpose programming languages,
-C++ is somewhat of an outlier because it provides
-no standard support for arithmetic beyond 64 bits.
-
-Many languages provide a standard infinite-precision type, including
-Java (`BigInteger`), Python (`int`), JavaScript (`BigInt`), Go (`Int`), C# (`BigInteger`),
-Ruby (`BigInt`), and Haskell (`Integer`).
-
-In some cases, special support for 128-bit integers is also provided or proposed:
-- [[RFC-1504]] proposes `i128` for Rust, and has been accepted.
-- [[SE-0425]] proposes `Int128` for Swift, and is currently under review.
-- [[Go-9455]] proposes `int128` for Go, and has popular support (218 👍, 1 👎).
-- .NET (C#) provides an `Int128` `struct`. 
 
 ## Use cases ## {#use-cases}
 
@@ -617,7 +603,21 @@ integer division.
 This strategy is still many times faster than software division.
 Intel desktop processors have received dedicated integer dividers starting with Cannon Lake.
 
+## Other programming languages ## {#other-programming-languages}
 
+Among modern general purpose programming languages,
+C++ is somewhat of an outlier because it provides
+no standard support for arithmetic beyond 64 bits.
+
+Many languages provide a standard infinite-precision type, including
+Java (`BigInteger`), Python (`int`), JavaScript (`BigInt`), Go (`Int`), C# (`BigInteger`),
+Ruby (`BigInt`), and Haskell (`Integer`).
+
+In some cases, special support for 128-bit integers is also provided or proposed:
+- [[RFC-1504]] proposes `i128` for Rust, and has been accepted.
+- [[SE-0425]] proposes `Int128` for Swift, and is currently under review.
+- [[Go-9455]] proposes `int128` for Go, and has popular support (218 👍, 1 👎).
+- .NET (C#) provides an `Int128` `struct`.
 
 
 # Impact on the standard # {#impact-on-the-standard}
@@ -2536,8 +2536,8 @@ constexpr long long int abs(long long int j);</del>
 <ins>constexpr <i>signed-integer-least-int</i> abs(<i>signed-integer-least-int</i> j);</ins>
 </pre>
 <p class="indent">
-<del>*Effects*: These functions have the semantics specified in the C standard library for the functions `abs`, `labs`, and `llabs`, respectively.</del>
-<ins>*Returns*: `j >= 0 ? j : -j;`.
+*Effects*: <del>These functions have the semantics specified in the C standard library for the functions `abs`, `labs`, and `llabs`, respectively.</del>
+<ins>Equivalent to: `return j >= 0 ? j : -j;`.
 </p>
 </blockquote>
 
@@ -2613,6 +2613,8 @@ namespace std {
 
 I thank Jonathan Wakely and other participants in the std-proposals mailing list whose feedback
 has helped me improve the quality of this proposal substantially.
+
+I thank Darrel Wright for bringing [[Go-9455]] to my attention, and for other feedback.
 
 I also thank Lénárd Szolnoki for contributing the example in [[#lifting-library-restrictions]].
 
