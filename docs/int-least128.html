@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a8435a452d98475e6aa4d8dfc35154fc5a4a351f" name="revision">
+  <meta content="1d53add6ed22a75709d2a765564d8bc70989413b" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -4279,8 +4279,9 @@ signed integer type.</ins>
 <ins><c- k>constexpr</c-> <i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>abs</c-><c- p>(</c-><i><c- b>signed</c-><c- o>-</c-><c- n>integer</c-><c- o>-</c-><c- n>least</c-><c- o>-</c-><c- b>int</c-></i> <c- n>j</c-><c- p>);</c-></ins>
 </pre>
     <p class="indent">
-     <del><em>Effects</em>: These functions have the semantics specified in the C standard library for the functions <code class="highlight"><c- n>abs</c-></code>, <code class="highlight"><c- n>labs</c-></code>, and <code class="highlight"><c- n>llabs</c-></code>, respectively.</del>
-     <ins><em>Returns</em>: <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
+      <em>Effects</em>: 
+     <del>These functions have the semantics specified in the C standard library for the functions <code class="highlight"><c- n>abs</c-></code>, <code class="highlight"><c- n>labs</c-></code>, and <code class="highlight"><c- n>llabs</c-></code>, respectively.</del>
+     <ins>Equivalent to: <code class="highlight"><c- k>return</c-> <c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code>. </ins>
     </p>
    </blockquote>
    <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- n>j</c-> <c- o>>=</c-> <c- mi>0</c-> <c- o>?</c-> <c- n>j</c-> <c- o>:</c-> <c- o>-</c-><c- n>j</c-><c- p>;</c-></code> matches the semantics of the C functions exactly,
