@@ -119,6 +119,22 @@ There are compelling reasons for standardizing a 128-bit integer type:
 
 5. **Low impact:** The [[#impact-on-the-standard]] and [[#implementation-impact]] is reasonable.
 
+## Other programming languages ## {#other-programming-languages}
+
+Among modern general purpose programming languages,
+C++ is somewhat of an outlier because it provides
+no standard support for arithmetic beyond 64 bits.
+
+Many languages provide a standard infinite-precision type, including
+Java (`BigInteger`), Python (`int`), JavaScript (`BigInt`), Go (`Int`), C# (`BigInteger`),
+Ruby (`BigInt`), and Haskell (`Integer`).
+
+In some cases, special support for 128-bit integers is also provided or proposed:
+- [[RFC-1504]] proposes `i128` for Rust, and has been accepted.
+- [[SE-0425]] proposes `Int128` for Swift, and is currently under review.
+- [[Go-9455]] proposes `int128` for Go, and has popular support (218 👍, 1 👎).
+- .NET (C#) provides an `Int128` `struct`. 
+
 ## Use cases ## {#use-cases}
 
 A GitHub code search for
@@ -2644,6 +2660,11 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "href": "https://github.com/fastfloat/fast_float",
         "authors": ["Daniel Lemire et al."]
     },
+    "Go-9455": {
+        "title": "proposal: spec: add support for int128 and uint128",
+        "href": "https://github.com/golang/go/issues/9455",
+        "authors": ["mei-rune"]
+    },
     "TigerBeetle": {
         "title": "64-Bit Bank Balances ‘Ought to be Enough for Anybody’?",
         "href": "https://tigerbeetle.com/blog/2023-09-19-64-bit-bank-balances-ought-to-be-enough-for-anybody/",
@@ -2694,10 +2715,20 @@ Note: See [[std-proposals]] for discussion of this proposal.
         "href": "https://github.com/official-pikafish/px0",
         "authors": ["PikaCat"]
     },
+    "RFC-1504": {
+        "title": "RFC-1504: int128",
+        "href": "https://github.com/rust-lang/rfcs/blob/master/text/1504-int128.md",
+        "authors": ["Niko Matsakis"]
+    },
     "RISC-V": {
         "title": "The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA",
         "href": "https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view",
         "authors": ["VA"]
+    },
+    "SE-0425": {
+        "title": "SE-0425: 128-bit Integer Types",
+        "href": "https://github.com/apple/swift-evolution/blob/main/proposals/0425-int128.md",
+        "authors": ["Stephen Canon"]
     },
     "SEC": {
         "title": "Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS",

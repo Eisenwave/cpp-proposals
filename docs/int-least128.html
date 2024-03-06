@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/int-least128.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="871a1d9d7ef26ce663ebfd238b1f144b91708cea" name="revision">
+  <meta content="7a641c6e2df1c23ed1536ce854d56d61b5211724" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mo], c-[mh] {
@@ -2165,31 +2165,32 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#motivation-and-scope"><span class="secno">3</span> <span class="content">Motivation and scope</span></a>
      <ol class="toc">
+      <li><a href="#other-programming-languages"><span class="secno">3.1</span> <span class="content">Other programming languages</span></a>
       <li>
-       <a href="#use-cases"><span class="secno">3.1</span> <span class="content">Use cases</span></a>
+       <a href="#use-cases"><span class="secno">3.2</span> <span class="content">Use cases</span></a>
        <ol class="toc">
-        <li><a href="#cryptography"><span class="secno">3.1.1</span> <span class="content">Cryptography</span></a>
-        <li><a href="#random-number-generation"><span class="secno">3.1.2</span> <span class="content">Random number generation</span></a>
+        <li><a href="#cryptography"><span class="secno">3.2.1</span> <span class="content">Cryptography</span></a>
+        <li><a href="#random-number-generation"><span class="secno">3.2.2</span> <span class="content">Random number generation</span></a>
         <li>
-         <a href="#widening-operations"><span class="secno">3.1.3</span> <span class="content">Widening operations</span></a>
+         <a href="#widening-operations"><span class="secno">3.2.3</span> <span class="content">Widening operations</span></a>
          <ol class="toc">
-          <li><a href="#safe-modular-arithmetic"><span class="secno">3.1.3.1</span> <span class="content">64-bit modular arithmetic</span></a>
-          <li><a href="#multi-precision-operations"><span class="secno">3.1.3.2</span> <span class="content">Multi-precision operations</span></a>
+          <li><a href="#safe-modular-arithmetic"><span class="secno">3.2.3.1</span> <span class="content">64-bit modular arithmetic</span></a>
+          <li><a href="#multi-precision-operations"><span class="secno">3.2.3.2</span> <span class="content">Multi-precision operations</span></a>
          </ol>
-        <li><a href="#fixed-point-operations"><span class="secno">3.1.4</span> <span class="content">Fixed-point operations</span></a>
-        <li><a href="#high-precision-clocks"><span class="secno">3.1.5</span> <span class="content">High-precision time calculations</span></a>
-        <li><a href="#floating-point-operations"><span class="secno">3.1.6</span> <span class="content">Floating-point operations</span></a>
-        <li><a href="#float-string-conversion"><span class="secno">3.1.7</span> <span class="content">Float-to-string/String-to-float conversion</span></a>
-        <li><a href="#financial-systems"><span class="secno">3.1.8</span> <span class="content">Financial systems</span></a>
-        <li><a href="#uuid"><span class="secno">3.1.9</span> <span class="content">Universally unique identifiers</span></a>
-        <li><a href="#networking"><span class="secno">3.1.10</span> <span class="content">Networking</span></a>
-        <li><a href="#bitsets-and-lookup-tables"><span class="secno">3.1.11</span> <span class="content">Bitsets and lookup tables</span></a>
+        <li><a href="#fixed-point-operations"><span class="secno">3.2.4</span> <span class="content">Fixed-point operations</span></a>
+        <li><a href="#high-precision-clocks"><span class="secno">3.2.5</span> <span class="content">High-precision time calculations</span></a>
+        <li><a href="#floating-point-operations"><span class="secno">3.2.6</span> <span class="content">Floating-point operations</span></a>
+        <li><a href="#float-string-conversion"><span class="secno">3.2.7</span> <span class="content">Float-to-string/String-to-float conversion</span></a>
+        <li><a href="#financial-systems"><span class="secno">3.2.8</span> <span class="content">Financial systems</span></a>
+        <li><a href="#uuid"><span class="secno">3.2.9</span> <span class="content">Universally unique identifiers</span></a>
+        <li><a href="#networking"><span class="secno">3.2.10</span> <span class="content">Networking</span></a>
+        <li><a href="#bitsets-and-lookup-tables"><span class="secno">3.2.11</span> <span class="content">Bitsets and lookup tables</span></a>
        </ol>
       <li>
-       <a href="#utilizing-hardware-support"><span class="secno">3.2</span> <span class="content">Utilizing hardware support</span></a>
+       <a href="#utilizing-hardware-support"><span class="secno">3.3</span> <span class="content">Utilizing hardware support</span></a>
        <ol class="toc">
-        <li><a href="#future-proofing"><span class="secno">3.2.1</span> <span class="content">Future-proofing for direct 128-bit support</span></a>
-        <li><a href="#support-through-128-bit-floating-point"><span class="secno">3.2.2</span> <span class="content">Support through 128-bit floating-point</span></a>
+        <li><a href="#future-proofing"><span class="secno">3.3.1</span> <span class="content">Future-proofing for direct 128-bit support</span></a>
+        <li><a href="#support-through-128-bit-floating-point"><span class="secno">3.3.2</span> <span class="content">Support through 128-bit floating-point</span></a>
        </ol>
      </ol>
     <li>
@@ -2431,16 +2432,34 @@ and ideally, common ABI.</p>
 (see <a href="#existing-128-bit-integers">§ 8.1 Existing 128-bit integer types</a>).</p>
     <li data-md>
      <p><strong>Performance:</strong> It is difficult, if not impossible to optimize 128-bit operations
-in software as well as the compiler could do for a builtin type (see <a href="#utilizing-hardware-support">§ 3.2 Utilizing hardware support</a>).</p>
+in software as well as the compiler could do for a builtin type (see <a href="#utilizing-hardware-support">§ 3.3 Utilizing hardware support</a>).</p>
     <li data-md>
      <p><strong>Low impact:</strong> The <a href="#impact-on-the-standard">§ 4 Impact on the standard</a> and <a href="#implementation-impact">§ 5 Impact on implementations</a> is reasonable.</p>
    </ol>
-   <h3 class="heading settled" data-level="3.1" id="use-cases"><span class="secno">3.1. </span><span class="content">Use cases</span><a class="self-link" href="#use-cases"></a></h3>
+   <h3 class="heading settled" data-level="3.1" id="other-programming-languages"><span class="secno">3.1. </span><span class="content">Other programming languages</span><a class="self-link" href="#other-programming-languages"></a></h3>
+   <p>Among modern general purpose programming languages,
+C++ is somewhat of an outlier because it provides
+no standard support for arithmetic beyond 64 bits.</p>
+   <p>Many languages provide a standard infinite-precision type, including
+Java (<code class="highlight"><c- n>BigInteger</c-></code>), Python (<code class="highlight"><c- b>int</c-></code>), JavaScript (<code class="highlight"><c- n>BigInt</c-></code>), Go (<code class="highlight"><c- n>Int</c-></code>), C# (<code class="highlight"><c- n>BigInteger</c-></code>),
+Ruby (<code class="highlight"><c- n>BigInt</c-></code>), and Haskell (<code class="highlight"><c- n>Integer</c-></code>).</p>
+   <p>In some cases, special support for 128-bit integers is also provided or proposed:</p>
+   <ul>
+    <li data-md>
+     <p><a data-link-type="biblio" href="#biblio-rfc-1504" title="RFC-1504: int128">[RFC-1504]</a> proposes <code class="highlight"><c- n>i128</c-></code> for Rust, and has been accepted.</p>
+    <li data-md>
+     <p><a data-link-type="biblio" href="#biblio-se-0425" title="SE-0425: 128-bit Integer Types">[SE-0425]</a> proposes <code class="highlight"><c- n>Int128</c-></code> for Swift, and is currently under review.</p>
+    <li data-md>
+     <p><a data-link-type="biblio" href="#biblio-go-9455" title="proposal: spec: add support for int128 and uint128">[Go-9455]</a> proposes <code class="highlight"><c- n>int128</c-></code> for Go, and has popular support (218 👍, 1 👎).</p>
+    <li data-md>
+     <p>.NET (C#) provides an <code class="highlight"><c- n>Int128</c-></code> <code class="highlight"><c- k>struct</c-></code>.</p>
+   </ul>
+   <h3 class="heading settled" data-level="3.2" id="use-cases"><span class="secno">3.2. </span><span class="content">Use cases</span><a class="self-link" href="#use-cases"></a></h3>
    <p>A GitHub code search for <a href="/int128|int_128/ language:c++"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-> <c- n>language</c-><c- o>:</c-><c- n>c</c-><c- o>++</c-></code></a> yields 150K files,
 and a language-agnostic search for <a href="https://github.com/search?q=%2Fint128%7Cint_128%2F&amp;type=code"><code class="highlight"><c- o>/</c-><c- n>int128</c-><c- o>|</c-><c- n>int_128</c-><c- o>/</c-></code></a> yields more than a million.</p>
    <p>While it is impossible to discuss every one of these,
 I will introduce a few use cases of 128-bit integers.</p>
-   <h4 class="heading settled" data-level="3.1.1" id="cryptography"><span class="secno">3.1.1. </span><span class="content">Cryptography</span><a class="self-link" href="#cryptography"></a></h4>
+   <h4 class="heading settled" data-level="3.2.1" id="cryptography"><span class="secno">3.2.1. </span><span class="content">Cryptography</span><a class="self-link" href="#cryptography"></a></h4>
    <p>128-bit integers are commonly used in many cryptographic algorithms:</p>
    <ul>
     <li data-md>
@@ -2457,7 +2476,7 @@ or represented as a pair/array of 128-bit integers.</p>
    <p>For example, the <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard#The_AddRoundKey"> <code class="highlight"><c- n>AddRoundKey</c-></code> step in AES</a> is simply a 128-bit bitwise XOR.</p>
    <p>To be fair, the utility of 128-bit integers in cryptographic applications is often limited to
 providing storage for blocks and keys.</p>
-   <h4 class="heading settled" data-level="3.1.2" id="random-number-generation"><span class="secno">3.1.2. </span><span class="content">Random number generation</span><a class="self-link" href="#random-number-generation"></a></h4>
+   <h4 class="heading settled" data-level="3.2.2" id="random-number-generation"><span class="secno">3.2.2. </span><span class="content">Random number generation</span><a class="self-link" href="#random-number-generation"></a></h4>
    <p>Some random number generators produce 128-bit numbers.</p>
    <p>For example, the <a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSRPNG</a> (cryptographically secure pseudo-random number generator) <a href="https://en.wikipedia.org/wiki/Fortuna_(PRNG)">Fortuna</a> uses a block cipher to produce random numbers.
 When a 128-bit block cipher is used, the output is naturally 128-bit as well.
@@ -2494,7 +2513,7 @@ is effectively performing a 32-bit shift, whereas <code class="highlight"><c- n>
    <p><a data-link-type="biblio" href="#biblio-p2075r3" title="Philox as an extension of the C++ RNG engines">[P2075R3]</a> proposes counter-based Philox engines for the C++ standard library,
 and has been received positively.
 The <a data-link-type="biblio" href="#biblio-deshawresearch" title="Random123: a Library of Counter-Based Random Number Generators">[DEShawResearch]</a> reference implementation makes use of 128-bit integers.</p>
-   <h4 class="heading settled" data-level="3.1.3" id="widening-operations"><span class="secno">3.1.3. </span><span class="content">Widening operations</span><a class="self-link" href="#widening-operations"></a></h4>
+   <h4 class="heading settled" data-level="3.2.3" id="widening-operations"><span class="secno">3.2.3. </span><span class="content">Widening operations</span><a class="self-link" href="#widening-operations"></a></h4>
    <p>128-bit arithmetic can produce optimal code for mixed 64/128-bit operations,
 for which there is already widespread hardware support.
 Among other instructions, this hardware support includes:</p>
@@ -2550,7 +2569,7 @@ of a 64-bit multiplication:
 <c- p>}</c->
 </pre>
    </div>
-   <h5 class="heading settled" data-level="3.1.3.1" id="safe-modular-arithmetic"><span class="secno">3.1.3.1. </span><span class="content">64-bit modular arithmetic</span><a class="self-link" href="#safe-modular-arithmetic"></a></h5>
+   <h5 class="heading settled" data-level="3.2.3.1" id="safe-modular-arithmetic"><span class="secno">3.2.3.1. </span><span class="content">64-bit modular arithmetic</span><a class="self-link" href="#safe-modular-arithmetic"></a></h5>
    <p>To perform modular arithmetic with a 64-bit modulo, 128-bit integers are needed.
 For example, when computing <code class="highlight"><c- p>(</c-><c- n>a</c-> <c- o>*</c-> <c- n>x</c-><c- p>)</c-> <c- o>%</c-> <c- n>m</c-></code> between 64-bit unsigned integers <code class="highlight"><c- n>a</c-></code>, <code class="highlight"><c- n>x</c-></code>, and <code class="highlight"><c- n>m</c-></code>,
 the multiplication between <code class="highlight"><c- n>a</c-></code> and <code class="highlight"><c- n>x</c-></code> is already mod 2<sup>64</sup>,
@@ -2561,7 +2580,7 @@ a modulo arbitrarily, the issue is unavoidable.</p>
    <p class="note" role="note"><span class="marker">Note:</span> A popular workaround for linear congruential generators is to choose the
 modulo to be 2<sup>64</sup> or 2<sup>32</sup>.
 This means that division is not required at all.</p>
-   <h5 class="heading settled" data-level="3.1.3.2" id="multi-precision-operations"><span class="secno">3.1.3.2. </span><span class="content">Multi-precision operations</span><a class="self-link" href="#multi-precision-operations"></a></h5>
+   <h5 class="heading settled" data-level="3.2.3.2" id="multi-precision-operations"><span class="secno">3.2.3.2. </span><span class="content">Multi-precision operations</span><a class="self-link" href="#multi-precision-operations"></a></h5>
    <p>For various applications (cryptography, numerics, etc.) arithmetic with large widths is required.
 For example, the RSA (Rivest–Shamir–Adleman) cryptosystem typically uses key sizes of 2048 or 4096.
 "Scripting languages" also commonly use an infinite-precision integer type.
@@ -2576,10 +2595,10 @@ This type is used extensively in the implementation of multi-precision arithmeti
    <p class="note" role="note"><span class="marker">Note:</span> The introduction of bit-precise integers (<a href="#bit-precise-integers">§ 7.5 Why no bit-precise integers?</a>) does not
 obsolete multi-precision libraries because infinite-precision numbers like
 Python’s <code class="highlight"><c- b>int</c-></code> cannot be implement using a constant size.</p>
-   <h4 class="heading settled" data-level="3.1.4" id="fixed-point-operations"><span class="secno">3.1.4. </span><span class="content">Fixed-point operations</span><a class="self-link" href="#fixed-point-operations"></a></h4>
+   <h4 class="heading settled" data-level="3.2.4" id="fixed-point-operations"><span class="secno">3.2.4. </span><span class="content">Fixed-point operations</span><a class="self-link" href="#fixed-point-operations"></a></h4>
    <p>While 64-bit integers are sufficient for many calculations, the amount of available bits
 is reduced when the 64 bits are divided into an integral and fractional part.
-This may cause issues in <a href="#financial-systems">§ 3.1.8 Financial systems</a>.</p>
+This may cause issues in <a href="#financial-systems">§ 3.2.8 Financial systems</a>.</p>
    <p>Furthermore, fixed-point arithmetic with a double-wide operand can emulate integer division,
 which is a relatively expensive operation, even with hardware support.</p>
    <div class="example" id="example-5318c4f4">
@@ -2598,7 +2617,7 @@ Among other libraries, <a data-link-type="biblio" href="#biblio-libdivide" title
 (using a pair of 64-bit integers, which effectively forms a 128-bit integer).</p>
    <p class="note" role="note"><span class="marker">Note:</span> 3 is a "lucky" case because all nonzero bits fit into a 64-bit integer.
 The amount of digits required differs between divisors.</p>
-   <h4 class="heading settled" data-level="3.1.5" id="high-precision-clocks"><span class="secno">3.1.5. </span><span class="content">High-precision time calculations</span><a class="self-link" href="#high-precision-clocks"></a></h4>
+   <h4 class="heading settled" data-level="3.2.5" id="high-precision-clocks"><span class="secno">3.2.5. </span><span class="content">High-precision time calculations</span><a class="self-link" href="#high-precision-clocks"></a></h4>
    <p>64-bit integers are somewhat insufficient for high-precision clocks, if large time spans should
 also be covered.
 When counting nanoseconds, a maximum value of 2<sup>63</sup>-1 can only represent approximately
@@ -2614,7 +2633,7 @@ seconds and nanoseconds part of the class are 64-bit integers
 (assuming that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- b>time_t</c-></code> is 64-bit).</p>
    <p><a data-link-type="biblio" href="#biblio-bloomberg" title="BDE Libraries">[Bloomberg]</a> uses 128-bit integers to safeguard against potential overflow in time
 calculations (see <a href="https://github.com/kaidokert/bde/blob/b1c60d6b33e4fa1c596ac6947a7a38fc87286626/groups/bsl/bsls/bsls_timeutil.cpp#L523"><code class="highlight"><c- n>bsls_timeutil</c-><c- p>.</c-><c- n>cpp</c-></code></a>)</p>
-   <h4 class="heading settled" data-level="3.1.6" id="floating-point-operations"><span class="secno">3.1.6. </span><span class="content">Floating-point operations</span><a class="self-link" href="#floating-point-operations"></a></h4>
+   <h4 class="heading settled" data-level="3.2.6" id="floating-point-operations"><span class="secno">3.2.6. </span><span class="content">Floating-point operations</span><a class="self-link" href="#floating-point-operations"></a></h4>
    <p>The implementation of IEEE 754/IEC-559 floating-point operations often involves examining the
 bit-representation of the floating-point number through an unsigned integer.</p>
    <p>The C++ standard provides <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code>, but no matching 128-bit integer type,
@@ -2644,13 +2663,13 @@ implementation, among other uses.
 Decimal floating-point numbers are commonly used in financial applications
 and are standard C23 types (e.g. <code class="highlight"><c- n>_Decimal128</c-></code>) since <a data-link-type="biblio" href="#biblio-n2341" title="Floating-point extensions for C - Decimal floating-point arithmetic">[N2341]</a>.
 In C++, a software implementation is necessary.</p>
-   <h4 class="heading settled" data-level="3.1.7" id="float-string-conversion"><span class="secno">3.1.7. </span><span class="content">Float-to-string/String-to-float conversion</span><a class="self-link" href="#float-string-conversion"></a></h4>
+   <h4 class="heading settled" data-level="3.2.7" id="float-string-conversion"><span class="secno">3.2.7. </span><span class="content">Float-to-string/String-to-float conversion</span><a class="self-link" href="#float-string-conversion"></a></h4>
    <p>The <a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm">[Dragonbox]</a> binary-to-decimal conversion algorithm requires an integer type
 that is twice the width of the converted floating-point number.
 To convert a floating-point number in <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">binary64</a> format, a 128-bit integer type is used.</p>
    <p>Similarly, <a data-link-type="biblio" href="#biblio-fast_float" title="fast_float number parsing library: 4x faster than strtod">[fast_float]</a> uses 128-bit numbers as part of decimal-to-binary conversions.
 This library provides an efficient <code class="highlight"><c- n>from_chars</c-></code> implementation.</p>
-   <h4 class="heading settled" data-level="3.1.8" id="financial-systems"><span class="secno">3.1.8. </span><span class="content">Financial systems</span><a class="self-link" href="#financial-systems"></a></h4>
+   <h4 class="heading settled" data-level="3.2.8" id="financial-systems"><span class="secno">3.2.8. </span><span class="content">Financial systems</span><a class="self-link" href="#financial-systems"></a></h4>
    <p>128-bit integers can be used to represent huge monetary values with high accuracy.
 When representing cents of a dollar as a 64-bit integer,
 a monetary value of up to 184.5 quadrillion dollars can be represented.
@@ -2675,7 +2694,7 @@ Rounding is not always an acceptable solution in financial applications.</p>
 integers to store financial amounts and balances in the TigerBeetle financial
 accounting database.
 The aforementioned sub-penny requirement is part of the motivation.</p>
-   <h4 class="heading settled" data-level="3.1.9" id="uuid"><span class="secno">3.1.9. </span><span class="content">Universally unique identifiers</span><a class="self-link" href="#uuid"></a></h4>
+   <h4 class="heading settled" data-level="3.2.9" id="uuid"><span class="secno">3.2.9. </span><span class="content">Universally unique identifiers</span><a class="self-link" href="#uuid"></a></h4>
    <p>A 128-bit integer can be used to represent a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> (Universally Unique Identifier).
 While 64-bit integers are often sufficient as a unique identifier, it is quite likely that two
 identical identifiers are chosen by a random number generator over a long period of time,
@@ -2691,7 +2710,7 @@ Therefore, at least 128 bits are typically used for such applications.</p>
 </pre>
    </div>
    <p>The <a data-link-type="biblio" href="#biblio-clickhouse" title="ClickHouse">[ClickHouse]</a> database management system defines their <code class="highlight"><c- n>UUID</c-></code> type through <a href="https://github.com/ClickHouse/ClickHouse/blob/fc964d6ddd2f854cbff9d036abf424a2f3b7194f/base/base/UUID.h#L8"><code class="highlight"><c- n>StrongTypedef</c-><c- o>&lt;</c-><c- n>UInt128</c-><c- p>,</c-> <c- k>struct</c-> <c- nc>UUIDTag</c-><c- o>></c-></code></a>.</p>
-   <h4 class="heading settled" data-level="3.1.10" id="networking"><span class="secno">3.1.10. </span><span class="content">Networking</span><a class="self-link" href="#networking"></a></h4>
+   <h4 class="heading settled" data-level="3.2.10" id="networking"><span class="secno">3.2.10. </span><span class="content">Networking</span><a class="self-link" href="#networking"></a></h4>
    <p>IPv6 addresses can be represented as a 128-bit integer.
 This may be a convenient representation because bitwise operations for masking and accessing
 individual bits or bit groups may be used.
@@ -2711,7 +2730,7 @@ using two 64-bit integers.</p>
 </pre>
    </div>
    <p>The <a data-link-type="biblio" href="#biblio-clickhouse" title="ClickHouse">[ClickHouse]</a> database management system defines their <code class="highlight"><c- n>IPv6</c-></code> type through <a href="https://github.com/ClickHouse/ClickHouse/blob/0c35492ed33333a2e39f57d8e3c196d1fd22ae22/base/base/IPv4andIPv6.h#L18"><code class="highlight"><c- n>StrongTypedef</c-><c- o>&lt;</c-><c- n>UInt128</c-><c- p>,</c-> <c- k>struct</c-> <c- nc>IPv6Tag</c-><c- o>></c-></code></a>.</p>
-   <h4 class="heading settled" data-level="3.1.11" id="bitsets-and-lookup-tables"><span class="secno">3.1.11. </span><span class="content">Bitsets and lookup tables</span><a class="self-link" href="#bitsets-and-lookup-tables"></a></h4>
+   <h4 class="heading settled" data-level="3.2.11" id="bitsets-and-lookup-tables"><span class="secno">3.2.11. </span><span class="content">Bitsets and lookup tables</span><a class="self-link" href="#bitsets-and-lookup-tables"></a></h4>
    <p>A popular technique for optimizing small lookup tables in high-performance applications
 is to turn them into a bitset.
 128 bits offer additional space over 64 bits.</p>
@@ -2738,8 +2757,8 @@ Clang is the only compiler which performs it, and only for arrays of <code class
 Therefore, it would not have been of much help in the example.
 Furthermore, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-></code> has runtime checks and potentially throws exceptions,
 which makes it unattractive to some language users.</p>
-   <h3 class="heading settled" data-level="3.2" id="utilizing-hardware-support"><span class="secno">3.2. </span><span class="content">Utilizing hardware support</span><a class="self-link" href="#utilizing-hardware-support"></a></h3>
-   <h4 class="heading settled" data-level="3.2.1" id="future-proofing"><span class="secno">3.2.1. </span><span class="content">Future-proofing for direct 128-bit support</span><a class="self-link" href="#future-proofing"></a></h4>
+   <h3 class="heading settled" data-level="3.3" id="utilizing-hardware-support"><span class="secno">3.3. </span><span class="content">Utilizing hardware support</span><a class="self-link" href="#utilizing-hardware-support"></a></h3>
+   <h4 class="heading settled" data-level="3.3.1" id="future-proofing"><span class="secno">3.3.1. </span><span class="content">Future-proofing for direct 128-bit support</span><a class="self-link" href="#future-proofing"></a></h4>
    <p>Hardware support for 64/128-bit mixed operations is already common
 in x86_64 and ARM.
 It is also conceivable that hardware support for 128-bit integer arithmetic will be expanded
@@ -2751,9 +2770,9 @@ in software, the burden of fusing multiple 64-bit operations into a single 128-b
 is put on the optimizer.</p>
    <p>For example, multiple 64-bit multiplications may be fused into a single 64-to-128-bit
 multiplication.
-x86_64 already provides hardware support in this case (see <a href="#widening-operations">§ 3.1.3 Widening operations</a>), however,
+x86_64 already provides hardware support in this case (see <a href="#widening-operations">§ 3.2.3 Widening operations</a>), however,
 the language provides no way of expressing such an operation through integer types.</p>
-   <h4 class="heading settled" data-level="3.2.2" id="support-through-128-bit-floating-point"><span class="secno">3.2.2. </span><span class="content">Support through 128-bit floating-point</span><a class="self-link" href="#support-through-128-bit-floating-point"></a></h4>
+   <h4 class="heading settled" data-level="3.3.2" id="support-through-128-bit-floating-point"><span class="secno">3.3.2. </span><span class="content">Support through 128-bit floating-point</span><a class="self-link" href="#support-through-128-bit-floating-point"></a></h4>
    <p>On hardware which provides native support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code> (see <a data-link-type="biblio" href="#biblio-wikipedia" title="Quadruple-precision floating-point format - Hardware support">[Wikipedia]</a> for a list), integer division up to 113
 bits can be implemented in terms of floating-point division, and this is possibly the fastest routine.
 For such instruction selection, the 113-bit division must be recognized by the compiler.
@@ -2772,14 +2791,14 @@ compiler optimization, or emit <code class="highlight"><c- n>ud2</c-></code>.</p
      <li data-md>
       <p>Otherwise, if the divisor is constant and greater than the dividend, yield zero.</p>
      <li data-md>
-      <p>Otherwise, if the divisor is constant, perform strength reduction (<a href="#fixed-point-operations">§ 3.1.4 Fixed-point operations</a>), making the division
+      <p>Otherwise, if the divisor is constant, perform strength reduction (<a href="#fixed-point-operations">§ 3.2.4 Fixed-point operations</a>), making the division
 a shift and multiplication.</p>
      <li data-md>
       <p>Otherwise, if the divisor is a power of two, count the trailing zeros and perform a right-shift.</p>
      <li data-md>
       <p>Otherwise, if both operands are 2<sup>64</sup>-1 or less, perform 64-bit integer division.</p>
      <li data-md>
-      <p>Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit (<a href="#widening-operations">§ 3.1.3 Widening operations</a>) division.</p>
+      <p>Otherwise, if one of the operands is 2<sup>64</sup>-1 or less, perform 128-to-64-bit (<a href="#widening-operations">§ 3.2.3 Widening operations</a>) division.</p>
      <li data-md>
       <p><b>Otherwise, if both operands are 2<sup>113</sup>-1 or less,
 and if there is hardware support for 128-bit floating point numbers, perform floating-point division.</b></p>
@@ -3354,7 +3373,7 @@ The wider the type, the less common arithmetic becomes.
 Bitwise operations (<code class="highlight"><c- o>&amp;</c-></code>, <code class="highlight"><c- o>|</c-></code>, <code class="highlight"><c- o>~</c-></code>) are best done through vector registers,
 but the ABI for <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>256</c-><c- p>)</c-></code> is to use general purpose registers or the stack,
 and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least256_t</c-></code> would likely be the same.
-Since there is strong hardware support for <a href="#widening-operations">§ 3.1.3 Widening operations</a> which is based
+Since there is strong hardware support for <a href="#widening-operations">§ 3.2.3 Widening operations</a> which is based
 on general purpose registers, the choice for 128-bit is easy; not so much for 256-bit.</p>
     <li data-md>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uint128_t</c-></code> is a "support type" for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>float128_t</c-></code> which simplifies the
@@ -3381,7 +3400,7 @@ However, there are compelling reasons against doing so:</p>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>int_least128_t</c-></code> is sufficiently common to where the added cost of class type
 (overload resolution for operators, function call evaluation in constant expressions, etc.)
 would be a burden to the user. <code class="highlight"><c- b>__int128</c-></code> is the "work horse" of any multi-precision library which uses 64-to-128-bit
-widening operations (see <a href="#multi-precision-operations">§ 3.1.3.2 Multi-precision operations</a>).
+widening operations (see <a href="#multi-precision-operations">§ 3.2.3.2 Multi-precision operations</a>).
 This cost could add up quickly.</p>
     <li data-md>
      <p>A fundamental type also comes with integer literals, and up to 128-bit, there are still
@@ -3584,7 +3603,7 @@ and make the language even less teachable because <code class="highlight"><c- b>
    <p>Furthermore, the more distinct the <code class="highlight"><c- b>_BitInt</c-></code> semantics become, the less of a drop-in replacement for <code class="highlight"><c- b>__int128</c-></code> it becomes:</p>
    <div class="example" id="example-fc4111ed">
     <a class="self-link" href="#example-fc4111ed"></a> The following function yields the high 64 bits of a multiplication.
-Similar code can be found in <a data-link-type="biblio" href="#biblio-stockfish" title="Stockfish">[Stockfish]</a> (see also <a href="#widening-operations">§ 3.1.3 Widening operations</a>). 
+Similar code can be found in <a data-link-type="biblio" href="#biblio-stockfish" title="Stockfish">[Stockfish]</a> (see also <a href="#widening-operations">§ 3.2.3 Widening operations</a>). 
 <pre class="language-cpp highlight"><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-> <c- nf>mul_hi</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-> <c- n>x</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- b>uint64_t</c-> <c- n>y</c-><c- p>)</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>u128</c-><c- p>(</c-><c- n>x</c-><c- p>)</c-> <c- o>*</c-> <c- n>u128</c-><c- p>(</c-><c- n>y</c-><c- p>)</c-> <c- o>>></c-> <c- mi>64</c-><c- p>;</c->
 <c- p>}</c->
@@ -3847,7 +3866,7 @@ and a width-agnostic implementation of <code class="highlight"><c- n>std</c-><c-
    <p>In general, it is not difficult to generalize <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> for any width.
 Stringification uses integer division, which may be a problem.
 However, the divisor is constant.
-Due to strength reduction optimization (see <a href="#fixed-point-operations">§ 3.1.4 Fixed-point operations</a> for an example),
+Due to strength reduction optimization (see <a href="#fixed-point-operations">§ 3.2.4 Fixed-point operations</a> for an example),
 no extreme cost is incurred no matter the width.</p>
    <h4 class="heading settled" data-level="8.2.6" id="format-implementation-experience"><span class="secno">8.2.6. </span><span class="content"><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></span><a class="self-link" href="#format-implementation-experience"></a></h4>
    <p>libstdc++ already supports <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> for <code class="highlight"><c- b>__int128</c-></code>.</p>
@@ -4478,6 +4497,8 @@ has helped me improve the quality of this proposal substantially.</p>
    <dd>Junekey Jeon. <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf"><cite>Dragonbox: A New FLoating-Point Binary-to-Decimal Conversion Algorithm</cite></a>. URL: <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf">https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf</a>
    <dt id="biblio-fast_float">[FAST_FLOAT]
    <dd>Daniel Lemire et al.. <a href="https://github.com/fastfloat/fast_float"><cite>fast_float number parsing library: 4x faster than strtod</cite></a>. URL: <a href="https://github.com/fastfloat/fast_float">https://github.com/fastfloat/fast_float</a>
+   <dt id="biblio-go-9455">[Go-9455]
+   <dd>mei-rune. <a href="https://github.com/golang/go/issues/9455"><cite>proposal: spec: add support for int128 and uint128</cite></a>. URL: <a href="https://github.com/golang/go/issues/9455">https://github.com/golang/go/issues/9455</a>
    <dt id="biblio-libdivide">[LIBDIVIDE]
    <dd>Kim Walisch et al.. <a href="https://github.com/ridiculousfish/libdivide"><cite>libdivide</cite></a>. URL: <a href="https://github.com/ridiculousfish/libdivide">https://github.com/ridiculousfish/libdivide</a>
    <dt id="biblio-marsaglia">[Marsaglia]
@@ -4508,8 +4529,12 @@ has helped me improve the quality of this proposal substantially.</p>
    <dd>Andreas Weis. <a href="https://wg21.link/p3018r0"><cite>Low-Level Integer Arithmetic</cite></a>. 15 October 2023. URL: <a href="https://wg21.link/p3018r0">https://wg21.link/p3018r0</a>
    <dt id="biblio-px0">[PX0]
    <dd>PikaCat. <a href="https://github.com/official-pikafish/px0"><cite>Px0</cite></a>. URL: <a href="https://github.com/official-pikafish/px0">https://github.com/official-pikafish/px0</a>
+   <dt id="biblio-rfc-1504">[RFC-1504]
+   <dd>Niko Matsakis. <a href="https://github.com/rust-lang/rfcs/blob/master/text/1504-int128.md"><cite>RFC-1504: int128</cite></a>. URL: <a href="https://github.com/rust-lang/rfcs/blob/master/text/1504-int128.md">https://github.com/rust-lang/rfcs/blob/master/text/1504-int128.md</a>
    <dt id="biblio-risc-v">[RISC-V]
    <dd>VA. <a href="https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view"><cite>The RISC-V Instruction Set Manual - Volume I: Unprivileged ISA</cite></a>. URL: <a href="https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view">https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view</a>
+   <dt id="biblio-se-0425">[SE-0425]
+   <dd>Stephen Canon. <a href="https://github.com/apple/swift-evolution/blob/main/proposals/0425-int128.md"><cite>SE-0425: 128-bit Integer Types</cite></a>. URL: <a href="https://github.com/apple/swift-evolution/blob/main/proposals/0425-int128.md">https://github.com/apple/swift-evolution/blob/main/proposals/0425-int128.md</a>
    <dt id="biblio-sec">[SEC]
    <dd>U.S. Securities and Exchange Commission. <a href="https://www.sec.gov/divisions/marketreg/subpenny612faq.htm"><cite>Division of Market Regulation: Responses to Frequently Asked Questions Concerning Rule 612 (Minimum Pricing Increment) of Regulation NMS</cite></a>. URL: <a href="https://www.sec.gov/divisions/marketreg/subpenny612faq.htm">https://www.sec.gov/divisions/marketreg/subpenny612faq.htm</a>
    <dt id="biblio-std-proposals">[STD-PROPOSALS]
