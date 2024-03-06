@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: <code>constexpr std::uncaught_exceptions()</code>
 Shortname: P3105
-Revision: 0
+Revision: 1
 Status: P
-Date: 2024-01-26
+Date: 2024-03-06
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -13,6 +13,14 @@ Markup Shorthands: markdown on
 Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exception` `constexpr`.
 </pre>
 
+# Revision history # {#revision-history}
+
+## Changes since R0 ## {#changes-since-r0}
+
+- Mention [[P3068R0]].
+- Bring up future-proofing in [[#motivation]].
+- Add missing synopsis edits to [[#proposed-wording]].
+- Minor editorial fixes/improvements.
 
 # Overview # {#overview}
 
@@ -24,9 +32,10 @@ Similarly, `std::current_exception` would always return a null pointer.
 
 [[P2996R1]] recommends exceptions as an error handling mechanism for reflections,
 during constant evaluation.
-If exceptions were throwable in constant expresssions, marking these functions `constexpr`
+[[P3068R0]] proposes allowing exception throwing in constant expressions.
+If exceptions were throwable in constant expressions, marking these functions `constexpr`
 would simply be part of exception support.
-<b>However, [[P2996R1]] is not a prerequisite to this proposal.</b>
+<b>However, these proposals is not a prerequisite to this proposal.</b>
 
 
 # Motivation # {#motivation}
@@ -41,7 +50,8 @@ execute a function upon destruction, but only if an exception was (not) thrown i
 scope.
 This is utilized by `std::scope_success` and `std::scope_failure`; see [[N4806]].
 
-For example, in the implementation of a `constexpr` stack, one may write:
+<div class=example>
+In the implementation of a `constexpr` stack, one may write:
 ```cpp
 constexpr value_type pop() {
     // Only decrease the size of the stack if no exception was thrown during
@@ -53,6 +63,14 @@ constexpr value_type pop() {
 ```
 It is reasonable to mark such code `constexpr`, and ideally `std::uncaught_exceptions` would not be an
 obstacle to this.
+</div>
+
+Besides the quality-of-life aspect, we want to future-proof code.
+If the user circumvents  `std::uncaught_exceptions` by guarding its use with an
+`if !consteval` block, this makes the assumption that exceptions aren't throwable in
+constant expression.
+That may be true now, but could change in the future, in which case the user will have to rewrite
+their code to avoid this assumption.
 
 Furthermore, it makes sense to mark `std::uncaught_exceptions`' sister function,
 `std::current_exception` `constexpr`.
@@ -147,7 +165,7 @@ Therefore:
 ins {
     background: rgba(136, 255, 93, 0.2);
     color: inherit;
-    text-decoration: none;
+    text-decoration: underlined;
 }
 del {
     background: rgba(255, 93, 93, 0.2);
@@ -166,6 +184,15 @@ Update subclause 17.3.2 [version.syn], paragraph 2 as follows:
 [...]
 #define __cpp_lib_uncaught_exceptions           <del>201411L</del><ins>202401L</ins> // freestanding, also in &lt;exception&gt;
 </pre></code>
+</blockquote>
+
+Update subclause 17.9.2 [exception.syn] as follows:
+<blockquote>
+<pre><ins>constexpr</ins> int uncaught_exceptions() noexcept;
+<br>
+using exception_ptr = <i>unspecified</i>;
+
+<ins>constexpr</ins> exception_ptr current_exception() noexcept;</pre>
 </blockquote>
 
 Update subclause 17.9.6 [uncaught.exceptions] as follows:

@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3105R0: constexpr std::uncaught_exceptions()</title>
+  <title>P3105R1: constexpr std::uncaught_exceptions()</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,12 +1564,12 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/constexpr-uncaught-exceptions.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bd9619a066da0ea4db805f21eb4ad75dee3ba914" name="revision">
+  <meta content="dfff6778ea4218f99e60d24fa28a13e533d6c1b2" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.2);
     color: inherit;
-    text-decoration: none;
+    text-decoration: underlined;
 }
 del {
     background: rgba(255, 93, 93, 0.2);
@@ -2099,8 +2099,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3105R0<br><code class="highlight"><c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-><c- p>()</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-01-26">2024-01-26</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3105R1<br><code class="highlight"><c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-><c- p>()</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-06">2024-03-06</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2125,19 +2125,24 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#overview"><span class="secno">1</span> <span class="content">Overview</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
     <li>
-     <a href="#possible-implementation"><span class="secno">3</span> <span class="content">Possible implementation</span></a>
+     <a href="#revision-history"><span class="secno">1</span> <span class="content">Revision history</span></a>
      <ol class="toc">
-      <li><a href="#constexpr-uncaught-exceptions"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>uncaught_exceptions</c-></code></span></a>
-      <li><a href="#constexpr-current-exception"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>current_exception</c-></code></span></a>
-      <li><a href="#constexpr-exception-ptr"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>exception_ptr</c-></code></span></a>
-      <li><a href="#non-trivial-implementations"><span class="secno">3.4</span> <span class="content">Non-trivial implementations</span></a>
-      <li><a href="#impact-on-abi"><span class="secno">3.5</span> <span class="content">Impact on ABI</span></a>
+      <li><a href="#changes-since-r0"><span class="secno">1.1</span> <span class="content">Changes since R0</span></a>
      </ol>
-    <li><a href="#proposed-wording"><span class="secno">4</span> <span class="content">Proposed wording</span></a>
-    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#overview"><span class="secno">2</span> <span class="content">Overview</span></a>
+    <li><a href="#motivation"><span class="secno">3</span> <span class="content">Motivation</span></a>
+    <li>
+     <a href="#possible-implementation"><span class="secno">4</span> <span class="content">Possible implementation</span></a>
+     <ol class="toc">
+      <li><a href="#constexpr-uncaught-exceptions"><span class="secno">4.1</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>uncaught_exceptions</c-></code></span></a>
+      <li><a href="#constexpr-current-exception"><span class="secno">4.2</span> <span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>current_exception</c-></code></span></a>
+      <li><a href="#constexpr-exception-ptr"><span class="secno">4.3</span> <span class="content"><code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>exception_ptr</c-></code></span></a>
+      <li><a href="#non-trivial-implementations"><span class="secno">4.4</span> <span class="content">Non-trivial implementations</span></a>
+      <li><a href="#impact-on-abi"><span class="secno">4.5</span> <span class="content">Impact on ABI</span></a>
+     </ol>
+    <li><a href="#proposed-wording"><span class="secno">5</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#acknowledgements"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2147,14 +2152,26 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="overview"><span class="secno">1. </span><span class="content">Overview</span><a class="self-link" href="#overview"></a></h2>
+   <h2 class="heading settled" data-level="1" id="revision-history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#revision-history"></a></h2>
+   <h3 class="heading settled" data-level="1.1" id="changes-since-r0"><span class="secno">1.1. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes-since-r0"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Mention <a data-link-type="biblio" href="#biblio-p3068r0" title="Allowing exception throwing in constant-evaluation.">[P3068R0]</a>.</p>
+    <li data-md>
+     <p>Bring up future-proofing in <a href="#motivation">§ 3 Motivation</a>.</p>
+    <li data-md>
+     <p>Add missing synopsis edits to <a href="#proposed-wording">§ 5 Proposed wording</a>.</p>
+    <li data-md>
+     <p>Minor editorial fixes/improvements.</p>
+   </ul>
+   <h2 class="heading settled" data-level="2" id="overview"><span class="secno">2. </span><span class="content">Overview</span><a class="self-link" href="#overview"></a></h2>
    <p>I propose to mark the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> <code class="highlight"><c- k>constexpr</c-></code>.</p>
    <p>Currently, this can be done because there can never be an active exception during constant evaluation. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> would always return zero during constant evaluation.
 Similarly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code> would always return a null pointer.</p>
    <p><a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> recommends exceptions as an error handling mechanism for reflections,
-during constant evaluation.
-If exceptions were throwable in constant expresssions, marking these functions <code class="highlight"><c- k>constexpr</c-></code> would simply be part of exception support. <b>However, <a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> is not a prerequisite to this proposal.</b></p>
-   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
+during constant evaluation. <a data-link-type="biblio" href="#biblio-p3068r0" title="Allowing exception throwing in constant-evaluation.">[P3068R0]</a> proposes allowing exception throwing in constant expressions.
+If exceptions were throwable in constant expressions, marking these functions <code class="highlight"><c- k>constexpr</c-></code> would simply be part of exception support. <b>However, these proposals is not a prerequisite to this proposal.</b></p>
+   <h2 class="heading settled" data-level="3" id="motivation"><span class="secno">3. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>The motivation is the same as allowing <code class="highlight"><c- k>try</c-></code>-<code class="highlight"><c- k>catch</c-></code> blocks in <code class="highlight"><c- k>constexpr</c-></code> functions,
 a feature added to C++20 thanks to <a data-link-type="biblio" href="#biblio-p1002r1" title="Try-catch blocks in constexpr functions">[P1002R1]</a>.
 Allowing the use of <code class="highlight"><c- n>uncaught_exceptions</c-><c- p>()</c-></code> in constant expressions makes
@@ -2163,7 +2180,8 @@ metaprogramming easier and eliminates special <code class="highlight"><c- k>if</
 execute a function upon destruction, but only if an exception was (not) thrown in the current
 scope.
 This is utilized by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scope_success</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scope_failure</c-></code>; see <a data-link-type="biblio" href="#biblio-n4806" title="Working Draft, C++ Extensions for Library Fundamentals, Version 3">[N4806]</a>.</p>
-   <p>For example, in the implementation of a <code class="highlight"><c- k>constexpr</c-></code> stack, one may write:</p>
+   <div class="example" id="example-58e7c9e9">
+    <a class="self-link" href="#example-58e7c9e9"></a> In the implementation of a <code class="highlight"><c- k>constexpr</c-></code> stack, one may write: 
 <pre class="language-cpp highlight"><c- k>constexpr</c-> <c- n>value_type</c-> <c- nf>pop</c-><c- p>()</c-> <c- p>{</c->
     <c- c1>// Only decrease the size of the stack if no exception was thrown during</c->
     <c- c1>// copy/move construction of the returned object.</c->
@@ -2172,14 +2190,20 @@ This is utilized by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>sco
     <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>top</c-><c- p>());</c->
 <c- p>}</c->
 </pre>
-   <p>It is reasonable to mark such code <code class="highlight"><c- k>constexpr</c-></code>, and ideally <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> would not be an
+    <p>It is reasonable to mark such code <code class="highlight"><c- k>constexpr</c-></code>, and ideally <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> would not be an
 obstacle to this.</p>
+   </div>
+   <p>Besides the quality-of-life aspect, we want to future-proof code.
+If the user circumvents <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> by guarding its use with an <code class="highlight"><c- k>if</c-> <c- o>!</c-><c- k>consteval</c-></code> block, this makes the assumption that exceptions aren’t throwable in
+constant expression.
+That may be true now, but could change in the future, in which case the user will have to rewrite
+their code to avoid this assumption.</p>
    <p>Furthermore, it makes sense to mark <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code>' sister function, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code> <code class="highlight"><c- k>constexpr</c-></code>.
 This is done purely for the purpose of consistency.
 I am not aware of any concrete example of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code>’s
 lack of <code class="highlight"><c- k>constexpr</c-></code> being an obstacle.</p>
-   <h2 class="heading settled" data-level="3" id="possible-implementation"><span class="secno">3. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
-   <h3 class="heading settled" data-level="3.1" id="constexpr-uncaught-exceptions"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>uncaught_exceptions</c-></code></span><a class="self-link" href="#constexpr-uncaught-exceptions"></a></h3>
+   <h2 class="heading settled" data-level="4" id="possible-implementation"><span class="secno">4. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="constexpr-uncaught-exceptions"><span class="secno">4.1. </span><span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>uncaught_exceptions</c-></code></span><a class="self-link" href="#constexpr-uncaught-exceptions"></a></h3>
 <pre class="language-cpp highlight"><c- k>constexpr</c-> <c- b>int</c-> <c- nf>uncaught_exceptions</c-><c- p>()</c-> <c- k>noexcept</c-> <c- p>{</c->
     <c- k>if</c-> <c- k>consteval</c-> <c- p>{</c->
         <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
@@ -2189,7 +2213,7 @@ lack of <code class="highlight"><c- k>constexpr</c-></code> being an obstacle.</
 <c- p>}</c->
 </pre>
    <p>It is obviously possible for the user to wrap <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>uncaught_exceptions</c-></code> like this themselves (e.g. <a data-link-type="biblio" href="#biblio-scopelite" title="uncaught_exceptions() wrapper in scope-lite">[ScopeLite]</a>), but this is an unnecessary burden.</p>
-   <h3 class="heading settled" data-level="3.2" id="constexpr-current-exception"><span class="secno">3.2. </span><span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>current_exception</c-></code></span><a class="self-link" href="#constexpr-current-exception"></a></h3>
+   <h3 class="heading settled" data-level="4.2" id="constexpr-current-exception"><span class="secno">4.2. </span><span class="content"><code class="highlight"><c- k>constexpr</c-> <c- n>current_exception</c-></code></span><a class="self-link" href="#constexpr-current-exception"></a></h3>
 <pre class="language-cpp highlight"><c- k>constexpr</c-> <c- n>exception_ptr</c-> <c- nf>current_exception</c-><c- p>()</c-> <c- k>noexcept</c-> <c- p>{</c->
     <c- k>if</c-> <c- k>consteval</c-> <c- p>{</c->
         <c- k>return</c-> <c- n>exception_ptr</c-><c- p>(</c-><c- k>nullptr</c-><c- p>);</c->
@@ -2198,7 +2222,7 @@ lack of <code class="highlight"><c- k>constexpr</c-></code> being an obstacle.</
     <c- p>}</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="3.3" id="constexpr-exception-ptr"><span class="secno">3.3. </span><span class="content"><code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>exception_ptr</c-></code></span><a class="self-link" href="#constexpr-exception-ptr"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="constexpr-exception-ptr"><span class="secno">4.3. </span><span class="content"><code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>exception_ptr</c-></code></span><a class="self-link" href="#constexpr-exception-ptr"></a></h3>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> would also need to be made a literal type.
 All major three standard libraries implement <code class="highlight"><c- n>exception_ptr</c-></code> as a wrapper class for <code class="highlight"><c- b>void</c-><c- o>*</c-></code>,
 which makes this easily possible.</p>
@@ -2214,7 +2238,7 @@ which makes this easily possible.</p>
 with an <code class="highlight"><c- k>if</c-> <c- o>!</c-><c- k>consteval</c-></code> block.
 It is impossible to create an <code class="highlight"><c- n>exception_ptr</c-></code> that is not a null pointer during constant
 evaluations.</p>
-   <h3 class="heading settled" data-level="3.4" id="non-trivial-implementations"><span class="secno">3.4. </span><span class="content">Non-trivial implementations</span><a class="self-link" href="#non-trivial-implementations"></a></h3>
+   <h3 class="heading settled" data-level="4.4" id="non-trivial-implementations"><span class="secno">4.4. </span><span class="content">Non-trivial implementations</span><a class="self-link" href="#non-trivial-implementations"></a></h3>
    <p><a data-link-type="biblio" href="#biblio-p2996r1" title="Reflection for C++26">[P2996R1]</a> suggests allowing <code class="highlight"><c- k>throw</c-></code> in constant expressions.
 This would mean that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>active_exceptions</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>current_exception</c-></code>,
 and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> would no longer have such trivial implementations,
@@ -2230,7 +2254,7 @@ constant expressions.</p>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> behaves like a type-erased, reference-counted smart pointer. <a data-link-type="biblio" href="#biblio-p2738r1" title="constexpr cast from void*: towards constexpr type-erasure">[P2738R1]</a> has been accepted into C++26, adding <code class="highlight"><c- k>constexpr</c-></code> cast from <code class="highlight"><c- b>void</c-><c- o>*</c-></code>.
 This makes the implementation of such type-erasure in <code class="highlight"><c- k>constexpr</c-> <c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> feasible.</p>
    </ol>
-   <h3 class="heading settled" data-level="3.5" id="impact-on-abi"><span class="secno">3.5. </span><span class="content">Impact on ABI</span><a class="self-link" href="#impact-on-abi"></a></h3>
+   <h3 class="heading settled" data-level="4.5" id="impact-on-abi"><span class="secno">4.5. </span><span class="content">Impact on ABI</span><a class="self-link" href="#impact-on-abi"></a></h3>
    <p>Multiple functions, including member functions of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exception_ptr</c-></code> would become
 inline functions if marked <code class="highlight"><c- k>constexpr</c-></code>.
 To remain ABI-compatible with existing software, it is necessary to emit these inline function
@@ -2246,7 +2270,7 @@ and is also not affected.</p>
     <li data-md>
      <p>libc++ would need to apply similar compatibility measures as libstdc++.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="proposed-wording"><span class="secno">4. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposed-wording"><span class="secno">5. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n4917" title="Working Draft, Standard for Programming Language C++">[N4917]</a>.</p>
    <p>Update subclause 17.3.2 [version.syn], paragraph 2 as follows:</p>
    <blockquote>
@@ -2254,6 +2278,13 @@ and is also not affected.</p>
 <c- p>[...]</c->
 <c- cp>#define __cpp_lib_uncaught_exceptions           </c-><del><c- cp>201411L</c-></del><ins><c- cp>202401L</c-></ins><c- cp> </c-><c- c1>// freestanding, also in &lt;exception></c->
 </code></pre>
+   </blockquote>
+   <p>Update subclause 17.9.2 [exception.syn] as follows:</p>
+   <blockquote>
+<pre class="highlight"><ins><c- k>constexpr</c-></ins> <c- b>int</c-> <c- nf>uncaught_exceptions</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->    <br>
+<c- k>using</c-> <c- n>exception_ptr</c-> <c- o>=</c-> <i><c- n>unspecified</c-></i><c- p>;</c->
+
+<ins><c- k>constexpr</c-></ins> <c- n>exception_ptr</c-> <c- nf>current_exception</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></pre>
    </blockquote>
    <p>Update subclause 17.9.6 [uncaught.exceptions] as follows:</p>
    <blockquote>
@@ -2271,7 +2302,7 @@ and is also not affected.</p>
    <blockquote>
 <pre class="highlight"><code><ins><c- k>constexpr</c-></ins> <c- n>exception_ptr</c-> <c- nf>current_exception</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c-></code></pre>
    </blockquote>
-   <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>The original idea for this paper and a portion of its content have been adopted from a
 proposal draft by Morwenn.</p>
   </main>
@@ -2420,6 +2451,8 @@ proposal draft by Morwenn.</p>
    <dd>Corentin Jabot; David Ledger. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf"><cite>constexpr cast from void*: towards constexpr type-erasure</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf</a>
    <dt id="biblio-p2996r1">[P2996R1]
    <dd>Wyatt Childers; et al. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html"><cite>Reflection for C++26</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2996r1.html</a>
+   <dt id="biblio-p3068r0">[P3068R0]
+   <dd>Hana Dusíková. <a href="https://wg21.link/p3068r0"><cite>Allowing exception throwing in constant-evaluation.</cite></a>. URL: <a href="https://wg21.link/p3068r0">https://wg21.link/p3068r0</a>
    <dt id="biblio-scopelite">[ScopeLite]
    <dd>Martin Moene. <a href="https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597"><cite>uncaught_exceptions() wrapper in scope-lite</cite></a>. URL: <a href="https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597">https://github.com/martinmoene/scope-lite/blob/89b274a106363101ea258cb9555a9c6a47ae2928/include/nonstd/scope.hpp#L586-L597</a>
   </dl>
