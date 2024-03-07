@@ -23,7 +23,7 @@ Audience: LEWG-I, LEWG
 
 - [Latest](bit-permutations.html)
 - [P3014R0](bit-permutations-p3104r0.html)
-- [P3014R0](bit-permutations-p3104r1.html)
+- [P3014R1](bit-permutations-p3104r1.html)
 
 ## P3105: `constexpr std::uncaught_exceptions()`
 
@@ -32,6 +32,13 @@ Audience: LEWG-I, LEWG
 - [Latest](constexpr-uncaught-exceptions.html)
 - [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
 - [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
+
+## P3140: `std::int_least128_t`
+
+Audience: LEWG-I, LEWG, EWG-I, EWG, SG22
+
+- [Latest](int-least128.html)
+- [P3140R0](int-least128-p3140r0.html)
 
 ## NP: Carry-less product: `std::clmul`
 
@@ -44,13 +51,6 @@ Audience: LEWG-I, LEWG
 Audience: LEWG-I, LEWG
 
 - [Latest](constexpr-to-string.html)
-
-## P3140: `std::int_least128_t`
-
-Audience: LEWG-I, LEWG, EWG-I, EWG, SG22
-
-- [Latest](int-least128.html)
-- [P3140R0](int-least128-p3140r0.html)
 
 ## NP: `std::to_signed`, `std::to_unsigned`
 
