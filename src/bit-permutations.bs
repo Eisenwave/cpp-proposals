@@ -2,8 +2,8 @@
 Title: Bit permutations
 Shortname: P3104
 Revision: 1
-Status: NP
-Date: 2024-01-26
+Status: P
+Date: 2024-03-07
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -50,7 +50,7 @@ del {
 ## Changes since R0 ## {#changes-since-r0}
 
 - Expand [[#hardware-support]], taking more instructions into account, including AVX-512.
-
+- Minor editorial fixes.
 
 # Introduction # {#intro}
 
@@ -619,7 +619,7 @@ All in all, there are multiple factors that strongly suggest a standard library 
     In a situation where multiple `bit_compress` calls with the same mask `m` are performed,
     it is significantly faster to pre-compute information based on the mask once,
     and utilize it in subsequent calls.
-    The same technique can be used to accelerate integer division for multiple divisons with the
+    The same technique can be used to accelerate integer division for multiple divisions with the
     same divisor.
 
 Bullets 2. and 3. suggest that `bit_compress` and `bit_expand` benefit from being
