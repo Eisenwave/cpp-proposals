@@ -40,6 +40,11 @@ Audience: LEWG-I, LEWG, EWG-I, EWG, SG22
 - [Latest](int-least128.html)
 - [P3140R0](int-least128-p3140r0.html)
 
+## P3176R0: The Oxford variadic comma
+
+- [Latest](oxford-variadic-comma.html)
+- [P3176R0](oxford-variadic-comma-p3176r0.html)
+
 ## NP: Carry-less product: `std::clmul`
 
 Audience: LEWG-I, LEWG
@@ -55,8 +60,3 @@ Audience: LEWG-I, LEWG
 ## NP: `std::to_signed`, `std::to_unsigned`
 
 - [Latest](to-signed-unsigned.html)
-
-## NP: The Oxford variadic comma
-
-- [Latest](oxford-variadic-comma.html)
-- [P3176R0](oxford-variadic-comma-p3176r0.html)
