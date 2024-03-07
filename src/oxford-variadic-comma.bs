@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: The Oxford variadic comma
-Shortname: Pxxxx
+Shortname: P3176
 Revision: 0
 Status: NP
 Date: 2024-03-07

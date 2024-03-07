@@ -59,3 +59,4 @@ Audience: LEWG-I, LEWG
 ## NP: The Oxford variadic comma
 
 - [Latest](oxford-variadic-comma.html)
+- [P3176R0](oxford-variadic-comma-p3176r0.html)
