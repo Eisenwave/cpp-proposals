@@ -3,7 +3,7 @@ Title: The Oxford variadic comma
 Shortname: Pxxxx
 Revision: 0
 Status: NP
-Date: 2024-02-29
+Date: 2024-03-07
 Group: WG21
 Audience: EWGI
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
@@ -75,7 +75,7 @@ It deprecated `array[0, 1]` in C++20 which freed up the syntax for
 ## History and C compatibility ## {#history}
 
 The active version of the C standard ISO/IEC9899:2018
-permit functions which accept a variable number of arguments.
+permits functions which accept a variable number of arguments.
 Such functions must have a *parameter-type-list* containing at least one parameter,
 and the ellipsis parameter must be comma-separated:
 <blockquote>
