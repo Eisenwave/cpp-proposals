@@ -3,7 +3,7 @@ Title: More bitset operations
 Shortname: P3103
 Revision: 1
 Status: P
-Date: 2024-02-29
+Date: 2024-03-07
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
