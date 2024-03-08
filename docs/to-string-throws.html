@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/to-string-throws.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="15033ce2a04e061379dd17df92b129475d4cd93c" name="revision">
+  <meta content="c6655f34a1816bf78b8b11ab2370e3ee262494df" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2124,13 +2124,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>Use <em>Effects</em>: Equivalent to: wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> so that it inherits <em>Throws</em> specifications from <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+   <p>Add a <em>Throws</em> specification to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#proposed-wording"><span class="secno">2</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#implementation-experience"><span class="secno">2</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#design-considerations"><span class="secno">3</span> <span class="content">Design considerations</span></a>
+    <li><a href="#proposed-wording"><span class="secno">4</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2150,12 +2153,28 @@ anything, given that it has no <em>Throws</em> specification.
 It would be better to reword it as an equivalence instead of merely specifying
 the result.</p>
    <p>It is not unclear what this implementation freedom can be used for,
-and <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> doesn’t justify this design choice.</p>
-   <p>An equivalence would inherit the <em>Throws</em> specification of <a href="https://eel.is/c++draft/format.functions#lib:vformat">[format.functions] <code class="highlight"><c- n>vformat</c-></code></a>,
+and <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> doesn’t justify this design choice.
+A <em>Throws</em> specification would make it obvious that:</p>
+   <ul>
+    <li data-md>
+     <p>Exceptions can be thrown here (<code class="highlight"><c- n>bad_alloc</c-></code>).</p>
+    <li data-md>
+     <p>Despite the use of <code class="highlight"><c- n>format</c-></code>, <code class="highlight"><c- n>format_error</c-></code> cannot be thrown.</p>
+   </ul>
+   <p class="note" role="note"><span class="marker">Note:</span> The wording for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> prior to <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> did not include a <em>Throws</em> specification either.</p>
+   <h2 class="heading settled" data-level="2" id="implementation-experience"><span class="secno">2. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
+   <p>libstdc++ is the only implementation which is reported to implement <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> at the time of writing; see <a href="https://github.com/gcc-mirror/gcc/blob/018ddc86b928514d7dfee024dcdeb204d5dcdd61/libstdc%2B%2B-v3/include/bits/basic_string.h#L4239"> <code class="highlight"><c- n>basic_string</c-><c- p>.</c-><c- n>h</c-></code> </a> The implementation is based on <code class="highlight"><c- n>resize_and_overwrite</c-></code> and <code class="highlight"><c- n>to_chars</c-></code>.
+It can only throw <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bad_alloc</c-></code> and would not benefit from the freedom to throw anything else.</p>
+   <h2 class="heading settled" data-level="3" id="design-considerations"><span class="secno">3. </span><span class="content">Design considerations</span><a class="self-link" href="#design-considerations"></a></h2>
+   <p>A <em>Throws</em> specification is the most simple and direct way of conveying what can be thrown here,
+which is only <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bad_alloc</c-></code>.</p>
+   <p>Another wording strategy would be to add
+"<em>Effects</em>: Equivalent to: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>",
+which inherits the <em>Throws</em> specification of <a href="https://eel.is/c++draft/format.functions#lib:vformat">[format.functions] <code class="highlight"><c- n>vformat</c-></code></a>,
 which is specified through <a href="https://eel.is/c++draft/format.err.report">[format.err.report] paragraph 1</a>.
-Indirectly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> would be limited to <code class="highlight"><c- n>format_error</c-></code> (which is impossible for <code class="highlight"><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-></code>)
-and throwing an implementation-defined exception upon failure to allocate storage.</p>
-   <h2 class="heading settled" data-level="2" id="proposed-wording"><span class="secno">2. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+This strategy is worse because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format_error</c-></code> is a red herring (cannot be thrown here)
+and because it takes too many indirections to get to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bad_alloc</c-></code>.</p>
+   <h2 class="heading settled" data-level="4" id="proposed-wording"><span class="secno">4. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed wording is relative to <a data-link-type="biblio" href="#biblio-n4950" title="Working Draft, Standard for Programming Language C++">[N4950]</a> with the changes from <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> applied.</p>
    <p>In subclause 23.4.5 <a href="http://eel.is/c++draft/string.conversions">[string.conversions]</a>,
 update <code class="highlight"><c- n>to_string</c-></code> as follows:</p>
@@ -2171,10 +2190,9 @@ update <code class="highlight"><c- n>to_string</c-></code> as follows:</p>
 <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
 </pre>
     <p class="indent">
-     <del><em>Returns</em>:</del>
-     <ins><em>Effects</em>: Equivalent to:</ins>
-      <code class="highlight"><ins><c- k>return</c-> </ins><c- n>format</c-><c- p>(</c-><c- s>"{}, val)</c-></code>. 
+     <ins><em>Throws</em>: <code class="highlight"><c- n>bad_alloc</c-></code> upon allocation failure.</ins>
     </p>
+    <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}, val)</c-></code>. </p>
    </blockquote>
    <p>In subclause 23.4.5 <a href="http://eel.is/c++draft/string.conversions">[string.conversions]</a>,
 update <code class="highlight"><c- n>to_wstring</c-></code> as follows:</p>
@@ -2190,11 +2208,12 @@ update <code class="highlight"><c- n>to_wstring</c-></code> as follows:</p>
 <c- n>wstring</c-> <c- nf>to_wstring</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
 </pre>
     <p class="indent">
-     <del><em>Returns</em>:</del>
-     <ins><em>Effects</em>: Equivalent to:</ins>
-      <code class="highlight"><ins><c- k>return</c-> </ins><c- n>format</c-><c- p>(</c->L<c- s>"{}, val)</c-></code>. 
+     <ins><em>Throws</em>: <code class="highlight"><c- n>bad_alloc</c-></code> upon allocation failure.</ins>
     </p>
+    <p class="indent"> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c->L<c- s>"{}, val)</c-></code>. </p>
    </blockquote>
+   <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <p>The current wording strategy of this proposal has been suggested by Jonathan Wakely.</p>
   </main>
 <script>
 (function() {

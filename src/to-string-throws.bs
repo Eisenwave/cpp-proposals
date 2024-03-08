@@ -10,8 +10,7 @@ Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/to-string-throws.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/to-string-throws.bs)
 Markup Shorthands: markdown on
-Abstract: Use *Effects*: Equivalent to: wording for `std::to_string`
-          so that it inherits *Throws* specifications from `std::format`.
+Abstract: Add a *Throws* specification to `std::to_string`.
 </pre>
 
 # Introduction # {#introduction}
@@ -28,14 +27,37 @@ the result.
 
 It is not unclear what this implementation freedom can be used for,
 and [[P2587R3]] doesn't justify this design choice.
+A *Throws* specification would make it obvious that:
+- Exceptions can be thrown here (`bad_alloc`).
+- Despite the use of `format`, `format_error` cannot be thrown.
 
-An equivalence would inherit the *Throws* specification of
+Note: The wording for `std::to_string` prior to [[P2587R3]] did not include a *Throws*
+specification either.
+
+# Implementation experience # {#implementation-experience}
+
+libstdc++ is the only implementation which is reported to implement [[P2587R3]]
+at the time of writing; see
+<a href="https://github.com/gcc-mirror/gcc/blob/018ddc86b928514d7dfee024dcdeb204d5dcdd61/libstdc%2B%2B-v3/include/bits/basic_string.h#L4239">
+`basic_string.h`
+</a>
+The implementation is based on `resize_and_overwrite` and `to_chars`.
+It can only throw `std::bad_alloc` and would not benefit from the freedom to throw anything else.
+
+# Design considerations # {#design-considerations}
+
+A *Throws* specification is the most simple and direct way of conveying what can be thrown here,
+which is only `std::bad_alloc`.
+
+Another wording strategy would be to add
+"*Effects*: Equivalent to: `format("{}", val)`",
+which inherits the *Throws* specification of
 <a href="https://eel.is/c++draft/format.functions#lib:vformat">[format.functions] `vformat`</a>,
 which is specified through
 <a href="https://eel.is/c++draft/format.err.report">[format.err.report] paragraph 1</a>.
-Indirectly, `std::to_string` would be limited to `format_error`
-(which is impossible for `"{}", val`)
-and throwing an implementation-defined exception upon failure to allocate storage.
+This strategy is worse because `std::format_error` is a red herring (cannot be thrown here)
+and because it takes too many indirections to get to `std::bad_alloc`.
+
 
 # Proposed wording # {#proposed-wording}
 
@@ -75,7 +97,10 @@ string to_string(double val);
 string to_string(long double val);
 </pre>
 <p class=indent>
-    <del>*Returns*:</del><ins>*Effects*: Equivalent to:</ins> <code><ins>return </ins>format("{}, val)</code>.
+    <ins>*Throws*: `bad_alloc` upon allocation failure.</ins>
+</p>
+<p class=indent>
+    *Returns*: `format("{}, val)`.
 </p>
 </blockquote>
 
@@ -95,9 +120,18 @@ wstring to_wstring(double val);
 wstring to_wstring(long double val);
 </pre>
 <p class=indent>
-    <del>*Returns*:</del><ins>*Effects*: Equivalent to:</ins> <code><ins>return </ins>format(L"{}, val)</code>.
+    <ins>*Throws*: `bad_alloc` upon allocation failure.</ins>
+</p>
+<p class=indent>
+    *Returns*: `format(L"{}, val)`.
 </p>
 </blockquote>
+
+
+# Acknowledgements # {#acknowledgements}
+
+The current wording strategy of this proposal has been suggested by Jonathan Wakely.
+
 
 <pre class=biblio>
 {
