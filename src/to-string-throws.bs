@@ -33,8 +33,9 @@ An equivalence would inherit the *Throws* specification of
 <a href="https://eel.is/c++draft/format.functions#lib:vformat">[format.functions] `vformat`</a>,
 which is specified through
 <a href="https://eel.is/c++draft/format.err.report">[format.err.report] paragraph 1</a>.
-Future work may include explicitly stating that `vformat` can throw `std::bad_alloc`,
-but this is not proposed here.
+Indirectly, `std::to_string` would be limited to `format_error`
+(which is impossible for `"{}", val`)
+and throwing an implementation-defined exception upon failure to allocate storage.
 
 # Proposed wording # {#proposed-wording}
 

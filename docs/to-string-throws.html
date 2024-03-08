@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/to-string-throws.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c89e2a7ade71e97b586a85c819daef7f2798d31b" name="revision">
+  <meta content="15033ce2a04e061379dd17df92b129475d4cd93c" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2153,8 +2153,8 @@ the result.</p>
 and <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> doesn’t justify this design choice.</p>
    <p>An equivalence would inherit the <em>Throws</em> specification of <a href="https://eel.is/c++draft/format.functions#lib:vformat">[format.functions] <code class="highlight"><c- n>vformat</c-></code></a>,
 which is specified through <a href="https://eel.is/c++draft/format.err.report">[format.err.report] paragraph 1</a>.
-Future work may include explicitly stating that <code class="highlight"><c- n>vformat</c-></code> can throw <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bad_alloc</c-></code>,
-but this is not proposed here.</p>
+Indirectly, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> would be limited to <code class="highlight"><c- n>format_error</c-></code> (which is impossible for <code class="highlight"><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-></code>)
+and throwing an implementation-defined exception upon failure to allocate storage.</p>
    <h2 class="heading settled" data-level="2" id="proposed-wording"><span class="secno">2. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed wording is relative to <a data-link-type="biblio" href="#biblio-n4950" title="Working Draft, Standard for Programming Language C++">[N4950]</a> with the changes from <a data-link-type="biblio" href="#biblio-p2587r3" title="to_string or not to_string">[P2587R3]</a> applied.</p>
    <p>In subclause 23.4.5 <a href="http://eel.is/c++draft/string.conversions">[string.conversions]</a>,
