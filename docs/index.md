@@ -14,26 +14,26 @@ Audience: EWG-I, EWG
 Audience: LEWG-I, LEWG
 
 - [Latest](more-bitset-operations.html)
-- [P3103R0](more-bitset-operations-p3103r0.html)
 - [P3103R1](more-bitset-operations-p3103r1.html)
+- [P3103R0](more-bitset-operations-p3103r0.html)
 
 ## P3014: Bit permutations
 
 Audience: LEWG-I, LEWG
 
 - [Latest](bit-permutations.html)
-- [P3014R0](bit-permutations-p3104r0.html)
-- [P3014R1](bit-permutations-p3104r1.html)
 - [P3014R2](bit-permutations-p3104r2.html)
+- [P3014R1](bit-permutations-p3104r1.html)
+- [P3014R0](bit-permutations-p3104r0.html)
 
 ## P3105: `constexpr std::uncaught_exceptions()`
 
 Audience: LEWG-I, LEWG
 
 - [Latest](constexpr-uncaught-exceptions.html)
-- [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
-- [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
 - [P3105R2](constexpr-uncaught-exceptions-p3105r2.html)
+- [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
+- [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
 
 ## P3140: `std::int_least128_t`
 
