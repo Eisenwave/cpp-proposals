@@ -33,6 +33,7 @@ Audience: LEWG-I, LEWG
 - [Latest](constexpr-uncaught-exceptions.html)
 - [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
 - [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
+- [P3105R2](constexpr-uncaught-exceptions-p3105r2.html)
 
 ## P3140: `std::int_least128_t`
 

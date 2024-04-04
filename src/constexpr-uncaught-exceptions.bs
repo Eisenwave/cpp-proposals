@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: <code>constexpr std::uncaught_exceptions()</code>
 Shortname: P3105
-Revision: 1
+Revision: 2
 Status: P
-Date: 2024-03-06
+Date: 2024-04-04
 Group: WG21
 Audience: LEWGI, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -15,6 +15,13 @@ Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exceptio
 
 # Revision history # {#revision-history}
 
+## Changes since R1 ## {#changes-since-r1}
+
+- Add note on [[P3068R0]] feedback at Tokyo 2024.
+- Discuss the use of two feature-testing macros.
+- Discuss why `std::rethrow_exception` is not being marked `constexpr`.
+- Rename the "Overview" section to "Introduction" in line with WG21 conventions.
+
 ## Changes since R0 ## {#changes-since-r0}
 
 - Mention [[P3068R0]].
@@ -22,7 +29,8 @@ Abstract: This paper marks `std::uncaught_exceptions` and `std::current_exceptio
 - Add missing synopsis edits to [[#proposed-wording]].
 - Minor editorial fixes/improvements.
 
-# Overview # {#overview}
+
+# Introduction # {#overview}
 
 I propose to mark the function `std::uncaught_exceptions` `constexpr`.
 
@@ -37,6 +45,9 @@ If exceptions were throwable in constant expressions, marking these functions `c
 would simply be part of exception support.
 <b>However, these proposals is not a prerequisite to this proposal.</b>
 
+Note: [[P3068R0]]
+    [has been seen by EWG at Tokyo 2024](https://github.com/cplusplus/papers/issues/1754#issuecomment-2005809260)
+    but was not forwarded to CWG, largely due to the lack of implementation experience.
 
 # Motivation # {#motivation}
 
@@ -158,6 +169,48 @@ Therefore:
 - MSVC STL already defines all member function of `exception_ptr` as inline functions,
     and is also not affected.
 - libc++ would need to apply similar compatibility measures as libstdc++.
+
+
+# Design considerations # {#design-considerations}
+
+While the proposal is largely an "add `constexpr` proposal",
+there are still a few debateable aspects, discussed below.
+
+## Feature-testing ## {#feature-testing}
+
+The proposal currently proposes feature-testing through:
+- A new `__cpp_lib_constexpr_current_exception` for `std::current_exception`.
+- An update to the existing `__cpp_lib_uncaught_exceptions` macro.
+
+This is intuitive because the `uncaught_exceptions` macro wouldn't be used for feature-detection
+of `constexpr std::current_exception`.
+However, two ways of feature-testing for such a small proposal may be seen as excessive.
+
+Note: This design choice is currently awaiting feedback from SG10.
+
+## `std::rethrow_exception` ## {#rethrow-exception} 
+
+The proposal does not mark `std::rethrow_exception` `constexpr`.
+Without the ability to *actually* have exceptions during constant evaluation
+(as proposed by [[P3086R0]]), `std::rethrow_exception` would be an "always UB" function.
+Based on the function's preconditions, it is not possible to rethrow a null `exception_ptr`.
+
+Therefore, `std::rethrow_exception` is of little use during constant evaluation.
+Existing (common) code of the form
+```cpp
+if (p) std::rethrow_exception(p);
+```
+... can already be constant-evaluated.
+
+Marking it `constexpr` could be more easily justified if the proposal also altered the existing
+semantics to do nothing when rethrowing a null pointer;
+however, that is arguably undesirable.
+
+After all, such a change would encourage the pattern of omitting the `if (p)` part from the code above,
+which may harm readability since it suggests that rethrowing always happens, even if it only
+conditionally happens.
+Such a change would also be asymmetrical with `throw;`,
+which results in `std::terminate` being called if there is no current exception, not in a no-op.
 
 # Proposed wording # {#proposed-wording}
 
