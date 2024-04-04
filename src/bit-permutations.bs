@@ -49,7 +49,7 @@ del {
 
 ## Changes since R1 ## {#changes-since-r1}
 
-The paper has been seen in Tokyo 2024 with positive reception,
+The paper has been seen in Tokyo by SG18 with positive reception,
 except for the `*_bit_permutation` functions.
 These have been removed to strengthen consensus.
 
