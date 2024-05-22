@@ -14,6 +14,7 @@ Audience: EWG-I, EWG
 Audience: LEWG-I, LEWG
 
 - [Latest](more-bitset-operations.html)
+- [P3103R2](more-bitset-operations-p3103r2.html)
 - [P3103R1](more-bitset-operations-p3103r1.html)
 - [P3103R0](more-bitset-operations-p3103r0.html)
 

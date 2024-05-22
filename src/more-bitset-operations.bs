@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: More bitset operations
 Shortname: P3103
-Revision: 1
+Revision: 2
 Status: P
 Date: 2024-03-07
 Group: WG21
@@ -15,6 +15,11 @@ Abstract: This paper proposes adding a counterpart `std::bitset` member function
 </pre>
 
 # Revision history # {#revision-history}
+
+## Changes since R1 ## {#changes-since-r1}
+
+- Mentioned [[P3104R2]], now that it has been published.
+- Greatly expanded [[#design]] based on feedback from LEWGI.
 
 ## Changes since R0 ## {#changes-since-r0}
 
@@ -121,17 +126,99 @@ dedicated to the manipulation of bit sequences.
 
 # Design considerations # {#design}
 
-The naming of the member functions is based on the naming scheme in the `<bit>` header.
+The names and signatures of the proposed member functions is a mixture of
+`<bit>` function templates and the existing conventions of `bitset`.
+Sadly, it is impossible to be consistent with both parts of the standard library.
+For example, `<bit>` functions typically prefer `int` parameters for offsets,
+whereas `bitset` uses `size_t` virtually everywhere.
+`bitset` also has a very brief convention of `none()` or `all()`,
+where `<bit>` has a `has_single_bit` function.
+
+This proposal generally prefers local consistency, i.e. it is more important to
+be consistent with `bitset` than functions from a different part of the standard
+library, even if those distant functions are similar in purpose.
 
 ## `reverse` ## {#reverse}
 
-`reverse` is a notable exception, which does not yet exist in `<bit>`.
+`reverse` is a novel invention, not taken from `<bit>`.
+However, a `bit_reverse` counterpart is proposed in [[P3104R2]] "Bit permutations".
+
 This function is added because the method for reversing integers may be tremendously faster than
 doing so bit by bit.
 ARM has a dedicated `RBIT` instruction for reversing bits, which could be leveraged.
 
-I have written a not yet published proposal [[Schultke1]]
-which adds a corresponding bit-reversal function to `<bit>`.
+### In-place reversal vs. reverse-copy ### {#in-place-reversal}
+
+I propose `reverse` to modify a bitset in-place rather than creating a reversed copy.
+The interface of `bitset<N>` can already accommodate large `N`, and use cases with large `N` exist.
+
+Compilers also should not be expected to find the optimization from a `std::ranges::reverse_copy`
+with later assignment to an in-place `std::reverse`.
+
+<div class=example>
+In [[CompilerExplorer1]], Clang does not find the optimization from:
+
+```cpp
+void reverse_in_place(bitset& x) {
+    x = x.reverse_copy();
+}
+```
+... to the in-place counterpart for a 4096-bit `bitset`.
+Instead, it allocates 512 bytes of stack space,
+performs a reverse-copy, and `memcpy`s the result back into `x`.
+</div>
+
+I believe that all operations of a `bitset<N>` with large `N` should remain usable,
+and copying the whole set for an operation may be unacceptable due to danger of overflowing the stack
+and/or performance considerations.
+
+A perfect optimization would be very difficult due to substantial differences between the `reverse`
+and `reverse_copy` algorithms.
+
+
+### `reverse(bitset)` ### {#reverse-free-function}
+
+Instead of a `reverse` member function, it would also be possible to add an
+overload for the `reverse` algorithm which accepts a `bitset`.
+There exists precedent (e.g. `std::move`),
+although this is not the first design which comes to mind.
+
+**I do not oppose this idea; LEWG needs to vote on this.**
+
+
+## Common interface with `<bit>` ## {#common-interface}
+
+Another considered alternative is the creation of a common interface with the
+function templates of `<bit>`.
+This would mean adding overloads for say, `countl_zero` and other functions
+which would accept `bitset` in addition to unsigned integers.
+
+This proposal does not pursue this design for multiple reasons:
+
+1. The use case of this is unclear.
+    I have personally never needed to write generic code which does bit manipulation
+    on either integers or bitsets, and don't know of any code base where this is done.
+    
+2. There is too much friction in the design of `bitset` and `<bit>`, such as the use of
+    `size_t` vs. `int`, the use of exceptions vs. preconditions, different naming schemes, etc.
+
+3. The functions in `<bit>` are all pure, but for `bitset<N>`,
+    copying it for the purpose of function calls and returning modified copies
+    becomes impractical for large `N`.
+    See also [[#in-place-reversal]].
+
+4. A common interface does not eliminate the need for new member functions.
+    It would be very surprising to users if some functionality 
+    was only available through `<bit>` (e.g. `countr_zero`)
+    whereas other functionality was available both as a member function and as a `<bit>` function
+    (e.g. `popcount`/`.count()`).
+    Such a design would be inconsistent, and nonsensical when taken out of its historical context.
+
+5. A future proposal could still create a common interface for `<bit>` and `bitset`.
+    The addition of member functions adds no obstacles in this regard.
+
+Also note that most of these issues equally apply to sharing a common interface with `std::simd`.
+
 
 ## Counting overloads ## {#counting-overloads}
 
@@ -142,6 +229,75 @@ This is preferable to a single member function with a defaulted argument because
 have different `noexcept` specifications.
 The overloads which take no arguments have a wide contract and can be marked `noexcept`,
 whereas the overloads taking `size_t` may throw `out_of_range`.
+
+### Alternative designs facilitating iteration ### {#alternative-iteration}
+
+Besides the proposed design for `countl_zero`,
+there are at least two alternatives, mainly motivated by simplifying iteration.
+As mentioned above, we can iterate over all one-bits of a `bitset` as possible.
+
+```cpp
+bitset<128> bits;
+for (size_t i = 0; i != 128; ++i) {
+    i += bits.countr_zero(i);
+    if (i == 128) break;
+    // ...
+}
+```
+
+**LEWG should vote on whether to go ahead with the current design or prefer one of the alternatives below.**
+
+#### Infallible `countr_zero` #### {#infallible-countr-zero}
+
+If `countr_zero` could not throw but returned zero on an index out of bounds,
+this could be shortened to:
+```cpp
+bitset<128> bits;
+for (size_t i = 0; i += bits.countr_zero(i) != 128; ++i) {
+    // ...
+}
+```
+An infallible `countr_zero` would also cater to users who do not want to use
+exceptions, whereas the current proposal perpetuates the existing exception-based design.
+
+#### `find_next_one` #### {#find-next-one}
+
+It would be possible to add a member function which increments and advances
+to the next bit in a one operation.
+```cpp
+bitset<128> bits;
+for (size_t i = 0; (i = bits.find_next_one(i)) != bitset<N>::npos; ) {
+    // ...
+}
+```
+A possible issue is that this operation is extremely specialized towards iteration.
+
+As with `countr_zero`, it also needs be considered whether `find_next_one`
+should handle a bad index by throwing an exception, if LEWG prefers this kind of function.
+
+#### No novel overloads #### {#no-novel-overload}
+
+It is also possible to drop the overloads taking `size_t` from this proposal.
+Perhaps a future proposal focused on iteration for `bitset` could approach the
+issue of facilitating iteration.
+This was most recently attempted in [[P0161R0]].
+
+However, such functions are well within the scope of this proposal, especially if they share
+a name with other proposed members, and they do not pose a substantial design/wording hurdle.
+In short, we may as well do it.
+
+### New overloads for `<bit>`? ### {#bit-counting-overloads}
+
+The overloads taking `size_t` don't need a counterpart in `<bit>` because they are very easy to
+emulate:
+```cpp
+int countl_zero(std::unsigned_integral auto x, int off) {
+    return std::countl_zero(x >> off);
+}
+```
+
+I consider these too trivial to justify adding such convenience functions to `<bit>`,
+even if it would create more symmetry between `bitset` and `<bit>`.
 
 
 # Impact on existing code # {#impact-on-existing-code}
@@ -386,11 +542,10 @@ Note: The use of a hypothetical integer type in the specification of `rotl` and 
         "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html",
         "publisher": "WG21"
     },
-    "Schultke1": {
+    "CompilerExplorer1": {
         "authors": ["Jan Schultke"],
-        "title": "Bit permutations",
-        "href": "https://eisenwave.github.io/cpp-proposals/bit-permutations.html",
-        "publisher": "GitHub Pages"
+        "title": "Example of in-place reversal vs. reverse-copy optimization",
+        "href": "https://godbolt.org/z/KrPsrh9bM"
     }
 }
 </pre>
