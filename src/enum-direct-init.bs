@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
 Shortname: P3087
-Revision: 0
+Revision: 1
 Status: P
-Date: 2024-01-16
+Date: 2024-05-29
 Group: WG21
 Audience: EWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -14,8 +14,15 @@ Abstract: This paper proposes allowing initializing scoped enumeration types usi
           direct-initialization in those cases where direct-list-initialization is already possible.
 </pre>
 
-Introduction {#intro}
-=====================
+# Revision history # {#revision-history}
+
+## Changes since R0 ## {#changes-since-r0}
+
+- Discuss alternative designs.
+- Strengthen rationale for proposed design.
+
+
+# Introduction # {#intro}
 
 Currently, the following code is ill-formed:
 ```cpp
@@ -28,8 +35,7 @@ non-list-direct-initialization in this case.
 I propose to make this code well-formed.
 
 
-Motivation and scope {#motivation-and-scope}
-============================================
+# Motivation and scope # {#motivation-and-scope}
 
 During the discussion leading up to this proposal, multiple developers were bewildered by the
 status quo.
@@ -40,7 +46,11 @@ that intuition.
 
 It's confusing that `static_cast<std::byte>(0)` and `std::byte(0)` are permitted, but
 `std::byte b(0)` and `new std::byte(0)` are not.
-This makes the language less teachable.
+It is difficult to come up with an simple and intuitive rule that would explain
+why this is the case; at least it would require pointing out the equivalence
+of functional notation explicit conversions and "C-style casts" in the specific
+case where the initializer is a parenthesized single expressions.
+I see this as far from teachable.
 
 [[P0960R3]] proposed to expand parenthesized initialization capabilities for aggregate types.
 That proposal was motivated by perfect forwarding of aggregate types.
@@ -55,8 +65,7 @@ It did not discuss whether non-list-direct-initialization of enumeration types s
 more permissive in tandem.
 
 
-Impact on existing code {#impact-on-existing-code}
-==================================================
+# Impact on existing code # {#impact-on-existing-code}
 
 This code only makes previously ill-formed initialization valid.
 Naturally, this impacts any uses of expression testing (SFINAE, requires-expression, etc.).
@@ -66,14 +75,13 @@ test for validity of `T t(expr)` are impacted.
 
 
 
-Design considerations {#design}
-===============================
+# Design considerations # {#design}
 
 This proposal largely adopts the rules for direct-list-initialization.
 It merely drops the requirement of non-narrowing conversions.
 
-Fixed underlying types {#fixed-underlying-types}
-------------------------------------------------
+## Fixed underlying types ## {#fixed-underlying-types}
+
 As with direct-list-initialization, a fixed underlying type should be required.
 Enumerations without fixed underlying types act as symbolic constants in the program, or are used
 as a C-compatible non-macro way to define constants.
@@ -81,18 +89,17 @@ There is no motivation to expand direct-initialization rules for these types.
 
 Note: All scoped enumerations implicitly have an `int` (or wider integer) fixed underlying type.
 
-Floating-point initializers {#floating-point-initializers}
-----------------------------------------------------------
+## Floating-point initializers ## {#floating-point-initializers}
+
 The proposal seeks to make the following code valid:
 ```cpp
 std::byte b(0.f);
 ```
 This construct is undesirable, but necessary to achieve the
 *"at least as permissive as direct-list-initialization"* semantics.
-CWG should decide whether this construct should be permitted.
 
-Implicit conversions {#implicit-conversions}
---------------------------------------------
+## Implicit conversions ## {#implicit-conversions}
+
 This proposal does not seek to make implicit conversions from scalar to enumeration types possible.
 The following code is and should remain ill-formed:
 ```cpp
@@ -104,15 +111,60 @@ Allowing implicit conversion to enumerations in general would compromise the typ
 enumerations offer.
 Direct-initialization is a very specific case where intent is relatively clear.
 
+## Considered alternatives ## {#considered-alternatives}
 
-Implementation experience {#implementation-experience}
-======================================================
+Besides the proposed mechanics, there are a few alternatives, which are compared below:
+
+1. Leave everything as is (status quo).
+2. Make parenthesized initialization behave exactly as list initialization.
+3. Restrict specific conversions (e.g. disallow floating-point to enumeration).
+
+<table>
+<tr>
+    <th>Option</th><th>`std::byte b(0);`</th><th>`std::byte b(-1);`</th><th>`std::byte b(0.f);`</th>
+</tr>
+<tr>
+    <td>Status quo</td><td>❌</td><td>❌</td><td>❌</td>
+</tr>
+<tr>
+    <td>Like list-init</td><td>✔️</td><td>❌</td><td>❌</td>
+</tr>
+<tr>
+    <td>Restrict some</td><td>✔️</td><td>✔️</td><td>❌</td>
+</tr>
+<tr>
+    <td>Proposed</td><td>✔️</td><td>✔️</td><td>✔️</td>
+</tr>
+</table>
+
+## Radical permissiveness ## {#radical-permissiveness}
+
+The proposed design is radically permissive, especially noting [[#considered-alternatives]].
+This comes with a certain potential for writing bugs.
+
+However, any restriction beyond the current design would
+somewhat defeat the purpose of this proposal.
+It would be novel design that is inconsistent with how non-list-direct-initialization usually works,
+which is the problem we're trying to solve.
+
+Furthermore, these pitfalls could be seen as quality-of-implementation issues, not as language issues.
+It is possible to emit compiler warnings when enum initialization is performed that would
+be considered narrowing.
+
+Last but not least, the permissiveness can be justified by considering that
+direct-initialization is a rare style that implies an intent to opt into such mechanics.
+For example, if scoped enumerations did not exist and were emulated using classes,
+this would likely imply having a constructor of the form `explicit Enum(underlying)`,
+which could also only be used with direct-initialization.
+Therefore, the current proposal makes enumerations more symmetrical with class types.
+
+
+# Implementation experience # {#implementation-experience}
 
 None.
 
 
-Proposed wording {#proposed-wording}
-====================================
+# Proposed wording # {#proposed-wording}
 
 The proposed changes are relative to the working draft of the standard as of [[!N4917]].
 

@@ -7,6 +7,7 @@ Author: Jan Schultke
 Audience: EWG-I, EWG
 
 - [Latest](enum-direct-init.html)
+- [P3087R1](enum-direct-init-p3087r1.html)
 - [P3087R0](enum-direct-init-p3087r0.html)
 
 ## P3103: More bitset operations
