@@ -64,3 +64,7 @@ Audience: LEWG-I, LEWG
 ## NP: `std::to_signed`, `std::to_unsigned`
 
 - [Latest](to-signed-unsigned.html)
+
+## NP: Define `offsetof` semantics in the C++ standard
+
+- [Latest](offsetof.html)

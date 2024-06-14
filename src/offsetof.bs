@@ -1,0 +1,192 @@
+<pre class='metadata'>
+Title: Define `offsetof` semantics in the C++ standard
+Shortname: Pxxxx
+Revision: 0
+Status: NP
+Date: 2024-06-14
+Group: WG21
+Audience: EWG
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/clmul.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.bs)
+Markup Shorthands: markdown on
+Abstract: The delegation of the `offsetof` macro semantics to C is problematic.
+          I propose to re-define them in C++ without breaking changes to existing code.
+</pre>
+
+
+# Introduction # {#introduction}
+
+Currently, C++ delegates the semantics of `offsetof` to the C standard,
+as explained in
+<a href="https://eel.is/c++draft/support.types.layout#1">\[support.types.layout\] paragraph 1</a>:
+
+> The macro `offsetof(type, member-designator)` has the same semantics
+> as the corresponding macro in the C standard library header `<stddef.h>`,
+> but accepts a restricted set of type arguments in this document. [...]
+
+Further restrictions and clarifications follow.
+However, even with those additional clarifications,
+multiple problems arise with the C standard wording when pulled into C++ like this:
+
+## CWG2784. Unclear definition of *member-designator* for `offsetof` ## {#cwg2784}
+
+[[CWG2784]] raises the question whether the following code is valid:
+```cpp
+struct S {
+  int a;
+};
+int x = offsetof(S, S::a);
+```
+
+C requires from the user
+(see [7.21 paragraph 3](https://www.iso-9899.info/n3047.html#7.21p3))
+that for the macro <code>offsetof(type, <i>member-designator</i>)</code>,
+given the declaration `static type t;`:
+
+> the expression `&(t. member-designator)` evaluates to an address constant.
+
+Since there is no *qualified-id* in C,
+it is unclear whether `S::a` can be used as a *member-designator*.
+MSVC and GCC support this, but clang rejects the code.
+
+All in all, CWG2784 raises three questions:
+- Is a *qualified-id* allowed to appear in a *member-designator*?
+- Is a *template-id* allowed to appear in a *member-designator*?
+- Is an `offsetof` expression a core constant expression?
+
+EWG is soliciting a paper to thoroughly explore the design space.
+
+
+## Interaction with overloaded `&` operator ## {#interaction-with-overloaded-addressof}
+
+The C wording is also problematic because as stated above,
+C requires from the user that
+
+> `&(t. member-designator)` evaluates to an address constant.
+
+It is unclear from normative wording whether the `&` refers to the non-overloaded
+`&` operator in C, or the potentially overloaded `&` operator in C++.
+
+<a href="https://eel.is/c++draft/support.types.layout#footnote-165">[support.types.layout] footnote 165</a>
+states that
+
+> offsetof is required to work as specified even if unary `operator&` is overloaded for any of the types involved.
+
+However, this doesn't clearly answer the question of what `&`
+in the C wording means when pulled into C++.
+It also isn't normative, and seemingly unsupported by any normative wording.
+
+## Interaction with non-`public` members ## {#interaction-with-non-public-members}
+
+As stated above, C requires that
+
+> `&(t. member-designator)` evaluates to an address constant.
+
+If this expression has semantics defined in C
+(without operator overloading and access control),
+then a *member-designator* which designates a `private` member should be accepted as well.
+
+However, MSVC, GCC, and Clang reject `offsetof(type, m)` where `m` is a private member.
+
+Note: A class can be standard-layout as long as *all* non-static data members
+    have the same access control.
+
+## Undefined behavior for non-default-constructible classes ## {#ub-default-constructible}
+
+As stated above, the C standard describes restrictions given the declaration
+`static type t;`.
+Obviously, this would not work for non-default-constructible types,
+which suggests that `offsetof` has undefined behavior for any class type
+that has no accessible default constructor.
+
+
+# Impact # {#impact}
+
+# Design Considerations # {#design-considerations}
+
+The general approach is to re-define `offsetof` entirely in C++.
+The C wording is simply unfit to be pulled into C++ as it is now;
+there are too many open questions resulting from this.
+
+Furthermore, the design is is essentially for `offsetof(T, m)`
+to give the user the offset of `t.m` (which must be well-formed),
+where `t` is an lvalue of type `T`,
+and `m` is an *unqualified-id* or *qualified-id* which designates
+a non-static data member.
+
+This naturally answers whether a *qualified-id* is allowed,
+what role access control plays,
+and eliminates questions regarding the overloaded `&` operator.
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: underlined;
+}
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+Modify
+<a href="https://eel.is/c++draft/diff.offsetof#lib:offsetof">[support.types.layout] paragraph 1</a>
+as follows:
+
+<blockquote>
+The macro <code>offsetof(<i>type</i>, <i>member-designator</i>)</code>
+<del>
+has the same semantics as the corresponding macro in the C standard library header <stddef.h>, but accepts a restricted set of type arguments in this document.
+</del>
+<ins>
+expands to a prvalue constant expression of type `size_t`,
+the value of which is the offset in bytes, to the subobject
+designated by <code><i>member-designator</i></code>,
+from the first byte of any object of type <code><i>type</i></code>.
+The expresssion is well-formed only if
+<ul>
+    <li><code><i>type</i></code> is a <i>type-id</i> which denotes a complete class type,</li>
+    <li><code><i>member-designator</i></code> is a *qualified-id* or *unqualified-id*, and</li>
+    <li>given an lvalue `t` of type <code><i>type</i></code>,
+    <code>t.<i>member-designator</i></code> is not a bit-field and
+    designates ([expr.ref]) a member subobject of `t`.</li>
+</ul>
+</ins>
+The expression <del><code>offsetof(<i>type</i>, <i>member-designator</i>)</code></del>
+is never type-dependent and it is value-dependent if and only if <code><i>type</i></code> is dependent.
+<del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
+No operation invoked by the <del>offsetof macro</del><ins>expression</ins> shall throw an exception
+and <code>noexcept(offsetof(<i>type</i>, <i>member-designator</i>))</code> shall be true.
+</blockquote>
+
+
+In Annex C, modify subclause
+<a href="https://eel.is/c++draft/diff.offsetof#lib:offsetof">[diff.offsetof] paragraph 1</a>
+as follows:
+
+<blockquote>
+The macro offsetof, defined in <cstddef>,
+accepts a restricted set of type arguments in C++<del>.</del>
+<ins>, and supports <code><i>member-designator</i></code>s which would not be valid in C.</ins>
+Subclause [support.types.layout] describes the change.
+</blockquote>
+
+
+<pre class=biblio>
+{
+}
+</pre>
