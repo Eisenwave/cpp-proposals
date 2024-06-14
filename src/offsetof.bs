@@ -187,7 +187,7 @@ from the first byte of any object of type <code><i>type</i></code>.</ins>
 </pre>
 
 <ins>
-The expresssion is well-formed only if
+The expression is well-formed only if
 <code><i>type</i></code> is a <i>type-id</i> which denotes a complete class type
 and given an lvalue `t` of type <code><i>type</i></code>,
 <ul>
@@ -206,9 +206,9 @@ The expression offsetof(<i>type</i>, <i>member-designator</i>)</code>
 <del>is never type-dependent
 and it is value-dependent if and only if <code><i>type</i></code> is dependent.</del>
 <ins>is type-dependent or value-dependent when the expression
-<code>t.<i>member-designator</i></code> is type-dependent or value-dependent, respectively.
+<code>t.<i>member-designator</i></code> is type-dependent or value-dependent, respectively.</ins>
 <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
-No operation invoked by the <del>offsetof macro</del><ins>expression</ins> shall throw an exception
+No operation invoked by the offsetof macro shall throw an exception
 and <code>noexcept(offsetof(<i>type</i>, <i>member-designator</i>))</code> shall be true.
 </blockquote>
 

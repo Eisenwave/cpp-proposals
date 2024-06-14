@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bc7b1b263f8ccacebda077abbce0bbf83682363f" name="revision">
+  <meta content="4544d32d9936959d0da08a272b891e5f377377ec" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2263,11 +2263,11 @@ from the first byte of any object of type <code class="highlight"><i><c- n>type<
     <i><c- n>unqualified</c-><c- o>-</c-><c- n>id</c-></i>
     <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>.</c-> <i><c- n>qualified</c-><c- o>-</c-><c- n>id</c-></i>
     <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>.</c-> <i><c- n>unqualified</c-><c- o>-</c-><c- n>id</c-></i>
-    <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>[</c-> <i><c- n>expression</c-><c- o>-</c-><c- n>list</c-></i> <c- p>]</c->
+    <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>[</c-> <i><c- n>assignment</c-><c- o>-</c-><c- n>expression</c-></i> <c- p>]</c->
 </ins>
 </pre>
     <ins>
-      The expresssion is well-formed only if <code class="highlight"><i><c- n>type</c-></i></code> is a <i>type-id</i> which denotes a complete class type
+      The expression is well-formed only if <code class="highlight"><i><c- n>type</c-></i></code> is a <i>type-id</i> which denotes a complete class type
 and given an lvalue <code class="highlight"><c- n>t</c-></code> of type <code class="highlight"><i><c- n>type</c-></i></code>, 
      <ul>
       <li><code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is not a bit-field,
@@ -2283,15 +2283,10 @@ and given an lvalue <code class="highlight"><c- n>t</c-></code> of type <code cl
      The expression offsetof(<i>type</i>, <i>member-designator</i>) 
     <del>is never type-dependent
 and it is value-dependent if and only if <code class="highlight"><i><c- n>type</c-></i></code> is dependent.</del>
-    <ins>
-     is type-dependent or value-dependent when the expression <code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is type-dependent or value-dependent, respectively. 
-     <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
-      No operation invoked by the 
-     <del>offsetof macro</del>
-     <ins>expression</ins>
-      shall throw an exception
+    <ins>is type-dependent or value-dependent when the expression <code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is type-dependent or value-dependent, respectively.</ins>
+    <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
+     No operation invoked by the offsetof macro shall throw an exception
 and <code class="highlight"><c- k>noexcept</c-><c- p>(</c-><c- n>offsetof</c-><c- p>(</c-><i><c- n>type</c-></i><c- p>,</c-> <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i><c- p>))</c-></code> shall be true. 
-    </ins>
    </blockquote>
    <p>In Annex C, modify subclause <a href="https://eel.is/c++draft/diff.offsetof#lib:offsetof">[diff.offsetof] paragraph 1</a> as follows:</p>
    <blockquote>
