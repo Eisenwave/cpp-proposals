@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="19a3179e3c5814c64de27721783c2aa84f6f5d0d" name="revision">
+  <meta content="bc7b1b263f8ccacebda077abbce0bbf83682363f" name="revision">
 <style>
 .indent {
     margin-left: 2em;
@@ -2144,8 +2144,9 @@ I propose to re-define them in C++ without breaking changes to existing code.</p
       <li><a href="#ub-default-constructible"><span class="secno">1.4</span> <span class="content">Undefined behavior for non-default-constructible classes</span></a>
      </ol>
     <li><a href="#impact"><span class="secno">2</span> <span class="content">Impact</span></a>
-    <li><a href="#design-considerations"><span class="secno">3</span> <span class="content">Design Considerations</span></a>
-    <li><a href="#proposed-wording"><span class="secno">4</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#implementation-experience"><span class="secno">3</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#design-considerations"><span class="secno">4</span> <span class="content">Design Considerations</span></a>
+    <li><a href="#proposed-wording"><span class="secno">5</span> <span class="content">Proposed wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2222,47 +2223,75 @@ Obviously, this would not work for non-default-constructible types,
 which suggests that <code class="highlight"><c- n>offsetof</c-></code> has undefined behavior for any class type
 that has no accessible default constructor.</p>
    <h2 class="heading settled" data-level="2" id="impact"><span class="secno">2. </span><span class="content">Impact</span><a class="self-link" href="#impact"></a></h2>
-   <h2 class="heading settled" data-level="3" id="design-considerations"><span class="secno">3. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
+   <h2 class="heading settled" data-level="3" id="implementation-experience"><span class="secno">3. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
+   <p>Note that the current implemented behavior historically originated from the
+C implementation:</p>
+<pre class="language-cpp highlight"><c- cp>#define offsetof(T,m) ((size_t)&amp;((T*)0)->m) </c->
+</pre>
+   <p>However, this doesn’t handle overloaded <code class="highlight"><c- o>&amp;</c-></code> operators properly (among other issues),
+so MSVC, GCC, and Clang now delegate this to <code class="highlight"><c- n>__builtin_offsetof</c-><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- n>m</c-><c- p>)</c-></code>.</p>
+   <p><code class="highlight"><c- n>offsetof</c-></code> is a core language feature masquerading as a library feature,
+and when considering design questions (<a href="#design-considerations">§ 4 Design Considerations</a>)
+we are not restricted by what can be self-hosted in C++.</p>
+   <h2 class="heading settled" data-level="4" id="design-considerations"><span class="secno">4. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>The general approach is to re-define <code class="highlight"><c- n>offsetof</c-></code> entirely in C++.
 The C wording is simply unfit to be pulled into C++ as it is now;
 there are too many open questions resulting from this.</p>
-   <p>Furthermore, the design is is essentially for <code class="highlight"><c- n>offsetof</c-><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- n>m</c-><c- p>)</c-></code> to give the user the offset of <code class="highlight"><c- n>t</c-><c- p>.</c-><c- n>m</c-></code> (which must be well-formed),
+   <p>For this proposal, the design is is essentially for <code class="highlight"><c- n>offsetof</c-><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- n>m</c-><c- p>)</c-></code> to give the user the offset of <code class="highlight"><c- n>t</c-><c- p>.</c-><c- n>m</c-></code> (which must be well-formed),
 where <code class="highlight"><c- n>t</c-></code> is an lvalue of type <code class="highlight"><c- n>T</c-></code>,
 and <code class="highlight"><c- n>m</c-></code> is an <em>unqualified-id</em> or <em>qualified-id</em> which designates
 a non-static data member.</p>
    <p>This naturally answers whether a <em>qualified-id</em> is allowed,
 what role access control plays,
 and eliminates questions regarding the overloaded <code class="highlight"><c- o>&amp;</c-></code> operator.</p>
-   <h2 class="heading settled" data-level="4" id="proposed-wording"><span class="secno">4. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposed-wording"><span class="secno">5. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>Modify <a href="https://eel.is/c++draft/diff.offsetof#lib:offsetof">[support.types.layout] paragraph 1</a> as follows:</p>
    <blockquote>
      The macro <code class="highlight"><c- n>offsetof</c-><c- p>(</c-><i><c- n>type</c-></i><c- p>,</c-> <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i><c- p>)</c-></code> 
     <del>
       has the same semantics as the corresponding macro in the C standard library header 
-     <stddef.h>, but accepts a restricted set of type arguments in this document. </stddef.h>
+     <stddef.h>,
+but accepts a restricted set of type arguments in this document. </stddef.h>
     </del>
-    <ins>
-      expands to a prvalue constant expression of type <code class="highlight"><c- b>size_t</c-></code>,
+    <ins> expands to a prvalue constant expression of type <code class="highlight"><c- b>size_t</c-></code>,
 the value of which is the offset in bytes, to the subobject
 designated by <code class="highlight"><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code>,
-from the first byte of any object of type <code class="highlight"><i><c- n>type</c-></i></code>.
-The expresssion is well-formed only if 
+from the first byte of any object of type <code class="highlight"><i><c- n>type</c-></i></code>.</ins>
+<pre class="highlight"><ins>
+<i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i><c- o>:</c->
+    <i><c- n>qualified</c-><c- o>-</c-><c- n>id</c-></i>
+    <i><c- n>unqualified</c-><c- o>-</c-><c- n>id</c-></i>
+    <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>.</c-> <i><c- n>qualified</c-><c- o>-</c-><c- n>id</c-></i>
+    <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>.</c-> <i><c- n>unqualified</c-><c- o>-</c-><c- n>id</c-></i>
+    <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i> <c- p>[</c-> <i><c- n>expression</c-><c- o>-</c-><c- n>list</c-></i> <c- p>]</c->
+</ins>
+</pre>
+    <ins>
+      The expresssion is well-formed only if <code class="highlight"><i><c- n>type</c-></i></code> is a <i>type-id</i> which denotes a complete class type
+and given an lvalue <code class="highlight"><c- n>t</c-></code> of type <code class="highlight"><i><c- n>type</c-></i></code>, 
      <ul>
-      <li><code class="highlight"><i><c- n>type</c-></i></code> is a <i>type-id</i> which denotes a complete class type,
-      <li><code class="highlight"><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is a <em>qualified-id</em> or <em>unqualified-id</em>, and
-      <li>given an lvalue <code class="highlight"><c- n>t</c-></code> of type <code class="highlight"><i><c- n>type</c-></i></code>, <code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is not a bit-field and
-    designates ([expr.ref]) a member subobject of <code class="highlight"><c- n>t</c-></code>.
+      <li><code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is not a bit-field,
+      <li><code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> designates ([expr.ref]) a member subobject of <code class="highlight"><c- n>t</c-></code> (directly or indirectly)
+    or array element thereof,
+      <li>for any use of the subscript operator within <i>member-designator</i>,
+    the left operand shall be of of array type and
+    shall designate a member subobject of <code class="highlight"><c- n>t</c-></code> (directly or indirectly)
+    or array element thereof,
+    and the right operand shall be an integral constant expression ([expr.const]).
      </ul>
     </ins>
-     The expression 
-    <del><code class="highlight"><c- n>offsetof</c-><c- p>(</c-><i><c- n>type</c-></i><c- p>,</c-> <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i><c- p>)</c-></code></del>
-     is never type-dependent and it is value-dependent if and only if <code class="highlight"><i><c- n>type</c-></i></code> is dependent. 
-    <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
-     No operation invoked by the 
-    <del>offsetof macro</del>
-    <ins>expression</ins>
-     shall throw an exception
+     The expression offsetof(<i>type</i>, <i>member-designator</i>) 
+    <del>is never type-dependent
+and it is value-dependent if and only if <code class="highlight"><i><c- n>type</c-></i></code> is dependent.</del>
+    <ins>
+     is type-dependent or value-dependent when the expression <code class="highlight"><c- n>t</c-><c- p>.</c-><i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i></code> is type-dependent or value-dependent, respectively. 
+     <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
+      No operation invoked by the 
+     <del>offsetof macro</del>
+     <ins>expression</ins>
+      shall throw an exception
 and <code class="highlight"><c- k>noexcept</c-><c- p>(</c-><c- n>offsetof</c-><c- p>(</c-><i><c- n>type</c-></i><c- p>,</c-> <i><c- n>member</c-><c- o>-</c-><c- n>designator</c-></i><c- p>))</c-></code> shall be true. 
+    </ins>
    </blockquote>
    <p>In Annex C, modify subclause <a href="https://eel.is/c++draft/diff.offsetof#lib:offsetof">[diff.offsetof] paragraph 1</a> as follows:</p>
    <blockquote>

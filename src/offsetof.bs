@@ -103,13 +103,28 @@ that has no accessible default constructor.
 
 # Impact # {#impact}
 
+# Implementation experience # {#implementation-experience}
+
+Note that the current implemented behavior historically originated from the
+C implementation:
+```cpp
+#define offsetof(T,m) ((size_t)&((T*)0)->m) 
+```
+However, this doesn't handle overloaded `&` operators properly (among other issues),
+so MSVC, GCC, and Clang now delegate this to `__builtin_offsetof(T, m)`.
+
+`offsetof` is a core language feature masquerading as a library feature,
+and when considering design questions ([[#design-considerations]])
+we are not restricted by what can be self-hosted in C++.
+
+
 # Design Considerations # {#design-considerations}
 
 The general approach is to re-define `offsetof` entirely in C++.
 The C wording is simply unfit to be pulled into C++ as it is now;
 there are too many open questions resulting from this.
 
-Furthermore, the design is is essentially for `offsetof(T, m)`
+For this proposal, the design is is essentially for `offsetof(T, m)`
 to give the user the offset of `t.m` (which must be well-formed),
 where `t` is an lvalue of type `T`,
 and `m` is an *unqualified-id* or *qualified-id* which designates
@@ -118,6 +133,7 @@ a non-static data member.
 This naturally answers whether a *qualified-id* is allowed,
 what role access control plays,
 and eliminates questions regarding the overloaded `&` operator.
+
 
 # Proposed wording # {#proposed-wording}
 
@@ -150,24 +166,47 @@ as follows:
 <blockquote>
 The macro <code>offsetof(<i>type</i>, <i>member-designator</i>)</code>
 <del>
-has the same semantics as the corresponding macro in the C standard library header <stddef.h>, but accepts a restricted set of type arguments in this document.
+has the same semantics as the corresponding macro in the C standard library header <stddef.h>,
+but accepts a restricted set of type arguments in this document.
 </del>
 <ins>
 expands to a prvalue constant expression of type `size_t`,
 the value of which is the offset in bytes, to the subobject
 designated by <code><i>member-designator</i></code>,
-from the first byte of any object of type <code><i>type</i></code>.
+from the first byte of any object of type <code><i>type</i></code>.</ins>
+
+<pre>
+<ins>
+<i>member-designator</i>:
+    <i>qualified-id</i>
+    <i>unqualified-id</i>
+    <i>member-designator</i> . <i>qualified-id</i>
+    <i>member-designator</i> . <i>unqualified-id</i>
+    <i>member-designator</i> [ <i>assignment-expression</i> ]
+</ins>
+</pre>
+
+<ins>
 The expresssion is well-formed only if
+<code><i>type</i></code> is a <i>type-id</i> which denotes a complete class type
+and given an lvalue `t` of type <code><i>type</i></code>,
 <ul>
-    <li><code><i>type</i></code> is a <i>type-id</i> which denotes a complete class type,</li>
-    <li><code><i>member-designator</i></code> is a *qualified-id* or *unqualified-id*, and</li>
-    <li>given an lvalue `t` of type <code><i>type</i></code>,
-    <code>t.<i>member-designator</i></code> is not a bit-field and
-    designates ([expr.ref]) a member subobject of `t`.</li>
+    <li><code>t.<i>member-designator</i></code> is not a bit-field,</li>
+    <li><code>t.<i>member-designator</i></code>
+    designates ([expr.ref]) a member subobject of `t` (directly or indirectly)
+    or array element thereof,</li>
+    <li>for any use of the subscript operator within <i>member-designator</i>,
+    the left operand shall be of of array type and
+    shall designate a member subobject of `t` (directly or indirectly)
+    or array element thereof,
+    and the right operand shall be an integral constant expression ([expr.const]).</li>
 </ul>
 </ins>
-The expression <del><code>offsetof(<i>type</i>, <i>member-designator</i>)</code></del>
-is never type-dependent and it is value-dependent if and only if <code><i>type</i></code> is dependent.
+The expression offsetof(<i>type</i>, <i>member-designator</i>)</code>
+<del>is never type-dependent
+and it is value-dependent if and only if <code><i>type</i></code> is dependent.</del>
+<ins>is type-dependent or value-dependent when the expression
+<code>t.<i>member-designator</i></code> is type-dependent or value-dependent, respectively.
 <del>The result of applying the offsetof macro to a static data member or a function member is undefined.</del>
 No operation invoked by the <del>offsetof macro</del><ins>expression</ins> shall throw an exception
 and <code>noexcept(offsetof(<i>type</i>, <i>member-designator</i>))</code> shall be true.
