@@ -1,11 +1,11 @@
 <pre class='metadata'>
 Title: The Oxford variadic comma
 Shortname: P3176
-Revision: 0
-Status: NP
-Date: 2024-03-07
+Revision: 1
+Status: P
+Date: 2024-11-22
 Group: WG21
-Audience: EWGI
+Audience: CWG
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/oxford-variadic-comma.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/oxford-variadic-comma.bs)
@@ -17,6 +17,15 @@ Abstract: Deprecate ellipsis parameters without a preceding comma.
 
 Note: In this proposal, the term *ellipsis parameter* refers to non-template
 variadic parameters, i.e. "C-style varargs", i.e. as in `(/* */, ...)`.
+
+# Revision history # {#revisions}
+
+## Changes since R0 ## {#since-r0}
+
+- rebase on [[!N4981]]
+- inline "Editorial changes" and "Normative changes" subsections in [[#proposed-wording]]
+- reorder proposed expansions of *parameter-declaration-clause*
+- update an existing paragraph instead of adding a new one
 
 # Introduction # {#introduction}
 
@@ -247,65 +256,51 @@ del {
 }
 </style>
 
-The proposed wording is relative to [[!N4950]].
-
-## Editorial changes ## {#editorial-changes}
+The proposed wording is relative to [[!N4981]].
 
 In subclause 9.3.4.6
 <a href=http://eel.is/c++draft/dcl.fct#26>[dcl.fct]</a>,
-modify paragraph 3 as follows:
+modify paragraph 2 as follows:
 <blockquote>
 *parameter-declaration-clause*:<br>
 <del>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list*<sub>*opt*</sub> `...`<sub>*opt*</sub><br></del>
+<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`...`</ins><br>
 <ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list*<sub>*opt*</sub></ins><br>
-<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `...`</mark></ins><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `,` `...`<br>
-<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`...`</ins>
+<ins>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*parameter-declaration-list* `...`</mark></ins>
 </blockquote>
 
-Update Annex A, subclause 7
+Update Annex A, subclause A.7
 <a href="https://eel.is/c++draft/gram.dcl#:parameter-declaration-clause">[gram.dcl]</a> accordingly.
 
-## Normative changes ## {#normative-changes}
-
 In subclause 9.3.4.6
-<a href=http://eel.is/c++draft/dcl.fct#26>[dcl.fct]</a>,
-add a paragraph:
+<a href=http://eel.is/c++draft/dcl.fct>[dcl.fct]</a>,
+modify paragraph 3 as follows:
 <blockquote>
-A *parameter-declaration-clause* of the form
-*parameter-declaration-list* `...` is deprecated.
+Where syntactically correct and where
+"`...`" is not part of an *abstract-declarator*,
+<del>"`, ...`"</del><ins>"`...`"</ins>
+is synonymous with
+<del>"`...`"</del><ins>"`, ...`"</ins>.
+<ins>A *parameter-declaration-clause* of the form
+*parameter-declaration-list* `...` is deprecated.</ins>
 </blockquote>
 
 In Annex D <a href=http://eel.is/c++draft/depr>[depr]</a>,
 add a subclause:
 
 <blockquote>
-<b>D.X Non-comma-separated ellipsis parameters [depr.ellipsis.comma]</b>
-<p>
+<b><ins>D.X Non-comma-separated ellipsis parameters [depr.ellipsis.comma]</ins></b>
+<p><ins>
 A *parameter-declaration-clause* of the form
 *parameter-declaration-list* `...` is deprecated.
 <br>[*Example*:
-<pre>
-void a(...);                // OK
-void b(auto...);            // OK
-void c(auto, ...);          // OK
-
-void d_depr(auto......);    // deprecated
-void d_okay(auto..., ...);  // OK
-
-void e_depr(auto x...);     // deprecated
-void d_okay(auto x, ...);   // OK
-
-void f_depr(auto...x...);   // deprecated
-void f_okay(auto...x, ...); // OK
-
-void g_depr(int...);        // deprecated
-void g_okay(int, ...);      // OK
-
-void h_depr(int x...);      // deprecated
-void h_okay(int x, ...);    // OK
-</pre>— *end example*]
-</p>
+<pre><ins>
+void f(int...);      // deprecated
+void g(auto...);     // OK, declares a function parameter pack
+void h(auto......);  // deprecated
+</ins></pre><ins>— *end example*]
+</ins></p>
 </blockquote>
 
 # Acknowledgements # {#acknowledgements}
