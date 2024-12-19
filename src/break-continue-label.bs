@@ -153,6 +153,19 @@ std::println("Processed all files");
     See [[MISRA-C++]], [[CppCoreGuidelinesES76]], etc.
     This discouragement dates all the way back to 1968 (see [[GotoConsideredHarmful]]),
     and 66 years of teaching not to use `goto` won't be undone.
+- `goto` is innately more difficult to use because to understand its purpose,
+    the user has to know where the jump target is located.
+    A `goto past_the_loop` behaves radically differently compared to a `goto before_the_loop`.
+    Moving the jump target or the `goto` statement relative to each other can also completely
+    change these semantics.
+    By comparison, `break` and `continue` always jump forwards,
+    past a surrounding loop, or to the end of a surrounding loop respectively,
+    making them much easier to reason about, and much less error-prone.
+- The "local readability" of `goto` relies heavily on high-quality naming for the label.
+    A `goto end` could mean to the end of a loop, to after the loop, to the end of a function, etc.
+    Since `break` and `continue` are much more limited,
+    they do not require such good naming.
+    A `break loop` has bad name, but the user *generally* understands its purpose.
 
 Note: Previous discussion on the [[isocpp-core]] reflector has addressed the idea
 of just adding `constexpr goto`,
@@ -420,13 +433,13 @@ for outer (/* ...*/) {
 }
 ```
 
-In summary, the competing syntax has sole technical benefit that
+In summary, the competing syntax has the sole technical benefit that
 it doesn't require each `label:` to be unique within a function.
 This allows the developer to expand function-style macros containing labeled loops
 multiple times, and lets them repurpose simple names like `outer` and `inner` within the same function.
 
-However, these issues can also be addressed by simple permitting the same `label:` multiple times
-within the same function.
+We instead address this by permitting the same `label:` multiple times within the same function,
+see [[#changes-to-labels]].
 In that case, `goto duplicate_label;` would be ill-formed due to ambiguity, but `break outer;`
 would be permitted.
 We believe this to be the right direction for both C and C++.
@@ -437,6 +450,112 @@ A user may expect `name` in `for name` to be some special keyword that alters th
 On the contrary, `name: for` is well-established syntax which ISO C++ has supported since its
 inception.
 It would be a tremendous blunder not to use it.
+
+## Changes to labels ## {#changes-to-labels}
+
+As pointed out by [[N3377]] (see [[#syntax]]),
+we adjust the semantics of labels to allow reusing them multiple times within the same function.
+
+<div class="example">
+The following code will be well-formed:
+
+```cpp
+outer: while (true) {
+    inner: while (true) {
+        break outer;
+    }
+}
+
+outer: while (true) {
+    inner: while (true) {
+        break outer;
+    }
+}
+```
+</div>
+
+Note: This code is well-formed Java and JavaScript.
+When using the labels `'outer` and `'inner` instead, this code is also well-formed Rust.
+
+In other words, we are doubling down on the [[N3355]] syntax and changing labels to behave
+more like other mainstream languages.
+C and C++ should not reinvent the wheel here by coming up with their own, novel way of labeling loops.
+
+### New labels - `goto` issues ### {#new-labels-goto}
+
+The label changes have some implications for `goto`:
+```cpp
+x: f();
+x: g();
+goto x; // error: jump is ambiguous
+```
+
+Labeling multiple statements with `x:` would now be permitted.
+Even though this is essentially useless considering that `f()` and `g()` are not loops,
+it makes the rules easier to teach, and easier to understand;
+there are no special rules for loops.
+
+`goto x;` is ill-formed because it is ambiguous which `x:` label it is meant to jump to.
+This change doesn't break any existing code because existing code cannot have such ambiguities.
+
+
+### New labels - what about nesting? ### {#new-labels-nesting}
+
+Another case to consider is the following:
+
+```cpp
+l: while (true) {
+    l: while (true) {
+        break l;
+    }
+}
+```
+
+Note: This code is not valid Java or JavaScript, but is valid Rust when using the label `'l`.
+
+We believe that this code should be well-formed.
+Developers may run into this case when nesting pairs of `outer:`/`inner:`
+loops in each other "manually",
+or when a `l:` labeled loop in a macro is expanded into a surrounding loop that also uses `l:`.
+
+Such cases are the motivation for [[N3377]], and should be addressed.
+[[N3355]] does not currently permit such nesting,
+and that fact will have to be resolved somehow,
+either by significant syntax changes through [[N3377]],
+or through relaxation of label rules.
+
+### New labels - what about direct duplicates? ### {#new-labels-duplicates}
+
+A more extreme form of the scenario above is:
+
+```cpp
+l: l: l: l: f();
+```
+We also believe that this code should be well-formed.
+There doesn't appear to be any good use for putting the same label on a statement multiple times.
+However, it's also not harmful.
+
+Permitting this case has the benefit that *no code at all* can become ill-formed through
+applying labels.
+This rule is simple, teachable, and easy to implement.
+
+### New labels - what about `break label` for loops with more than one label? {#new-labels-break-label-multiple}
+
+Another case to consider is this:
+
+```cpp
+x: y: while (true) {
+    break x;
+}
+```
+
+Grammatically, `x: y: ...` is a *labeled-statement*,
+where the *statement* is another *labeled-statement* `y: ...`,
+with a *label* `y` and a *statement* `while ...`.
+In other words, `x:` doesn't even apply directly to the loop.
+
+[[N3355]] makes wording changes specifically to address this, and to make this well-formed.
+So are we; this code should well-formed if only for the sake of C2y compatibility.
 
 # Proposed wording # {#proposed-wording}
 
