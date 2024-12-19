@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="592786ee73709ebf41ea37c6f4004e5a90cb97a6" name="revision">
+  <meta content="1212474b03ad35a98b352b690a0ca365aab75d54" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2307,6 +2307,12 @@ See <a data-link-type="biblio" href="#biblio-misra-c" title="MISRA C++:2023">[MI
 This discouragement dates all the way back to 1968 (see <a data-link-type="biblio" href="#biblio-gotoconsideredharmful" title="Go To Statement Considered Harmful">[GotoConsideredHarmful]</a>),
 and 66 years of teaching not to use <code class="highlight"><c- k>goto</c-></code> won’t be undone.</p>
     <li data-md>
+     <p>Even in the cases where <code class="highlight"><c- k>goto</c-></code> isn’t discouraged,
+those cases are always special, like "only <code class="highlight"><c- k>goto</c-></code> forwards",
+"only <code class="highlight"><c- k>goto</c-></code> to break out of loops", etc..
+This issue has been debated for decades,
+and there is still no consensus on when, actually, <code class="highlight"><c- k>goto</c-></code> is okay to use.</p>
+    <li data-md>
      <p><code class="highlight"><c- k>goto</c-></code> is innately more difficult to use because to understand its purpose,
 the user has to know where the jump target is located.
 A <code class="highlight"><c- k>goto</c-> <c- n>past_the_loop</c-></code> behaves radically differently compared to a <code class="highlight"><c- k>goto</c-> <c- n>before_the_loop</c-></code>.
@@ -2319,13 +2325,15 @@ making them much easier to reason about, and much less error-prone.</p>
      <p>The "local readability" of <code class="highlight"><c- k>goto</c-></code> relies heavily on high-quality naming for the label.
 A <code class="highlight"><c- k>goto</c-> <c- n>end</c-></code> could mean to the end of a loop, to after the loop, to the end of a function, etc.
 Since <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> are much more limited,
-they do not require such good naming.
+they do not require such good label naming.
 A <code class="highlight"><c- k>break</c-> <c- n>loop</c-></code> has bad name, but the user <em>generally</em> understands its purpose.</p>
    </ul>
    <p class="note" role="note"><span class="marker">Note:</span> Previous discussion on the <a data-link-type="biblio" href="#biblio-isocpp-core" title="Discussion regarding continue vs. goto in constant expressions">[isocpp-core]</a> reflector has addressed the idea
 of just adding <code class="highlight"><c- k>constexpr</c-> <c- k>goto</c-></code>,
 but doing so is alleged to be more complicated than more limited <code class="highlight"><c- k>constexpr</c-></code> control flow
 structures which can only "jump forwards", such as <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code>.</p>
+   <p>In conclusion, there are too many issues with <code class="highlight"><c- k>goto</c-></code>, some of which may never be resolved. <code class="highlight"><c- n>std</c-><c- o>-</c-><c- n>proposals</c-></code> discussion prior to the publication of this proposal has shown once again
+that <code class="highlight"><c- k>goto</c-></code> is a controversial and divisive.</p>
    <h4 class="heading settled" data-level="3.1.2" id="alternative-iile"><span class="secno">3.1.2. </span><span class="content">Immediately invoked lambda expression (IILE)</span><a class="self-link" href="#alternative-iile"></a></h4>
 <pre class="language-cpp highlight"><c- k>for</c-> <c- p>(</c-><c- k>const</c-> <c- n>File</c-><c- o>&amp;</c-> <c- n>text_file</c-> <c- o>:</c-> <c- n>files</c-><c- p>)</c-> <c- p>{</c->
     <c- p>[</c-><c- o>&amp;</c-><c- p>]</c-> <c- p>{</c->

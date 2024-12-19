@@ -153,6 +153,11 @@ std::println("Processed all files");
     See [[MISRA-C++]], [[CppCoreGuidelinesES76]], etc.
     This discouragement dates all the way back to 1968 (see [[GotoConsideredHarmful]]),
     and 66 years of teaching not to use `goto` won't be undone.
+- Even in the cases where `goto` isn't discouraged,
+    those cases are always special, like "only `goto` forwards",
+    "only `goto` to break out of loops", etc..
+    This issue has been debated for decades,
+    and there is still no consensus on when, actually, `goto` is okay to use.
 - `goto` is innately more difficult to use because to understand its purpose,
     the user has to know where the jump target is located.
     A `goto past_the_loop` behaves radically differently compared to a `goto before_the_loop`.
@@ -164,13 +169,17 @@ std::println("Processed all files");
 - The "local readability" of `goto` relies heavily on high-quality naming for the label.
     A `goto end` could mean to the end of a loop, to after the loop, to the end of a function, etc.
     Since `break` and `continue` are much more limited,
-    they do not require such good naming.
+    they do not require such good label naming.
     A `break loop` has bad name, but the user *generally* understands its purpose.
 
 Note: Previous discussion on the [[isocpp-core]] reflector has addressed the idea
 of just adding `constexpr goto`,
 but doing so is alleged to be more complicated than more limited `constexpr` control flow
 structures which can only "jump forwards", such as `break` and `continue`.
+
+In conclusion, there are too many issues with `goto`, some of which may never be resolved.
+`std-proposals` discussion prior to the publication of this proposal has shown once again
+that `goto` is a controversial and divisive.
 
 ### Immediately invoked lambda expression (IILE) ### {#alternative-iile}
 
