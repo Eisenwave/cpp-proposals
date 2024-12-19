@@ -629,21 +629,33 @@ an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch]).<
 A `break` statement shall be enclosed by ([stmt.pre])
 <ins>a breakable statement</ins>
 <del>an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch])</del>.
-<ins>If specified, the *identifier* shall label ([stmt.label]) a breakable statement.</ins> 
-The `break` statement causes termination
-<ins>of the statement labeled by the *identifier* if specified, and otherwise</ins>
-of the smallest <del>such</del> enclosing <ins>breakable</ins> statement;
-control passes to the statement following the terminated statement, if any.
+<ins>If specified, the *identifier* shall label ([stmt.label]) an enclosing breakable statement.</ins> 
+The `break` statement causes termination of
+<del>the smallest such enclosing statement;</del>
+<ul>
+    <li>
+        <ins>the smallest enclosing breakable statement labeled by the *identifier* if present, otherwise</ins>
+    </li>
+    <li>
+        <ins>the smallest enclosing breakable statement.</ins>
+    </li>
+</ul>
+<del>control</del><ins>Control</ins> passes to the statement following the terminated statement, if any.
 <br><br>
 <div class="ins-block">
 [Example:
 <pre>
-outer: while (/* ... */) {
-    for (/* ... */) {
-        break;         // break applies to enclosing for loop
-        break outer;   // break applies to while loop labeled outer:
+a: b: while (/* ... */) {
+    a: c: for (/* ... */) {
+        break;              // OK, terminates enclosing for loop
+        break a;            // OK, same
+        break b;            // OK, terminates enclosing while loop
+        break z;            // error: break does not refer to a breakable statement
     }
+    break c;                // error: break does not refer to an enclosing statement
 }
+break;                      // error: break must be enclosed by a breakable statement
+z:;
 </pre>&mdash; *end example*]
 </div>
 </blockquote>
@@ -654,13 +666,19 @@ paragraph 1 as follows:
 
 <blockquote>
 A `continue` statement shall be enclosed by ([stmt.pre]) an *iteration-statement* ([stmt.iter]).
-<ins>If specified, the *identifier* shall label ([stmt.label]) an *iteration-statement*.</ins> 
+<ins>If specified, the *identifier* shall label ([stmt.label]) an enclosing *iteration-statement*.</ins> 
 The `continue` statement causes control to pass to the loop-continuation portion
-<ins>of the statement labeled by the *identifier* if present, and otherwise</ins>
-of the smallest <del>such</del> enclosing <ins>*iteration-statement*</ins> <del>statement</del>,
-that is, to the end of the loop.
+<ins>(that is, to the end of the loop)</ins> of
+<del>the smallest such enclosing statement, that is, to the end of the loop.</del>
+<ul>
+    <li>
+        <ins>the smallest enclosing *iteration-statement* labeled by the *identifier* if present, otherwise</ins>
+    </li>
+    <li>
+        <ins>the smallest enclosing *iteration-statement*.</ins>
+    </li>
+</ul>
 More precisely, in each of the statements
-
 <pre>
 <ins>label: </ins>while (foo) {
   {
@@ -684,7 +702,7 @@ contin: ;
 }
 </pre>
 a `continue` not contained in an
-enclosed <del>iteration statement</del><ins>*iteration-statement* or a `continue label`</ins>
+enclosing <del>iteration statement</del><ins>*iteration-statement* or a `continue label`</ins>
 is equivalent to `goto contin`.
 </blockquote>
 
@@ -695,7 +713,8 @@ paragraph 1 as follows:
 <blockquote>
 The `goto` statement unconditionally transfers control to the statement
 labeled <ins>([stmt.label])</ins> by the <del>identifier</del><ins>*identifier*</ins>.
-The <del>identifier</del><ins>*identifier*</ins> shall be a label located in the current function.
+The <del>identifier</del><ins>*identifier*</ins> shall be
+a <del>label</del><ins>*label*</ins> located <ins>exactly once</ins> in the current function.
 </blockquote>
 
 <pre class=biblio>

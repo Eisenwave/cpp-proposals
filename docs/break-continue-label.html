@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1212474b03ad35a98b352b690a0ca365aab75d54" name="revision">
+  <meta content="183cd57abb07bb171bdafeb09060fdc55867b024" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2654,23 +2654,31 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
     <ins>a breakable statement</ins>
     <del>an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k>switch</c-></code> statement ([stmt.switch])</del>
     . 
-    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) a breakable statement.</ins>
-     The <code class="highlight"><c- k>break</c-></code> statement causes termination 
-    <ins>of the statement labeled by the <em>identifier</em> if specified, and otherwise</ins>
-     of the smallest 
-    <del>such</del>
-     enclosing 
-    <ins>breakable</ins>
-     statement;
-control passes to the statement following the terminated statement, if any. <br><br> 
+    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) an enclosing breakable statement.</ins>
+     The <code class="highlight"><c- k>break</c-></code> statement causes termination of 
+    <del>the smallest such enclosing statement;</del>
+    <ul>
+     <li>
+      <ins>the smallest enclosing breakable statement labeled by the <em>identifier</em> if present, otherwise</ins>
+     <li>
+      <ins>the smallest enclosing breakable statement.</ins>
+    </ul>
+    <del>control</del>
+    <ins>Control</ins>
+     passes to the statement following the terminated statement, if any. <br><br> 
     <div class="ins-block">
       [Example: 
-<pre class="highlight"><c- nl>outer</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
-    <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>break</c-><c- p>;</c->         <c- c1>// break applies to enclosing for loop</c->
-        <c- k>break</c-> <c- n>outer</c-><c- p>;</c->   <c- c1>// break applies to while loop labeled outer:</c->
+<pre class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
+    <c- nl>a</c-><c- p>:</c-> <c- n>c</c-><c- o>:</c-> <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>break</c-><c- p>;</c->              <c- c1>// OK, terminates enclosing for loop</c->
+        <c- k>break</c-> <c- n>a</c-><c- p>;</c->            <c- c1>// OK, same</c->
+        <c- k>break</c-> <c- n>b</c-><c- p>;</c->            <c- c1>// OK, terminates enclosing while loop</c->
+        <c- k>break</c-> <c- n>z</c-><c- p>;</c->            <c- c1>// error: break does not refer to a breakable statement</c->
     <c- p>}</c->
+    <c- k>break</c-> <c- n>c</c-><c- p>;</c->                <c- c1>// error: break does not refer to an enclosing statement</c->
 <c- p>}</c->
+<c- k>break</c-><c- p>;</c->                      <c- c1>// error: break must be enclosed by a breakable statement</c->
+<c- nl>z</c-><c- p>:;</c->
 </pre>
      — <em>end example</em>]
     </div>
@@ -2678,17 +2686,18 @@ control passes to the statement following the terminated statement, if any. <br>
    <p>Update <a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a> paragraph 1 as follows:</p>
    <blockquote>
      A <code class="highlight"><c- k>continue</c-></code> statement shall be enclosed by ([stmt.pre]) an <em>iteration-statement</em> ([stmt.iter]). 
-    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) an <em>iteration-statement</em>.</ins>
+    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) an enclosing <em>iteration-statement</em>.</ins>
      The <code class="highlight"><c- k>continue</c-></code> statement causes control to pass to the loop-continuation portion 
-    <ins>of the statement labeled by the <em>identifier</em> if present, and otherwise</ins>
-     of the smallest 
-    <del>such</del>
-     enclosing 
-    <ins><em>iteration-statement</em></ins>
-    <del>statement</del>
-    ,
-that is, to the end of the loop.
-More precisely, in each of the statements 
+    <ins>(that is, to the end of the loop)</ins>
+     of 
+    <del>the smallest such enclosing statement, that is, to the end of the loop.</del>
+    <ul>
+     <li>
+      <ins>the smallest enclosing <em>iteration-statement</em> labeled by the <em>identifier</em> if present, otherwise</ins>
+     <li>
+      <ins>the smallest enclosing <em>iteration-statement</em>.</ins>
+    </ul>
+     More precisely, in each of the statements 
 <pre class="highlight"><ins><c- nl>label</c-><c- p>:</c-> </ins><c- k>while</c-> <c- p>(</c-><c- n>foo</c-><c- p>)</c-> <c- p>{</c->
   <c- p>{</c->
     <c- c1>// ...</c->
@@ -2712,7 +2721,7 @@ More precisely, in each of the statements
 </pre>
     <p>
      a <code class="highlight"><c- k>continue</c-></code> not contained in an
-enclosed 
+enclosing 
      <del>iteration statement</del>
      <ins><em>iteration-statement</em> or a <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code></ins>
       is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.
@@ -2730,7 +2739,13 @@ labeled
 The 
     <del>identifier</del>
     <ins><em>identifier</em></ins>
-     shall be a label located in the current function. 
+     shall be
+a 
+    <del>label</del>
+    <ins><em>label</em></ins>
+     located 
+    <ins>exactly once</ins>
+     in the current function. 
    </blockquote>
   </main>
 <script>
