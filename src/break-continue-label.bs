@@ -534,11 +534,31 @@ Go supports `goto Label`, `break Label`, and `continue Label`, with shared label
 
 ```go
 goto OuterLoop
-OuterLoop: while true {
+OuterLoop: for {
     break OuterLoop
 }
 ```
 </div>
+
+<div class=example>
+D supports `goto label`, `break label`, and `continue label`, with shared label syntax:
+
+```d
+goto outer;
+outer: while (true) {
+    break outer;
+}
+```
+</div>
+
+The fact that none of these languages require separate syntax
+for `goto` targets and `break` targets proves that the syntax proposed by [[N3377]]
+is unnecessary, from a technical viewpoint.
+C is not so different from D or Go that this argument doesn't apply.
+
+Such separate syntax would also be very surprising to Go, Perl, and D developers coming to C++
+because they could reasonably expect `label:` to work for any kind of jump.
+
 
 #### `do` ... `while` #### {#against-n3777-do-while}
 
@@ -1076,6 +1096,14 @@ labeled <ins>([stmt.label])</ins> by the <del>identifier</del><ins>*identifier*<
 The <del>identifier</del><ins>*identifier*</ins> shall be
 a label located <ins>exactly once</ins> in the current function.
 </blockquote>
+
+
+# Acknowledgements # {#acknowledgements}
+
+I thank Sebastian Wittmeier for providing a list of languages that support both
+`goto` and `break`/`last` with the same label syntax.
+This has been helpful for writing [[#against-n3377-breaking-precedent]].
+
 
 <pre class=biblio>
 {

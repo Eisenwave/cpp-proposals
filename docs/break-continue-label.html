@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9d201791cde4806f6349d25529dad22286a55208" name="revision">
+  <meta content="c6903f6d007bab18799834bf6ae6bcee91c3c592" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2202,6 +2202,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#impact-on-existing-code"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
     <li><a href="#implementation-experience"><span class="secno">6</span> <span class="content">Implementation experience</span></a>
     <li><a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2638,14 +2639,27 @@ and <code class="highlight"><c- k>goto</c-></code> statements has a single label
 <c- p>}</c->
 </pre>
    </div>
-   <div class="example" id="example-c25770aa">
-    <a class="self-link" href="#example-c25770aa"></a> Go supports <code class="highlight"><c- k>goto</c-> <c- n>Label</c-></code>, <code class="highlight"><c- k>break</c-> <c- n>Label</c-></code>, and <code class="highlight"><c- k>continue</c-> <c- n>Label</c-></code>, with shared label syntax: 
+   <div class="example" id="example-3ceef6d8">
+    <a class="self-link" href="#example-3ceef6d8"></a> Go supports <code class="highlight"><c- k>goto</c-> <c- n>Label</c-></code>, <code class="highlight"><c- k>break</c-> <c- n>Label</c-></code>, and <code class="highlight"><c- k>continue</c-> <c- n>Label</c-></code>, with shared label syntax: 
 <pre class="language-go highlight"><c- k>goto</c-> OuterLoop
-OuterLoop<c- p>:</c-> while <c- kc>true</c-> <c- p>{</c->
+OuterLoop<c- p>:</c-> <c- k>for</c-> <c- p>{</c->
     <c- k>break</c-> OuterLoop
 <c- p>}</c->
 </pre>
    </div>
+   <div class="example" id="example-13d02915">
+    <a class="self-link" href="#example-13d02915"></a> D supports <code class="highlight"><c- k>goto</c-> <c- n>label</c-></code>, <code class="highlight"><c- k>break</c-> <c- n>label</c-></code>, and <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code>, with shared label syntax: 
+<pre class="language-d highlight"><c- k>goto</c-> <c- n>outer</c-><c- p>;</c->
+<c- n>outer</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c-><c- kc>true</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>break</c-> <c- n>outer</c-><c- p>;</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p>The fact that none of these languages require separate syntax
+for <code class="highlight"><c- k>goto</c-></code> targets and <code class="highlight"><c- k>break</c-></code> targets proves that the syntax proposed by <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> is unnecessary, from a technical viewpoint.
+C is not so different from D or Go that this argument doesn’t apply.</p>
+   <p>Such separate syntax would also be very surprising to Go, Perl, and D developers coming to C++
+because they could reasonably expect <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> to work for any kind of jump.</p>
    <h5 class="heading settled" data-level="4.4.2.3" id="against-n3777-do-while"><span class="secno">4.4.2.3. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
    <div class="example" id="example-4f8cfce9">
     <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
@@ -3056,6 +3070,9 @@ a label located
     <ins>exactly once</ins>
      in the current function. 
    </blockquote>
+   <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
+This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.2 Breaking precedent of all prior art</a>.</p>
   </main>
 <script>
 (function() {
