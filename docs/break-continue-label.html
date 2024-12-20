@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4df9442ddb21085a96e938e4143f5b6cc551e74c" name="revision">
+  <meta content="29870950bd722ecb69b4eadeaa0035289779aeff" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2178,9 +2178,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
          <ol class="toc">
           <li><a href="#against-n3377-teachability"><span class="secno">4.4.1.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
           <li><a href="#against-n3777-do-while"><span class="secno">4.4.1.2</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
-          <li><a href="#against-n3377-repetition"><span class="secno">4.4.1.3</span> <span class="content">Repetition</span></a>
-          <li><a href="#against-n3377-extendability"><span class="secno">4.4.1.4</span> <span class="content">Extendability</span></a>
-          <li><a href="#against-n3377-keywords"><span class="secno">4.4.1.5</span> <span class="content">Blocking contextual keywords</span></a>
+          <li><a href="#against-n3377-pronunciation"><span class="secno">4.4.1.3</span> <span class="content">Code pronunciation</span></a>
+          <li><a href="#against-n3377-repetition"><span class="secno">4.4.1.4</span> <span class="content">Repetition</span></a>
+          <li><a href="#against-n3377-extendability"><span class="secno">4.4.1.5</span> <span class="content">Extendability</span></a>
+          <li><a href="#against-n3377-keywords"><span class="secno">4.4.1.6</span> <span class="content">Blocking contextual keywords</span></a>
          </ol>
        </ol>
       <li>
@@ -2650,7 +2651,24 @@ but every way to proceed has downsides:</p>
 styles for the same construct.</p>
    </ul>
    <p>On the contrary, <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> has no such issues.</p>
-   <h5 class="heading settled" data-level="4.4.1.3" id="against-n3377-repetition"><span class="secno">4.4.1.3. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.3" id="against-n3377-pronunciation"><span class="secno">4.4.1.3. </span><span class="content">Code pronunciation</span><a class="self-link" href="#against-n3377-pronunciation"></a></h5>
+   <div class="example" id="example-511f5994">
+    <a class="self-link" href="#example-511f5994"></a> The <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax interferes with how code is pronounced, from left to right: 
+<pre class="language-cpp highlight"><c- c1>// "(loop named outer) While x is greater or equal to zero:" </c->
+<c- nl>outer</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c-><c- n>x</c-> <c- o>>=</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c-> <c- d>/* ... */</c-> <c- p>}</c->
+
+<c- c1>// "While (loop named outer) x is greater or equal to zero:"</c->
+<c- k>while</c-> <c- n>outer</c-><c- p>(</c-><c- n>x</c-> <c- o>>=</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c-> <c- d>/* ... */</c-> <c- p>}</c->
+</pre>
+   </div>
+   <p>Putting the loop name between the conjunction <code class="highlight"><c- k>while</c-></code> and the dependent clause <code class="highlight"><c- n>x</c-> <c- o>>=</c-> <c- mi>0</c-></code> is not
+easily compatible with the English language.
+A preceding label is less intrusive and doesn’t need to be (mentally) pronounced,
+like a leading attribute, line number, paragraph number, etc.</p>
+   <p>This is not just a stylistic argument; it’s an accessibility argument.
+C++ developers who rely on screen readers cannot "skip over" or "blend out" the <code class="highlight"><c- n>outer</c-></code> like a sighted developer,
+and benefit from code that is more naturally pronounceable.</p>
+   <h5 class="heading settled" data-level="4.4.1.4" id="against-n3377-repetition"><span class="secno">4.4.1.4. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
    <p>In the event that a user wants to be <code class="highlight"><c- k>break</c-></code> out of a loop and <code class="highlight"><c- k>goto</c-></code> it,
 in the same function, repetition is needed:</p>
 <pre class="language-cpp highlight"><c- k>goto</c-> <c- n>outer</c-><c- p>;</c->
@@ -2672,7 +2690,7 @@ however, we see it as detrimental:</p>
      <p>Otherwise, we refer to the same location in code using two different names,
 which feels disorienting.</p>
    </ul>
-   <h5 class="heading settled" data-level="4.4.1.4" id="against-n3377-extendability"><span class="secno">4.4.1.4. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.5" id="against-n3377-extendability"><span class="secno">4.4.1.5. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
    <p>Consider the following (not proposed) construct:</p>
 <pre class="language-cpp highlight"><c- nl>label</c-><c- p>:</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>label</c-><c- p>;</c->
@@ -2714,7 +2732,7 @@ and is easily compatible with</p>
     <li data-md>
      <p>new language extensions, like <code class="highlight"><c- k>break</c-></code> for block-statements.</p>
    </ul>
-   <h5 class="heading settled" data-level="4.4.1.5" id="against-n3377-keywords"><span class="secno">4.4.1.5. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.6" id="against-n3377-keywords"><span class="secno">4.4.1.6. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
    <p>Considering that the user is able to add arbitrary identifiers after <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>for</c-></code>,
 this makes it impossible to add future contextual keywords in that place without
 potentially breaking code:</p>

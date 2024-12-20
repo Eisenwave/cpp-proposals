@@ -553,6 +553,31 @@ but every way to proceed has downsides:
 
 On the contrary, [[N3355]] has no such issues.
 
+#### Code pronunciation #### {#against-n3377-pronunciation}
+
+<div class=example>
+The [[N3377]] syntax interferes with how code is pronounced, from left to right:
+
+```cpp
+// "(loop named outer) While x is greater or equal to zero:" 
+outer: while (x >= 0) { /* ... */ }
+
+// "While (loop named outer) x is greater or equal to zero:"
+while outer(x >= 0) { /* ... */ }
+```
+</div>
+
+Putting the loop name between the conjunction `while` and the dependent clause `x >= 0` is not
+easily compatible with the English language.
+A preceding label is less intrusive and doesn't need to be (mentally) pronounced,
+like a leading attribute, line number, paragraph number, etc.
+
+This is not just a stylistic argument; it's an accessibility argument.
+C++ developers who rely on screen readers cannot "skip over" or "blend out" the `outer`
+like a sighted developer,
+and benefit from code that is more naturally pronounceable.
+
+
 #### Repetition #### {#against-n3377-repetition}
 
 In the event that a user wants to be `break` out of a loop and `goto` it,
