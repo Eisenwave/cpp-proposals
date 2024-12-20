@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="32ed03b8b893d5587040de7637a3d69a1c8acecd" name="revision">
+  <meta content="447c1b1e00e6638e4eca56f8cf53a8bfcde09006" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2760,11 +2760,10 @@ could mislead a user into believing that <code class="highlight"><c- n>outer</c-
 These first experiences matter.</p>
    <h5 class="heading settled" data-level="4.4.2.3" id="against-n3377-multi-language"><span class="secno">4.4.2.3. </span><span class="content">Reusable syntax in multi-language systems</span><a class="self-link" href="#against-n3377-multi-language"></a></h5>
    <p>C and C++ do not exist in a vacuum.
-They are often used as part of a multi-language system,
-like being used to implement lower-level details of a larger system,
+They are often being used to implement lower-level details of a larger system,
 written in another language (e.g. Numpy, which combines Python, C, and C++).</p>
    <p>In such a multi-language system,
-it is highly beneficial to have similar syntax because developers don’t have to learn
+it is highly beneficial to have common syntax because developers don’t have to learn
 two entirely different languages, but rather, one and a half.
 With <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a>, C and C++ could have identical label syntax to JavaScript, Java,
 and other languages with which they are paired. <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> wastes this opportunity.</p>
