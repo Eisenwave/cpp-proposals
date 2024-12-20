@@ -332,19 +332,19 @@ The following table counts only control statements with a label,
         <td>N/A</td>
     </tr>
     <tr>
-        <td>Swift</td>
-        <td>`label: for ...`<br>`break label`<br>`continue label`</td>
-        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&type=code">12.6K files</a></td>
-        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&type=code">5.6K files</a></td>
-        <td>18.2K files</td>
-        <td>N/A</td>
-    </tr>
-    <tr>
         <td>TypeScript</td>
         <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
         <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">11K files</a></td>
         <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">8.7K files</a></td>
         <td>18.7K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Swift</td>
+        <td>`label: for ...`<br>`break label`<br>`continue label`</td>
+        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&type=code">12.6K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&type=code">5.6K files</a></td>
+        <td>18.2K files</td>
         <td>N/A</td>
     </tr>
     <tr>
