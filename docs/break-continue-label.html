@@ -1564,8 +1564,18 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="24f68d5232128f2d6db797111de30e2175946c6c" name="revision">
+  <meta content="15957bacd92e00382936f5e667595af742b0d3b3" name="revision">
 <style>
+table, th, td {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+table, th, td {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+}
+
 .indent {
     padding-left: 2em;
 }
@@ -2177,12 +2187,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li>
        <a href="#syntax"><span class="secno">4.4</span> <span class="content">What about syntax?</span></a>
        <ol class="toc">
-        <li><a href="#n3377-label-disambiguation"><span class="secno">4.4.1</span> <span class="content">Two sets of labels for disambiguation</span></a>
+        <li>
+         <a href="#n3377-label-disambiguation"><span class="secno">4.4.1</span> <span class="content">Two sets of labels for disambiguation</span></a>
+         <ol class="toc">
+          <li><a href="#n3377-naming-convention-workaround"><span class="secno">4.4.1.1</span> <span class="content">Naming conventions as a workaround</span></a>
+         </ol>
         <li>
          <a href="#opposition-to-n3377"><span class="secno">4.4.2</span> <span class="content">Strong opposition to N3377</span></a>
          <ol class="toc">
-          <li><a href="#against-n3377-teachability"><span class="secno">4.4.2.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
-          <li><a href="#against-n3377-breaking-precedent"><span class="secno">4.4.2.2</span> <span class="content">Breaking precedent of most prior art</span></a>
+          <li><a href="#against-n3377-breaking-precedent"><span class="secno">4.4.2.1</span> <span class="content">Breaking precedent of most prior art</span></a>
+          <li><a href="#against-n3377-teachability"><span class="secno">4.4.2.2</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
           <li><a href="#against-n3777-do-while"><span class="secno">4.4.2.3</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
           <li><a href="#against-n3377-pronunciation"><span class="secno">4.4.2.4</span> <span class="content">Code pronunciation</span></a>
           <li><a href="#against-n3377-repetition"><span class="secno">4.4.2.5</span> <span class="content">Repetition</span></a>
@@ -2429,55 +2443,89 @@ The following table counts only control statements with a label, <em>not</em> pl
      <tr>
       <td>Language
       <td>Syntax
-      <td>Labeled <code class="highlight"><c- k>break</c-></code>s
-      <td>Labeled <code class="highlight"><c- k>continue</c-></code>s
-      <td>Σ
-     <tr>
-      <td>C2y
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td>N/A
-      <td>N/A
-      <td>N/A
+      <td>Labeled<br><code class="highlight"><c- k>break</c-></code>s
+      <td>Labeled<br><code class="highlight"><c- k>continue</c-></code>s
+      <td>Σ <code class="highlight"><c- k>break</c-></code> <code class="highlight"><c- k>continue</c-></code>
+      <td><code class="highlight"><c- k>goto</c-></code>s
      <tr>
       <td>Java
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
       <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">377K files</a>
       <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">122K files</a>
       <td>499K files
-     <tr>
-      <td>Kotlin
-      <td><code class="highlight"><c- n>label</c->@ <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c->@<c- n>label</c-></code>
-      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">8.7K files</a>
-      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">7.5K files</a>
-      <td>16.2K files
+      <td>N/A
      <tr>
       <td>JavaScript
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
       <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">48.6K files</a>
       <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">60.3K files</a>
       <td>108.9K files
+      <td>N/A
      <tr>
-      <td>TypeScript
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">11K files</a>
-      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">8.7K files</a>
-      <td>18.7K files
+      <td>Perl
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- n>last</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- n>next</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29last+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">33.3K files</a>
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29next+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">29.4K files</a>
+      <td>62.7K files
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">14.5K files</a>
      <tr>
       <td>Rust
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> '<c- n>label</c-><c- p>;</c-></code>
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> '<c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> '<c- n>label</c-><c- p>;</c-></code>
       <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">25.1K files</a>
       <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29continue+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">26.6K files</a>
       <td>51.7K files
+      <td>N/A
+     <tr>
+      <td>TypeScript
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">11K files</a>
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">8.7K files</a>
+      <td>18.7K files
+      <td>N/A
+     <tr>
+      <td>Kotlin
+      <td><code class="highlight"><c- n>label</c->@ <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c->@<c- n>label</c-></code><br><code class="highlight"><c- k>continue</c->@<c- n>label</c-></code>
+      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">8.7K files</a>
+      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">7.5K files</a>
+      <td>16.2K files
+      <td>N/A
+     <tr>
+      <td>D
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">3.3K files</a>
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">2.2K files</a>
+      <td>5.5K files
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">12K files</a>
      <tr>
       <td>Ruby
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- n>loop</c-></code><br><code class="highlight"><c- nl>break</c-> <c- p>:</c-><c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code&amp;p=4">920 files</a>
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- n>loop</c-></code><br><code class="highlight"><c- nl>break</c-> <c- p>:</c-><c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- nl>continue</c-> <c- p>:</c-><c- n>label</c-><c- p>;</c-></code>
+      <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">920 files</a>
       <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29continue+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">22 files</a>
       <td>944 files
+      <td>N/A
+     <tr>
+      <td>Go
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td>N/A
+      <td>N/A
+      <td>N/A
+      <td>N/A
+     <tr>
+      <td>C
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td>N/A
+      <td>N/A
+      <td>N/A
+      <td><a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">6.9M files</a>
    </table>
-   <p>This language list is not exhaustive and the search only includes open-source code bases on GitHub.
-Based on this, we can reasonably estimate that there are at least one million files
-in the world which use this feature.</p>
+   <p>Based on this, we can reasonably estimate that there are at least one million files
+in the world which use labeled <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> (or an equivalent construct).</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Data for Go could not be obtained because of an internal error with GitHub code search.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> columns also count equivalent constructs, such as Perl’s <code class="highlight"><c- n>last</c-></code>.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This language list is not exhaustive and the search only includes open-source code bases on GitHub.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The D <code class="highlight"><c- k>goto</c-></code> count is inflated by <code class="highlight"><c- k>goto</c-> <c- k>case</c->;</code> and <code class="highlight"><c- k>goto</c-> <c- k>default</c-><c- p>;</c-></code> which perform <code class="highlight"><c- k>switch</c-></code> fallthrough.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Fun fact: <code class="highlight"><c- k>continue</c-></code> occurs in <a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">5.8M C files</a>,
+meaning that <code class="highlight"><c- k>goto</c-></code> is more common.</p>
    <h3 class="heading settled" data-level="3.3" id="c2y-compatibility"><span class="secno">3.3. </span><span class="content">C2y compatibility</span><a class="self-link" href="#c2y-compatibility"></a></h3>
    <p>Last but not least, C++ should have <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code> to increase the amount of code that has a direct equivalent in C.
 Such compatibility is desirable for two reasons:</p>
@@ -2582,55 +2630,55 @@ multiple times, and lets them repurpose simple names like <code class="highlight
 not with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax.</p>
    <h4 class="heading settled" data-level="4.4.1" id="n3377-label-disambiguation"><span class="secno">4.4.1. </span><span class="content">Two sets of labels for disambiguation</span><a class="self-link" href="#n3377-label-disambiguation"></a></h4>
    <p>Another benefit is that <code class="highlight"><c- k>goto</c-></code> jump targets and loop names don’t share syntax, and this
-disambiguates code to some extent (with <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax):</p>
+disambiguates code (with <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax):</p>
    <ul>
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>, they know that this label is a jump target for <code class="highlight"><c- k>goto</c-></code>.</p>
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- k>for</c-> <c- n>name</c-></code>, they know that this <code class="highlight"><c- n>name</c-></code> is a target for <code class="highlight"><c- k>break</c-></code> or <code class="highlight"><c- k>continue</c-></code>, and cannot be jumped to with <code class="highlight"><c- k>goto</c-></code>.</p>
    </ul>
-   <p>We don’t attempt to fix this issue
-because we don’t believe that this ambiguity is a major problem (with our syntax):</p>
+   <p>For C, this is not a negligible concern. <code class="highlight"><c- k>goto</c-></code> is slightly more common than <code class="highlight"><c- k>continue</c-><c- p>;</c-></code> in C code on GitHub (source: <a href="#how-common-is-break-continue-label">§ 3.2.1 How common is break/continue with labels?</a>),
+but approx. half as common as <code class="highlight"><c- k>break</c-><c- p>;</c-></code>.
+This means that for any <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> with the <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax in C,
+there is a decent chance that there are <code class="highlight"><c- k>goto</c-></code>s nearby.</p>
+   <p>However, this problem is easy to overstate.
+Firstly, this ambiguity <em>only</em> exists for labeled loops,
+since arbitrary statements cannot be targeted by <code class="highlight"><c- k>break</c-></code> or <code class="highlight"><c- k>continue</c-></code>.
+For example, <code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- n>free</c-><c- p>(</c-><c- n>pointer</c-><c- p>)</c-></code> is obviously a <code class="highlight"><c- k>goto</c-></code> target.</p>
+   <p>Secondly, we can make an educated guess about the purpose of a label in many situations:</p>
    <ul>
     <li data-md>
-     <p>When a developer sees <code class="highlight"><c- nl>outer</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code>, they can reasonably assume that <code class="highlight"><c- nl>outer</c-><c- p>:</c-></code> is
-targeted by <code class="highlight"><c- k>break</c-></code> or <code class="highlight"><c- k>continue</c-></code>.
-With how uncommon <code class="highlight"><c- k>goto</c-></code> already is
-and will become once more uses are replaced by this proposal,
-this should be a reliable guess.</p>
+     <p>Labels towards the end of a function are likely targets for prior <code class="highlight"><c- k>goto</c-></code>s
+which jump to cleanup/error handling code.</p>
     <li data-md>
-     <p>When a developer sees <code class="highlight"><c- nl>cleanup</c-><c- p>:</c-> <c- n>free</c-><c- p>(</c-><c- n>pointer</c-><c- p>)</c-></code>, they know with absolute certainty that <code class="highlight"><c- nl>cleanup</c-><c- p>:</c-></code> is a jump target for <code class="highlight"><c- k>goto</c-></code> because <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> can only target loops.</p>
+     <p>Labels inside of loops are less likely to be <code class="highlight"><c- k>goto</c-></code> targets because jumping into the middle of
+a is quite surprising, and may be illegal due to crossing initialization
+of a loop variable.</p>
+    <li data-md>
+     <p>Labels such as <code class="highlight"><c- nl>end</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>stop</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>done</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>success</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>cleanup</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>error</c-><c- p>:</c-></code>, etc.
+heavily imply that earlier code uses <code class="highlight"><c- k>goto</c-></code> to get there.</p>
+    <li data-md>
+     <p>Labels such as <code class="highlight"><c- nl>loop</c-><c- p>:</c-></code>, <code class="highlight"><c- nl>outer</c-><c- p>:</c-></code>, etc.
+heavily imply that code inside the loop uses <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> or <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>.</p>
    </ul>
-   <p>Furthermore, disambiguation is possible through naming conventions for labels.
+   <h5 class="heading settled" data-level="4.4.1.1" id="n3377-naming-convention-workaround"><span class="secno">4.4.1.1. </span><span class="content">Naming conventions as a workaround</span><a class="self-link" href="#n3377-naming-convention-workaround"></a></h5>
+   <p>Furthermore, disambiguation of <code class="highlight"><c- k>goto</c-></code> targets and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> targets
+is possible through naming conventions for labels.
 For example, <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> targets can be named <code class="highlight"><c- n>xzy_loop</c-></code>,
 and such names can be avoided for <code class="highlight"><c- k>goto</c-></code> jump targets.</p>
    <p>Virtually every programming community already uses naming conventions for disambiguation.
 For example, method names conventionally use <code class="highlight"><c- n>camelCase</c-></code> in Kotlin,
 and class names conventionally use <code class="highlight"><c- n>PascalCase</c-></code>.
 This effectively disambiguates constructor calls from regular function calls for <code class="highlight"><c- n>F</c-><c- p>()</c-></code>.</p>
-   <p>Naming conventions seem like a reasonable solution for disambiguating <code class="highlight"><c- k>goto</c-></code> targets from <code class="highlight"><c- k>break</c-></code> targets (if someone wants to, we let them choose).
-We don’t need to create two distinct label syntaxes to accomplish this.</p>
+   <p>Naming conventions seem like a reasonable solution for disambiguating <code class="highlight"><c- k>goto</c-></code> targets from <code class="highlight"><c- k>break</c-></code> targets.
+We don’t need to create two distinct label syntaxes to accomplish this.
+We can let people choose for themselves whether they want such disambiguation or not,
+which is much more in line with C and C++ design philosophy.</p>
    <h4 class="heading settled" data-level="4.4.2" id="opposition-to-n3377"><span class="secno">4.4.2. </span><span class="content">Strong opposition to N3377</span><a class="self-link" href="#opposition-to-n3377"></a></h4>
-   <p>We strongly oppose the N3377 syntax for multiple reasons.</p>
-   <h5 class="heading settled" data-level="4.4.2.1" id="against-n3377-teachability"><span class="secno">4.4.2.1. </span><span class="content">Teachability, Simplicity, Elegance</span><a class="self-link" href="#against-n3377-teachability"></a></h5>
-   <p>C and C++ have had the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax for labeling statements
-for multiple decades now.
-It is extremely well understood, and has been replicated by other C-esque languages, such as
-Java, Rust, JavaScript, Kotlin, and more.
-Based on the numbers in <a href="#argumentum-ad-populum">§ 3.2 Argumentum ad populum</a>, we can assume that <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>-like
-syntax has been used in over a million files already.</p>
-   <p>Now, decades after the fact, and a million files later,
-we need to invent our own, novel syntax <em>just</em> for labeling loops and <code class="highlight"><c- k>switch</c-></code>es?
-No, we don’t!</p>
-   <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax can be intuitively understood at first glance,
-either through intuition from <code class="highlight"><c- k>goto</c-></code> labels,
-or from prior experience with other languages.
-On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
-could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
-These first experiences matter.</p>
-   <h5 class="heading settled" data-level="4.4.2.2" id="against-n3377-breaking-precedent"><span class="secno">4.4.2.2. </span><span class="content">Breaking precedent of most prior art</span><a class="self-link" href="#against-n3377-breaking-precedent"></a></h5>
+   <p>We strongly oppose the N3377 syntax for multiple reasons, listed below.</p>
+   <h5 class="heading settled" data-level="4.4.2.1" id="against-n3377-breaking-precedent"><span class="secno">4.4.2.1. </span><span class="content">Breaking precedent of most prior art</span><a class="self-link" href="#against-n3377-breaking-precedent"></a></h5>
    <p>Most languages that supports both labeled loop control
-and <code class="highlight"><c- k>goto</c-></code> statements has a single label syntax. <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> breaks this pattern.</p>
+and <code class="highlight"><c- k>goto</c-></code> statements have a single label syntax. <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> breaks this pattern.</p>
    <div class="example" id="example-6338a82e">
     <a class="self-link" href="#example-6338a82e"></a> Perl supports <code class="highlight"><c- k>goto</c-> <c- n>LABEL</c-></code>, <code class="highlight"><c- n>last</c-> <c- n>LABEL</c-></code>, and <code class="highlight"><c- n>next</c-> <c- n>LABEL</c-></code>, with shared label syntax: 
 <pre class="language-perl highlight">goto <c- n>LINE</c-><c- p>;</c->
@@ -2670,6 +2718,23 @@ because they could reasonably expect <code class="highlight"><c- nl>label</c-><c
 <c- kr>end</c-> <c- kr>loop</c-> <c- nf>Outer</c-><c- p>;</c->
 </pre>
    </div>
+   <h5 class="heading settled" data-level="4.4.2.2" id="against-n3377-teachability"><span class="secno">4.4.2.2. </span><span class="content">Teachability, Simplicity, Elegance</span><a class="self-link" href="#against-n3377-teachability"></a></h5>
+   <p>C and C++ have had the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax for labeling statements
+for multiple decades now.
+It is extremely well understood, and has been replicated by other C-esque languages, such as
+Java, Rust, JavaScript, Kotlin, and more.
+Based on the numbers in <a href="#how-common-is-break-continue-label">§ 3.2.1 How common is break/continue with labels?</a>, we can assume that <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>-like
+syntax has been used in over a million files already.</p>
+   <p>Now, decades after the fact, and a million files later,
+we need to invent our own, novel syntax <em>just</em> for labeling loops and <code class="highlight"><c- k>switch</c-></code>es?
+No, we don’t!
+Go, Perl, and D didn’t need to either.</p>
+   <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax can be intuitively understood at first glance,
+either through intuition from <code class="highlight"><c- k>goto</c-></code> labels,
+or from prior experience with other languages.
+On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
+could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
+These first experiences matter.</p>
    <h5 class="heading settled" data-level="4.4.2.3" id="against-n3777-do-while"><span class="secno">4.4.2.3. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
    <div class="example" id="example-4f8cfce9">
     <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
@@ -3082,7 +3147,7 @@ a label located
    </blockquote>
    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
-This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.2 Breaking precedent of most prior art</a>.</p>
+This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.1 Breaking precedent of most prior art</a>.</p>
   </main>
 <script>
 (function() {

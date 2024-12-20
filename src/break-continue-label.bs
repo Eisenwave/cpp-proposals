@@ -267,64 +267,110 @@ The following table counts only control statements with a label,
     <tr>
         <td>Language</td>
         <td>Syntax</td>
-        <td>Labeled `break`s</td>
-        <td>Labeled `continue`s</td>
-        <td>&Sigma;</td>
-    </tr>
-    <tr>
-        <td>C2y</td>
-        <td>`label: for (...)`<br>`break label;`</td>
-        <td>N/A</td>
-        <td>N/A</td>
-        <td>N/A</td>
+        <td>Labeled<br>`break`s</td>
+        <td>Labeled<br>`continue`s</td>
+        <td>&Sigma; `break` `continue`</td>
+        <td>`goto`s</td>
     </tr>
     <tr>
         <td>Java</td>
-        <td>`label: for (...)`<br>`break label;`</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
         <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">377K files</a></td>
         <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">122K files</a></td>
         <td>499K files</td>
-    </tr>
-    <tr>
-        <td>Kotlin</td>
-        <td>`label@ for (...)`<br>`break@label`</td>
-        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5Ba-zA-Z0-9%5D%2B%2F&type=code">8.7K files</a></td>
-        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5Ba-zA-Z0-9%5D%2B%2F&type=code">7.5K files</a></td>
-        <td>16.2K files</td>
+        <td>N/A</td>
     </tr>
     <tr>
         <td>JavaScript</td>
-        <td>`label: for (...)`<br>`break label;`</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
         <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">48.6K files</a></td>
         <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">60.3K files</a></td>
         <td>108.9K files</td>
+        <td>N/A</td>
     </tr>
     <tr>
-        <td>TypeScript</td>
-        <td>`label: for (...)`<br>`break label;`</td>
-        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">11K files</a></td>
-        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">8.7K files</a></td>
-        <td>18.7K files</td>
+        <td>Perl</td>
+        <td>`label: for (...)`<br>`last label;`<br>`next label;`</td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29last+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">33.3K files</a></td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29next+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">29.4K files</a></td>
+        <td>62.7K files</td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">14.5K files</a></td>
     </tr>
     <tr>
         <td>Rust</td>
-        <td>`label: for (...)`<br>`break 'label;`</td>
+        <td>`label: for (...)`<br>`break 'label;`<br>`continue 'label;`</td>
         <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">25.1K files</a></td>
         <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29continue+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">26.6K files</a></td>
         <td>51.7K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>TypeScript</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">11K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">8.7K files</a></td>
+        <td>18.7K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Kotlin</td>
+        <td>`label@ for (...)`<br>`break@label`<br>`continue@label`</td>
+        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5Ba-zA-Z0-9%5D%2B%2F&type=code">8.7K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5Ba-zA-Z0-9%5D%2B%2F&type=code">7.5K files</a></td>
+        <td>16.2K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>D</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">3.3K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">2.2K files</a></td>
+        <td>5.5K files</td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">12K files</a></td>
     </tr>
     <tr>
         <td>Ruby</td>
-        <td>`label: loop`<br>`break :label;`</td>
-        <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&type=code&p=4">920 files</a></td>
+        <td>`label: loop`<br>`break :label;`<br>`continue :label;`</td>
+        <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&type=code">920 files</a></td>
         <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29continue+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&type=code">22 files</a></td>
         <td>944 files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Go</td>
+        <td>`label: for ...`<br>`break label;`<br>`continue label;`</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>C</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td><a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">6.9M files</a></td>
     </tr>
 </table>
 
-This language list is not exhaustive and the search only includes open-source code bases on GitHub.
+
 Based on this, we can reasonably estimate that there are at least one million files
-in the world which use this feature.
+in the world which use labeled `break`/`continue` (or an equivalent construct).
+
+Note: Data for Go could not be obtained because of an internal error with GitHub code search.
+
+Note: The `break` and `continue` columns also count equivalent constructs, such as Perl's `last`.
+
+Note: This language list is not exhaustive and the search only includes open-source code bases on GitHub.
+
+Note: The D `goto` count is inflated by `goto case;` and `goto default;`
+which perform `switch` fallthrough.
+
+Note: Fun fact: `continue` occurs in
+<a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">5.8M C files</a>,
+meaning that `goto` is more common.
+
 
 ## C2y compatibility ## {#c2y-compatibility}
 
@@ -460,22 +506,39 @@ not with the [[N3377]] syntax.
 ### Two sets of labels for disambiguation ### {#n3377-label-disambiguation}
 
 Another benefit is that `goto` jump targets and loop names don't share syntax, and this
-disambiguates code to some extent (with [[N3377]] syntax):
+disambiguates code (with [[N3377]] syntax):
 - When a developer sees `label:`, they know that this label is a jump target for `goto`.
 - When a developer sees `for name`, they know that this `name`
     is a target for `break` or `continue`, and cannot be jumped to with `goto`.
 
-We don't attempt to fix this issue
-because we don't believe that this ambiguity is a major problem (with our syntax):
-- When a developer sees `outer: for ...`, they can reasonably assume that `outer:` is
-    targeted by `break` or `continue`.
-    With how uncommon `goto` already is
-    and will become once more uses are replaced by this proposal,
-    this should be a reliable guess.
-- When a developer sees `cleanup: free(pointer)`, they know with absolute certainty that `cleanup:`
-    is a jump target for `goto` because `break` and `continue` can only target loops.
+For C, this is not a negligible concern.
+`goto` is slightly more common than `continue;`
+in C code on GitHub (source: [[#how-common-is-break-continue-label]]),
+but approx. half as common as `break;`.
+This means that for any `label:` with the [[N3355]] syntax in C,
+there is a decent chance that there are `goto`s nearby.
 
-Furthermore, disambiguation is possible through naming conventions for labels.
+However, this problem is easy to overstate.
+Firstly, this ambiguity *only* exists for labeled loops,
+since arbitrary statements cannot be targeted by `break` or `continue`.
+For example, `label: free(pointer)` is obviously a `goto` target.
+
+Secondly, we can make an educated guess about the purpose of a label in many situations:
+
+- Labels towards the end of a function are likely targets for prior `goto`s
+    which jump to cleanup/error handling code.
+- Labels inside of loops are less likely to be `goto` targets because jumping into the middle of
+    a is quite surprising, and may be illegal due to crossing initialization
+    of a loop variable.
+- Labels such as `end:`, `stop:`, `done:`, `success:`, `cleanup:`, `error:`, etc.
+    heavily imply that earlier code uses `goto` to get there.
+- Labels such as `loop:`, `outer:`, etc.
+    heavily imply that code inside the loop uses `break label;` or `continue label;`.
+
+#### Naming conventions as a workaround #### {#n3377-naming-convention-workaround}
+
+Furthermore, disambiguation of `goto` targets and `break`/`continue` targets
+is possible through naming conventions for labels.
 For example, `break` and `continue` targets can be named `xzy_loop`,
 and such names can be avoided for `goto` jump targets.
 
@@ -485,37 +548,19 @@ and class names conventionally use `PascalCase`.
 This effectively disambiguates constructor calls from regular function calls for `F()`.
 
 Naming conventions seem like a reasonable solution for disambiguating
-`goto` targets from `break` targets (if someone wants to, we let them choose).
+`goto` targets from `break` targets.
 We don't need to create two distinct label syntaxes to accomplish this.
+We can let people choose for themselves whether they want such disambiguation or not,
+which is much more in line with C and C++ design philosophy.
 
 ### Strong opposition to N3377 ### {#opposition-to-n3377}
 
-We strongly oppose the N3377 syntax for multiple reasons.
-
-#### Teachability, Simplicity, Elegance #### {#against-n3377-teachability}
-
-C and C++ have had the `label:` syntax for labeling statements
-for multiple decades now.
-It is extremely well understood, and has been replicated by other C-esque languages, such as
-Java, Rust, JavaScript, Kotlin, and more.
-Based on the numbers in [[#argumentum-ad-populum]], we can assume that `label:`-like
-syntax has been used in over a million files already.
-
-Now, decades after the fact, and a million files later,
-we need to invent our own, novel syntax *just* for labeling loops and `switch`es?
-No, we don't!
-
-The [[N3355]] syntax can be intuitively understood at first glance,
-either through intuition from `goto` labels,
-or from prior experience with other languages.
-On the contrary, given the precedent set by `if constexpr`, the `for outer` syntax
-could mislead a user into believing that `outer` is some kind of contextual keyword.
-These first experiences matter.
+We strongly oppose the N3377 syntax for multiple reasons, listed below.
 
 #### Breaking precedent of most prior art #### {#against-n3377-breaking-precedent}
 
 Most languages that supports both labeled loop control
-and `goto` statements has a single label syntax.
+and `goto` statements have a single label syntax.
 [[N3377]] breaks this pattern.
 
 <div class=example>
@@ -572,6 +617,28 @@ Outer: loop
 end loop Outer;
 ```
 </div>
+
+#### Teachability, Simplicity, Elegance #### {#against-n3377-teachability}
+
+C and C++ have had the `label:` syntax for labeling statements
+for multiple decades now.
+It is extremely well understood, and has been replicated by other C-esque languages, such as
+Java, Rust, JavaScript, Kotlin, and more.
+Based on the numbers in [[#how-common-is-break-continue-label]], we can assume that `label:`-like
+syntax has been used in over a million files already.
+
+Now, decades after the fact, and a million files later,
+we need to invent our own, novel syntax *just* for labeling loops and `switch`es?
+No, we don't!
+Go, Perl, and D didn't need to either.
+
+The [[N3355]] syntax can be intuitively understood at first glance,
+either through intuition from `goto` labels,
+or from prior experience with other languages.
+On the contrary, given the precedent set by `if constexpr`, the `for outer` syntax
+could mislead a user into believing that `outer` is some kind of contextual keyword.
+These first experiences matter.
+
 
 #### `do` ... `while` #### {#against-n3777-do-while}
 
@@ -884,6 +951,16 @@ LLVM implementation W.I.P.
 # Proposed wording # {#proposed-wording}
 
 <style>
+table, th, td {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+table, th, td {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+}
+
 .indent {
     padding-left: 2em;
 }
