@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="865765bb9e62c2cddd0cea7d3a05d83d8658db7b" name="revision">
+  <meta content="5d72d4b6ac370155dac4631a8de85c287b95e10c" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2969,9 +2969,20 @@ or through relaxation of label rules.</p>
    <p>A more extreme form of the scenario above is:</p>
 <pre class="language-cpp highlight"><c- nl>l</c-><c- p>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>f</c-><c- p>();</c->
 </pre>
-   <p>We also believe that this code should be well-formed.
-There doesn’t appear to be any good use for putting the same label on a statement multiple times.
-However, it’s also not harmful.</p>
+   <p>We also believe that this code should be well-formed because it’s not harmful,
+and may be useful in certain, rare situations.</p>
+   <div class="example" id="example-9e2df0e2">
+    <a class="self-link" href="#example-9e2df0e2"></a> A somewhat common C idiom is to expand loops from macros;
+see also <a href="#against-n3377-macro-loops">§ 4.4.2.8 Labeling loops expanded from macros</a>. 
+<pre class="language-cpp highlight"><c- nl>outer</c-><c- p>:</c-> <c- n>MY_LOOP_MACRO</c-><c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>break</c-> <c- n>outer</c-><c- p>;</c->
+<c- p>}</c->
+</pre>
+    <p>If <code class="highlight"><c- n>MY_LOOP_MACRO</c-></code> already uses an <code class="highlight"><c- nl>outer</c-><c- p>:</c-></code> label internally,
+perhaps because it expands to two nested loops and uses <code class="highlight"><c- k>continue</c-> <c- n>outer</c-><c- p>;</c-></code> itself,
+then the macro effectively expands to <code class="highlight"><c- nl>outer</c-><c- p>:</c-> <c- n>outer</c-><c- o>:</c-></code>.</p>
+    <p>This forces the user to come up with a new label now, for a seemingly arbitrary reason.</p>
+   </div>
    <p>Permitting this case has the benefit that <em>no code at all</em> can become ill-formed through
 applying labels.
 This rule is simple, teachable, and easy to implement.</p>

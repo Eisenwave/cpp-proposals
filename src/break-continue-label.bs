@@ -934,9 +934,25 @@ A more extreme form of the scenario above is:
 ```cpp
 l: l: l: l: f();
 ```
-We also believe that this code should be well-formed.
-There doesn't appear to be any good use for putting the same label on a statement multiple times.
-However, it's also not harmful.
+We also believe that this code should be well-formed because it's not harmful,
+and may be useful in certain, rare situations.
+
+<div class=example>
+A somewhat common C idiom is to expand loops from macros;
+see also [[#against-n3377-macro-loops]].
+
+```cpp
+outer: MY_LOOP_MACRO(/* ... */) {
+    break outer;
+}
+```
+
+If `MY_LOOP_MACRO` already uses an `outer:` label internally,
+perhaps because it expands to two nested loops and uses `continue outer;` itself,
+then the macro effectively expands to `outer: outer:`.
+
+This forces the user to come up with a new label now, for a seemingly arbitrary reason.
+</div>
 
 Permitting this case has the benefit that *no code at all* can become ill-formed through
 applying labels.
