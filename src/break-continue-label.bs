@@ -296,6 +296,13 @@ languages which already support this feature.
         <td>108.9K files</td>
     </tr>
     <tr>
+        <td>TypeScript</td>
+        <td>`label: for (...)`<br>`break label;`</td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">11K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">8.7K files</a></td>
+        <td>18.7K files</td>
+    </tr>
+    <tr>
         <td>Rust</td>
         <td>`label: for (...)`<br>`break 'label;`</td>
         <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">25.1K files</a></td>
@@ -474,6 +481,82 @@ On the contrary, given the precedent set by `if constexpr`, the `for outer` synt
 could mislead a user into believing that `outer` is some kind of contextual keyword.
 These first experiences matter.
 
+#### `do` ... `while` #### {#against-n3777-do-while}
+
+<div class=example>
+[[N3377]] proposes the following syntax for `do` ... `while` loops:
+
+```cpp
+do {
+    // ...
+    break name;
+    // ...
+} while name(/* ... */);
+```
+</div>
+
+This is consistent with `while` loops because the *block-name*
+is always placed after the `while` keyword.
+However, it also means that `break` and `continue` can apply to a *block-name*
+which has not yet appeared in the code.
+This is a readability issue; with the exception of `goto` and labels,
+function bodies can be understood by reading them from top to bottom.
+
+<div class=example>
+In larger functions, this can also be incredibly disorienting:
+
+```cpp
+while /* outer? */(true) {
+    // ...
+    // ...
+    // ...
+    do {
+        while (true) {
+            // ...
+            if (condition)
+                break outer; // <<< you are here
+            // ...
+        }
+        // ...
+        // ...
+        // ...
+    } while /* outer? */(true);
+}
+```
+
+When starting to read this code from the middle
+(perhaps after jumping to a specific line in there),
+the reader doesn't even know whether they should look further up, or further down when
+searching for the loop labeled `outer`.
+</div>
+
+To be fair, `do` ... `while` loops are relatively rare, so assuming that the *block-name*
+can be found above is usually correct.
+However, it is not always correct, and that makes this syntax less ergonomic.
+
+<div class=example>
+On the contrary, the [[N3355]] (and our) syntax *never* have `break` apply to a name
+which appears later:
+
+```cpp
+name: do {
+    // ...
+    break name;
+    // ...    
+} while (/* ... */)
+```
+</div>
+
+The [[N3377]] syntax could be adjusted to place the *block-name* after `do`,
+but every way to proceed has downsides:
+
+- Either `break` can refer to a *block-name* which appears arbitrarily far below, or
+- the *block-name* is not always placed after `while`, which may be hard to teach and remember, or
+- the *block-name* can be placed both after `while` and after `do`, which creates to competing
+    styles for the same construct.
+
+On the contrary, [[N3355]] has no such issues.
+
 #### Repetition #### {#against-n3377-repetition}
 
 In the event that a user wants to be `break` out of a loop and `goto` it,
@@ -508,16 +591,24 @@ label: {
 }
 ```
 
-Note: The Scala language has an almost identical feature, in the form of
-`breakable` blocks in which `break()` can be used to terminate at any point.
+Note: C++ allows you to emulate such `break`s with `goto past_the_block;`,
+but see [[#alternative-goto]].
 
-This is currently *not* proposed, however:
+Other mainstream languages already have such a feature:
+- That code above is valid Java, JavaScript, and TypeScript.
+- When replacing `label` with `'label`, the code is valid Rust.
+- Scala has
+    <a href="https://www.scala-lang.org/api/current/scala/util/control/Breaks.html">`breakable` blocks</a>
+    in which `break()` can be used the same way.
+
+Breaking a *block-statement* is currently *not* proposed, however:
 - What if someone wants to propose `break`ing block statements in the future?
-    There is no obvious syntax for adding an identifier to a *block-statement*.
+    There is no obvious [[N3377]]-like syntax for adding an identifier to a *block-statement*.
+    Are we really certain that we will never want to do this, in the next 50 years?
 - What if someone wants to add such `break`s as a compiler extension right now?
     With the [[N3377]] syntax, this wouldn't make sense,
     considering that "`goto` labels" cannot be addressed by `break` at all.
-- What about future language additions that we want to be `break`able?
+- What about new statement that we want to be `break`able?
     Every new statement would need some unique way of adding a name,
     instead of us being able to use `label:` in every case.
 

@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="652b3430a151d7b11b375a51a6dda0f7289db7e7" name="revision">
+  <meta content="9b1c52713d797084155e34b533ebd3b0159bbd92" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2178,9 +2178,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
          <a href="#opposition-to-n3377"><span class="secno">5.4.1</span> <span class="content">Strong opposition to N3377</span></a>
          <ol class="toc">
           <li><a href="#against-n3377-teachability"><span class="secno">5.4.1.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
-          <li><a href="#against-n3377-repetition"><span class="secno">5.4.1.2</span> <span class="content">Repetition</span></a>
-          <li><a href="#against-n3377-extendability"><span class="secno">5.4.1.3</span> <span class="content">Extendability</span></a>
-          <li><a href="#against-n3377-keywords"><span class="secno">5.4.1.4</span> <span class="content">Blocking contextual keywords</span></a>
+          <li><a href="#against-n3777-do-while"><span class="secno">5.4.1.2</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
+          <li><a href="#against-n3377-repetition"><span class="secno">5.4.1.3</span> <span class="content">Repetition</span></a>
+          <li><a href="#against-n3377-extendability"><span class="secno">5.4.1.4</span> <span class="content">Extendability</span></a>
+          <li><a href="#against-n3377-keywords"><span class="secno">5.4.1.5</span> <span class="content">Blocking contextual keywords</span></a>
          </ol>
        </ol>
       <li>
@@ -2445,6 +2446,12 @@ languages which already support this feature.</p>
       <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">60.3K files</a>
       <td>108.9K files
      <tr>
+      <td>TypeScript
+      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code>
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">11K files</a>
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">8.7K files</a>
+      <td>18.7K files
+     <tr>
       <td>Rust
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> '<c- n>label</c-><c- p>;</c-></code>
       <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">25.1K files</a>
@@ -2578,7 +2585,69 @@ or from prior experience with other languages.
 On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
 could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
 These first experiences matter.</p>
-   <h5 class="heading settled" data-level="5.4.1.2" id="against-n3377-repetition"><span class="secno">5.4.1.2. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
+   <h5 class="heading settled" data-level="5.4.1.2" id="against-n3777-do-while"><span class="secno">5.4.1.2. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
+   <div class="example" id="example-4f8cfce9">
+    <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
+<pre class="language-cpp highlight"><c- k>do</c-> <c- p>{</c->
+    <c- c1>// ...</c->
+    <c- k>break</c-> <c- n>name</c-><c- p>;</c->
+    <c- c1>// ...</c->
+<c- p>}</c-> <c- k>while</c-> <c- n>name</c-><c- p>(</c-><c- d>/* ... */</c-><c- p>);</c->
+</pre>
+   </div>
+   <p>This is consistent with <code class="highlight"><c- k>while</c-></code> loops because the <em>block-name</em> is always placed after the <code class="highlight"><c- k>while</c-></code> keyword.
+However, it also means that <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> can apply to a <em>block-name</em> which has not yet appeared in the code.
+This is a readability issue; with the exception of <code class="highlight"><c- k>goto</c-></code> and labels,
+function bodies can be understood by reading them from top to bottom.</p>
+   <div class="example" id="example-04538084">
+    <a class="self-link" href="#example-04538084"></a> In larger functions, this can also be incredibly disorienting: 
+<pre class="language-cpp highlight"><c- k>while</c-> <c- d>/* outer? */</c-><c- p>(</c->true<c- p>)</c-> <c- p>{</c->
+    <c- c1>// ...</c->
+    <c- c1>// ...</c->
+    <c- c1>// ...</c->
+    <c- k>do</c-> <c- p>{</c->
+        <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
+            <c- c1>// ...</c->
+            <c- k>if</c-> <c- p>(</c-><c- n>condition</c-><c- p>)</c->
+                <c- k>break</c-> <c- n>outer</c-><c- p>;</c-> <c- c1>// &lt;&lt;&lt; you are here</c->
+            <c- c1>// ...</c->
+        <c- p>}</c->
+        <c- c1>// ...</c->
+        <c- c1>// ...</c->
+        <c- c1>// ...</c->
+    <c- p>}</c-> <c- k>while</c-> <c- d>/* outer? */</c-><c- p>(</c->true<c- p>);</c->
+<c- p>}</c->
+</pre>
+    <p>When starting to read this code from the middle
+(perhaps after jumping to a specific line in there),
+the reader doesn’t even know whether they should look further up, or further down when
+searching for the loop labeled <code class="highlight"><c- n>outer</c-></code>.</p>
+   </div>
+   <p>To be fair, <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops are relatively rare, so assuming that the <em>block-name</em> can be found above is usually correct.
+However, it is not always correct, and that makes this syntax less ergonomic.</p>
+   <div class="example" id="example-89bec1a9">
+    <a class="self-link" href="#example-89bec1a9"></a> On the contrary, the <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> (and our) syntax <em>never</em> have <code class="highlight"><c- k>break</c-></code> apply to a name
+which appears later: 
+<pre class="language-cpp highlight"><c- nl>name</c-><c- p>:</c-> <c- k>do</c-> <c- p>{</c->
+    <c- c1>// ...</c->
+    <c- k>break</c-> <c- n>name</c-><c- p>;</c->
+    <c- c1>// ...    </c->
+<c- p>}</c-> <c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c->
+</pre>
+   </div>
+   <p>The <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax could be adjusted to place the <em>block-name</em> after <code class="highlight"><c- k>do</c-></code>,
+but every way to proceed has downsides:</p>
+   <ul>
+    <li data-md>
+     <p>Either <code class="highlight"><c- k>break</c-></code> can refer to a <em>block-name</em> which appears arbitrarily far below, or</p>
+    <li data-md>
+     <p>the <em>block-name</em> is not always placed after <code class="highlight"><c- k>while</c-></code>, which may be hard to teach and remember, or</p>
+    <li data-md>
+     <p>the <em>block-name</em> can be placed both after <code class="highlight"><c- k>while</c-></code> and after <code class="highlight"><c- k>do</c-></code>, which creates to competing
+styles for the same construct.</p>
+   </ul>
+   <p>On the contrary, <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> has no such issues.</p>
+   <h5 class="heading settled" data-level="5.4.1.3" id="against-n3377-repetition"><span class="secno">5.4.1.3. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
    <p>In the event that a user wants to be <code class="highlight"><c- k>break</c-></code> out of a loop and <code class="highlight"><c- k>goto</c-></code> it,
 in the same function, repetition is needed:</p>
 <pre class="language-cpp highlight"><c- k>goto</c-> <c- n>outer</c-><c- p>;</c->
@@ -2600,24 +2669,35 @@ however, we see it as detrimental:</p>
      <p>Otherwise, we refer to the same location in code using two different names,
 which feels disorienting.</p>
    </ul>
-   <h5 class="heading settled" data-level="5.4.1.3" id="against-n3377-extendability"><span class="secno">5.4.1.3. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
+   <h5 class="heading settled" data-level="5.4.1.4" id="against-n3377-extendability"><span class="secno">5.4.1.4. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
    <p>Consider the following (not proposed) construct:</p>
 <pre class="language-cpp highlight"><c- nl>label</c-><c- p>:</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>label</c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <p class="note" role="note"><span class="marker">Note:</span> The Scala language has an almost identical feature, in the form of <code class="highlight"><c- n>breakable</c-></code> blocks in which <code class="highlight"><c- k>break</c-><c- p>()</c-></code> can be used to terminate at any point.</p>
-   <p>This is currently <em>not</em> proposed, however:</p>
+   <p class="note" role="note"><span class="marker">Note:</span> C++ allows you to emulate such <code class="highlight"><c- k>break</c-></code>s with <code class="highlight"><c- k>goto</c-> <c- n>past_the_block</c-><c- p>;</c-></code>,
+but see <a href="#alternative-goto">§ 3.1.1 goto</a>.</p>
+   <p>Other mainstream languages already have such a feature:</p>
+   <ul>
+    <li data-md>
+     <p>That code above is valid Java, JavaScript, and TypeScript.</p>
+    <li data-md>
+     <p>When replacing <code class="highlight"><c- n>label</c-></code> with <code class="highlight">'<c- n>label</c-></code>, the code is valid Rust.</p>
+    <li data-md>
+     <p>Scala has <a href="https://www.scala-lang.org/api/current/scala/util/control/Breaks.html"><code class="highlight"><c- n>breakable</c-></code> blocks</a> in which <code class="highlight"><c- k>break</c-><c- p>()</c-></code> can be used the same way.</p>
+   </ul>
+   <p>Breaking a <em>block-statement</em> is currently <em>not</em> proposed, however:</p>
    <ul>
     <li data-md>
      <p>What if someone wants to propose <code class="highlight"><c- k>break</c-></code>ing block statements in the future?
-There is no obvious syntax for adding an identifier to a <em>block-statement</em>.</p>
+There is no obvious <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a>-like syntax for adding an identifier to a <em>block-statement</em>.
+Are we really certain that we will never want to do this, in the next 50 years?</p>
     <li data-md>
      <p>What if someone wants to add such <code class="highlight"><c- k>break</c-></code>s as a compiler extension right now?
 With the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax, this wouldn’t make sense,
 considering that "<code class="highlight"><c- k>goto</c-></code> labels" cannot be addressed by <code class="highlight"><c- k>break</c-></code> at all.</p>
     <li data-md>
-     <p>What about future language additions that we want to be <code class="highlight"><c- k>break</c-></code>able?
+     <p>What about new statement that we want to be <code class="highlight"><c- k>break</c-></code>able?
 Every new statement would need some unique way of adding a name,
 instead of us being able to use <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> in every case.</p>
    </ul>
@@ -2631,7 +2711,7 @@ and is easily compatible with</p>
     <li data-md>
      <p>new language extensions, like <code class="highlight"><c- k>break</c-></code> for block-statements.</p>
    </ul>
-   <h5 class="heading settled" data-level="5.4.1.4" id="against-n3377-keywords"><span class="secno">5.4.1.4. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
+   <h5 class="heading settled" data-level="5.4.1.5" id="against-n3377-keywords"><span class="secno">5.4.1.5. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
    <p>Considering that the user is able to add arbitrary identifiers after <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>for</c-></code>,
 this makes it impossible to add future contextual keywords in that place without
 potentially breaking code:</p>
