@@ -256,6 +256,32 @@ but will find themselves disappointed.
 [[StackOverflow]] <i>"Can I use break to exit multiple nested `for` loops?"</i>
 shows that there is interest in this feature (393K views at the time of writing).
 
+### Poll ### {#poll}
+
+Another way to measure interest is to simply ask C++ users.
+The following is a committee-style poll (source: [[TCCPP]]) from the Discord server
+[Together C & C++](https://discord.gg/tccpp):
+
+<blockquote>
+Should C++ have "break label" and "continue label" statements
+to apply break/continue to nested loops or switches?
+
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>15</td><td>17</td><td>11</td><td>4</td><td>3</td>
+</tr>
+</table>
+</blockquote>
+
+Note: The results of this poll are not yet final; this is a snapshot of 50 votes
+at the time of writing.
+
+Note: It is unknown how many voters were aware of the accepted C2y feature before
+casting their vote, which may be giving the poll a bias against.
+
 ### How common is `break`/`continue` with labels? ### {#how-common-is-break-continue-label}
 
 To further quantify the popularity, we can use GitHub code search for various
@@ -1237,6 +1263,8 @@ I thank Sebastian Wittmeier for providing a list of languages that support both
 `goto` and `break`/`last` with the same label syntax.
 This has been helpful for writing [[#against-n3377-breaking-precedent]].
 
+I thank the
+[Together C & C++](https://discord.gg/tccpp) community for respond to my poll; see [[TCCPP]].
 
 <pre class=biblio>
 {
@@ -1276,6 +1304,10 @@ This has been helpful for writing [[#against-n3377-breaking-precedent]].
         "authors": ["Troy D. Hanson", "Arthur O'Dwyer"],
         "title": "uthash User Guide: Deletion-safe iteration",
         "href": "https://troydhanson.github.io/uthash/userguide.html#deletesafe"
+    },
+    "TCCPP": {
+        "title": "Poll at Together C & C++ (discord.gg/tccpp)",
+        "href": "https://discord.com/channels/331718482485837825/851121440425639956/1318965556128383029"
     },
     "N3355": {
         "authors": ["Alex Celeste"],

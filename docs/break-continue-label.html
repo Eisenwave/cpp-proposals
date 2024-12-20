@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5d72d4b6ac370155dac4631a8de85c287b95e10c" name="revision">
+  <meta content="746623ec7b6643f8149a2420b66018a4e143393a" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2174,7 +2174,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li>
        <a href="#argumentum-ad-populum"><span class="secno">3.2</span> <span class="content">Argumentum ad populum</span></a>
        <ol class="toc">
-        <li><a href="#how-common-is-break-continue-label"><span class="secno">3.2.1</span> <span class="content">How common is <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> with labels?</span></a>
+        <li><a href="#poll"><span class="secno">3.2.1</span> <span class="content">Poll</span></a>
+        <li><a href="#how-common-is-break-continue-label"><span class="secno">3.2.2</span> <span class="content">How common is <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> with labels?</span></a>
        </ol>
       <li><a href="#c2y-compatibility"><span class="secno">3.3</span> <span class="content">C2y compatibility</span></a>
      </ol>
@@ -2435,7 +2436,33 @@ When Java, JavaScript, Rust, or Kotlin developers pick up C++,
 they may expect that C++ can <code class="highlight"><c- k>break</c-></code> out of nested loops as well,
 but will find themselves disappointed.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow" title="Can I use break to exit multiple nested &apos;for&apos; loops?">[StackOverflow]</a> <i>"Can I use break to exit multiple nested <code class="highlight"><c- k>for</c-></code> loops?"</i> shows that there is interest in this feature (393K views at the time of writing).</p>
-   <h4 class="heading settled" data-level="3.2.1" id="how-common-is-break-continue-label"><span class="secno">3.2.1. </span><span class="content">How common is <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> with labels?</span><a class="self-link" href="#how-common-is-break-continue-label"></a></h4>
+   <h4 class="heading settled" data-level="3.2.1" id="poll"><span class="secno">3.2.1. </span><span class="content">Poll</span><a class="self-link" href="#poll"></a></h4>
+   <p>Another way to measure interest is to simply ask C++ users.
+The following is a committee-style poll (source: <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>) from the Discord server <a href="https://discord.gg/tccpp">Together C &amp; C++</a>:</p>
+   <blockquote>
+     Should C++ have "break label" and "continue label" statements
+to apply break/continue to nested loops or switches? 
+    <table>
+     <tbody>
+      <tr>
+       <td>SF
+       <td>F
+       <td>N
+       <td>A
+       <td>SA
+      <tr>
+       <td>15
+       <td>17
+       <td>11
+       <td>4
+       <td>3
+    </table>
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> The results of this poll are not yet final; this is a snapshot of 50 votes
+at the time of writing.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> It is unknown how many voters were aware of the accepted C2y feature before
+casting their vote, which may be giving the poll a bias against.</p>
+   <h4 class="heading settled" data-level="3.2.2" id="how-common-is-break-continue-label"><span class="secno">3.2.2. </span><span class="content">How common is <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> with labels?</span><a class="self-link" href="#how-common-is-break-continue-label"></a></h4>
    <p>To further quantify the popularity, we can use GitHub code search for various
 languages which already support this feature.
 The following table counts only control statements with a label, <em>not</em> plain <code class="highlight"><c- k>break</c-><c- p>;</c-></code>, <code class="highlight"><c- k>continue</c-><c- p>;</c-></code>, etc.</p>
@@ -2631,7 +2658,7 @@ disambiguates code (with <a data-link-type="biblio" href="#biblio-n3377" title="
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- k>for</c-> <c- n>name</c-></code>, they know that this <code class="highlight"><c- n>name</c-></code> is a target for <code class="highlight"><c- k>break</c-></code> or <code class="highlight"><c- k>continue</c-></code>, and cannot be jumped to with <code class="highlight"><c- k>goto</c-></code>.</p>
    </ul>
-   <p>For C, this is not a negligible concern. <code class="highlight"><c- k>goto</c-></code> is slightly more common than <code class="highlight"><c- k>continue</c-><c- p>;</c-></code> in C code on GitHub (source: <a href="#how-common-is-break-continue-label">§ 3.2.1 How common is break/continue with labels?</a>),
+   <p>For C, this is not a negligible concern. <code class="highlight"><c- k>goto</c-></code> is slightly more common than <code class="highlight"><c- k>continue</c-><c- p>;</c-></code> in C code on GitHub (source: <a href="#how-common-is-break-continue-label">§ 3.2.2 How common is break/continue with labels?</a>),
 but approx. half as common as <code class="highlight"><c- k>break</c-><c- p>;</c-></code>.
 This means that for any <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> with the <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax in C,
 there is a decent chance that there are <code class="highlight"><c- k>goto</c-></code>s nearby.</p>
@@ -2717,7 +2744,7 @@ because they could reasonably expect <code class="highlight"><c- nl>label</c-><c
 for multiple decades now.
 It is extremely well understood, and has been replicated by other C-esque languages, such as
 Java, Rust, JavaScript, Kotlin, and more.
-Based on the numbers in <a href="#how-common-is-break-continue-label">§ 3.2.1 How common is break/continue with labels?</a>, we can assume that <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>-like
+Based on the numbers in <a href="#how-common-is-break-continue-label">§ 3.2.2 How common is break/continue with labels?</a>, we can assume that <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>-like
 syntax has been used in over a million files already.</p>
    <p>Now, decades after the fact, and a million files later,
 we need to invent our own, novel syntax <em>just</em> for labeling loops and <code class="highlight"><c- k>switch</c-></code>es?
@@ -3179,6 +3206,7 @@ a label located
    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
 This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.1 Breaking precedent of most prior art</a>.</p>
+   <p>I thank the <a href="https://discord.gg/tccpp">Together C &amp; C++</a> community for respond to my poll; see <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>.</p>
   </main>
 <script>
 (function() {
@@ -3337,6 +3365,8 @@ This has been helpful for writing <a href="#against-n3377-breaking-precedent">§
    <dd>Faken. <a href="https://stackoverflow.com/q/1257744/5740428"><cite>Can I use break to exit multiple nested 'for' loops?</cite></a>. 10 Aug 2009. URL: <a href="https://stackoverflow.com/q/1257744/5740428">https://stackoverflow.com/q/1257744/5740428</a>
    <dt id="biblio-std-proposals-2">[STD-PROPOSALS-2]
    <dd>Filip. <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php"><cite>Improving break &amp; continue</cite></a>. URL: <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php">https://lists.isocpp.org/std-proposals/2024/11/11585.php</a>
+   <dt id="biblio-tccpp">[TCCPP]
+   <dd><a href="https://discord.com/channels/331718482485837825/851121440425639956/1318965556128383029"><cite>Poll at Together C &amp; C++ (discord.gg/tccpp)</cite></a>. URL: <a href="https://discord.com/channels/331718482485837825/851121440425639956/1318965556128383029">https://discord.com/channels/331718482485837825/851121440425639956/1318965556128383029</a>
    <dt id="biblio-uthashdocs">[UthashDocs]
    <dd>Troy D. Hanson; Arthur O'Dwyer. <a href="https://troydhanson.github.io/uthash/userguide.html#deletesafe"><cite>uthash User Guide: Deletion-safe iteration</cite></a>. URL: <a href="https://troydhanson.github.io/uthash/userguide.html#deletesafe">https://troydhanson.github.io/uthash/userguide.html#deletesafe</a>
   </dl>
