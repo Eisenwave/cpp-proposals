@@ -385,8 +385,6 @@ The following table counts only control statements with a label,
 Based on this, we can reasonably estimate that there are at least one million files
 in the world which use labeled `break`/`continue` (or an equivalent construct).
 
-Note: Data for Go could not be obtained because of an internal error with GitHub code search.
-
 Note: The `break` and `continue` columns also count equivalent constructs, such as Perl's `last`.
 
 Note: This language list is not exhaustive and the search only includes open-source code bases on GitHub.
