@@ -329,14 +329,6 @@ The following table counts only control statements with a label,
         <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">12K files</a></td>
     </tr>
     <tr>
-        <td>Ruby</td>
-        <td>`label: loop`<br>`break :label;`<br>`continue :label;`</td>
-        <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&type=code">920 files</a></td>
-        <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29continue+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&type=code">22 files</a></td>
-        <td>944 files</td>
-        <td>N/A</td>
-    </tr>
-    <tr>
         <td>Go</td>
         <td>`label: for ...`<br>`break label;`<br>`continue label;`</td>
         <td>N/A</td>
@@ -820,6 +812,41 @@ wouldn't have been blocked by [[N3377]] syntax either (if [[N3377]] was part of 
 Nonetheless, it is substantial commitment to block contextual keywords with the [[N3377]] syntax,
 and we don't see that commitment as justified. 
 
+#### Labeling loops expanded from macros #### {#against-n3377-macro-loops}
+
+Because [[N3355]] loop labels are prepended, they can also be applied to loops
+expanded from macros.
+Such macro-expanded loops are relatively common in C.
+
+<div class=example>
+The `HASH_ITER` macro from uthash expands to a for loop;
+see [[UthashDocs]].
+
+```cpp
+#define HASH_ITER(hh,head,el,tmp)                                                              \
+for(((el)=(head)), ((*(char**)(&(tmp)))=(char*)((head!=NULL)?(head)->hh.next:NULL));           \
+  (el) != NULL; ((el)=(tmp)), ((*(char**)(&(tmp)))=(char*)((tmp!=NULL)?(tmp)->hh.next:NULL)))
+```
+
+The [[N3355]] syntax lets the use `break` out of a `HASH_ITER` loop:
+```cpp
+struct my_struct *current_user, *tmp;
+
+outer: HASH_ITER(hh, users, current_user, tmp) {
+    for (/* ... */) {
+        if (/* ... */) break outer;
+    }
+}
+```
+</div>
+
+The [[N3377]] syntax makes it impossible to apply labels to existing such loop macros.
+To add a *block-name*, cooperation from the library author is needed.
+
+Note: This argument is not so important to C++ because such loops would idiomatically be written
+as a function template containing a loop;
+instead, this argument is targeted towards C developers, who cannot use templates.
+
 
 ## Changes to labels ## {#changes-to-labels}
 
@@ -1228,6 +1255,11 @@ This has been helpful for writing [[#against-n3377-breaking-precedent]].
         "title": "Can I use break to exit multiple nested 'for' loops?",
         "href": "https://stackoverflow.com/q/1257744/5740428",
         "date": "10 Aug 2009"
+    },
+    "UthashDocs": {
+        "authors": ["Troy D. Hanson", "Arthur O'Dwyer"],
+        "title": "uthash User Guide: Deletion-safe iteration",
+        "href": "https://troydhanson.github.io/uthash/userguide.html#deletesafe"
     },
     "N3355": {
         "authors": ["Alex Celeste"],

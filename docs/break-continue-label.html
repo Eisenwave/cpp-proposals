@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="15957bacd92e00382936f5e667595af742b0d3b3" name="revision">
+  <meta content="132a911ced329bdccdf0b3f027f9a189a4bdb61b" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2202,6 +2202,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
           <li><a href="#against-n3377-repetition"><span class="secno">4.4.2.5</span> <span class="content">Repetition</span></a>
           <li><a href="#against-n3377-extendability"><span class="secno">4.4.2.6</span> <span class="content">Extendability</span></a>
           <li><a href="#against-n3377-keywords"><span class="secno">4.4.2.7</span> <span class="content">Blocking contextual keywords</span></a>
+          <li><a href="#against-n3377-macro-loops"><span class="secno">4.4.2.8</span> <span class="content">Labeling loops expanded from macros</span></a>
          </ol>
        </ol>
       <li>
@@ -2496,13 +2497,6 @@ The following table counts only control statements with a label, <em>not</em> pl
       <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">2.2K files</a>
       <td>5.5K files
       <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">12K files</a>
-     <tr>
-      <td>Ruby
-      <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- n>loop</c-></code><br><code class="highlight"><c- nl>break</c-> <c- p>:</c-><c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- nl>continue</c-> <c- p>:</c-><c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29break+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">920 files</a>
-      <td><a href="https://github.com/search?q=language%3ARuby+%2F%28%3F-i%29continue+%3F%3A%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">22 files</a>
-      <td>944 files
-      <td>N/A
      <tr>
       <td>Go
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
@@ -2889,6 +2883,32 @@ There is precedent for such changes in C++, in the form if <code class="highligh
 To be fair, <code class="highlight"><c- k>constexpr</c-></code> is a true keyword, so the addition of <code class="highlight"><c- k>constexpr</c-></code> after <code class="highlight"><c- k>if</c-></code> wouldn’t have been blocked by <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax either (if <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> was part of C++ at the time).</p>
    <p>Nonetheless, it is substantial commitment to block contextual keywords with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax,
 and we don’t see that commitment as justified.</p>
+   <h5 class="heading settled" data-level="4.4.2.8" id="against-n3377-macro-loops"><span class="secno">4.4.2.8. </span><span class="content">Labeling loops expanded from macros</span><a class="self-link" href="#against-n3377-macro-loops"></a></h5>
+   <p>Because <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> loop labels are prepended, they can also be applied to loops
+expanded from macros.
+Such macro-expanded loops are relatively common in C.</p>
+   <div class="example" id="example-5ce8c496">
+    <a class="self-link" href="#example-5ce8c496"></a> The <code class="highlight"><c- n>HASH_ITER</c-></code> macro from uthash expands to a for loop;
+see <a data-link-type="biblio" href="#biblio-uthashdocs" title="uthash User Guide: Deletion-safe iteration">[UthashDocs]</a>. 
+<pre class="language-cpp highlight"><c- cp>#define HASH_ITER(hh,head,el,tmp)                                                              \</c->
+<c- cp>for(((el)=(head)), ((*(char**)(&amp;(tmp)))=(char*)((head!=NULL)?(head)->hh.next:NULL));           \</c->
+<c- cp>  (el) != NULL; ((el)=(tmp)), ((*(char**)(&amp;(tmp)))=(char*)((tmp!=NULL)?(tmp)->hh.next:NULL)))</c->
+</pre>
+    <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax lets the use <code class="highlight"><c- k>break</c-></code> out of a <code class="highlight"><c- n>HASH_ITER</c-></code> loop:</p>
+<pre class="language-cpp highlight"><c- k>struct</c-> <c- nc>my_struct</c-> <c- o>*</c-><c- n>current_user</c-><c- p>,</c-> <c- o>*</c-><c- n>tmp</c-><c- p>;</c->
+
+<c- nl>outer</c-><c- p>:</c-> <c- n>HASH_ITER</c-><c- p>(</c-><c- n>hh</c-><c- p>,</c-> <c- n>users</c-><c- p>,</c-> <c- n>current_user</c-><c- p>,</c-> <c- n>tmp</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>if</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- k>break</c-> <c- n>outer</c-><c- p>;</c->
+    <c- p>}</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p>The <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax makes it impossible to apply labels to existing such loop macros.
+To add a <em>block-name</em>, cooperation from the library author is needed.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This argument is not so important to C++ because such loops would idiomatically be written
+as a function template containing a loop;
+instead, this argument is targeted towards C developers, who cannot use templates.</p>
    <h3 class="heading settled" data-level="4.5" id="changes-to-labels"><span class="secno">4.5. </span><span class="content">Changes to labels</span><a class="self-link" href="#changes-to-labels"></a></h3>
    <p><a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> points out legitimate issues with reusing the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax (see <a href="#syntax">§ 4.4 What about syntax?</a>).
 However, as stated, we strongly oppose the proposed <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax,
@@ -3306,4 +3326,6 @@ This has been helpful for writing <a href="#against-n3377-breaking-precedent">§
    <dd>Faken. <a href="https://stackoverflow.com/q/1257744/5740428"><cite>Can I use break to exit multiple nested 'for' loops?</cite></a>. 10 Aug 2009. URL: <a href="https://stackoverflow.com/q/1257744/5740428">https://stackoverflow.com/q/1257744/5740428</a>
    <dt id="biblio-std-proposals-2">[STD-PROPOSALS-2]
    <dd>Filip. <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php"><cite>Improving break &amp; continue</cite></a>. URL: <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php">https://lists.isocpp.org/std-proposals/2024/11/11585.php</a>
+   <dt id="biblio-uthashdocs">[UthashDocs]
+   <dd>Troy D. Hanson; Arthur O'Dwyer. <a href="https://troydhanson.github.io/uthash/userguide.html#deletesafe"><cite>uthash User Guide: Deletion-safe iteration</cite></a>. URL: <a href="https://troydhanson.github.io/uthash/userguide.html#deletesafe">https://troydhanson.github.io/uthash/userguide.html#deletesafe</a>
   </dl>
