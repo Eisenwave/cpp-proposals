@@ -256,8 +256,12 @@ but will find themselves disappointed.
 [[StackOverflow]] <i>"Can I use break to exit multiple nested `for` loops?"</i>
 shows that there is interest in this feature (393K views at the time of writing).
 
+### How common is `break`/`continue` with labels? ### {#how-common-is-break-continue-label}
+
 To further quantify the popularity, we can use GitHub code search for various
 languages which already support this feature.
+The following table counts only control statements with a label,
+*not* plain `break;`, `continue;`, etc.
 
 <table>
     <tr>
@@ -453,6 +457,33 @@ multiple times, and lets them repurpose simple names like `outer` and `inner` wi
 We address these technical issues in [[#changes-to-labels]], however,
 not with the [[N3377]] syntax.
 
+### Two sets of labels for disambiguation ### {#n3377-label-disambiguation}
+
+Another benefit is that `goto` jump targets and loop names don't share syntax, and this
+disambiguates code to some extent:
+- When a developer sees `label:`, they know that this label is a jump target for `goto`.
+- When a developer sees `for name`, they know that this `name`
+    is a target for `break` or `continue`, and cannot be jumped to with `goto`.
+
+We don't attempt to fix this issue because we don't believe that this ambiguity is a major problem:
+- When a developer sees `outer: for ...`, they can reasonably assume that `outer:` is
+    targeted by `break` or `continue`.
+    With how uncommon `goto` already is
+    and will become once more uses are replaced by this proposal,
+    this should be a reliable guess.
+- When a developer sees `cleanup: free(pointer)`, they know with absolute certainty that `cleanup:`
+    is a jump target for `goto` because `break` and `continue` can only target loops.
+
+Furthermore, disambiguation is possible through naming conventions for labels.
+For example, `break` and `continue` targets can be named `xzy_loop`,
+and such names can be avoided for `goto` jump targets.
+
+Virtually every programming community already uses naming conventions for disambiguation.
+For example, method names conventionally use `camelCase` in Java,
+and class names conventionally use `PascalCase`.
+This seems like a reasonable solution for disambiguation.
+We don't need to create two distinct label syntaxes to accomplish this.
+
 ### Strong opposition to N3377 ### {#opposition-to-n3377}
 
 We strongly oppose the N3377 syntax for multiple reasons.
@@ -476,6 +507,34 @@ or from prior experience with other languages.
 On the contrary, given the precedent set by `if constexpr`, the `for outer` syntax
 could mislead a user into believing that `outer` is some kind of contextual keyword.
 These first experiences matter.
+
+#### Breaking precedent of all prior art #### {#against-n3377-breaking-precedent}
+
+To our knowledge, every language that supports both labeled loop control
+and `goto` statements has a single label syntax.
+[[N3377]] breaks this pattern.
+
+<div class=example>
+Perl supports `goto LABEL`, `last LABEL`, and `next LABEL`, with shared label syntax:
+
+```perl
+goto LINE;
+LINE: while (true) {
+    last LINE;  # like our proposed break LINE
+}
+```
+</div>
+
+<div class=example>
+Go supports `goto Label`, `break Label`, and `continue Label`, with shared label syntax:
+
+```go
+goto OuterLoop
+OuterLoop: while true {
+    break OuterLoop
+}
+```
+</div>
 
 #### `do` ... `while` #### {#against-n3777-do-while}
 
