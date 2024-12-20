@@ -430,7 +430,7 @@ This syntax is
 - has been used in a variety of other languages, and
 - is easy to implement, considering that labels already exist in that form.
 
-It should be noted that there is a new competing proposal [[N3377]] for C2y, 
+It should be noted that there is a new competing proposal [[N3377]] for C2y,
 which instead proposes:
 
 ```cpp
@@ -442,44 +442,133 @@ for outer (/* ...*/) {
 }
 ```
 
-In summary, the competing syntax has the sole technical benefit that
+In summary, the competing syntax has the technical benefit that
 it doesn't require each `label:` to be unique within a function.
 This allows the developer to expand function-style macros containing labeled loops
 multiple times, and lets them repurpose simple names like `outer` and `inner` within the same function.
 
-We instead address this by permitting the same `label:` multiple times within the same function,
-see [[#changes-to-labels]].
-In that case, `goto duplicate_label;` would be ill-formed due to ambiguity, but `break outer;`
-would be permitted.
-We believe this to be the right direction for both C and C++.
+We address these technical issues in [[#changes-to-labels]], however,
+not with the [[N3377]] syntax.
 
-Furthermore, C++ already has precedent for additional keywords following a statement keyword,
-in the form of `if constexpr`.
-A user may expect `name` in `for name` to be some special keyword that alters the behavior of `for`.
-On the contrary, `name: for` is well-established syntax which ISO C++ has supported since its
-inception.
-It would be a tremendous blunder not to use it.
+### Strong opposition to N3377 ### {#opposition-to-n3377}
+
+We strongly oppose the N3377 syntax for multiple reasons.
+
+#### Teachability, Simplicity, Elegance #### {#against-n3377-teachability}
+
+C and C++ have had the `label:` syntax for labeling statements
+for multiple decades now.
+It is extremely well understood, and has been replicated by other C-esque languages, such as
+Java, Rust, JavaScript, Kotlin, and more.
+Based on the numbers in [[#argumentum-ad-populum]], we can assume that `label:`-like
+syntax has been used in over a million files already.
+
+Now, decades after the fact, and a million files later,
+we need to invent our own, novel syntax *just* for labeling loops and `switch`es?
+No, we don't!
+
+The [[N3355]] syntax can be intuitively understood at first glance,
+either through intuition from `goto` labels,
+or from prior experience with other languages.
+
+#### Repetition #### {#against-n3377-repetition}
+
+In the event that a user wants to be `break` out of a loop and `goto` it,
+in the same function, repetition is needed:
+
+```cpp
+goto outer;
+// ...
+outer: while outer(true) {
+    while(true) {
+        break outer;
+    }
+}
+```
+
+Since traditional labels are entirely separate from the loop names,
+we need to specify the `outer` name twice here.
+Some people may consider it a benefit to keep loop names strictly separate from jump targets,
+however, we see it as detrimental:
+
+- If the label is the same as the loop name, we repeat ourselves.
+- Otherwise, we refer to the same location in code using two different names,
+    which feels disorienting.
+
+#### Extendability #### {#against-n3377-extendability}
+
+Consider the following (not proposed) construct:
+
+```cpp
+label: {
+    break label;
+}
+```
+
+Note: The Scala language has an almost identical feature, in the form of
+`breakable` blocks in which `break()` can be used to terminate at any point.
+
+This is currently *not* proposed, however:
+- What if someone wants to propose `break`ing block statements in the future?
+    There is no obvious syntax for adding an identifier to a *block-statement*.
+- What if someone wants to add such `break`s as a compiler extension right now?
+    With the [[N3377]] syntax, this wouldn't make sense,
+    considering that "`goto` labels" cannot be addressed by `break` at all.
+- What about future language additions that we want to be `break`able?
+    Every new statement would need some unique way of adding a name,
+    instead of us being able to use `label:` in every case.
+
+On the contrary, the [[N3355]] syntax makes no such problematic commitments,
+and is easily compatible with
+- existing language extensions like "GCC computed goto",
+- every new statements in the future, and
+- new language extensions, like `break` for block-statements.
+
+#### Blocking contextual keywords #### {#against-n3377-keywords}
+
+Considering that the user is able to add arbitrary identifiers after `while` and `for`,
+this makes it impossible to add future contextual keywords in that place without
+potentially breaking code:
+
+```cpp
+while parallel(/* ... */)
+```
+
+If `parallel` was used as a label here, that may be broken by "parallel while loops" in the future.
+There is precedent for such changes in C++, in the form if `if constexpr`.
+To be fair, `constexpr` is a true keyword, so the addition of `constexpr` after `if`
+wouldn't have been blocked by [[N3377]] syntax either (if [[N3377]] was part of C++ at the time).
+
+Nonetheless, it is substantial commitment to block contextual keywords with the [[N3377]] syntax,
+and we don't see that commitment as justified. 
+
 
 ## Changes to labels ## {#changes-to-labels}
 
-As pointed out by [[N3377]] (see [[#syntax]]),
-we adjust the semantics of labels to allow reusing them multiple times within the same function.
+[[N3377]] points out legitimate issues with reusing the `label:` syntax (see [[#syntax]]).
+However, as stated, we strongly oppose the proposed [[N3377]] syntax,
+and we propose to make changes to label semantics instead.
+These changes keep the syntax the same as [[N3355]].
+
+First and foremost, we permit the same `label:` multiple times within the same function,
+see [[#changes-to-labels]].
 
 <div class="example">
-The following code will be well-formed:
 
 ```cpp
 outer: while (true) {
     inner: while (true) {
-        break outer;
+        break outer; // breaks enclosing outer while loop
     }
 }
 
-outer: while (true) {
+outer: while (true) { // OK, reusing label is permitted
     inner: while (true) {
-        break outer;
+        break outer; // breaks enclosing outer while loop
     }
 }
+
+goto outer; // error: ambiguous jump target
 ```
 </div>
 
@@ -488,7 +577,7 @@ When using the labels `'outer` and `'inner` instead, this code is also well-form
 
 In other words, we are doubling down on the [[N3355]] syntax and changing labels to behave
 more like other mainstream languages.
-C and C++ should not reinvent the wheel here by coming up with their own, novel way of labeling loops.
+
 
 ### New labels - `goto` issues ### {#new-labels-goto}
 
