@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="132a911ced329bdccdf0b3f027f9a189a4bdb61b" name="revision">
+  <meta content="865765bb9e62c2cddd0cea7d3a05d83d8658db7b" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2887,14 +2887,14 @@ and we don’t see that commitment as justified.</p>
    <p>Because <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> loop labels are prepended, they can also be applied to loops
 expanded from macros.
 Such macro-expanded loops are relatively common in C.</p>
-   <div class="example" id="example-5ce8c496">
-    <a class="self-link" href="#example-5ce8c496"></a> The <code class="highlight"><c- n>HASH_ITER</c-></code> macro from uthash expands to a for loop;
+   <div class="example" id="example-87b59d33">
+    <a class="self-link" href="#example-87b59d33"></a> The <code class="highlight"><c- n>HASH_ITER</c-></code> macro from uthash expands to a for loop;
 see <a data-link-type="biblio" href="#biblio-uthashdocs" title="uthash User Guide: Deletion-safe iteration">[UthashDocs]</a>. 
 <pre class="language-cpp highlight"><c- cp>#define HASH_ITER(hh,head,el,tmp)                                                              \</c->
 <c- cp>for(((el)=(head)), ((*(char**)(&amp;(tmp)))=(char*)((head!=NULL)?(head)->hh.next:NULL));           \</c->
 <c- cp>  (el) != NULL; ((el)=(tmp)), ((*(char**)(&amp;(tmp)))=(char*)((tmp!=NULL)?(tmp)->hh.next:NULL)))</c->
 </pre>
-    <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax lets the use <code class="highlight"><c- k>break</c-></code> out of a <code class="highlight"><c- n>HASH_ITER</c-></code> loop:</p>
+    <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax lets the user <code class="highlight"><c- k>break</c-></code> out of a <code class="highlight"><c- n>HASH_ITER</c-></code> loop as follows:</p>
 <pre class="language-cpp highlight"><c- k>struct</c-> <c- nc>my_struct</c-> <c- o>*</c-><c- n>current_user</c-><c- p>,</c-> <c- o>*</c-><c- n>tmp</c-><c- p>;</c->
 
 <c- nl>outer</c-><c- p>:</c-> <c- n>HASH_ITER</c-><c- p>(</c-><c- n>hh</c-><c- p>,</c-> <c- n>users</c-><c- p>,</c-> <c- n>current_user</c-><c- p>,</c-> <c- n>tmp</c-><c- p>)</c-> <c- p>{</c->

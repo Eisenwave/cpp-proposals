@@ -828,7 +828,7 @@ for(((el)=(head)), ((*(char**)(&(tmp)))=(char*)((head!=NULL)?(head)->hh.next:NUL
   (el) != NULL; ((el)=(tmp)), ((*(char**)(&(tmp)))=(char*)((tmp!=NULL)?(tmp)->hh.next:NULL)))
 ```
 
-The [[N3355]] syntax lets the use `break` out of a `HASH_ITER` loop:
+The [[N3355]] syntax lets the user `break` out of a `HASH_ITER` loop as follows:
 ```cpp
 struct my_struct *current_user, *tmp;
 
