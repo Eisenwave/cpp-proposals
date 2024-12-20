@@ -658,6 +658,19 @@ On the contrary, given the precedent set by `if constexpr`, the `for outer` synt
 could mislead a user into believing that `outer` is some kind of contextual keyword.
 These first experiences matter.
 
+#### Reusable syntax in multi-language systems #### {#against-n3377-multi-language}
+
+C and C++ do not exist in a vacuum.
+They are often used as part of a multi-language system,
+like being used to implement lower-level details of a larger system,
+written in another language (e.g. Numpy, which combines Python, C, and C++).
+
+In such a multi-language system,
+it is highly beneficial to have similar syntax because developers don't have to learn
+two entirely different languages, but rather, one and a half.
+With [[N3355]], C and C++ could have identical label syntax to JavaScript, Java,
+and other languages with which they are paired.
+[[N3377]] wastes this opportunity.
 
 #### `do` ... `while` #### {#against-n3777-do-while}
 
