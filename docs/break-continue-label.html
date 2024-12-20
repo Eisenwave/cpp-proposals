@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c6903f6d007bab18799834bf6ae6bcee91c3c592" name="revision">
+  <meta content="24f68d5232128f2d6db797111de30e2175946c6c" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2182,7 +2182,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
          <a href="#opposition-to-n3377"><span class="secno">4.4.2</span> <span class="content">Strong opposition to N3377</span></a>
          <ol class="toc">
           <li><a href="#against-n3377-teachability"><span class="secno">4.4.2.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
-          <li><a href="#against-n3377-breaking-precedent"><span class="secno">4.4.2.2</span> <span class="content">Breaking precedent of all prior art</span></a>
+          <li><a href="#against-n3377-breaking-precedent"><span class="secno">4.4.2.2</span> <span class="content">Breaking precedent of most prior art</span></a>
           <li><a href="#against-n3777-do-while"><span class="secno">4.4.2.3</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
           <li><a href="#against-n3377-pronunciation"><span class="secno">4.4.2.4</span> <span class="content">Code pronunciation</span></a>
           <li><a href="#against-n3377-repetition"><span class="secno">4.4.2.5</span> <span class="content">Repetition</span></a>
@@ -2628,8 +2628,8 @@ or from prior experience with other languages.
 On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
 could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
 These first experiences matter.</p>
-   <h5 class="heading settled" data-level="4.4.2.2" id="against-n3377-breaking-precedent"><span class="secno">4.4.2.2. </span><span class="content">Breaking precedent of all prior art</span><a class="self-link" href="#against-n3377-breaking-precedent"></a></h5>
-   <p>To our knowledge, every language that supports both labeled loop control
+   <h5 class="heading settled" data-level="4.4.2.2" id="against-n3377-breaking-precedent"><span class="secno">4.4.2.2. </span><span class="content">Breaking precedent of most prior art</span><a class="self-link" href="#against-n3377-breaking-precedent"></a></h5>
+   <p>Most languages that supports both labeled loop control
 and <code class="highlight"><c- k>goto</c-></code> statements has a single label syntax. <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> breaks this pattern.</p>
    <div class="example" id="example-6338a82e">
     <a class="self-link" href="#example-6338a82e"></a> Perl supports <code class="highlight"><c- k>goto</c-> <c- n>LABEL</c-></code>, <code class="highlight"><c- n>last</c-> <c- n>LABEL</c-></code>, and <code class="highlight"><c- n>next</c-> <c- n>LABEL</c-></code>, with shared label syntax: 
@@ -2660,6 +2660,16 @@ for <code class="highlight"><c- k>goto</c-></code> targets and <code class="high
 C is not so different from D or Go that this argument doesn’t apply.</p>
    <p>Such separate syntax would also be very surprising to Go, Perl, and D developers coming to C++
 because they could reasonably expect <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> to work for any kind of jump.</p>
+   <p>To be fair, opposite precedent also exists:</p>
+   <div class="example" id="example-cc9da832">
+    <a class="self-link" href="#example-cc9da832"></a> Ada supports <code class="highlight"><c- k>goto</c-> <c- n>Label</c-></code> with <code class="highlight"><c- o>&lt;&lt;</c-><c- n>Label</c-><c- o>>></c-></code>, and <code class="highlight"><c- n>exit</c-> <c- n>label</c-></code> with <code class="highlight"><c- nl>Label</c-><c- p>:</c-></code>: 
+<pre class="language-ada highlight"><c- kr>goto</c-> <c- n>Target</c-><c- p>;</c->
+<c- nl>&lt;&lt;Target>></c->
+<c- nl>Outer</c-><c- p>:</c-> <c- kr>loop</c->
+    <c- kr>exit</c-> <c- n>Outer</c-><c- p>;</c-> <c- c1>-- like our proposed break Outer</c->
+<c- kr>end</c-> <c- kr>loop</c-> <c- nf>Outer</c-><c- p>;</c->
+</pre>
+   </div>
    <h5 class="heading settled" data-level="4.4.2.3" id="against-n3777-do-while"><span class="secno">4.4.2.3. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
    <div class="example" id="example-4f8cfce9">
     <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
@@ -3072,7 +3082,7 @@ a label located
    </blockquote>
    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
-This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.2 Breaking precedent of all prior art</a>.</p>
+This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.2 Breaking precedent of most prior art</a>.</p>
   </main>
 <script>
 (function() {

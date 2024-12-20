@@ -512,9 +512,9 @@ On the contrary, given the precedent set by `if constexpr`, the `for outer` synt
 could mislead a user into believing that `outer` is some kind of contextual keyword.
 These first experiences matter.
 
-#### Breaking precedent of all prior art #### {#against-n3377-breaking-precedent}
+#### Breaking precedent of most prior art #### {#against-n3377-breaking-precedent}
 
-To our knowledge, every language that supports both labeled loop control
+Most languages that supports both labeled loop control
 and `goto` statements has a single label syntax.
 [[N3377]] breaks this pattern.
 
@@ -559,6 +559,19 @@ C is not so different from D or Go that this argument doesn't apply.
 Such separate syntax would also be very surprising to Go, Perl, and D developers coming to C++
 because they could reasonably expect `label:` to work for any kind of jump.
 
+To be fair, opposite precedent also exists:
+<div class=example>
+Ada supports `goto Label` with `<<Label>>`, and
+`exit label` with `Label:`:
+
+```ada
+goto Target;
+<<Target>>
+Outer: loop
+    exit Outer; -- like our proposed break Outer
+end loop Outer;
+```
+</div>
 
 #### `do` ... `while` #### {#against-n3777-do-while}
 
