@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="fe0a63478975fe238e6d5c8ea73cfa5417f627a8" name="revision">
+  <meta content="76feced0d367d762b42b8edab02cfec9201a94fd" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2480,73 +2480,73 @@ The following table counts only control statements with a label, <em>not</em> pl
      <tr>
       <td>Java
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">377K files</a>
-      <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">122K files</a>
-      <td>499K files
+      <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">424K files</a>
+      <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">152K files</a>
+      <td>576K files
       <td>N/A
      <tr>
       <td>JavaScript
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">48.6K files</a>
-      <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">60.3K files</a>
-      <td>108.9K files
+      <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">53.8K files</a>
+      <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">68.7K files</a>
+      <td>122.5K files
       <td>N/A
      <tr>
       <td>Perl
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- n>last</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- n>next</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29last+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">33.3K files</a>
-      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29next+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">29.4K files</a>
-      <td>62.7K files
-      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">14.5K files</a>
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29last+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">34.9K files</a>
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29next+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">31.7K files</a>
+      <td>66.6K files
+      <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">16.9K files</a>
      <tr>
       <td>Rust
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> '<c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> '<c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">25.1K files</a>
-      <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29continue+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">26.6K files</a>
-      <td>51.7K files
+      <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">30.6K files</a>
+      <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29continue+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">29.1K files</a>
+      <td>59.7K files
       <td>N/A
      <tr>
       <td>TypeScript
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">11K files</a>
-      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">8.7K files</a>
-      <td>18.7K files
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">11.6K files</a>
+      <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">9K files</a>
+      <td>20.6K files
       <td>N/A
      <tr>
       <td>Swift
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-></code>
-      <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&amp;type=code">12.6K files</a>
-      <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%5Cn%2F&amp;type=code">5.6K files</a>
+      <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%5Cn%2F&amp;type=code">12.6K files</a>
+      <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%5Cn%2F&amp;type=code">5.6K files</a>
       <td>18.2K files
       <td>N/A
      <tr>
       <td>Kotlin
       <td><code class="highlight"><c- n>label</c->@ <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c->@<c- n>label</c-></code><br><code class="highlight"><c- k>continue</c->@<c- n>label</c-></code>
-      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">8.7K files</a>
-      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5Ba-zA-Z0-9%5D%2B%2F&amp;type=code">7.5K files</a>
-      <td>16.2K files
+      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5B_a-zA-Z0-9%5D%2B%2F&amp;type=code">8.7K files</a>
+      <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5B_a-zA-Z0-9%5D%2B%2F&amp;type=code">7.6K files</a>
+      <td>16.3K files
       <td>N/A
      <tr>
       <td>D
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">3.3K files</a>
-      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">2.2K files</a>
-      <td>5.5K files
-      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">12K files</a>
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">3.5K files</a>
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">2.6K files</a>
+      <td>6.1K files
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">12.3K files</a>
      <tr>
       <td>Go
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
-      <td>N/A
-      <td>N/A
-      <td>N/A
-      <td>N/A
+      <td><a href="https://github.com/search?q=language%3AGo+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">270 files</a>
+      <td><a href="https://github.com/search?q=language%3AGo+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">252 files</a>
+      <td>522
+      <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">1.5K files</a>
      <tr>
       <td>C
       <td><code class="highlight"><c- nl>label</c-><c- p>:</c-> <c- k>for</c-> <c- p>(...)</c-></code><br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code><br><code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code>
       <td>N/A
       <td>N/A
       <td>N/A
-      <td><a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">6.9M files</a>
+      <td><a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&amp;type=code">7.8M files</a>
    </table>
    <p>Based on this, we can reasonably estimate that there are at least one million files
 in the world which use labeled <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- k>continue</c-></code> (or an equivalent construct).</p>
@@ -2554,7 +2554,7 @@ in the world which use labeled <code class="highlight"><c- k>break</c-></code>/<
    <p class="note" role="note"><span class="marker">Note:</span> The <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> columns also count equivalent constructs, such as Perl’s <code class="highlight"><c- n>last</c-></code>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> This language list is not exhaustive and the search only includes open-source code bases on GitHub.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The D <code class="highlight"><c- k>goto</c-></code> count is inflated by <code class="highlight"><c- k>goto</c-> <c- k>case</c->;</code> and <code class="highlight"><c- k>goto</c-> <c- k>default</c-><c- p>;</c-></code> which perform <code class="highlight"><c- k>switch</c-></code> fallthrough.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> Fun fact: <code class="highlight"><c- k>continue</c-></code> occurs in <a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&amp;type=code">5.8M C files</a>,
+   <p class="note" role="note"><span class="marker">Note:</span> Fun fact: <code class="highlight"><c- k>continue</c-></code> occurs in <a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29continue%3B%2F&amp;type=code">5.8M C files</a>,
 meaning that <code class="highlight"><c- k>goto</c-></code> is more common.</p>
    <h3 class="heading settled" data-level="3.3" id="c2y-compatibility"><span class="secno">3.3. </span><span class="content">C2y compatibility</span><a class="self-link" href="#c2y-compatibility"></a></h3>
    <p>Last but not least, C++ should have <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code> to increase the amount of code that has a direct equivalent in C.
@@ -2587,25 +2587,26 @@ and these are valid concerns in C++ as well.</p>
 surround the statement (where e.g. <code class="highlight"><c- k>if</c-></code> doesn’t count, but <code class="highlight"><c- k>switch</c-></code> and <code class="highlight"><c- k>for</c-></code> count),
 and conclude from this where <code class="highlight"><c- k>break</c-></code> applies.
 By comparison, <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> obviously breaks out of the loop labeled <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>.</p>
-   <p>Thirdly, this construct is a novel idea, similar to <code class="highlight"><c- k>break</c-> <c- n>statement</c-><c- p>;</c-></code> proposed in <a data-link-type="biblio" href="#biblio-p2635r0" title="Enhancing the break statement">[P2635R0]</a>.
+   <p>Thirdly, this construct is an obscure idea (not entirely novel, seen before in PHP).
+It is similar to <code class="highlight"><c- k>break</c-> <c- n>statement</c-><c- p>;</c-></code> proposed in <a data-link-type="biblio" href="#biblio-p2635r0" title="Enhancing the break statement">[P2635R0]</a>.
 The author has seemingly abandoned that proposal.
-In our experience, novel control flow ideas are unpopular and not worth pursuing.
-An extreme negative reaction to novel control flow ideas was seen for
+In our experience, obscure control flow ideas are unpopular and not worth pursuing.
+An extreme negative reaction to obscure control flow ideas was seen for
 the <code class="highlight"><c- k>goto</c-> <c- k>default</c-><c- p>;</c-></code> and <code class="highlight"><c- k>goto</c-> <c- k>case</c-> <c- no>X</c->;</code> statements proposed in <a data-link-type="biblio" href="#biblio-n3879" title="Explicit Flow Control: break label, goto case and explicit switch">[N3879]</a>.
-By comparison, <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> is not a novel idea;
+By comparison, <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> is completely mainstream;
 such code has likely been written a million times or more already
-(based on numbers in <a href="#argumentum-ad-populum">§ 3.2 Argumentum ad populum</a>).</p>
+(based on numbers in <a href="#how-common-is-break-continue-label">§ 3.2.2 How common is break/continue with labels?</a>).</p>
    <p>Yet another novel idea has been suggested at <a data-link-type="biblio" href="#biblio-std-proposals-2" title="Improving break &amp; continue">[std-proposals-2]</a>:</p>
-<pre class="language-cpp highlight"><c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>){</c->
+<pre class="language-cpp highlight"><c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
  <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
-   <c- k>if</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>){</c->
+   <c- k>if</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
      <c- k>break</c-> <c- k>while</c-><c- p>;</c-> <c- c1>// break the while loop, not the for loop</c->
      <c- c1>// break for while; // identical in functioning to the above version</c->
    <c- p>}</c->
  <c- p>}</c->
 <c- p>}</c->
 </pre>
-   <p>This idea has not been received positively, and we strongly oppose it.
+   <p>This idea has been received negatively, and we strongly oppose it.
 It is not as obvious what the targeted statement is, as with <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>,
 and code can easily be broken by relocating the <code class="highlight"><c- k>break</c-> <c- k>for</c-> <c- k>while</c-> <c- k>for</c-><c- p>;</c-></code> or whatever statement somewhere else.</p>
    <h3 class="heading settled" data-level="4.2" id="break-block-statement"><span class="secno">4.2. </span><span class="content">What about <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> for block statements etc.?</span><a class="self-link" href="#break-block-statement"></a></h3>
