@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="183cd57abb07bb171bdafeb09060fdc55867b024" name="revision">
+  <meta content="a9c8002e3876544b725034243d68889444c0e891" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2632,6 +2632,51 @@ In other words, <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> doesn�
 So are we; this code should well-formed if only for the sake of C2y compatibility.</p>
    <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The wording is relative to <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a>.</p>
+   <p>Update <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> paragraph 1 as follows:</p>
+   <blockquote>
+     A label can be added to a statement or used anywhere in a <em>compound-statement</em>. 
+    <div class="indent">
+      <em>label</em>:<br> 
+     <div class="indent"> <em>attribute-specifier-seq</em><sub>opt</sub> <em>identifier</em> <code class="highlight"><c- o>:</c-></code><br> <em>attribute-specifier-seq</em><sub>opt</sub> <code class="highlight"><c- k>case</c-></code> <em>constant-expression</em> <code class="highlight"><c- o>:</c-></code><br> <em>attribute-specifier-seq</em><sub>opt</sub> <code class="highlight"><c- k>default</c-></code> <code class="highlight"><c- o>:</c-></code> </div>
+      <em>labeled-statement</em>:<br> 
+     <div class="indent">
+      <del><em>label</em></del>
+      <ins><em>label-seq</em></ins>
+       <em>statement</em> 
+     </div>
+     <ins><em>label-seq</em>:</ins>
+     <br> 
+     <div class="indent">
+      <ins><em>label-seq</em><sub>opt</sub> <em>label</em></ins>
+     </div>
+    </div>
+     The optional <em>attribute-specifier-seq</em> appertains to the label. 
+    <del>The only use of a label with an <em>identifier</em> is as the target of a <code class="highlight"><c- k>goto</c-></code>.
+No two labels in a function shall have the same identifier.</del>
+     A label can be used in a <code class="highlight"><c- k>goto</c-></code> statement before its introduction. 
+   </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> The grammar change is necessary so that we can apply multiple labels to a single loop,
+like <code class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>for</c-> <c- p>(...)</c-></code>.
+Otherwise, it is more difficult to say when a loop is is labeled by a label,
+since we need to consider all enclosing <em>label-statement</em>s recursively,
+but without other intervening statements.</p>
+   <p>In <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> insert a new paragraph after paragraph 1:</p>
+   <blockquote>
+    <ins> Every <em>label</em> in the <em>label-seq</em> of a <em>labeled-statement</em> <strong>S</strong> <em>labels</em> the <em>statement</em> of <strong>S</strong>. </ins>
+   </blockquote>
+   <p>Update <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> paragraph 3 as follows:</p>
+   <blockquote>
+     A <em>control-flow-limited statement</em> is a statement <strong>S</strong> for which: 
+    <ul>
+     <li> a <code class="highlight"><c- k>case</c-></code> or <code class="highlight"><c- k>default</c-></code> label appearing within <strong>S</strong> shall be associated with a <code class="highlight"><c- k>switch</c-></code> statement ([stmt.switch]) within <strong>S</strong>, and 
+     <li>
+       a label declared in <strong>S</strong> shall only be
+        referred to by a statement 
+      <del>([stmt.goto])</del>
+       in <strong>S</strong>. 
+    </ul>
+   </blockquote>
+   <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.jump.general">[stmt.jump.general]</a> paragraph 1 as follows:</p>
    <blockquote>
      Jump statements unconditionally transfer control. 
@@ -2646,6 +2691,7 @@ So are we; this code should well-formed if only for the sake of C2y compatibilit
      </div>
     </div>
    </blockquote>
+   <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.break">[stmt.break]</a> paragraph 1 as follows:</p>
    <blockquote>
     <ins>A <em>breakable statement</em> is
@@ -2683,6 +2729,7 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
      — <em>end example</em>]
     </div>
    </blockquote>
+   <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a> paragraph 1 as follows:</p>
    <blockquote>
      A <code class="highlight"><c- k>continue</c-></code> statement shall be enclosed by ([stmt.pre]) an <em>iteration-statement</em> ([stmt.iter]). 
@@ -2727,6 +2774,7 @@ enclosing
       is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.
     </p>
    </blockquote>
+   <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.goto">[stmt.goto]</a> paragraph 1 as follows:</p>
    <blockquote>
      The <code class="highlight"><c- k>goto</c-></code> statement unconditionally transfers control to the statement

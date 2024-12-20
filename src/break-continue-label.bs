@@ -603,6 +603,71 @@ del {
 The wording is relative to [[!N5001]].
 
 Update
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+paragraph 1 as follows:
+
+<blockquote>
+A label can be added to a statement or used anywhere in a *compound-statement*.
+<div class="indent">
+    *label*:<br>
+    <div class="indent">
+        *attribute-specifier-seq*<sub>opt</sub> *identifier* `:`<br>
+        *attribute-specifier-seq*<sub>opt</sub> `case` *constant-expression* `:`<br>
+        *attribute-specifier-seq*<sub>opt</sub> `default` `:`
+    </div>
+    *labeled-statement*:<br>
+    <div class="indent">
+        <del>*label*</del><ins>*label-seq*</ins> *statement*
+    </div>
+    <ins>*label-seq*:</ins><br>
+    <div class="indent">
+        <ins>*label-seq*<sub>opt</sub> *label*</ins>
+    </div>
+</div>
+The optional *attribute-specifier-seq* appertains to the label.
+<del>The only use of a label with an *identifier* is as the target of a `goto`.
+No two labels in a function shall have the same identifier.</del>
+A label can be used in a `goto` statement before its introduction.
+</blockquote>
+
+Note: The grammar change is necessary so that we can apply multiple labels to a single loop,
+like `a: b: for (...)`.
+Otherwise, it is more difficult to say when a loop is is labeled by a label,
+since we need to consider all enclosing *label-statement*s recursively,
+but without other intervening statements.
+
+In
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+insert a new paragraph after paragraph 1:
+<blockquote>
+<ins>
+    Every *label* in the *label-seq* of a *labeled-statement* **S** *labels*
+    the *statement* of **S**.
+</ins>
+</blockquote>
+
+Update
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+paragraph 3 as follows:
+<blockquote>
+A *control-flow-limited statement* is a statement **S** for which:
+<ul>
+    <li>
+        a `case` or `default` label appearing within **S**
+        shall be associated with a `switch` statement ([stmt.switch]) within **S**, and
+    </li>
+    <li>
+        a label declared in **S** shall only be
+        referred to by a statement <del>([stmt.goto])</del> in **S**.
+    </li>
+</ul>
+</blockquote>
+
+
+
+---
+
+Update
 <a href="https://eel.is/c++draft/stmt.jump.general">[stmt.jump.general]</a>
 paragraph 1 as follows:
 
@@ -618,6 +683,8 @@ Jump statements unconditionally transfer control.
         </div>
 </div>
 </blockquote>
+
+---
 
 Update
 <a href="https://eel.is/c++draft/stmt.break">[stmt.break]</a>
@@ -659,6 +726,8 @@ z:;
 </pre>&mdash; *end example*]
 </div>
 </blockquote>
+
+---
 
 Update
 <a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a>
@@ -705,6 +774,8 @@ a `continue` not contained in an
 enclosing <del>iteration statement</del><ins>*iteration-statement* or a `continue label`</ins>
 is equivalent to `goto contin`.
 </blockquote>
+
+---
 
 Update
 <a href="https://eel.is/c++draft/stmt.goto">[stmt.goto]</a>
