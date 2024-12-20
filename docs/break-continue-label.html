@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ff8381adf61bf29056130bdc839f3a00254db005" name="revision">
+  <meta content="652b3430a151d7b11b375a51a6dda0f7289db7e7" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2559,10 +2559,7 @@ it doesn’t require each <code class="highlight"><c- nl>label</c-><c- p>:</c-><
 This allows the developer to expand function-style macros containing labeled loops
 multiple times, and lets them repurpose simple names like <code class="highlight"><c- n>outer</c-></code> and <code class="highlight"><c- n>inner</c-></code> within the same function.</p>
    <p>We address these technical issues in <a href="#changes-to-labels">§ 5.5 Changes to labels</a>, however,
-not with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax.
-On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
-could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
-These first experiences matter.</p>
+not with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax.</p>
    <h4 class="heading settled" data-level="5.4.1" id="opposition-to-n3377"><span class="secno">5.4.1. </span><span class="content">Strong opposition to N3377</span><a class="self-link" href="#opposition-to-n3377"></a></h4>
    <p>We strongly oppose the N3377 syntax for multiple reasons.</p>
    <h5 class="heading settled" data-level="5.4.1.1" id="against-n3377-teachability"><span class="secno">5.4.1.1. </span><span class="content">Teachability, Simplicity, Elegance</span><a class="self-link" href="#against-n3377-teachability"></a></h5>
@@ -2577,7 +2574,10 @@ we need to invent our own, novel syntax <em>just</em> for labeling loops and <co
 No, we don’t!</p>
    <p>The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax can be intuitively understood at first glance,
 either through intuition from <code class="highlight"><c- k>goto</c-></code> labels,
-or from prior experience with other languages.</p>
+or from prior experience with other languages.
+On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
+could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
+These first experiences matter.</p>
    <h5 class="heading settled" data-level="5.4.1.2" id="against-n3377-repetition"><span class="secno">5.4.1.2. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
    <p>In the event that a user wants to be <code class="highlight"><c- k>break</c-></code> out of a loop and <code class="highlight"><c- k>goto</c-></code> it,
 in the same function, repetition is needed:</p>

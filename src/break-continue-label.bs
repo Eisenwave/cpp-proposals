@@ -449,9 +449,6 @@ multiple times, and lets them repurpose simple names like `outer` and `inner` wi
 
 We address these technical issues in [[#changes-to-labels]], however,
 not with the [[N3377]] syntax.
-On the contrary, given the precedent set by `if constexpr`, the `for outer` syntax
-could mislead a user into believing that `outer` is some kind of contextual keyword.
-These first experiences matter.
 
 ### Strong opposition to N3377 ### {#opposition-to-n3377}
 
@@ -473,6 +470,9 @@ No, we don't!
 The [[N3355]] syntax can be intuitively understood at first glance,
 either through intuition from `goto` labels,
 or from prior experience with other languages.
+On the contrary, given the precedent set by `if constexpr`, the `for outer` syntax
+could mislead a user into believing that `outer` is some kind of contextual keyword.
+These first experiences matter.
 
 #### Repetition #### {#against-n3377-repetition}
 
