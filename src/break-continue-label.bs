@@ -260,7 +260,8 @@ shows that there is interest in this feature (393K views at the time of writing)
 
 Another way to measure interest is to simply ask C++ users.
 The following is a committee-style poll (source: [[TCCPP]]) from the Discord server
-[Together C & C++](https://discord.gg/tccpp):
+[Together C & C++](https://discord.gg/tccpp),
+which is the largest server in terms of C++-focused message activity:
 
 <blockquote>
 Should C++ have "break label" and "continue label" statements
