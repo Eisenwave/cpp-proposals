@@ -326,20 +326,16 @@ in the world which use this feature.
 
 Last but not least, C++ should have `break label` and `continue label`
 to increase the amount of code that has a direct equivalent in C.
-This is not a particularly strong argument on its own,
-considering that only `inline` functions or macros used in C/C++ interoperable headers
-would benefit from this common syntax;
-C and C++ often interoperate through functions with C linkage instead,
-without definitions in headers.
+Such compatibility is desirable for two reasons:
 
-However, the adoption of [[N3355]] saves EWG a substantial amount of time
-when it comes to debating the syntax;
-the C++ syntax should certainly be C-compatible.
+- `inline` functions or macros used in C/C++ interoperable headers could use the same syntax.
+- C2y code is much easier to port to C++ (and vice-versa) if both languages support the same
+    control flow constructs.
 
+Furthermore, the adoption of [[N3355]] saves EWG a substantial amount of time
+when it comes to debating the syntax; the C++ syntax should certainly be C-compatible.
 
-# Possible implementation # {#possible-implementation}
-
-
+Note: The [[N3355]] syntax is still subject to discussion; see [[#syntax]].
 
 
 # Design Considerations # {#design-considerations}
@@ -731,7 +727,7 @@ Permitting this case has the benefit that *no code at all* can become ill-formed
 applying labels.
 This rule is simple, teachable, and easy to implement.
 
-### New labels - what about `break label` for loops with more than one label? {#new-labels-break-label-multiple}
+### New labels - what about `break label` for loops with more than one label? ### {#new-labels-break-label-multiple}
 
 Another case to consider is this:
 
@@ -748,6 +744,21 @@ In other words, `x:` doesn't even apply directly to the loop.
 
 [[N3355]] makes wording changes specifically to address this, and to make this well-formed.
 So are we; this code should well-formed if only for the sake of C2y compatibility.
+
+
+# Impact on existing code # {#impact-on-existing-code}
+
+No existing code becomes ill-formed or has its meaning altered.
+This proposal merely permits code which was previously ill-formed,
+and relaxes restrictions on the placement of labels.
+
+
+# Implementation experience # {#implementation-experience}
+
+LLVM implementation W.I.P.
+
+
+
 
 # Proposed wording # {#proposed-wording}
 
@@ -859,13 +870,20 @@ Jump statements unconditionally transfer control.
 <div class="indent">
     *jump-statement*:
         <div class="indent">
+            <ins>`goto` *identifier* `;`</ins><br>
             `break` <ins>*identifier*<sub>opt</sub></ins> `;`<br>
             `continue` <ins>*identifier*<sub>opt</sub></ins> `;`<br>
             `return` *expr-or-braced-init-list*<sub>opt</sub> `;`<br>
-            `goto` *identifier* `;`<br>
+            <del>`goto` *identifier* `;`</del><br>
         </div>
 </div>
 </blockquote>
+
+Note: `goto` is being relocated to the top so that all the jump statements with an *identifier*
+are grouped together.
+Of these three, `goto` is being listed first because it models the concept of
+"jumping somewhere" most literally; every following statement is more sophisticated or even
+defined as equivalent to `goto` (in the case of `continue`).
 
 ---
 
@@ -965,10 +983,10 @@ Update
 paragraph 1 as follows:
 
 <blockquote>
-The `goto` statement unconditionally transfers control to the statement
+The `goto` statement unconditionally transfers control to <del>the</del><ins>a</ins> statement
 labeled <ins>([stmt.label])</ins> by the <del>identifier</del><ins>*identifier*</ins>.
 The <del>identifier</del><ins>*identifier*</ins> shall be
-a <del>label</del><ins>*label*</ins> located <ins>exactly once</ins> in the current function.
+a label located <ins>exactly once</ins> in the current function.
 </blockquote>
 
 <pre class=biblio>

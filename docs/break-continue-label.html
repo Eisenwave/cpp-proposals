@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9b1c52713d797084155e34b533ebd3b0159bbd92" name="revision">
+  <meta content="4df9442ddb21085a96e938e4143f5b6cc551e74c" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2164,36 +2164,37 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#argumentum-ad-populum"><span class="secno">3.2</span> <span class="content">Argumentum ad populum</span></a>
       <li><a href="#c2y-compatibility"><span class="secno">3.3</span> <span class="content">C2y compatibility</span></a>
      </ol>
-    <li><a href="#possible-implementation"><span class="secno">4</span> <span class="content">Possible implementation</span></a>
     <li>
-     <a href="#design-considerations"><span class="secno">5</span> <span class="content">Design Considerations</span></a>
+     <a href="#design-considerations"><span class="secno">4</span> <span class="content">Design Considerations</span></a>
      <ol class="toc">
-      <li><a href="#why-not-break-n"><span class="secno">5.1</span> <span class="content">Why not <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>?</span></a>
-      <li><a href="#break-block-statement"><span class="secno">5.2</span> <span class="content">What about <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> for block statements etc.?</span></a>
-      <li><a href="#constexpr-break-continue"><span class="secno">5.3</span> <span class="content">Should there be <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code> in constant expressions?</span></a>
+      <li><a href="#why-not-break-n"><span class="secno">4.1</span> <span class="content">Why not <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>?</span></a>
+      <li><a href="#break-block-statement"><span class="secno">4.2</span> <span class="content">What about <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> for block statements etc.?</span></a>
+      <li><a href="#constexpr-break-continue"><span class="secno">4.3</span> <span class="content">Should there be <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code> in constant expressions?</span></a>
       <li>
-       <a href="#syntax"><span class="secno">5.4</span> <span class="content">What about syntax?</span></a>
+       <a href="#syntax"><span class="secno">4.4</span> <span class="content">What about syntax?</span></a>
        <ol class="toc">
         <li>
-         <a href="#opposition-to-n3377"><span class="secno">5.4.1</span> <span class="content">Strong opposition to N3377</span></a>
+         <a href="#opposition-to-n3377"><span class="secno">4.4.1</span> <span class="content">Strong opposition to N3377</span></a>
          <ol class="toc">
-          <li><a href="#against-n3377-teachability"><span class="secno">5.4.1.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
-          <li><a href="#against-n3777-do-while"><span class="secno">5.4.1.2</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
-          <li><a href="#against-n3377-repetition"><span class="secno">5.4.1.3</span> <span class="content">Repetition</span></a>
-          <li><a href="#against-n3377-extendability"><span class="secno">5.4.1.4</span> <span class="content">Extendability</span></a>
-          <li><a href="#against-n3377-keywords"><span class="secno">5.4.1.5</span> <span class="content">Blocking contextual keywords</span></a>
+          <li><a href="#against-n3377-teachability"><span class="secno">4.4.1.1</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
+          <li><a href="#against-n3777-do-while"><span class="secno">4.4.1.2</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
+          <li><a href="#against-n3377-repetition"><span class="secno">4.4.1.3</span> <span class="content">Repetition</span></a>
+          <li><a href="#against-n3377-extendability"><span class="secno">4.4.1.4</span> <span class="content">Extendability</span></a>
+          <li><a href="#against-n3377-keywords"><span class="secno">4.4.1.5</span> <span class="content">Blocking contextual keywords</span></a>
          </ol>
        </ol>
       <li>
-       <a href="#changes-to-labels"><span class="secno">5.5</span> <span class="content">Changes to labels</span></a>
+       <a href="#changes-to-labels"><span class="secno">4.5</span> <span class="content">Changes to labels</span></a>
        <ol class="toc">
-        <li><a href="#new-labels-goto"><span class="secno">5.5.1</span> <span class="content">New labels - <code class="highlight"><c- k>goto</c-></code> issues</span></a>
-        <li><a href="#new-labels-nesting"><span class="secno">5.5.2</span> <span class="content">New labels - what about nesting?</span></a>
-        <li><a href="#new-labels-duplicates"><span class="secno">5.5.3</span> <span class="content">New labels - what about direct duplicates?</span></a>
-        <li><a href="#new-labels-break-label-multiple"><span class="secno">5.5.4</span> <span class="content">New labels - what about <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> for loops with more than one label? {#new-labels-break-label-multiple}</span></a>
+        <li><a href="#new-labels-goto"><span class="secno">4.5.1</span> <span class="content">New labels - <code class="highlight"><c- k>goto</c-></code> issues</span></a>
+        <li><a href="#new-labels-nesting"><span class="secno">4.5.2</span> <span class="content">New labels - what about nesting?</span></a>
+        <li><a href="#new-labels-duplicates"><span class="secno">4.5.3</span> <span class="content">New labels - what about direct duplicates?</span></a>
+        <li><a href="#new-labels-break-label-multiple"><span class="secno">4.5.4</span> <span class="content">New labels - what about <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> for loops with more than one label?</span></a>
        </ol>
      </ol>
-    <li><a href="#proposed-wording"><span class="secno">6</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#impact-on-existing-code"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#implementation-experience"><span class="secno">6</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#proposed-wording"><span class="secno">7</span> <span class="content">Proposed wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2469,17 +2470,19 @@ Based on this, we can reasonably estimate that there are at least one million fi
 in the world which use this feature.</p>
    <h3 class="heading settled" data-level="3.3" id="c2y-compatibility"><span class="secno">3.3. </span><span class="content">C2y compatibility</span><a class="self-link" href="#c2y-compatibility"></a></h3>
    <p>Last but not least, C++ should have <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code> to increase the amount of code that has a direct equivalent in C.
-This is not a particularly strong argument on its own,
-considering that only <code class="highlight"><c- kr>inline</c-></code> functions or macros used in C/C++ interoperable headers
-would benefit from this common syntax;
-C and C++ often interoperate through functions with C linkage instead,
-without definitions in headers.</p>
-   <p>However, the adoption of <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> saves EWG a substantial amount of time
-when it comes to debating the syntax;
-the C++ syntax should certainly be C-compatible.</p>
-   <h2 class="heading settled" data-level="4" id="possible-implementation"><span class="secno">4. </span><span class="content">Possible implementation</span><a class="self-link" href="#possible-implementation"></a></h2>
-   <h2 class="heading settled" data-level="5" id="design-considerations"><span class="secno">5. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
-   <h3 class="heading settled" data-level="5.1" id="why-not-break-n"><span class="secno">5.1. </span><span class="content">Why not <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>?</span><a class="self-link" href="#why-not-break-n"></a></h3>
+Such compatibility is desirable for two reasons:</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- kr>inline</c-></code> functions or macros used in C/C++ interoperable headers could use the same syntax.</p>
+    <li data-md>
+     <p>C2y code is much easier to port to C++ (and vice-versa) if both languages support the same
+control flow constructs.</p>
+   </ul>
+   <p>Furthermore, the adoption of <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> saves EWG a substantial amount of time
+when it comes to debating the syntax; the C++ syntax should certainly be C-compatible.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax is still subject to discussion; see <a href="#syntax">§ 4.4 What about syntax?</a>.</p>
+   <h2 class="heading settled" data-level="4" id="design-considerations"><span class="secno">4. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="why-not-break-n"><span class="secno">4.1. </span><span class="content">Why not <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>?</span><a class="self-link" href="#why-not-break-n"></a></h3>
    <p>A possible alternative to <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> would be a <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code> syntax
 (analogous for <code class="highlight"><c- k>continue</c-></code>),
 where <code class="highlight"><c- n>N</c-></code> is an <em>integer-literal</em> or <em>constant-expression</em> which specifies
@@ -2517,7 +2520,7 @@ such code has likely been written a million times or more already
    <p>This idea has not been received positively, and we strongly oppose it.
 It is not as obvious what the targeted statement is, as with <code class="highlight"><c- k>break</c-> <c- n>N</c-><c- p>;</c-></code>,
 and code can easily be broken by relocating the <code class="highlight"><c- k>break</c-> <c- k>for</c-> <c- k>while</c-> <c- k>for</c-><c- p>;</c-></code> or whatever statement somewhere else.</p>
-   <h3 class="heading settled" data-level="5.2" id="break-block-statement"><span class="secno">5.2. </span><span class="content">What about <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> for block statements etc.?</span><a class="self-link" href="#break-block-statement"></a></h3>
+   <h3 class="heading settled" data-level="4.2" id="break-block-statement"><span class="secno">4.2. </span><span class="content">What about <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> for block statements etc.?</span><a class="self-link" href="#break-block-statement"></a></h3>
    <p>The following is <em>not</em> proposed:</p>
 <pre class="language-cpp highlight"><c- nl>label</c-><c- p>:</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>label</c-><c- p>;</c->
@@ -2527,7 +2530,7 @@ and code can easily be broken by relocating the <code class="highlight"><c- k>br
 controversial and novel idea.
 We simply want to apply <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> to the same things you can already apply it to,
 but also state <em>which</em> construct they apply to, if need be.</p>
-   <h3 class="heading settled" data-level="5.3" id="constexpr-break-continue"><span class="secno">5.3. </span><span class="content">Should there be <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code> in constant expressions?</span><a class="self-link" href="#constexpr-break-continue"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="constexpr-break-continue"><span class="secno">4.3. </span><span class="content">Should there be <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code> in constant expressions?</span><a class="self-link" href="#constexpr-break-continue"></a></h3>
    <p>Yes, absolutely!
 This is a major benefit over <code class="highlight"><c- k>goto</c-></code>, and part of the motivation for this proposal.</p>
    <p>An implementation is also quite feasible, and <em>basically</em> already exists in every compiler.
@@ -2541,7 +2544,7 @@ out of arbitrarily deeply nested scopes:</p>
 </pre>
    <p>The only novelty offered by <code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> is that one of those nested, exited scopes may also be
 a <code class="highlight"><c- k>switch</c-></code> or loop, which is not substantially challenging for implementers.</p>
-   <h3 class="heading settled" data-level="5.4" id="syntax"><span class="secno">5.4. </span><span class="content">What about syntax?</span><a class="self-link" href="#syntax"></a></h3>
+   <h3 class="heading settled" data-level="4.4" id="syntax"><span class="secno">4.4. </span><span class="content">What about syntax?</span><a class="self-link" href="#syntax"></a></h3>
    <p>We strongly support the currently accepted syntax of <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a>.
 This syntax is</p>
    <ul>
@@ -2565,11 +2568,11 @@ which instead proposes:</p>
 it doesn’t require each <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> to be unique within a function.
 This allows the developer to expand function-style macros containing labeled loops
 multiple times, and lets them repurpose simple names like <code class="highlight"><c- n>outer</c-></code> and <code class="highlight"><c- n>inner</c-></code> within the same function.</p>
-   <p>We address these technical issues in <a href="#changes-to-labels">§ 5.5 Changes to labels</a>, however,
+   <p>We address these technical issues in <a href="#changes-to-labels">§ 4.5 Changes to labels</a>, however,
 not with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax.</p>
-   <h4 class="heading settled" data-level="5.4.1" id="opposition-to-n3377"><span class="secno">5.4.1. </span><span class="content">Strong opposition to N3377</span><a class="self-link" href="#opposition-to-n3377"></a></h4>
+   <h4 class="heading settled" data-level="4.4.1" id="opposition-to-n3377"><span class="secno">4.4.1. </span><span class="content">Strong opposition to N3377</span><a class="self-link" href="#opposition-to-n3377"></a></h4>
    <p>We strongly oppose the N3377 syntax for multiple reasons.</p>
-   <h5 class="heading settled" data-level="5.4.1.1" id="against-n3377-teachability"><span class="secno">5.4.1.1. </span><span class="content">Teachability, Simplicity, Elegance</span><a class="self-link" href="#against-n3377-teachability"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.1" id="against-n3377-teachability"><span class="secno">4.4.1.1. </span><span class="content">Teachability, Simplicity, Elegance</span><a class="self-link" href="#against-n3377-teachability"></a></h5>
    <p>C and C++ have had the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax for labeling statements
 for multiple decades now.
 It is extremely well understood, and has been replicated by other C-esque languages, such as
@@ -2585,7 +2588,7 @@ or from prior experience with other languages.
 On the contrary, given the precedent set by <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code>, the <code class="highlight"><c- k>for</c-> <c- n>outer</c-></code> syntax
 could mislead a user into believing that <code class="highlight"><c- n>outer</c-></code> is some kind of contextual keyword.
 These first experiences matter.</p>
-   <h5 class="heading settled" data-level="5.4.1.2" id="against-n3777-do-while"><span class="secno">5.4.1.2. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.2" id="against-n3777-do-while"><span class="secno">4.4.1.2. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
    <div class="example" id="example-4f8cfce9">
     <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
 <pre class="language-cpp highlight"><c- k>do</c-> <c- p>{</c->
@@ -2647,7 +2650,7 @@ but every way to proceed has downsides:</p>
 styles for the same construct.</p>
    </ul>
    <p>On the contrary, <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> has no such issues.</p>
-   <h5 class="heading settled" data-level="5.4.1.3" id="against-n3377-repetition"><span class="secno">5.4.1.3. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.3" id="against-n3377-repetition"><span class="secno">4.4.1.3. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
    <p>In the event that a user wants to be <code class="highlight"><c- k>break</c-></code> out of a loop and <code class="highlight"><c- k>goto</c-></code> it,
 in the same function, repetition is needed:</p>
 <pre class="language-cpp highlight"><c- k>goto</c-> <c- n>outer</c-><c- p>;</c->
@@ -2669,7 +2672,7 @@ however, we see it as detrimental:</p>
      <p>Otherwise, we refer to the same location in code using two different names,
 which feels disorienting.</p>
    </ul>
-   <h5 class="heading settled" data-level="5.4.1.4" id="against-n3377-extendability"><span class="secno">5.4.1.4. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.4" id="against-n3377-extendability"><span class="secno">4.4.1.4. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
    <p>Consider the following (not proposed) construct:</p>
 <pre class="language-cpp highlight"><c- nl>label</c-><c- p>:</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>label</c-><c- p>;</c->
@@ -2711,7 +2714,7 @@ and is easily compatible with</p>
     <li data-md>
      <p>new language extensions, like <code class="highlight"><c- k>break</c-></code> for block-statements.</p>
    </ul>
-   <h5 class="heading settled" data-level="5.4.1.5" id="against-n3377-keywords"><span class="secno">5.4.1.5. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
+   <h5 class="heading settled" data-level="4.4.1.5" id="against-n3377-keywords"><span class="secno">4.4.1.5. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
    <p>Considering that the user is able to add arbitrary identifiers after <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>for</c-></code>,
 this makes it impossible to add future contextual keywords in that place without
 potentially breaking code:</p>
@@ -2722,13 +2725,13 @@ There is precedent for such changes in C++, in the form if <code class="highligh
 To be fair, <code class="highlight"><c- k>constexpr</c-></code> is a true keyword, so the addition of <code class="highlight"><c- k>constexpr</c-></code> after <code class="highlight"><c- k>if</c-></code> wouldn’t have been blocked by <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax either (if <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> was part of C++ at the time).</p>
    <p>Nonetheless, it is substantial commitment to block contextual keywords with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax,
 and we don’t see that commitment as justified.</p>
-   <h3 class="heading settled" data-level="5.5" id="changes-to-labels"><span class="secno">5.5. </span><span class="content">Changes to labels</span><a class="self-link" href="#changes-to-labels"></a></h3>
-   <p><a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> points out legitimate issues with reusing the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax (see <a href="#syntax">§ 5.4 What about syntax?</a>).
+   <h3 class="heading settled" data-level="4.5" id="changes-to-labels"><span class="secno">4.5. </span><span class="content">Changes to labels</span><a class="self-link" href="#changes-to-labels"></a></h3>
+   <p><a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> points out legitimate issues with reusing the <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax (see <a href="#syntax">§ 4.4 What about syntax?</a>).
 However, as stated, we strongly oppose the proposed <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax,
 and we propose to make changes to label semantics instead.
 These changes keep the syntax the same as <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a>.</p>
    <p>First and foremost, we permit the same <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> multiple times within the same function,
-see <a href="#changes-to-labels">§ 5.5 Changes to labels</a>.</p>
+see <a href="#changes-to-labels">§ 4.5 Changes to labels</a>.</p>
    <div class="example" id="example-e8240f6f">
     <a class="self-link" href="#example-e8240f6f"></a> 
 <pre class="language-cpp highlight"><c- nl>outer</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
@@ -2750,7 +2753,7 @@ see <a href="#changes-to-labels">§ 5.5 Changes to labels</a>.</p>
 When using the labels <code class="highlight">'<c- n>outer</c-></code> and <code class="highlight">'<c- n>inner</c-></code> instead, this code is also well-formed Rust.</p>
    <p>In other words, we are doubling down on the <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax and changing labels to behave
 more like other mainstream languages.</p>
-   <h4 class="heading settled" data-level="5.5.1" id="new-labels-goto"><span class="secno">5.5.1. </span><span class="content">New labels - <code class="highlight"><c- k>goto</c-></code> issues</span><a class="self-link" href="#new-labels-goto"></a></h4>
+   <h4 class="heading settled" data-level="4.5.1" id="new-labels-goto"><span class="secno">4.5.1. </span><span class="content">New labels - <code class="highlight"><c- k>goto</c-></code> issues</span><a class="self-link" href="#new-labels-goto"></a></h4>
    <p>The label changes have some implications for <code class="highlight"><c- k>goto</c-></code>:</p>
 <pre class="language-cpp highlight"><c- nl>x</c-><c- p>:</c-> <c- n>f</c-><c- p>();</c->
 <c- nl>x</c-><c- p>:</c-> <c- n>g</c-><c- p>();</c->
@@ -2762,7 +2765,7 @@ it makes the rules easier to teach, and easier to understand;
 there are no special rules for loops.</p>
    <p><code class="highlight"><c- k>goto</c-> <c- n>x</c-><c- p>;</c-></code> is ill-formed because it is ambiguous which <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> label it is meant to jump to.
 This change doesn’t break any existing code because existing code cannot have such ambiguities.</p>
-   <h4 class="heading settled" data-level="5.5.2" id="new-labels-nesting"><span class="secno">5.5.2. </span><span class="content">New labels - what about nesting?</span><a class="self-link" href="#new-labels-nesting"></a></h4>
+   <h4 class="heading settled" data-level="4.5.2" id="new-labels-nesting"><span class="secno">4.5.2. </span><span class="content">New labels - what about nesting?</span><a class="self-link" href="#new-labels-nesting"></a></h4>
    <p>Another case to consider is the following:</p>
 <pre class="language-cpp highlight"><c- nl>l</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
     <c- nl>l</c-><c- p>:</c-> <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
@@ -2778,7 +2781,7 @@ or when a <code class="highlight"><c- nl>l</c-><c- p>:</c-></code> labeled loop 
 and that fact will have to be resolved somehow,
 either by significant syntax changes through <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a>,
 or through relaxation of label rules.</p>
-   <h4 class="heading settled" data-level="5.5.3" id="new-labels-duplicates"><span class="secno">5.5.3. </span><span class="content">New labels - what about direct duplicates?</span><a class="self-link" href="#new-labels-duplicates"></a></h4>
+   <h4 class="heading settled" data-level="4.5.3" id="new-labels-duplicates"><span class="secno">4.5.3. </span><span class="content">New labels - what about direct duplicates?</span><a class="self-link" href="#new-labels-duplicates"></a></h4>
    <p>A more extreme form of the scenario above is:</p>
 <pre class="language-cpp highlight"><c- nl>l</c-><c- p>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>l</c-><c- o>:</c-> <c- n>f</c-><c- p>();</c->
 </pre>
@@ -2788,7 +2791,7 @@ However, it’s also not harmful.</p>
    <p>Permitting this case has the benefit that <em>no code at all</em> can become ill-formed through
 applying labels.
 This rule is simple, teachable, and easy to implement.</p>
-   <h4 class="heading settled" data-level="5.5.4" id="new-labels-break-label-multiple"><span class="secno">5.5.4. </span><span class="content">New labels - what about <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> for loops with more than one label? {#new-labels-break-label-multiple}</span><a class="self-link" href="#new-labels-break-label-multiple"></a></h4>
+   <h4 class="heading settled" data-level="4.5.4" id="new-labels-break-label-multiple"><span class="secno">4.5.4. </span><span class="content">New labels - what about <code class="highlight"><c- k>break</c-> <c- n>label</c-></code> for loops with more than one label?</span><a class="self-link" href="#new-labels-break-label-multiple"></a></h4>
    <p>Another case to consider is this:</p>
 <pre class="language-cpp highlight"><c- nl>x</c-><c- p>:</c-> <c- n>y</c-><c- o>:</c-> <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>x</c-><c- p>;</c->
@@ -2800,7 +2803,13 @@ with a <em>label</em> <code class="highlight"><c- n>y</c-></code> and a <em>stat
 In other words, <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> doesn’t even apply directly to the loop.</p>
    <p><a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> makes wording changes specifically to address this, and to make this well-formed.
 So are we; this code should well-formed if only for the sake of C2y compatibility.</p>
-   <h2 class="heading settled" data-level="6" id="proposed-wording"><span class="secno">6. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact-on-existing-code"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact-on-existing-code"></a></h2>
+   <p>No existing code becomes ill-formed or has its meaning altered.
+This proposal merely permits code which was previously ill-formed,
+and relaxes restrictions on the placement of labels.</p>
+   <h2 class="heading settled" data-level="6" id="implementation-experience"><span class="secno">6. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation-experience"></a></h2>
+   <p>LLVM implementation W.I.P.</p>
+   <h2 class="heading settled" data-level="7" id="proposed-wording"><span class="secno">7. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The wording is relative to <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a>.</p>
    <p>Update <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> paragraph 1 as follows:</p>
    <blockquote>
@@ -2853,14 +2862,21 @@ but without other intervening statements.</p>
     <div class="indent">
       <em>jump-statement</em>: 
      <div class="indent">
-       <code class="highlight"><c- k>break</c-></code> 
+      <ins><code class="highlight"><c- k>goto</c-></code> <em>identifier</em> <code class="highlight"><c- p>;</c-></code></ins>
+      <br> <code class="highlight"><c- k>break</c-></code> 
       <ins><em>identifier</em><sub>opt</sub></ins>
        <code class="highlight"><c- p>;</c-></code><br> <code class="highlight"><c- k>continue</c-></code> 
       <ins><em>identifier</em><sub>opt</sub></ins>
-       <code class="highlight"><c- p>;</c-></code><br> <code class="highlight"><c- k>return</c-></code> <em>expr-or-braced-init-list</em><sub>opt</sub> <code class="highlight"><c- p>;</c-></code><br> <code class="highlight"><c- k>goto</c-></code> <em>identifier</em> <code class="highlight"><c- p>;</c-></code><br> 
+       <code class="highlight"><c- p>;</c-></code><br> <code class="highlight"><c- k>return</c-></code> <em>expr-or-braced-init-list</em><sub>opt</sub> <code class="highlight"><c- p>;</c-></code><br> 
+      <del><code class="highlight"><c- k>goto</c-></code> <em>identifier</em> <code class="highlight"><c- p>;</c-></code></del>
+      <br> 
      </div>
     </div>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> <code class="highlight"><c- k>goto</c-></code> is being relocated to the top so that all the jump statements with an <em>identifier</em> are grouped together.
+Of these three, <code class="highlight"><c- k>goto</c-></code> is being listed first because it models the concept of
+"jumping somewhere" most literally; every following statement is more sophisticated or even
+defined as equivalent to <code class="highlight"><c- k>goto</c-></code> (in the case of <code class="highlight"><c- k>continue</c-></code>).</p>
    <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.break">[stmt.break]</a> paragraph 1 as follows:</p>
    <blockquote>
@@ -2947,7 +2963,10 @@ enclosing
    <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.goto">[stmt.goto]</a> paragraph 1 as follows:</p>
    <blockquote>
-     The <code class="highlight"><c- k>goto</c-></code> statement unconditionally transfers control to the statement
+     The <code class="highlight"><c- k>goto</c-></code> statement unconditionally transfers control to 
+    <del>the</del>
+    <ins>a</ins>
+     statement
 labeled 
     <ins>([stmt.label])</ins>
      by the 
@@ -2958,10 +2977,7 @@ The
     <del>identifier</del>
     <ins><em>identifier</em></ins>
      shall be
-a 
-    <del>label</del>
-    <ins><em>label</em></ins>
-     located 
+a label located 
     <ins>exactly once</ins>
      in the current function. 
    </blockquote>
