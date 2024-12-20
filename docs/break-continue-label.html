@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="46d89695a81f951a474b7d31db7eec7c7e136912" name="revision">
+  <meta content="9d201791cde4806f6349d25529dad22286a55208" name="revision">
 <style>
 .indent {
     padding-left: 2em;
@@ -2581,14 +2581,15 @@ multiple times, and lets them repurpose simple names like <code class="highlight
 not with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax.</p>
    <h4 class="heading settled" data-level="4.4.1" id="n3377-label-disambiguation"><span class="secno">4.4.1. </span><span class="content">Two sets of labels for disambiguation</span><a class="self-link" href="#n3377-label-disambiguation"></a></h4>
    <p>Another benefit is that <code class="highlight"><c- k>goto</c-></code> jump targets and loop names don’t share syntax, and this
-disambiguates code to some extent:</p>
+disambiguates code to some extent (with <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax):</p>
    <ul>
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>, they know that this label is a jump target for <code class="highlight"><c- k>goto</c-></code>.</p>
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- k>for</c-> <c- n>name</c-></code>, they know that this <code class="highlight"><c- n>name</c-></code> is a target for <code class="highlight"><c- k>break</c-></code> or <code class="highlight"><c- k>continue</c-></code>, and cannot be jumped to with <code class="highlight"><c- k>goto</c-></code>.</p>
    </ul>
-   <p>We don’t attempt to fix this issue because we don’t believe that this ambiguity is a major problem:</p>
+   <p>We don’t attempt to fix this issue
+because we don’t believe that this ambiguity is a major problem (with our syntax):</p>
    <ul>
     <li data-md>
      <p>When a developer sees <code class="highlight"><c- nl>outer</c-><c- p>:</c-> <c- k>for</c-> <c- p>...</c-></code>, they can reasonably assume that <code class="highlight"><c- nl>outer</c-><c- p>:</c-></code> is
@@ -2603,9 +2604,10 @@ this should be a reliable guess.</p>
 For example, <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> targets can be named <code class="highlight"><c- n>xzy_loop</c-></code>,
 and such names can be avoided for <code class="highlight"><c- k>goto</c-></code> jump targets.</p>
    <p>Virtually every programming community already uses naming conventions for disambiguation.
-For example, method names conventionally use <code class="highlight"><c- n>camelCase</c-></code> in Java,
+For example, method names conventionally use <code class="highlight"><c- n>camelCase</c-></code> in Kotlin,
 and class names conventionally use <code class="highlight"><c- n>PascalCase</c-></code>.
-This seems like a reasonable solution for disambiguation.
+This effectively disambiguates constructor calls from regular function calls for <code class="highlight"><c- n>F</c-><c- p>()</c-></code>.</p>
+   <p>Naming conventions seem like a reasonable solution for disambiguating <code class="highlight"><c- k>goto</c-></code> targets from <code class="highlight"><c- k>break</c-></code> targets (if someone wants to, we let them choose).
 We don’t need to create two distinct label syntaxes to accomplish this.</p>
    <h4 class="heading settled" data-level="4.4.2" id="opposition-to-n3377"><span class="secno">4.4.2. </span><span class="content">Strong opposition to N3377</span><a class="self-link" href="#opposition-to-n3377"></a></h4>
    <p>We strongly oppose the N3377 syntax for multiple reasons.</p>

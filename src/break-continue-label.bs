@@ -460,12 +460,13 @@ not with the [[N3377]] syntax.
 ### Two sets of labels for disambiguation ### {#n3377-label-disambiguation}
 
 Another benefit is that `goto` jump targets and loop names don't share syntax, and this
-disambiguates code to some extent:
+disambiguates code to some extent (with [[N3377]] syntax):
 - When a developer sees `label:`, they know that this label is a jump target for `goto`.
 - When a developer sees `for name`, they know that this `name`
     is a target for `break` or `continue`, and cannot be jumped to with `goto`.
 
-We don't attempt to fix this issue because we don't believe that this ambiguity is a major problem:
+We don't attempt to fix this issue
+because we don't believe that this ambiguity is a major problem (with our syntax):
 - When a developer sees `outer: for ...`, they can reasonably assume that `outer:` is
     targeted by `break` or `continue`.
     With how uncommon `goto` already is
@@ -479,9 +480,12 @@ For example, `break` and `continue` targets can be named `xzy_loop`,
 and such names can be avoided for `goto` jump targets.
 
 Virtually every programming community already uses naming conventions for disambiguation.
-For example, method names conventionally use `camelCase` in Java,
+For example, method names conventionally use `camelCase` in Kotlin,
 and class names conventionally use `PascalCase`.
-This seems like a reasonable solution for disambiguation.
+This effectively disambiguates constructor calls from regular function calls for `F()`.
+
+Naming conventions seem like a reasonable solution for disambiguating
+`goto` targets from `break` targets (if someone wants to, we let them choose).
 We don't need to create two distinct label syntaxes to accomplish this.
 
 ### Strong opposition to N3377 ### {#opposition-to-n3377}
