@@ -462,8 +462,8 @@ while (/* ... */) {
    if (/* ... */) {
      break while; // break the while loop, not the for loop
      // break for while; // identical in functioning to the above version
-   }
- }
+    }
+  }
 }
 ```
 This idea has been received negatively, and we strongly oppose it.
