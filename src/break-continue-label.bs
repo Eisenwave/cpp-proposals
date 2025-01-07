@@ -25,7 +25,7 @@ While C++ already has a broad selection of control flow constructs,
 one construct commonly found in other languages is notably absent:
 the ability to apply `break` or `continue` to a loop or `switch` when
 this isn't the innermost enclosing statement.
-This feature is popular, simple to use, and quite useful:
+This feature is popular, simple, and quite useful:
 
 Specifically, we propose the following syntax:
 ```cpp
@@ -51,7 +51,8 @@ goto outer; // OK, used to be OK, and is unaffected by this proposal
 ```
 
 This syntax, identical to that in [[N3355]] has been accepted into C2y.
-We do not propose any additional features beyond those.
+This proposal brings that syntax into C++ and relaxes restrictions on labels to
+make it more powerful and to address concerns in a rival proposal [[N3377]].
 
 As for C++, `break` and `continue` with labels have been proposed
 and rejected previously in [[N3879]], 2014.
@@ -86,6 +87,7 @@ in popularity over the last ten years.
 The feature has seen increased adoption in older languages such as C and JavaScript,
 and newer languages have been popularized which support this construct,
 such as Rust and Kotlin.
+
 
 # Motivation # {#motivation}
 
@@ -449,6 +451,14 @@ By comparison, `break label;` is completely mainstream;
 such code has likely been written a million times or more already
 (based on numbers in [[#how-common-is-break-continue-label]]).
 
+Last but not least, this syntax would be incompatible with the C2y construct,
+and so it would need to be
+overwhelmingly, tremendously, titanically superior compared to `break label;`,
+so that tossing compatibility aside could be justified.
+It obviously doesn't meet this hurdle.
+
+## Why not `break while;` et al.? ## {#why-not-break-while}
+
 Yet another novel idea has been suggested at [[std-proposals-2]]:
 ```cpp
 while (/* ... */) {
@@ -465,6 +475,7 @@ It is not as obvious what the targeted statement is, as with `break N;`,
 and code can easily be broken by relocating the `break for while for;`
 or whatever statement somewhere else.
 
+Additionally, just like `break N;`, it is C2y-incompatible and so not worth pursuing.
 
 ## What about `break label;` for block statements etc.? ## {#break-block-statement} 
 
@@ -669,7 +680,7 @@ These first experiences matter.
 
 C and C++ do not exist in a vacuum.
 They are often being used to implement lower-level details of a larger system,
-written in another language (e.g. Numpy, which combines Python, C, and C++).
+written in another language (e.g. NumPy, which combines Python, C, and C++).
 
 In such a multi-language system,
 it is highly beneficial to have common syntax because developers don't have to learn
