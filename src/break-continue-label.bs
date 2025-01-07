@@ -274,16 +274,12 @@ to apply break/continue to nested loops or switches?
     <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
 </tr>
 <tr>
-    <td>15</td><td>17</td><td>11</td><td>4</td><td>3</td>
+    <td>21</td><td>21</td><td>12</td><td>6</td><td>4</td>
 </tr>
 </table>
 </blockquote>
 
-Note: The results of this poll are not yet final; this is a snapshot of 50 votes
-at the time of writing.
-
-Note: It is unknown how many voters were aware of the accepted C2y feature before
-casting their vote, which may be giving the poll a bias against.
+Note: 64 users in total voted, and the poll was active for one week.
 
 ### How common is `break`/`continue` with labels? ### {#how-common-is-break-continue-label}
 
