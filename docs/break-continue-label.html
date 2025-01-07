@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a5caf73af3b814ec625947632970c20beaa5f26b" name="revision">
+  <meta content="da37be93094dc86eaf896db9def0b45e4fc3cbe9" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2200,12 +2200,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
           <li><a href="#against-n3377-breaking-precedent"><span class="secno">4.5.2.1</span> <span class="content">Breaking precedent of most prior art</span></a>
           <li><a href="#against-n3377-teachability"><span class="secno">4.5.2.2</span> <span class="content">Teachability, Simplicity, Elegance</span></a>
           <li><a href="#against-n3377-multi-language"><span class="secno">4.5.2.3</span> <span class="content">Reusable syntax in multi-language systems</span></a>
-          <li><a href="#against-n3777-do-while"><span class="secno">4.5.2.4</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
-          <li><a href="#against-n3377-pronunciation"><span class="secno">4.5.2.5</span> <span class="content">Code pronunciation</span></a>
-          <li><a href="#against-n3377-repetition"><span class="secno">4.5.2.6</span> <span class="content">Repetition</span></a>
-          <li><a href="#against-n3377-extendability"><span class="secno">4.5.2.7</span> <span class="content">Extendability</span></a>
-          <li><a href="#against-n3377-keywords"><span class="secno">4.5.2.8</span> <span class="content">Blocking contextual keywords</span></a>
-          <li><a href="#against-n3377-macro-loops"><span class="secno">4.5.2.9</span> <span class="content">Labeling loops expanded from macros</span></a>
+          <li><a href="#against-n3377-instant-tooling-integration"><span class="secno">4.5.2.4</span> <span class="content">Instant tooling integration</span></a>
+          <li><a href="#against-n3777-do-while"><span class="secno">4.5.2.5</span> <span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span></a>
+          <li><a href="#against-n3377-pronunciation"><span class="secno">4.5.2.6</span> <span class="content">Code pronunciation</span></a>
+          <li><a href="#against-n3377-repetition"><span class="secno">4.5.2.7</span> <span class="content">Repetition</span></a>
+          <li><a href="#against-n3377-extendability"><span class="secno">4.5.2.8</span> <span class="content">Extendability</span></a>
+          <li><a href="#against-n3377-keywords"><span class="secno">4.5.2.9</span> <span class="content">Blocking contextual keywords</span></a>
+          <li><a href="#against-n3377-macro-loops"><span class="secno">4.5.2.10</span> <span class="content">Labeling loops expanded from macros</span></a>
          </ol>
        </ol>
       <li>
@@ -2780,7 +2781,11 @@ it is highly beneficial to have common syntax because developers don’t have to
 two entirely different languages, but rather, one and a half.
 With <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a>, C and C++ could have identical label syntax to JavaScript, Java,
 and other languages with which they are paired. <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> wastes this opportunity.</p>
-   <h5 class="heading settled" data-level="4.5.2.4" id="against-n3777-do-while"><span class="secno">4.5.2.4. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.4" id="against-n3377-instant-tooling-integration"><span class="secno">4.5.2.4. </span><span class="content">Instant tooling integration</span><a class="self-link" href="#against-n3377-instant-tooling-integration"></a></h5>
+   <p>Since the <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> syntax reuses existing <code class="highlight"><c- nl>label</c-><c- p>:</c-></code> syntax,
+it is immediately compatible with existing tooling, such as syntax highlighters,
+auto-formatters, and more.</p>
+   <h5 class="heading settled" data-level="4.5.2.5" id="against-n3777-do-while"><span class="secno">4.5.2.5. </span><span class="content"><code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code></span><a class="self-link" href="#against-n3777-do-while"></a></h5>
    <div class="example" id="example-4f8cfce9">
     <a class="self-link" href="#example-4f8cfce9"></a> <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> proposes the following syntax for <code class="highlight"><c- k>do</c-></code> ... <code class="highlight"><c- k>while</c-></code> loops: 
 <pre class="language-cpp highlight"><c- k>do</c-> <c- p>{</c->
@@ -2794,6 +2799,10 @@ and other languages with which they are paired. <a data-link-type="biblio" href=
 However, it also means that <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> can apply to a <em>block-name</em> which has not yet appeared in the code.
 This is a readability issue; with the exception of <code class="highlight"><c- k>goto</c-></code> and labels,
 function bodies can be understood by reading them from top to bottom.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Of course, there are also entities that can be outside the function body,
+like other called (member) functions, types, etc.
+However, control flow and use of local entities generally follow a top-to-bottom
+structure.</p>
    <div class="example" id="example-04538084">
     <a class="self-link" href="#example-04538084"></a> In larger functions, this can also be incredibly disorienting: 
 <pre class="language-cpp highlight"><c- k>while</c-> <c- d>/* outer? */</c-><c- p>(</c->true<c- p>)</c-> <c- p>{</c->
@@ -2842,7 +2851,7 @@ but every way to proceed has downsides:</p>
 styles for the same construct.</p>
    </ul>
    <p>On the contrary, <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> has no such issues.</p>
-   <h5 class="heading settled" data-level="4.5.2.5" id="against-n3377-pronunciation"><span class="secno">4.5.2.5. </span><span class="content">Code pronunciation</span><a class="self-link" href="#against-n3377-pronunciation"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.6" id="against-n3377-pronunciation"><span class="secno">4.5.2.6. </span><span class="content">Code pronunciation</span><a class="self-link" href="#against-n3377-pronunciation"></a></h5>
    <div class="example" id="example-511f5994">
     <a class="self-link" href="#example-511f5994"></a> The <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax interferes with how code is pronounced, from left to right: 
 <pre class="language-cpp highlight"><c- c1>// "(loop named outer) While x is greater or equal to zero:" </c->
@@ -2859,7 +2868,7 @@ like a leading attribute, line number, paragraph number, etc.</p>
    <p>This is not just a stylistic argument; it’s an accessibility argument.
 C++ developers who rely on screen readers cannot "skip over" or "blend out" the <code class="highlight"><c- n>outer</c-></code> like a sighted developer,
 and benefit from code that is more naturally pronounceable.</p>
-   <h5 class="heading settled" data-level="4.5.2.6" id="against-n3377-repetition"><span class="secno">4.5.2.6. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.7" id="against-n3377-repetition"><span class="secno">4.5.2.7. </span><span class="content">Repetition</span><a class="self-link" href="#against-n3377-repetition"></a></h5>
    <p>In the event that a user wants to be <code class="highlight"><c- k>break</c-></code> out of a loop and <code class="highlight"><c- k>goto</c-></code> it,
 in the same function, repetition is needed:</p>
 <pre class="language-cpp highlight"><c- k>goto</c-> <c- n>outer</c-><c- p>;</c->
@@ -2878,10 +2887,12 @@ however, we see it as detrimental:</p>
     <li data-md>
      <p>If the label is the same as the loop name, we repeat ourselves.</p>
     <li data-md>
-     <p>Otherwise, we refer to the same location in code using two different names,
-which feels disorienting.</p>
+     <p>Otherwise, we refer to the same statement using two different names,
+which feels disorienting.
+If we have a good, meaningful label for a loop, such as <code class="highlight"><c- nl>main_event_loop</c-><c- p>:</c-></code>,
+why shouldn’t we also write <code class="highlight"><c- k>while</c-> <c- n>main_event_loop</c-></code>?</p>
    </ul>
-   <h5 class="heading settled" data-level="4.5.2.7" id="against-n3377-extendability"><span class="secno">4.5.2.7. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.8" id="against-n3377-extendability"><span class="secno">4.5.2.8. </span><span class="content">Extendability</span><a class="self-link" href="#against-n3377-extendability"></a></h5>
    <p>Consider the following (not proposed) construct:</p>
 <pre class="language-cpp highlight"><c- nl>label</c-><c- p>:</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>label</c-><c- p>;</c->
@@ -2917,13 +2928,13 @@ instead of us being able to use <code class="highlight"><c- nl>label</c-><c- p>:
 and is easily compatible with</p>
    <ul>
     <li data-md>
-     <p>existing language extensions like "GCC computed goto",</p>
+     <p>existing language extensions like "GCC computed <code class="highlight"><c- k>goto</c-></code>",</p>
     <li data-md>
-     <p>every new statements in the future, and</p>
+     <p>every new statement in the future, and</p>
     <li data-md>
      <p>new language extensions, like <code class="highlight"><c- k>break</c-></code> for block-statements.</p>
    </ul>
-   <h5 class="heading settled" data-level="4.5.2.8" id="against-n3377-keywords"><span class="secno">4.5.2.8. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.9" id="against-n3377-keywords"><span class="secno">4.5.2.9. </span><span class="content">Blocking contextual keywords</span><a class="self-link" href="#against-n3377-keywords"></a></h5>
    <p>Considering that the user is able to add arbitrary identifiers after <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>for</c-></code>,
 this makes it impossible to add future contextual keywords in that place without
 potentially breaking code:</p>
@@ -2934,7 +2945,7 @@ There is precedent for such changes in C++, in the form if <code class="highligh
 To be fair, <code class="highlight"><c- k>constexpr</c-></code> is a true keyword, so the addition of <code class="highlight"><c- k>constexpr</c-></code> after <code class="highlight"><c- k>if</c-></code> wouldn’t have been blocked by <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax either (if <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> was part of C++ at the time).</p>
    <p>Nonetheless, it is substantial commitment to block contextual keywords with the <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a> syntax,
 and we don’t see that commitment as justified.</p>
-   <h5 class="heading settled" data-level="4.5.2.9" id="against-n3377-macro-loops"><span class="secno">4.5.2.9. </span><span class="content">Labeling loops expanded from macros</span><a class="self-link" href="#against-n3377-macro-loops"></a></h5>
+   <h5 class="heading settled" data-level="4.5.2.10" id="against-n3377-macro-loops"><span class="secno">4.5.2.10. </span><span class="content">Labeling loops expanded from macros</span><a class="self-link" href="#against-n3377-macro-loops"></a></h5>
    <p>Because <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> loop labels are prepended, they can also be applied to loops
 expanded from macros.
 Such macro-expanded loops are relatively common in C.</p>
@@ -3024,7 +3035,7 @@ or through relaxation of label rules.</p>
 and may be useful in certain, rare situations.</p>
    <div class="example" id="example-9e2df0e2">
     <a class="self-link" href="#example-9e2df0e2"></a> A somewhat common C idiom is to expand loops from macros;
-see also <a href="#against-n3377-macro-loops">§ 4.5.2.9 Labeling loops expanded from macros</a>. 
+see also <a href="#against-n3377-macro-loops">§ 4.5.2.10 Labeling loops expanded from macros</a>. 
 <pre class="language-cpp highlight"><c- nl>outer</c-><c- p>:</c-> <c- n>MY_LOOP_MACRO</c-><c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
     <c- k>break</c-> <c- n>outer</c-><c- p>;</c->
 <c- p>}</c->

@@ -685,6 +685,12 @@ With [[N3355]], C and C++ could have identical label syntax to JavaScript, Java,
 and other languages with which they are paired.
 [[N3377]] wastes this opportunity.
 
+#### Instant tooling integration #### {#against-n3377-instant-tooling-integration}
+
+Since the [[N3355]] syntax reuses existing `label:` syntax,
+it is immediately compatible with existing tooling, such as syntax highlighters,
+auto-formatters, and more.
+
 #### `do` ... `while` #### {#against-n3777-do-while}
 
 <div class=example>
@@ -705,6 +711,11 @@ However, it also means that `break` and `continue` can apply to a *block-name*
 which has not yet appeared in the code.
 This is a readability issue; with the exception of `goto` and labels,
 function bodies can be understood by reading them from top to bottom.
+
+Note: Of course, there are also entities that can be outside the function body,
+like other called (member) functions, types, etc.
+However, control flow and use of local entities generally follow a top-to-bottom
+structure.
 
 <div class=example>
 In larger functions, this can also be incredibly disorienting:
@@ -807,8 +818,10 @@ Some people may consider it a benefit to keep loop names strictly separate from 
 however, we see it as detrimental:
 
 - If the label is the same as the loop name, we repeat ourselves.
-- Otherwise, we refer to the same location in code using two different names,
+- Otherwise, we refer to the same statement using two different names,
     which feels disorienting.
+    If we have a good, meaningful label for a loop, such as `main_event_loop:`,
+    why shouldn't we also write `while main_event_loop`?
 
 #### Extendability #### {#against-n3377-extendability}
 
@@ -843,8 +856,8 @@ Breaking a *block-statement* is currently *not* proposed, however:
 
 On the contrary, the [[N3355]] syntax makes no such problematic commitments,
 and is easily compatible with
-- existing language extensions like "GCC computed goto",
-- every new statements in the future, and
+- existing language extensions like "GCC computed `goto`",
+- every new statement in the future, and
 - new language extensions, like `break` for block-statements.
 
 #### Blocking contextual keywords #### {#against-n3377-keywords}
