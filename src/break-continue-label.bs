@@ -435,7 +435,15 @@ Note: The [[N3355]] syntax is still subject to discussion; see [[#syntax]].
 
 # Design Considerations # {#design-considerations}
 
-## Why not `break N;`? ## {#why-not-break-n}
+## Alternative `break` and `continue` forms ## {#alternative-break-continue-forms}
+
+There are some alternative forms of `break` and `continue` from various proposals/discussions,
+not just `break label;`.
+None of these are proposed by [[N3355]] or [[N3377]],
+which is reason enough to reject them.
+We discuss these regardless for the sake of completion.
+
+### `break N` ### {#why-not-break-n}
 
 A possible alternative to `break label;` would be a `break N;` syntax
 (analogous for `continue`),
@@ -460,8 +468,6 @@ and conclude from this where `break` applies.
 By comparison, `break label;` obviously breaks out of the loop labeled `label:`.
 
 Thirdly, this construct is an obscure idea (not entirely novel, seen before in PHP).
-It is similar to `break statement;` proposed in [[P2635R0]].
-The author has seemingly abandoned that proposal.
 In our experience, obscure control flow ideas are unpopular and not worth pursuing.
 An extreme negative reaction to obscure control flow ideas was seen for
 the `goto default;` and `goto case X;` statements proposed in [[N3879]].
@@ -469,13 +475,7 @@ By comparison, `break label;` is completely mainstream;
 such code has likely been written a million times or more already
 (based on numbers in [[#how-common-is-break-continue-label]]).
 
-Last but not least, this syntax would be incompatible with the C2y construct,
-and so it would need to be
-overwhelmingly, tremendously, titanically superior compared to `break label;`,
-so that tossing compatibility aside could be justified.
-It obviously doesn't meet this hurdle.
-
-## Why not `break while;` et al.? ## {#why-not-break-while}
+### `break while` et al. ### {#why-not-break-while}
 
 Yet another novel idea has been suggested at [[std-proposals-2]]:
 ```cpp
@@ -493,7 +493,38 @@ It is not as obvious what the targeted statement is, as with `break N;`,
 and code can easily be broken by relocating the `break for while for;`
 or whatever statement somewhere else.
 
-Additionally, just like `break N;`, it is C2y-incompatible and so not worth pursuing.
+### `break statement` ### {#why-not-break-statement}
+
+Perhaps the most exotic proposal is found in <code>break <i>statement</i>;</code> proposed in [[P2635R0]].
+Such a statement would execute <code><i>statement</i></code> in the scope that has been entered by `break`
+or `continue`:
+
+```cpp
+for (auto i : range_i) {
+    for (auto j : range_j) {
+        break continue; // breaks the inner loop, and continues the outer loop
+    }
+}
+```
+
+The author has seemingly abandoned that proposal,
+but even if they didn't, this idea is quite flawed.
+
+<div class=example>
+`break return i;` could be used to `return` a shadowed entity `i` because name lookup
+of the <code><i>statement</i></code> takes place in the jumped-to scope:
+
+```cpp
+float i;
+for (int i = 0; i < 10; ++i) {
+    break return i; // returns float i
+}
+```
+</div>
+
+The overarching issue is that statements
+don't always "belong" to the scope in which they appear syntactically;
+this is difficult to reason about, even if we don't add name lookup confusion like in the example. 
 
 ## What about `break label;` for block statements etc.? ## {#break-block-statement} 
 
@@ -508,6 +539,9 @@ Being able to apply `break` or `continue` to additional constructs in C++ would 
 controversial and novel idea.
 We simply want to apply `break` and `continue` to the same things you can already apply it to,
 but also state *which* construct they apply to, if need be.
+
+However, the syntax we propose allows for such a construct to be added in the (distant) future;
+see [[#against-n3377-extendability]].
 
 ## Should there be `break label;` and `continue label;` in constant expressions? ## {#constexpr-break-continue}
 
@@ -526,8 +560,8 @@ while (/* ... */) {
 }
 ```
 
-The only novelty offered by `break label;` is that one of those nested, exited scopes may also be
-a `switch` or loop, which is not substantially challenging for implementers.
+The only novelty offered by `break label;` is that additional surrounding scopes can be "skipped",
+which is simple to implement, both for constant expressions and regular code.
 
 
 ## What about syntax? ## {#syntax}
