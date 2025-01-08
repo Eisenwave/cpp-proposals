@@ -54,8 +54,30 @@ This syntax, identical to that in [[N3355]] has been accepted into C2y.
 This proposal brings that syntax into C++ and relaxes restrictions on labels to
 make it more powerful and to address concerns in a rival proposal [[N3377]].
 
-As for C++, `break` and `continue` with labels have been proposed
-and rejected previously in [[N3879]], 2014.
+As for C++, `break` and `continue` with labels have been proposed in [[N3879]]
+and rejected at Rapperswil 2014 ([[N4327]]):
+
+<blockquote>
+<p>Straw poll, proposal as a whole:</p>
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>1</td><td>1</td><td>1</td><td>13</td><td>10</td>
+</tr>
+</table>
+<p>"break label;" + "continue label;"</p>
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>3</td><td>8</td><td>4</td><td>9</td><td>3</td>
+</tr>
+</table>
+</blockquote>
+
 Ten years later, circumstances have changed and we should re-examine this feature.
 
 ## What has changed since 2014 ## {#changes-since-2014}

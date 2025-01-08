@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="da37be93094dc86eaf896db9def0b45e4fc3cbe9" name="revision">
+  <meta content="6a2827e4577f5b32b3122f7ec8e9aa25e89db285" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2263,9 +2263,42 @@ This feature is popular, simple, and quite useful:</p>
    <p>This syntax, identical to that in <a data-link-type="biblio" href="#biblio-n3355" title="N3355: Named loops, v3">[N3355]</a> has been accepted into C2y.
 This proposal brings that syntax into C++ and relaxes restrictions on labels to
 make it more powerful and to address concerns in a rival proposal <a data-link-type="biblio" href="#biblio-n3377" title="N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355">[N3377]</a>.</p>
-   <p>As for C++, <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> with labels have been proposed
-and rejected previously in <a data-link-type="biblio" href="#biblio-n3879" title="Explicit Flow Control: break label, goto case and explicit switch">[N3879]</a>, 2014.
-Ten years later, circumstances have changed and we should re-examine this feature.</p>
+   <p>As for C++, <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> with labels have been proposed in <a data-link-type="biblio" href="#biblio-n3879" title="Explicit Flow Control: break label, goto case and explicit switch">[N3879]</a> and rejected at Rapperswil 2014 (<a data-link-type="biblio" href="#biblio-n4327" title="C++ Standard Evolution Closed Issues List (Revision R10)">[N4327]</a>):</p>
+   <blockquote>
+    <p>Straw poll, proposal as a whole:</p>
+    <table>
+     <tbody>
+      <tr>
+       <td>SF
+       <td>F
+       <td>N
+       <td>A
+       <td>SA
+      <tr>
+       <td>1
+       <td>1
+       <td>1
+       <td>13
+       <td>10
+    </table>
+    <p>"break label;" + "continue label;"</p>
+    <table>
+     <tbody>
+      <tr>
+       <td>SF
+       <td>F
+       <td>N
+       <td>A
+       <td>SA
+      <tr>
+       <td>3
+       <td>8
+       <td>4
+       <td>9
+       <td>3
+    </table>
+   </blockquote>
+   <p>Ten years later, circumstances have changed and we should re-examine this feature.</p>
    <h3 class="heading settled" data-level="2.1" id="changes-since-2014"><span class="secno">2.1. </span><span class="content">What has changed since 2014</span><a class="self-link" href="#changes-since-2014"></a></h3>
    <p>Use of <code class="highlight"><c- k>constexpr</c-></code> has become tremendously more common,
 and <code class="highlight"><c- k>goto</c-></code> may not be used in constant expressions.
@@ -3394,6 +3427,8 @@ This has been helpful for writing <a href="#against-n3377-breaking-precedent">§
    <dd>Erich Keane. <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3377.pdf"><cite>N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3377.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3377.pdf</a>
    <dt id="biblio-n3879">[N3879]
    <dd>Andrew Tomazos. <a href="https://wg21.link/n3879"><cite>Explicit Flow Control: break label, goto case and explicit switch</cite></a>. 16 January 2014. URL: <a href="https://wg21.link/n3879">https://wg21.link/n3879</a>
+   <dt id="biblio-n4327">[N4327]
+   <dd>Ville Voutilanen. <a href="https://wg21.link/n4327"><cite>C++ Standard Evolution Closed Issues List (Revision R10)</cite></a>. 21 November 2014. URL: <a href="https://wg21.link/n4327">https://wg21.link/n4327</a>
    <dt id="biblio-p2635r0">[P2635R0]
    <dd>Justin Cooke. <a href="https://wg21.link/p2635r0"><cite>Enhancing the break statement</cite></a>. 21 August 2022. URL: <a href="https://wg21.link/p2635r0">https://wg21.link/p2635r0</a>
    <dt id="biblio-stackoverflow">[StackOverflow]
