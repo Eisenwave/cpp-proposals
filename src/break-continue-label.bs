@@ -378,10 +378,10 @@ The following table counts only control statements with a label,
     <tr>
         <td>D</td>
         <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
-        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">3.5K files</a></td>
-        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">2.6K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">3.5K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">2.6K files</a></td>
         <td>6.1K files</td>
-        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">12.3K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">12.3K files</a></td>
     </tr>
     <tr>
         <td>Go</td>
