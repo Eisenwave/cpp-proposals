@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4546006e75203f2ccf3b70b17ab6165f126e8957" name="revision">
+  <meta content="a42cb28adbf103f3112274ab470ba84d3deaee25" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2332,6 +2332,11 @@ such as Rust and Kotlin.</p>
    <p><code class="highlight"><c- k>break</c-> <c- n>label</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code> are largely motivated by the ability to control nested loops.
 This is a highly popular feature in other languages,
 and C++ could use it too, since it has no good alternative.</p>
+   <p>To be fair, a conditional <code class="highlight"><c- k>return</c-></code> in the loop sometimes bypasses the need to terminate it.
+However, this is not always allowed; such practice is outlawed by
+MISRA-C++:2008 Rule 6-6-5 "A function shall have a single point of exit at the end of the function"
+(<a data-link-type="biblio" href="#biblio-misra-c" title="MISRA C++:2023">[MISRA-C++]</a>).
+Even if it is permitted, there are many cases where an early <code class="highlight"><c- k>return</c-></code> does not obsolete <code class="highlight"><c- k>break</c-></code>, and it generally does not obsolete <code class="highlight"><c- k>continue</c-></code>.</p>
    <h3 class="heading settled" data-level="3.1" id="no-good-alternatives"><span class="secno">3.1. </span><span class="content">No good alternative</span><a class="self-link" href="#no-good-alternatives"></a></h3>
    <p>Let’s examine a motivating example which uses our new construct:</p>
    <div class="example" id="example-d03f000b">
@@ -2398,8 +2403,8 @@ A <code class="highlight"><c- k>goto</c-> <c- n>past_the_loop</c-></code> behave
 Moving the jump target or the <code class="highlight"><c- k>goto</c-></code> statement relative to each other can also completely
 change these semantics.
 By comparison, <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code> always jump forwards,
-past a surrounding loop, or to the end of a surrounding loop respectively,
-making them much easier to reason about, and much less error-prone.</p>
+past a surrounding loop, or to the end of a surrounding loop respectively.
+This makes them much easier to reason about, and much less error-prone.</p>
     <li data-md>
      <p>The "local readability" of <code class="highlight"><c- k>goto</c-></code> relies heavily on high-quality naming for the label.
 A <code class="highlight"><c- k>goto</c-> <c- n>end</c-></code> could mean to the end of a loop, to after the loop, to the end of a function, etc.

@@ -117,6 +117,13 @@ such as Rust and Kotlin.
 This is a highly popular feature in other languages,
 and C++ could use it too, since it has no good alternative.
 
+To be fair, a conditional `return` in the loop sometimes bypasses the need to terminate it.
+However, this is not always allowed; such practice is outlawed by
+MISRA-C++:2008 Rule 6-6-5 "A function shall have a single point of exit at the end of the function"
+([[MISRA-C++]]).
+Even if it is permitted, there are many cases where an early `return` does not obsolete
+`break`, and it generally does not obsolete `continue`.
+
 ## No good alternative ## {#no-good-alternatives}
 
 Let's examine a motivating example which uses our new construct:
@@ -188,8 +195,8 @@ std::println("Processed all files");
     Moving the jump target or the `goto` statement relative to each other can also completely
     change these semantics.
     By comparison, `break` and `continue` always jump forwards,
-    past a surrounding loop, or to the end of a surrounding loop respectively,
-    making them much easier to reason about, and much less error-prone.
+    past a surrounding loop, or to the end of a surrounding loop respectively.
+    This makes them much easier to reason about, and much less error-prone.
 - The "local readability" of `goto` relies heavily on high-quality naming for the label.
     A `goto end` could mean to the end of a loop, to after the loop, to the end of a function, etc.
     Since `break` and `continue` are much more limited,
