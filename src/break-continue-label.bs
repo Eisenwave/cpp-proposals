@@ -1202,7 +1202,11 @@ A label can be added to a statement or used anywhere in a *compound-statement*.
 The optional *attribute-specifier-seq* appertains to the label.
 <del>The only use of a label with an *identifier* is as the target of a `goto`.
 No two labels in a function shall have the same identifier.</del>
-A label can be used in a `goto` statement before its introduction.
+A label can be used in a `goto` statement <ins>([stmt.goto])</ins> before its introduction.<ins><br><br>
+[ *Note*: Multiple identical labels within the same function
+    and even within the same *label-seq* are permitted,
+    but such duplicate labels cannot be used in a `goto` statement. &mdash; *end note* ]
+</ins>
 </blockquote>
 
 Note: The grammar change is necessary so that we can apply multiple labels to a single loop,
@@ -1221,6 +1225,8 @@ insert a new paragraph after paragraph 1:
 </ins>
 </blockquote>
 
+Note: This defines the term *(to) label*, which is used extensively below.
+
 Update
 <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
 paragraph 3 as follows:
@@ -1238,7 +1244,10 @@ A *control-flow-limited statement* is a statement **S** for which:
 </ul>
 </blockquote>
 
-
+Note: While the restriction still primarily applies to `goto`
+(preventing the user from e.g. jumping into an `if constexpr` statement),
+if other statements can also refer to labels, it is misleading to say
+"statement ([stmt.goto])" as if `goto` was the only relevant statement.
 
 ---
 
@@ -1278,12 +1287,12 @@ an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch]).<
 A `break` statement shall be enclosed by ([stmt.pre])
 <ins>a breakable statement</ins>
 <del>an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch])</del>.
-<ins>If specified, the *identifier* shall label ([stmt.label]) an enclosing breakable statement.</ins> 
+<ins>If present, the *identifier* shall label ([stmt.label]) an enclosing breakable statement.</ins> 
 The `break` statement causes termination of
 <del>the smallest such enclosing statement;</del>
 <ul>
     <li>
-        <ins>the smallest enclosing breakable statement labeled by the *identifier* if present, otherwise</ins>
+        <ins>if an *identifier* is present, the smallest enclosing breakable statement labeled by that *identifier*, otherwise</ins>
     </li>
     <li>
         <ins>the smallest enclosing breakable statement.</ins>
@@ -1292,20 +1301,19 @@ The `break` statement causes termination of
 <del>control</del><ins>Control</ins> passes to the statement following the terminated statement, if any.
 <br><br>
 <div class="ins-block">
-[Example:
+[ *Example*:
 <pre>
 a: b: while (/* ... */) {
-    a: c: for (/* ... */) {
+    a: a: c: for (/* ... */) {
         break;              // OK, terminates enclosing for loop
         break a;            // OK, same
         break b;            // OK, terminates enclosing while loop
-        break z;            // error: break does not refer to a breakable statement
+        y: { break y; }     // error: break does not refer to a breakable statement
     }
     break c;                // error: break does not refer to an enclosing statement
 }
 break;                      // error: break must be enclosed by a breakable statement
-z:;
-</pre>&mdash; *end example*]
+</pre>&mdash; *end example* ]
 </div>
 </blockquote>
 
@@ -1317,13 +1325,12 @@ paragraph 1 as follows:
 
 <blockquote>
 A `continue` statement shall be enclosed by ([stmt.pre]) an *iteration-statement* ([stmt.iter]).
-<ins>If specified, the *identifier* shall label ([stmt.label]) an enclosing *iteration-statement*.</ins> 
-The `continue` statement causes control to pass to the loop-continuation portion
-<ins>(that is, to the end of the loop)</ins> of
+<ins>If present, the *identifier* shall label ([stmt.label]) an enclosing *iteration-statement*.</ins> 
+The `continue` statement causes control to pass to the loop-continuation portion of
 <del>the smallest such enclosing statement, that is, to the end of the loop.</del>
 <ul>
     <li>
-        <ins>the smallest enclosing *iteration-statement* labeled by the *identifier* if present, otherwise</ins>
+        <ins>if an *identifier* is present, the smallest enclosing *iteration-statement* labeled by that *identifier*, otherwise</ins>
     </li>
     <li>
         <ins>the smallest enclosing *iteration-statement*.</ins>
@@ -1352,10 +1359,18 @@ contin: ;
 contin: ;
 }
 </pre>
-a `continue` not contained in an
-enclosing <del>iteration statement</del><ins>*iteration-statement* or a `continue label`</ins>
-is equivalent to `goto contin`.
+<del>a `continue;` not contained in an an enclosed iteration statement is equivalent to `goto contin`.</del>
+<ins>the following are equivalent to `goto contin`:
+<ul>
+    <li>A `continue` not contained in an an enclosed iteration statement.</li>
+    <li>A `continue label` not contained in an enclosed iteration statement labeled `label:`.</li>
+</ul>
 </blockquote>
+
+Note: The clarification "that is, to the end of the loop"
+was dropped entirely based on community feedback.
+"the end of the loop" is not all that much clearer either, and the whole `goto` equivalence portion
+should make it clear enough what the behavior is.
 
 ---
 
@@ -1377,8 +1392,10 @@ I thank Sebastian Wittmeier for providing a list of languages that support both
 `goto` and `break`/`last` with the same label syntax.
 This has been helpful for writing [[#against-n3377-breaking-precedent]].
 
+I think Arthur O'Dwyer for providing wording feedback and improvement suggestions.
+
 I thank the
-[Together C & C++](https://discord.gg/tccpp) community for respond to my poll; see [[TCCPP]].
+[Together C & C++](https://discord.gg/tccpp) community for responding to my poll; see [[TCCPP]].
 
 <pre class=biblio>
 {

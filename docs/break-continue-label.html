@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="7fa93e4849abe32e803d0e4a463ced5a687b9282" name="revision">
+  <meta content="f71501840e6e558802b82d578a51aeed013df958" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -3164,7 +3164,12 @@ and relaxes restrictions on the placement of labels.</p>
      The optional <em>attribute-specifier-seq</em> appertains to the label. 
     <del>The only use of a label with an <em>identifier</em> is as the target of a <code class="highlight"><c- k>goto</c-></code>.
 No two labels in a function shall have the same identifier.</del>
-     A label can be used in a <code class="highlight"><c- k>goto</c-></code> statement before its introduction. 
+     A label can be used in a <code class="highlight"><c- k>goto</c-></code> statement 
+    <ins>([stmt.goto])</ins>
+     before its introduction.
+    <ins><br><br> [ <em>Note</em>: Multiple identical labels within the same function
+    and even within the same <em>label-seq</em> are permitted,
+    but such duplicate labels cannot be used in a <code class="highlight"><c- k>goto</c-></code> statement. — <em>end note</em> ] </ins>
    </blockquote>
    <p class="note" role="note"><span class="marker">Note:</span> The grammar change is necessary so that we can apply multiple labels to a single loop,
 like <code class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>for</c-> <c- p>(...)</c-></code>.
@@ -3175,6 +3180,7 @@ but without other intervening statements.</p>
    <blockquote>
     <ins> Every <em>label</em> in the <em>label-seq</em> of a <em>labeled-statement</em> <strong>S</strong> <em>labels</em> the <em>statement</em> of <strong>S</strong>. </ins>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> This defines the term <em>(to) label</em>, which is used extensively below.</p>
    <p>Update <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> paragraph 3 as follows:</p>
    <blockquote>
      A <em>control-flow-limited statement</em> is a statement <strong>S</strong> for which: 
@@ -3187,6 +3193,9 @@ but without other intervening statements.</p>
        in <strong>S</strong>. 
     </ul>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> While the restriction still primarily applies to <code class="highlight"><c- k>goto</c-></code> (preventing the user from e.g. jumping into an <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> statement),
+if other statements can also refer to labels, it is misleading to say
+"statement ([stmt.goto])" as if <code class="highlight"><c- k>goto</c-></code> was the only relevant statement.</p>
    <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.jump.general">[stmt.jump.general]</a> paragraph 1 as follows:</p>
    <blockquote>
@@ -3218,12 +3227,12 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
     <ins>a breakable statement</ins>
     <del>an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k>switch</c-></code> statement ([stmt.switch])</del>
     . 
-    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) an enclosing breakable statement.</ins>
+    <ins>If present, the <em>identifier</em> shall label ([stmt.label]) an enclosing breakable statement.</ins>
      The <code class="highlight"><c- k>break</c-></code> statement causes termination of 
     <del>the smallest such enclosing statement;</del>
     <ul>
      <li>
-      <ins>the smallest enclosing breakable statement labeled by the <em>identifier</em> if present, otherwise</ins>
+      <ins>if an <em>identifier</em> is present, the smallest enclosing breakable statement labeled by that <em>identifier</em>, otherwise</ins>
      <li>
       <ins>the smallest enclosing breakable statement.</ins>
     </ul>
@@ -3231,34 +3240,31 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
     <ins>Control</ins>
      passes to the statement following the terminated statement, if any. <br><br> 
     <div class="ins-block">
-      [Example: 
+      [ <em>Example</em>: 
 <pre class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>while</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
-    <c- nl>a</c-><c- p>:</c-> <c- n>c</c-><c- o>:</c-> <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
+    <c- nl>a</c-><c- p>:</c-> <c- n>a</c-><c- o>:</c-> <c- n>c</c-><c- o>:</c-> <c- k>for</c-> <c- p>(</c-><c- d>/* ... */</c-><c- p>)</c-> <c- p>{</c->
         <c- k>break</c-><c- p>;</c->              <c- c1>// OK, terminates enclosing for loop</c->
         <c- k>break</c-> <c- n>a</c-><c- p>;</c->            <c- c1>// OK, same</c->
         <c- k>break</c-> <c- n>b</c-><c- p>;</c->            <c- c1>// OK, terminates enclosing while loop</c->
-        <c- k>break</c-> <c- n>z</c-><c- p>;</c->            <c- c1>// error: break does not refer to a breakable statement</c->
+        <c- nl>y</c-><c- p>:</c-> <c- p>{</c-> <c- k>break</c-> <c- n>y</c-><c- p>;</c-> <c- p>}</c->     <c- c1>// error: break does not refer to a breakable statement</c->
     <c- p>}</c->
     <c- k>break</c-> <c- n>c</c-><c- p>;</c->                <c- c1>// error: break does not refer to an enclosing statement</c->
 <c- p>}</c->
 <c- k>break</c-><c- p>;</c->                      <c- c1>// error: break must be enclosed by a breakable statement</c->
-<c- nl>z</c-><c- p>:;</c->
 </pre>
-     — <em>end example</em>]
+     — <em>end example</em> ]
     </div>
    </blockquote>
    <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a> paragraph 1 as follows:</p>
    <blockquote>
      A <code class="highlight"><c- k>continue</c-></code> statement shall be enclosed by ([stmt.pre]) an <em>iteration-statement</em> ([stmt.iter]). 
-    <ins>If specified, the <em>identifier</em> shall label ([stmt.label]) an enclosing <em>iteration-statement</em>.</ins>
-     The <code class="highlight"><c- k>continue</c-></code> statement causes control to pass to the loop-continuation portion 
-    <ins>(that is, to the end of the loop)</ins>
-     of 
+    <ins>If present, the <em>identifier</em> shall label ([stmt.label]) an enclosing <em>iteration-statement</em>.</ins>
+     The <code class="highlight"><c- k>continue</c-></code> statement causes control to pass to the loop-continuation portion of 
     <del>the smallest such enclosing statement, that is, to the end of the loop.</del>
     <ul>
      <li>
-      <ins>the smallest enclosing <em>iteration-statement</em> labeled by the <em>identifier</em> if present, otherwise</ins>
+      <ins>if an <em>identifier</em> is present, the smallest enclosing <em>iteration-statement</em> labeled by that <em>identifier</em>, otherwise</ins>
      <li>
       <ins>the smallest enclosing <em>iteration-statement</em>.</ins>
     </ul>
@@ -3284,14 +3290,19 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
 <c- nl>contin</c-><c- p>:</c-> <c- p>;</c->
 <c- p>}</c->
 </pre>
-    <p>
-     a <code class="highlight"><c- k>continue</c-></code> not contained in an
-enclosing 
-     <del>iteration statement</del>
-     <ins><em>iteration-statement</em> or a <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code></ins>
-      is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.
-    </p>
+    <del>a <code class="highlight"><c- k>continue</c-><c- p>;</c-></code> not contained in an an enclosed iteration statement is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.</del>
+    <ins>
+     the following are equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>: 
+     <ul>
+      <li>A <code class="highlight"><c- k>continue</c-></code> not contained in an an enclosed iteration statement.
+      <li>A <code class="highlight"><c- k>continue</c-> <c- n>label</c-></code> not contained in an enclosed iteration statement labeled <code class="highlight"><c- nl>label</c-><c- p>:</c-></code>.
+     </ul>
+    </ins>
    </blockquote>
+   <p class="note" role="note"><span class="marker">Note:</span> The clarification "that is, to the end of the loop"
+was dropped entirely based on community feedback.
+"the end of the loop" is not all that much clearer either, and the whole <code class="highlight"><c- k>goto</c-></code> equivalence portion
+should make it clear enough what the behavior is.</p>
    <hr>
    <p>Update <a href="https://eel.is/c++draft/stmt.goto">[stmt.goto]</a> paragraph 1 as follows:</p>
    <blockquote>
@@ -3316,7 +3327,8 @@ a label located
    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
 This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.2.1 Breaking precedent of most prior art</a>.</p>
-   <p>I thank the <a href="https://discord.gg/tccpp">Together C &amp; C++</a> community for respond to my poll; see <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>.</p>
+   <p>I think Arthur O’Dwyer for providing wording feedback and improvement suggestions.</p>
+   <p>I thank the <a href="https://discord.gg/tccpp">Together C &amp; C++</a> community for responding to my poll; see <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>.</p>
   </main>
 <script>
 (function() {
