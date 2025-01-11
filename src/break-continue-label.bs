@@ -209,7 +209,7 @@ but doing so is alleged to be more complicated than more limited `constexpr` con
 structures which can only "jump forwards", such as `break` and `continue`.
 
 In conclusion, there are too many issues with `goto`, some of which may never be resolved.
-`std-proposals` discussion prior to the publication of this proposal has shown once again
+[[std-proposals]] discussion prior to the publication of this proposal has shown once again
 that `goto` is a controversial and divisive.
 
 ### Immediately invoked lambda expression (IILE) ### {#alternative-iile}
@@ -286,6 +286,9 @@ but will find themselves disappointed.
 
 [[StackOverflow]] <i>"Can I use break to exit multiple nested `for` loops?"</i>
 shows that there is interest in this feature (393K views at the time of writing).
+
+A draft of the proposal was posted on [[Reddit]] and received overwhelmingly positive feedback
+(70K views, 143 upvotes with, 94% upvote rate at the time of writing).
 
 ### Poll ### {#poll}
 
@@ -1399,6 +1402,16 @@ I thank the
         "authors": ["CWG"],
         "title": "Discussion regarding continue vs. goto in constant expressions",
         "href": "https://lists.isocpp.org/core/2023/05/14228.php"
+    },
+    "Reddit": {
+        "authors": ["Jan Schultke"],
+        "title": "\"break label;\" and \"continue label;\" in C++",
+        "href": "https://www.reddit.com/r/cpp/comments/1hwdskt/break_label_and_continue_label_in_c/"
+    },
+    "std-proposals": {
+        "authors": ["Jan Schultke"],
+        "title": "Bringing break/continue with label to C++",
+        "href": "https://lists.isocpp.org/std-proposals/2024/12/11838.php"
     },
     "std-proposals-2": {
         "authors": ["Filip"],

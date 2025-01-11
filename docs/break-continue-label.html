@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6556ab29f71bbd38df00122855e03b021e0cf8f4" name="revision">
+  <meta content="7fa93e4849abe32e803d0e4a463ced5a687b9282" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2416,7 +2416,7 @@ A <code class="highlight"><c- k>break</c-> <c- n>loop</c-></code> has bad name, 
 of just adding <code class="highlight"><c- k>constexpr</c-> <c- k>goto</c-></code>,
 but doing so is alleged to be more complicated than more limited <code class="highlight"><c- k>constexpr</c-></code> control flow
 structures which can only "jump forwards", such as <code class="highlight"><c- k>break</c-></code> and <code class="highlight"><c- k>continue</c-></code>.</p>
-   <p>In conclusion, there are too many issues with <code class="highlight"><c- k>goto</c-></code>, some of which may never be resolved. <code class="highlight"><c- n>std</c-><c- o>-</c-><c- n>proposals</c-></code> discussion prior to the publication of this proposal has shown once again
+   <p>In conclusion, there are too many issues with <code class="highlight"><c- k>goto</c-></code>, some of which may never be resolved. <a data-link-type="biblio" href="#biblio-std-proposals" title="Bringing break/continue with label to C++">[std-proposals]</a> discussion prior to the publication of this proposal has shown once again
 that <code class="highlight"><c- k>goto</c-></code> is a controversial and divisive.</p>
    <h4 class="heading settled" data-level="3.1.2" id="alternative-iile"><span class="secno">3.1.2. </span><span class="content">Immediately invoked lambda expression (IILE)</span><a class="self-link" href="#alternative-iile"></a></h4>
 <pre class="language-cpp highlight"><c- k>for</c-> <c- p>(</c-><c- k>const</c-> <c- n>File</c-><c- o>&amp;</c-> <c- n>text_file</c-> <c- o>:</c-> <c- n>files</c-><c- p>)</c-> <c- p>{</c->
@@ -2483,6 +2483,8 @@ When Java, JavaScript, Rust, or Kotlin developers pick up C++,
 they may expect that C++ can <code class="highlight"><c- k>break</c-></code> out of nested loops as well,
 but will find themselves disappointed.</p>
    <p><a data-link-type="biblio" href="#biblio-stackoverflow" title="Can I use break to exit multiple nested &apos;for&apos; loops?">[StackOverflow]</a> <i>"Can I use break to exit multiple nested <code class="highlight"><c- k>for</c-></code> loops?"</i> shows that there is interest in this feature (393K views at the time of writing).</p>
+   <p>A draft of the proposal was posted on <a data-link-type="biblio" href="#biblio-reddit" title="&quot;break label;&quot; and &quot;continue label;&quot; in C++">[Reddit]</a> and received overwhelmingly positive feedback
+(70K views, 143 upvotes with, 94% upvote rate at the time of writing).</p>
    <h4 class="heading settled" data-level="3.2.1" id="poll"><span class="secno">3.2.1. </span><span class="content">Poll</span><a class="self-link" href="#poll"></a></h4>
    <p>Another way to measure interest is to simply ask C++ users.
 The following is a committee-style poll (source: <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>) from the Discord server <a href="https://discord.gg/tccpp">Together C &amp; C++</a>,
@@ -3471,8 +3473,12 @@ This has been helpful for writing <a href="#against-n3377-breaking-precedent">§
    <dd>Ville Voutilanen. <a href="https://wg21.link/n4327"><cite>C++ Standard Evolution Closed Issues List (Revision R10)</cite></a>. 21 November 2014. URL: <a href="https://wg21.link/n4327">https://wg21.link/n4327</a>
    <dt id="biblio-p2635r0">[P2635R0]
    <dd>Justin Cooke. <a href="https://wg21.link/p2635r0"><cite>Enhancing the break statement</cite></a>. 21 August 2022. URL: <a href="https://wg21.link/p2635r0">https://wg21.link/p2635r0</a>
+   <dt id="biblio-reddit">[Reddit]
+   <dd>Jan Schultke. <a href="https://www.reddit.com/r/cpp/comments/1hwdskt/break_label_and_continue_label_in_c/"><cite>"break label;" and "continue label;" in C++</cite></a>. URL: <a href="https://www.reddit.com/r/cpp/comments/1hwdskt/break_label_and_continue_label_in_c/">https://www.reddit.com/r/cpp/comments/1hwdskt/break_label_and_continue_label_in_c/</a>
    <dt id="biblio-stackoverflow">[StackOverflow]
    <dd>Faken. <a href="https://stackoverflow.com/q/1257744/5740428"><cite>Can I use break to exit multiple nested 'for' loops?</cite></a>. 10 Aug 2009. URL: <a href="https://stackoverflow.com/q/1257744/5740428">https://stackoverflow.com/q/1257744/5740428</a>
+   <dt id="biblio-std-proposals">[STD-PROPOSALS]
+   <dd>Jan Schultke. <a href="https://lists.isocpp.org/std-proposals/2024/12/11838.php"><cite>Bringing break/continue with label to C++</cite></a>. URL: <a href="https://lists.isocpp.org/std-proposals/2024/12/11838.php">https://lists.isocpp.org/std-proposals/2024/12/11838.php</a>
    <dt id="biblio-std-proposals-2">[STD-PROPOSALS-2]
    <dd>Filip. <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php"><cite>Improving break &amp; continue</cite></a>. URL: <a href="https://lists.isocpp.org/std-proposals/2024/11/11585.php">https://lists.isocpp.org/std-proposals/2024/11/11585.php</a>
    <dt id="biblio-tccpp">[TCCPP]
