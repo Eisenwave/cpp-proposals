@@ -12,7 +12,8 @@ ED: https://eisenwave.github.io/cpp-proposals/break-continue-label.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/break-continue-label.bs)
 Markup Shorthands: markdown on
 Abstract: Introduce `break label` and `continue label` to `break` and `continue`
-          out of nested loops and `switch`es, as accepted into C2y.
+          out of nested loops and `switch`es as accepted into C2y,
+          and relax label restrictions.
 </pre>
 
 # Revision history # {#history}
@@ -27,7 +28,7 @@ the ability to apply `break` or `continue` to a loop or `switch` when
 this isn't the innermost enclosing statement.
 This feature is popular, simple, and quite useful:
 
-Specifically, we propose the following syntax:
+Specifically, we propose the following functionality:
 ```cpp
 outer: for (auto x : xs) {
     for (auto y : ys) {
@@ -46,15 +47,20 @@ switch_label: switch (/* ... */) {
     }
 }
 
-break outer; // error: cannot break loop from the outside
-goto outer; // OK, used to be OK, and is unaffected by this proposal
+break outer;       // error: cannot break loop from the outside
+goto outer;        // OK, used to be OK, and is unaffected by this proposal
+
+switch_label:;     // OK, labels can be reused
+goto switch_label; // error: jump target is ambiguous
 ```
 
-This syntax, identical to that in [[N3355]] has been accepted into C2y.
-This proposal brings that syntax into C++ and relaxes restrictions on labels to
-make it more powerful and to address concerns in a rival proposal [[N3377]].
+The `break label` and `continue label` syntax is identical to that in [[N3355]]
+and has been accepted into C2y (see working draft at [[N3435]]).
+We bring that syntax into C++ and relax restrictions on labels to
+make it more powerful,
+and to address concerns in a rival proposal [[N3377]].
 
-As for C++, `break` and `continue` with labels have been proposed in [[N3879]]
+Note that `break` and `continue` with labels have been proposed in [[N3879]]
 and rejected at Rapperswil 2014 ([[N4327]]):
 
 <blockquote>
@@ -82,7 +88,9 @@ Ten years later, circumstances have changed and we should re-examine this featur
 
 ## What has changed since 2014 ## {#changes-since-2014}
 
-Use of `constexpr` has become tremendously more common,
+The acceptance of the feature into C2y justifies re-examination in itself.
+
+Furthermore, use of `constexpr` has become tremendously more common,
 and `goto` may not be used in constant expressions.
 Where `goto` is used to break out of nested loops, `break label` makes it easy to migrate code:
 
@@ -104,11 +112,14 @@ Uses of `goto` to break out of nested loops can be replaced with `break label` a
 </code></pre>
 </div>
 
-Besides this change in C++, `break label` and `continue label` have seen an increase
+Last but not least, `break label` and `continue label` have seen an increase
 in popularity over the last ten years.
-The feature has seen increased adoption in older languages such as C and JavaScript,
+The feature has seen increased adoption in older languages such as JavaScript,
 and newer languages have been popularized which support this construct,
 such as Rust and Kotlin.
+
+Nowadays, it seems almost unthinkable not to have such control statements in a new language.
+A recent example of this is [[Cpp2]] (cppfront), which has `break label;` and `continue label;`.
 
 
 # Motivation # {#motivation}
@@ -483,6 +494,7 @@ and these are valid concerns in C++ as well.
 Secondly, `break N` is more challenging to read because the developer has to investigate what scopes
 surround the statement (where e.g. `if` doesn't count, but `switch` and `for` count),
 and conclude from this where `break` applies.
+The greater `N` is, the ore challenging this task becomes.
 By comparison, `break label;` obviously breaks out of the loop labeled `label:`.
 
 Thirdly, this construct is an obscure idea (not entirely novel, seen before in PHP).
@@ -564,7 +576,7 @@ see [[#against-n3377-extendability]].
 ## Should there be `break label;` and `continue label;` in constant expressions? ## {#constexpr-break-continue}
 
 Yes, absolutely!
-This is a major benefit over `goto`, and part of the motivation for this proposal.
+This is a major benefit over `goto`, and it's part of the motivation for this proposal.
 
 An implementation is also quite feasible, and *basically* already exists in every compiler.
 For constant evaluation, `break` already needs to be able to exit
@@ -606,9 +618,32 @@ In summary, the competing syntax has the technical benefit that
 it doesn't require each `label:` to be unique within a function.
 This allows the developer to expand function-style macros containing labeled loops
 multiple times, and lets them repurpose simple names like `outer` and `inner` within the same function.
-
 We address these technical issues in [[#changes-to-labels]], however,
 not with the [[N3377]] syntax.
+
+[[N3377]] also makes largely more subjective claims
+as to why the `for label` syntax is a better fit for C,
+which we discuss below.
+
+### Labels don't properly imply the target ### {#n3377-labels-dont-imply-target}
+
+One claim made by [[N3377]] is that labels don't properly imply a target and are their own
+declaration.
+This is actually true and based on the fact that a *compound-statement* consists of
+*block-item*s, and one of these can simply be a *label* with no *statement*.
+
+However, these grammatical implementation details are easily changed and don't matter all that much
+to the mental model of a programmer.
+The quintessential example of this is the preference of many C++ programmers for `int* x`,
+closely associating `*` with the `int` specifier, despite `*x` forming a *declarator* and
+thus being "more correct".
+
+Similarly, `l:` is intuitively meant to attach to
+something else (based on the name "label" and on its syntax),
+even though the language grammar no longer mandates that.
+Whether `l: for` is a good syntax should depend on whether it expresses the idea of attaching
+a label to a `for` loop well, not on whether it is a perfect fit for the current
+grammar implementation details, which are subject to change anyway.
 
 ### Two sets of labels for disambiguation ### {#n3377-label-disambiguation}
 
@@ -934,6 +969,17 @@ and is easily compatible with
 - every new statement in the future, and
 - new language extensions, like `break` for block-statements.
 
+It should be noted that [[N3377]] also floats the idea of an alternative Rust-like syntax,
+such as `'label: for`.
+This would no longer interfere with future standardization,
+but we don't believe that this is worth pursuing because it creates two extremely similar label syntaxes.
+It is almost impossible to justify why the language needs two almost identical label syntaxes
+when other languages (e.g. D, Go, Perl) have shown that this is technically unnecessary.
+
+Such a strategy would also turn the prior example in [[#against-n3377-repetition]] into
+`outer: 'outer: for (/* ... */)`,
+which looks even worse.
+
 #### Blocking contextual keywords #### {#against-n3377-keywords}
 
 Considering that the user is able to add arbitrary identifiers after `while` and `for`,
@@ -950,11 +996,31 @@ To be fair, `constexpr` is a true keyword, so the addition of `constexpr` after 
 wouldn't have been blocked by [[N3377]] syntax either (if [[N3377]] was part of C++ at the time).
 
 Nonetheless, it is substantial commitment to block contextual keywords with the [[N3377]] syntax,
-and we don't see that commitment as justified. 
+and we don't see that commitment as justified.
+
+To be fair, [[N3377]] also floats the idea of a syntax such as:
+
+```cpp
+while :outer:(/* ... */)
+```
+
+The addition of special characters into the *block-name* no longer blocks future contextual keywords.
+However, if we are requiring this, it seems strictly better to have a syntax such as
+
+```cpp
+:outer: while
+```
+The only other language (to my knowledge) with two syntaxes is Ada (`<<Label>>` and `Label:`),
+but even that language puts the labels *before* the statement to which they apply, not somewhere
+in the middle, let alone at the end (in the case of `do while`).
+
+A preceding syntax simply works better when considering *block-statement*s ([[#against-n3377-extendability]])
+and `do while` loops ([[#against-n3377-instant-tooling-integration]]).
+However, once again, this unnecessarily gives us two almost identical label syntaxes.
 
 #### Labeling loops expanded from macros #### {#against-n3377-macro-loops}
 
-Because [[N3355]] loop labels are prepended, they can also be applied to loops
+Because [[N3355]] loop labels are prepended to the loop, they can also be applied to loops
 expanded from macros.
 Such macro-expanded loops are relatively common in C.
 
@@ -1126,10 +1192,9 @@ and relaxes restrictions on the placement of labels.
 
 # Implementation experience # {#implementation-experience}
 
-LLVM implementation W.I.P.
+An LLVM implementation is W.I.P.
 
-
-
+A GCC implementation of [[N3355]] has also been committed at [[GCC]].
 
 # Proposed wording # {#proposed-wording}
 
@@ -1399,6 +1464,11 @@ I thank the
 
 <pre class=biblio>
 {
+    "Cpp2": {
+        "authors": ["Herb Sutter"],
+        "title": "Cpp2 documentation - Loop names, break, and continue",
+        "href": "https://hsutter.github.io/cppfront/cpp2/functions/#loop-names-break-and-continue"
+    },
     "MISRA-C++": {
         "authors": ["MISRA Consortium Limited"],
         "title": "MISRA C++:2023",
@@ -1450,6 +1520,11 @@ I thank the
         "title": "Poll at Together C & C++ (discord.gg/tccpp)",
         "href": "https://discord.com/channels/331718482485837825/851121440425639956/1318965556128383029"
     },
+    "GCC": {
+        "authors": ["Jakub Jelinek"],
+        "title": "c: Implement C2Y N3355 - Named Loops [PR117022]",
+        "href": "https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=50f27896adb272b40ab03a56fd192e74789bef97"
+    },
     "N3355": {
         "authors": ["Alex Celeste"],
         "title": "N3355: Named loops, v3",
@@ -1460,6 +1535,11 @@ I thank the
         "authors": ["Erich Keane"],
         "title": "N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355",
         "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3377.pdf"
+    },
+    "N3435": {
+        "authors": ["JeanHeyd Meneide", "Freek Wiedijk"],
+        "title": "ISO/IEC 9899:202y (en) — n3435 working draft",
+        "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3435.pdf"
     }
 }
 </pre>
