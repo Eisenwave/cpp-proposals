@@ -50,6 +50,11 @@ Audience: LEWG-I, LEWG, EWG-I, EWG, SG22
 - [P3176R1](oxford-variadic-comma-p3176r1.html)
 - [P3176R0](oxford-variadic-comma-p3176r0.html)
 
+## NP: `break label;` and `continue label;`
+
+- [Latest](break-continue-label.html)
+- [P3568R0](break-continue-label-p3568r0.html)
+
 ## NP: Carry-less product: `std::clmul`
 
 Audience: LEWG-I, LEWG
@@ -69,7 +74,3 @@ Audience: LEWG-I, LEWG
 ## NP: Define `offsetof` semantics in the C++ standard
 
 - [Latest](offsetof.html)
-
-## NP: `break label;` and `continue label;`
-
-- [Latest](break-continue-label.html)

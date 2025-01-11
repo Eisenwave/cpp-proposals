@@ -1,8 +1,8 @@
 <pre class='metadata'>
 Title: <code>break label;</code> and <code>continue label;</code>
-Shortname: Dxxxx
+Shortname: P3568
 Revision: 0
-Status: D
+Status: P
 Date: 2024-12-18
 Group: WG21
 Audience: SG22, EWGI
