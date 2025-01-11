@@ -5,7 +5,7 @@ Revision: 0
 Status: D
 Date: 2024-12-18
 Group: WG21
-Audience: SG22, LEWGI, LEWG
+Audience: SG22, EWGI
 Editor: Jan Schultke, janschultke@gmail.com
 Editor: Sarah Quiñones
 ED: https://eisenwave.github.io/cpp-proposals/break-continue-label.html
