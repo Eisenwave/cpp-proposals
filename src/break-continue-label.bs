@@ -399,6 +399,14 @@ The following table counts only control statements with a label,
         <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">1.5K files</a></td>
     </tr>
     <tr>
+        <td>Cpp2 (cppfront)</td>
+        <td>`label: for ...`<br>`break label;`<br>`continue label;`</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
         <td>C</td>
         <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
         <td>N/A</td>
