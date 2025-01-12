@@ -14,15 +14,15 @@ Author: Jan Schultke
 - [P3103R1](more-bitset-operations-p3103r1.html)
 - [P3103R0](more-bitset-operations-p3103r0.html)
 
-### P3014: Bit permutations
+### P3104: Bit permutations
 
 **Status**: Active<br>
 **Audience**: LEWG-I, LEWG
 
 - [Latest](bit-permutations.html)
-- [P3014R2](bit-permutations-p3104r2.html)
-- [P3014R1](bit-permutations-p3104r1.html)
-- [P3014R0](bit-permutations-p3104r0.html)
+- [P3104R2](bit-permutations-p3104r2.html)
+- [P3104R1](bit-permutations-p3104r1.html)
+- [P3104R0](bit-permutations-p3104r0.html)
 
 ### P3140: `std::int_least128_t`
 
