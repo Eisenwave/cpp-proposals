@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/break-continue-label.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9a7b74799dfa465c7eb34eb01146d8c0eb80368a" name="revision">
+  <meta content="148066ed82024e154050ccff7164cff8d30d9573" name="revision">
 <style>
 table, th, td {
     border-color: rgba(0, 0, 0, 0.5);
@@ -2129,7 +2129,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3568R0<br><code class="highlight"><c- k>break</c-> <c- n>label</c-><c- p>;</c-></code> and <code class="highlight"><c- k>continue</c-> <c- n>label</c-><c- p>;</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-12-18">2024-12-18</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-01-12">2025-01-12</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2369,7 +2369,7 @@ We want to continue processing other files, so we <code class="highlight"><c- k>
     <p>A plain <code class="highlight"><c- k>break</c-></code> cannot be used here because it would result in executing the
 following <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>println</c-></code> statement, but this should only be done upon success.</p>
    </div>
-   <p>There are alternative ways to write this, but all of them have some form of issues:</p>
+   <p>There are alternative ways to write this, but all of them have various issues.</p>
    <h4 class="heading settled" data-level="3.1.1" id="alternative-goto"><span class="secno">3.1.1. </span><span class="content"><code class="highlight"><c- k>goto</c-></code></span><a class="self-link" href="#alternative-goto"></a></h4>
 <pre class="language-cpp highlight"><c- k>for</c-> <c- p>(</c-><c- k>const</c-> <c- n>File</c-><c- o>&amp;</c-> <c- n>text_file</c-> <c- o>:</c-> <c- n>files</c-><c- p>)</c-> <c- p>{</c->
     <c- k>for</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>line</c-> <c- o>:</c-> <c- n>text_file</c-><c- p>.</c-><c- n>lines</c-><c- p>())</c-> <c- p>{</c->
@@ -3200,16 +3200,7 @@ and relaxes restrictions on the placement of labels.</p>
       <em>label</em>:<br> 
      <div class="indent"> <em>attribute-specifier-seq</em><sub>opt</sub> <em>identifier</em> <code class="highlight"><c- o>:</c-></code><br> <em>attribute-specifier-seq</em><sub>opt</sub> <code class="highlight"><c- k>case</c-></code> <em>constant-expression</em> <code class="highlight"><c- o>:</c-></code><br> <em>attribute-specifier-seq</em><sub>opt</sub> <code class="highlight"><c- k>default</c-></code> <code class="highlight"><c- o>:</c-></code> </div>
       <em>labeled-statement</em>:<br> 
-     <div class="indent">
-      <del><em>label</em></del>
-      <ins><em>label-seq</em></ins>
-       <em>statement</em> 
-     </div>
-     <ins><em>label-seq</em>:</ins>
-     <br> 
-     <div class="indent">
-      <ins><em>label-seq</em><sub>opt</sub> <em>label</em></ins>
-     </div>
+     <div class="indent"> <em>label</em> <em>statement</em> </div>
     </div>
      The optional <em>attribute-specifier-seq</em> appertains to the label. 
     <del>The only use of a label with an <em>identifier</em> is as the target of a <code class="highlight"><c- k>goto</c-></code>.
@@ -3217,20 +3208,31 @@ No two labels in a function shall have the same identifier.</del>
      A label can be used in a <code class="highlight"><c- k>goto</c-></code> statement 
     <ins>([stmt.goto])</ins>
      before its introduction.
-    <ins><br><br> [ <em>Note</em>: Multiple identical labels within the same function
-    and even within the same <em>label-seq</em> are permitted,
+    <ins><br><br> [ <em>Note</em>: Multiple identical labels within the same function are permitted,
     but such duplicate labels cannot be used in a <code class="highlight"><c- k>goto</c-></code> statement. — <em>end note</em> ] </ins>
    </blockquote>
-   <p class="note" role="note"><span class="marker">Note:</span> The grammar change is necessary so that we can apply multiple labels to a single loop,
-like <code class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>for</c-> <c- p>(...)</c-></code>.
-Otherwise, it is more difficult to say when a loop is is labeled by a label,
-since we need to consider all enclosing <em>label-statement</em>s recursively,
-but without other intervening statements.</p>
    <p>In <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> insert a new paragraph after paragraph 1:</p>
    <blockquote>
-    <ins> Every <em>label</em> in the <em>label-seq</em> of a <em>labeled-statement</em> <strong>S</strong> <em>labels</em> the <em>statement</em> of <strong>S</strong>. </ins>
+    <ins>
+     A label <strong>L</strong> of the form <em>attribute-specifier-seq</em><sub>opt</sub> <em>identifier</em> <code class="highlight"><c- o>:</c-></code> <em>labels</em> a <em>statement</em> <strong>S</strong> if 
+     <ul>
+      <li><strong>L</strong> is the <em>label</em> and <strong>S</strong> is the <em>statement</em> of a <em>labeled-statement</em> <strong>X</strong>, or
+      <li><strong>L</strong> labels <strong>X</strong> (recursively).
+     </ul>
+    </ins>
+    <div class="ins-block">
+      [ <em>Example</em>: 
+<pre class="highlight"><c- nl>a</c-><c- p>:</c-> <c- n>b</c-><c- o>:</c-> <c- k>while</c-> <c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- p>{</c-> <c- p>}</c->            <c- c1>// both a: and b: label the loop</c->
+<c- nl>c</c-><c- p>:</c-> <c- p>{</c-> <c- n>d</c-><c- o>:</c-> <c- k>switch</c-> <c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- p>{</c->           <c- c1>// unlike c:, d: labels the switch statement</c->
+    <c- k>default</c-><c- o>:</c-> <c- k>while</c-> <c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- p>{</c-> <c- p>}</c->     <c- c1>// default: labels nothing</c->
+<c- p>}</c-> <c- p>}</c->
+</pre>
+     — <em>end example</em> ]
+    </div>
    </blockquote>
-   <p class="note" role="note"><span class="marker">Note:</span> This defines the term <em>(to) label</em>, which is used extensively below.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This defines the term <em>(to) label</em>, which is used extensively below.
+We also don’t want <code class="highlight"><c- k>case</c-></code> or <code class="highlight"><c- k>default</c-></code> labels to label statements, since this would inadvertently
+permit <code class="highlight"><c- k>break</c-> <c- n>i</c-></code> given <code class="highlight"><c- k>case</c-> <c- no>i</c-><c- p>:</c-></code>, considering how we word [stmt.break].</p>
    <p>Update <a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a> paragraph 3 as follows:</p>
    <blockquote>
      A <em>control-flow-limited statement</em> is a statement <strong>S</strong> for which: 
@@ -3277,14 +3279,15 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
     <ins>a breakable statement</ins>
     <del>an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k>switch</c-></code> statement ([stmt.switch])</del>
     . 
-    <ins>If present, the <em>identifier</em> shall label ([stmt.label]) an enclosing breakable statement.</ins>
-     The <code class="highlight"><c- k>break</c-></code> statement causes termination of 
+    <ins>If present, the <em>identifier</em> shall be part of a label <strong>L</strong> which labels ([stmt.label]) an enclosing breakable statement.</ins>
+     The <code class="highlight"><c- k>break</c-></code> statement causes termination of
+    <ins>:</ins>
     <del>the smallest such enclosing statement;</del>
     <ul>
      <li>
-      <ins>if an <em>identifier</em> is present, the smallest enclosing breakable statement labeled by that <em>identifier</em>, otherwise</ins>
+      <ins>if an <em>identifier</em> is present, the smallest enclosing breakable statement labeled by <strong>L</strong>,</ins>
      <li>
-      <ins>the smallest enclosing breakable statement.</ins>
+      <ins>otherwise, the smallest enclosing breakable statement.</ins>
     </ul>
     <del>control</del>
     <ins>Control</ins>
@@ -3309,14 +3312,15 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
    <p>Update <a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a> paragraph 1 as follows:</p>
    <blockquote>
      A <code class="highlight"><c- k>continue</c-></code> statement shall be enclosed by ([stmt.pre]) an <em>iteration-statement</em> ([stmt.iter]). 
-    <ins>If present, the <em>identifier</em> shall label ([stmt.label]) an enclosing <em>iteration-statement</em>.</ins>
-     The <code class="highlight"><c- k>continue</c-></code> statement causes control to pass to the loop-continuation portion of 
+    <ins>If present, the <em>identifier</em> shall be part of a label <strong>L</strong> which labels ([stmt.label]) an enclosing <em>iteration-statement</em>.</ins>
+     The <code class="highlight"><c- k>continue</c-></code> statement causes control to pass to the loop-continuation portion of
+    <ins>:</ins>
     <del>the smallest such enclosing statement, that is, to the end of the loop.</del>
     <ul>
      <li>
-      <ins>if an <em>identifier</em> is present, the smallest enclosing <em>iteration-statement</em> labeled by that <em>identifier</em>, otherwise</ins>
+      <ins>if an <em>identifier</em> is present, the smallest enclosing <em>iteration-statement</em> labeled by <strong>L</strong>,</ins>
      <li>
-      <ins>the smallest enclosing <em>iteration-statement</em>.</ins>
+      <ins>otherwise, the smallest enclosing <em>iteration-statement</em>.</ins>
     </ul>
      More precisely, in each of the statements 
 <pre class="highlight"><ins><c- nl>label</c-><c- p>:</c-> </ins><c- k>while</c-> <c- p>(</c-><c- n>foo</c-><c- p>)</c-> <c- p>{</c->
@@ -3340,7 +3344,7 @@ an <em>iteration-statement</em> ([stmt.iter]) or a <code class="highlight"><c- k
 <c- nl>contin</c-><c- p>:</c-> <c- p>;</c->
 <c- p>}</c->
 </pre>
-    <del>a <code class="highlight"><c- k>continue</c-><c- p>;</c-></code> not contained in an an enclosed iteration statement is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.</del>
+    <del>a <code class="highlight"><c- k>continue</c-></code> not contained in an an enclosed iteration statement is equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>.</del>
     <ins>
      the following are equivalent to <code class="highlight"><c- k>goto</c-> <c- n>contin</c-></code>: 
      <ul>
@@ -3362,22 +3366,26 @@ should make it clear enough what the behavior is.</p>
      statement
 labeled 
     <ins>([stmt.label])</ins>
-     by the 
-    <del>identifier</del>
-    <ins><em>identifier</em></ins>
-    .
-The 
-    <del>identifier</del>
-    <ins><em>identifier</em></ins>
-     shall be
-a label located 
-    <ins>exactly once</ins>
-     in the current function. 
+     by 
+    <del>the identifier</del>
+    <ins>a label in the current function containing <em>identifier</em>, but not to a <code class="highlight"><c- k>case</c-></code> label</ins>
+    . 
+    <del>The identifier shall be a label located in the current function.</del>
+    <ins>There shall be exactly one such label.</ins>
    </blockquote>
+   <div class="note" role="note">
+     <span class="marker">Note:</span> This wording has always been defective and our proposal fixes this.
+The term "to label" was never defined,
+and the requirement that an identifier shall be a label is impossible to satisfy because
+a label ends with a <code class="highlight"><c- o>:</c-></code>, and an <em>identifier</em> in itself would never match the <em>label</em> rule. 
+    <p>The previous wording may have also allowed for <code class="highlight"><c- k>goto</c-> <c- n>x</c-><c- p>;</c-></code> to jump between two different functions
+both containing <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> because while there has to be some label <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> in the current function,
+we don’t say that we jump to the <code class="highlight"><c- nl>x</c-><c- p>:</c-></code> in the current function specifically.</p>
+   </div>
    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>I thank Sebastian Wittmeier for providing a list of languages that support both <code class="highlight"><c- k>goto</c-></code> and <code class="highlight"><c- k>break</c-></code>/<code class="highlight"><c- n>last</c-></code> with the same label syntax.
 This has been helpful for writing <a href="#against-n3377-breaking-precedent">§ 4.4.3.1 Breaking precedent of most prior art</a>.</p>
-   <p>I think Arthur O’Dwyer for providing wording feedback and improvement suggestions.</p>
+   <p>I think Arthur O’Dwyer and Jens Maurer for providing wording feedback and improvement suggestions.</p>
    <p>I thank the <a href="https://discord.gg/tccpp">Together C &amp; C++</a> community for responding to my poll; see <a data-link-type="biblio" href="#biblio-tccpp" title="Poll at Together C &amp; C++ (discord.gg/tccpp)">[TCCPP]</a>.</p>
   </main>
 <script>

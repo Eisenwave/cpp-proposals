@@ -18,11 +18,7 @@ Abstract: Introduce `break label` and `continue label` to `break` and `continue`
 
 # Revision history # {#history}
 
-## Changes since R0 ## {#changes-since-r0}
-
-- Fix paper date and other minor discrepancies.
-- Significantly revise [[#proposed-wording]].
-- Add Jens Maurer to [[#acknowledgements]].
+This is the first revision.
 
 # Introduction # {#introduction}
 
