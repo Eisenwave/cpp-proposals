@@ -32,7 +32,10 @@ Author: Jan Schultke
 - [Latest](int-least128.html)
 - [P3140R0](int-least128-p3140r0.html)
 
-### NP: `break label;` and `continue label;`
+### P3568: `break label;` and `continue label;`
+
+**Status**: Active<br>
+**Audience**: EWG-I, SG22
 
 - [Latest](break-continue-label.html)
 - [P3568R0](break-continue-label-p3568r0.html)
