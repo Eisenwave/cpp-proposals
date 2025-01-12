@@ -38,6 +38,7 @@ Author: Jan Schultke
 **Audience**: EWG-I, SG22
 
 - [Latest](break-continue-label.html)
+- [P3568R1](break-continue-label-p3568r1.html)
 - [P3568R0](break-continue-label-p3568r0.html)
 
 ### NP: Carry-less product: `std::clmul`
