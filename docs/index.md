@@ -17,7 +17,8 @@ Author: Jan Schultke
 ### P3104: Bit permutations
 
 **Status**: Active<br>
-**Audience**: LEWG-I, LEWG
+**Audience**: LEWG-I, LEWG<br>
+**Slides:** [P3192](../slides/p3104-slides.pdf)
 
 - [Latest](bit-permutations.html)
 - [P3104R2](bit-permutations-p3104r2.html)
@@ -82,7 +83,7 @@ Author: Jan Schultke
 - [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
 - [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
 
-### (Accepted) P3176R0: The Oxford variadic comma
+### (Accepted) P3176: The Oxford variadic comma
 
 **Status**: Accepted
 
