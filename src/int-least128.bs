@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: <code>std::int_least128_t</code>
+Title: 128-bit integers
 Shortname: P3140
 Revision: 1
 Status: P
@@ -15,6 +15,12 @@ Abstract: This proposal standardizes mandatory 128-bit integer types with strong
 
 # Revision history # {#revision-history}
 
+## Changes since R1 ## {#changes-since-r1}
+
+- Rename proposal to "128-bit integers"
+- Based on feedback at Tokyo, make 128-bit integer support mandatory only on
+    hosted implementations.
+
 ## Changes since R0 ## {#changes-since-r0}
 
 - Fix minor editorial issues.
@@ -24,6 +30,7 @@ Abstract: This proposal standardizes mandatory 128-bit integer types with strong
 - Add [[#other-programming-languages]].
 - In [[#proposed-abs]], change "*Returns*:" to "*Effects*: Equivalent to:".
 
+
 # Introduction # {#introduction}
 
 128-bit integers have numerous practical uses, and all major implementations
@@ -32,11 +39,15 @@ Among C++ users, there has been great interest in standardizing integers beyond 
 With the new wording in the C23 standard for `intmax_t` (see [[#c-compatibility]]),
 one of the last obstacles has been removed.
 
-The goal of this paper is to obtain a mandatory &ge; 128-bit integer type with no core language changes
+The goal of this paper is to obtain a hosted-mandatory
+&ge; 128-bit integer type with minor core language changes
 and strong support from the C++ standard library.
-To accomplish this, the mandatory aliases `std::int_least128_t` and `std::uint_least128_t`
-are proposed.
-Note that any non-malicious implementation would be required to define `std::uint128_t` if possible,
+To accomplish this, two strategies are proposed:
+- Create a new standard integer beyond `long long`, or
+- make an extended 128-bit integer mandatory through `std::int_least128_t`.
+
+Note that in the latter case,
+any non-malicious implementation would be required to define `std::uint128_t` if possible,
 so standardizing the minimum-width types is standardizing exact-width types by proxy.
 
 While the definition of these aliases is trivial, mandating them also implies
@@ -46,7 +57,7 @@ and [[#implementation-impact]] is relatively low.
 
 ## Lifting library restrictions ## {#lifting-library-restrictions}
 
-The standard library contains a large amount of artificial hurdles
+The standard library contains some amount of artificial hurdles
 which make it impossible to provide library support for extended integers.
 The current standard already permits the implementation to provide additional
 extended (fundamental) integer types in addition to the standard integers (`int`, `long`, etc.).
@@ -77,10 +88,11 @@ int main() {
     std::to_string(S{});
 }
 ```
-This code must always call `std::to_string(long long)`.
-If `std::int128_t` was not the same type as `long long`
-and the implementation added an overload `std::to_string(std::int128_t)`
-in spite of the standard, the call to `std::to_string` would be ambiguous.
+This code must always call `std::to_string(long long)`,
+unless `std::int128_t` is the same type as `long long`.
+If it isn't the same type and the implementation adds a
+non-standard overload `std::to_string(std::int128_t)`,
+the call to `std::to_string` becomes ambiguous.
 </div>
 
 The implementation has *some* ability to add overloads, stated in [global.functions] paragraph 2:
@@ -90,7 +102,8 @@ The implementation has *some* ability to add overloads, stated in [global.functi
 
 This condition is not satisfied.
 If a `std::to_string(std::int128_t)` overload existed, the behavior would not be *as if*
-the implementation declared no additional signature.
+the implementation declared no additional signature;
+a valid program would become ill-formed instead.
 
 Note: `std::uint128_t` is not a compiler extension; it's an optional feature.
 C23 [[N3047]] subclause 7.22.1.1 [Exact-width integer types] paragraph 3 requires
@@ -622,6 +635,34 @@ In some cases, special support for 128-bit integers is also provided or proposed
 
 # Impact on the standard # {#impact-on-the-standard}
 
+As already stated in [[#introduction]], there are two possible designs,
+explained below.
+
+## Possible designs ## {#possible-designs}
+
+### Design A - Standard integer ### {#design-a}
+
+The first option is to add a new standard integer to the five existing ones.
+I propose to allow the spelling `long long long`,
+but this isn't strictly necessary;
+the user can also refer to it by the alias `std::int_least128_t`.
+
+Furthermore, this option should not break ABI, and changes to the standard are made
+to prevent this.
+Among other changes, `intmax_t` is re-defined to not make aliasing `long long long`
+mandatory (see [[#intmax-t]]).
+
+### Design B - Extended integer ### {#design-b}
+
+The second option is to not alter the type system (or the core language)
+in any way, but to coerce the implementation into providing an extended
+128-bit integer by making `std::int_least128_t` mandatory.
+
+Note: This option was originally proposed and presented at Tokyo,
+    but subsequently criticized by CWG,
+    which is why Design A is now also proposed.
+
+
 First and foremost, this proposal mandates the following integer types in `<cstdint>`:
 ```cpp
 using int_least128_t  = /* signed integer type */;
@@ -659,32 +700,36 @@ C23 has relaxed the definition of `intmax_t`.
 
 <blockquote>
 The following type designates a signed integer type, other than a bit-precise integer type, capable of
-representing any value of any signed integer type with the possible exceptions of signed bit-precise
-integer types and of signed extended integer types that are wider than `long long` and that are
-referred by the type definition for an exact width integer type:
+representing any value of any signed integer type **with the possible exceptions** of signed bit-precise
+integer types and of <b>signed extended integer types that are wider than `long long` and that are
+referred by the type definition for an exact width integer type</b>:
 ```cpp
 intmax_t
 ```
 </blockquote>
 
+When designing 128-bit integers as extended integers ([[#design-b]]),
+this wording requires no adaptation in C++, and no ABI break is necessary.
 For `intmax_t` to not be `int_least128_t`,
 there must exist an `int128_t` alias for the same type.
 GCC already provides an `__int128` type which satisfies the padding-free requirement and could
 be exposed as `int128_t`.
 
-In conclusion, it is possible to provide a `std::int_least128_t` alias with equivalent
-semantics in C and C++, and with no ABI break.
+However, if a standard 128-bit integer was added ([[#design-a]]),
+C++ would need to re-define `intmax_t` because only extended integers are exempt.
 
-### `int_least128_t` in C ### {#int-least128-t-in-c}
+### 128-bit integers spilling into C ### {#int-least128-t-in-c}
 
-`std::int_least128_t` does not force `int_least128_t` to exist in C.
-In principle, C++ compilers can disable support for the type in C mode, so that there is
+`std::int_least128_t` does not force `int_least128_t` to exist in C,
+nor is any C++ type required to exist in C.
+C++ compilers can disable support for the type in C mode, so that there is
 effectively no impact.
 
 However, this would be somewhat undesirable because there would be no mandatory interoperable type.
 C users would use `_BitInt(128)` or `__int128` and C++ users would use `std::int128_t`,
-which would only be `__int128` by coincidence.
-For the sake of QoI, implementations should expose the corresponding alias in C as well
+which would only be `__int128` by coincidence,
+or some other 128-bit integer type.
+For the sake of QoI, implementations should expose a matching type in C as well
 (which they are allowed to).
 
 To make the type mandatory in both languages, cooperation from WG14 is needed.
@@ -698,7 +743,7 @@ The affected candidates are those listed in Table 40: C headers [tab:c.headers].
 
 <table>
 <tr>
-    <th>Header</th><th>Impact of extended integers</th>
+    <th>Header</th><th>Changes needed</th>
 </tr>
 <tr>
     <td>`<inttypes.h>`</td><td>Define macro constants</td>
@@ -708,6 +753,9 @@ The affected candidates are those listed in Table 40: C headers [tab:c.headers].
 </tr>
 <tr>
     <td>`<stdatomic.h>`</td><td>Define type aliases</td>
+</tr>
+<tr>
+    <td>`<stddef.h>`</td><td>Re-define `intmax_t` (only [[#design-a]])</td>
 </tr>
 <tr>
     <td>`<stdint.h>`</td><td>Define type aliases</td>
@@ -727,20 +775,65 @@ the system's C library.
 Otherwise, the C++ implementation could only guarantee 128-bit `printf` support
 if it was part of the C++ runtime library.
 
-Note: If additionally, a C implementation wanted to support `int_least128_t`,
+Note: If additionally, a C implementation wanted to support 128-bit integers,
 it would need to add extended integer support in a few other places.
 For example, `stdbit.h` requires type-generic functions to support all extended integers.
 
 ## Impact on the core language ## {#core-impact}
 
-The proposal makes no changes to the core language
+In the case of [[#design-b]], the proposal makes no changes to the core language
 because existing semantics of extended integers are sufficient
 (see [[#extended-conversion-rank]] for discussion).
 See also [[#user-defined-literals]].
 
+In the case of [[#design-a]], substantial changes need to be made, described below:
+
+### Lexical conventions ### {#core-impact-lex}
+
+**Issue:** Integer literals should be of 128-bit type where needed/possible.<br>
+**Action:** ⚠️ Add new 128-bit cases, particularly to [tab:lex.icon.type].
+
+**Issue:** There is no integer literal suffix for 128-bit integers.<br>
+**Action:** ⚠️ Add `lll` and `ulll`.
+
+**Issue:** a *user-defined-integer-literal* passes to a literal operator with
+type `unsigned long long` at most, but a 128-bit rule would be desirable.<br>
+**Action:** ⚠️ Add a 128-bit counterpart in [lex.ext].
+
+### Basics ### {#core-impact-basic}
+
+**Issue:** There is no standard signed/unsigned 128-bit integer yet.<br>
+**Action:** ⚠️ Define one (possibly with spelling `long long long`).
+
+**Issue:** 128-bit integers need a conversion rank.<br>
+**Action:** ⚠️ Define it (greater than `long long`).
+
+### Expressions ### {#core-impact-expr}
+
+**Issue:** Enumerations and character types can be promoted to at most `long long`.<br>
+**Action:** ⚠️ Allow promotion to 128-bit integers.
+
+### Declarations ### {#core-impact-dcl}
+
+**Issue:** If `long long long` is allowed, additional rules for
+*simple-type-specifier*s may be necessary (`long long long int`).<br>
+**Action:** ⚠️ Provide new rules analogously to all other integers.
+
+### Overloading ### {#core-impact-over}
+
+**Issue:** Literal operators don't allow a 128-bit *parameter-declaration-clause*.<br>
+**Action:** ⚠️ Allow one, with the same purpose as `unsigned long long int`.
+
+### Preprocessing directives ### {#core-impact-cpp}
+
+**Issue:** The preprocessor performs all operations as if through `intmax_t`.<br>
+**Action:** ⚠️ Soften this rule for integer literals that have wider type.
+
 ### Note on surprising semantics ### {#note-on-surprising-semantics} 
 
-It is worth noting that the existence of `std::uint_least128_t` leads to some oddities:
+It is worth noting that the existence of
+128-bit integers leads to some oddities,
+regardless of the chosen design:
 
 - The result of the `sizeof` operator can be a 128-bit integer.
 - The underlying type of enumerations can be a 128-bit integer.
@@ -749,15 +842,11 @@ It is worth noting that the existence of `std::uint_least128_t` leads to some od
     representation as `intmax_t` or `uintmax_t`,
     which means that 128-bit integers cannot be used in this context, or the values
     would be truncated.
+- `switch` statements now require 128-bit integer support.
 
 However, none of this is a new issue introduced by this proposal.
 Any compliant implementation could already have produced this behavior,
 assuming it supported 128-bit integers as an optional extended integer type.
-
-Note: The fact that the preprocessor doesn't operate on the widest integer type,
-but on `intmax_t` will need to be addressed.
-However, this is a general problem with rebasing on C23 and not within the scope
-of this proposal.
 
 ## Impact on the library ## {#library-impact}
 
@@ -984,6 +1073,20 @@ the language provides sufficient alternatives
 
 ## Estimated implementation effort ## {#estimated-implementation-effort}
 
+First of all, the implementation obviously needs to provide 128-bit integer types
+and features that go along with them, such as:
+- arithmetic, initialization, and other basics
+- integer literals and possibly a new suffix
+- rules in overload resolution, template argument deduction, etc.
+- 128-bit `switch` statements
+- various backend issues such as a register allocation, ABI, etc.
+
+The effort of this greatly depends on what kind of support for 128-bit computing
+the implementation has, and is comparably small
+for at least GCC an Clang due to their existing builtin 128-bit types
+(see [[#existing-128-bit-integers]])
+
+Furthermore, extensive library support is needed.
 The following table summarizes the affected standard library parts and the estimated effort
 required to implement the proposed changes.
 
