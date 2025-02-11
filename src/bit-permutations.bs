@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Bit permutations
-Shortname: D3104
+Shortname: P3104
 Revision: 3
-Status: D
-Date: 2025-01-16
+Status: P
+Date: 2025-02-11
 Group: WG21
 Audience: LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -171,19 +171,16 @@ For each one-bit in `m`, the corresponding bit in `x` is taken and packed
 contiguously into the result, starting with the least significant result bit.
 
 <div class="example">
-```text
-x:
-+---+---+---+---+
-| a | b | c | d |
-+---+---+---+---+
-m:    |       |        bit_compress(x, m):
-+---+---+---+---+      +---+---+---+---+
-| 0 | 1 | 0 | 1 |      | 0 | 0 | b | d |
-+---+---+---+---+      +---+---+---+---+
-```
-</div>
 
-Note: Intuitively, `m` is a "mask" that determines which bits of `x` are packed.
+```cpp
+uint32_t x =          /* ... */;  // a b c d
+uint32_t m =             0b0101;  // 0 1 0 1
+uint32_t z = bit_compress(x, m);  // 0 0 b d
+```
+Notice that bits `a` and `c` in `x` are ignored
+because the corresponding bit in the "mask" `m` is `0`.
+The remaining bits `b` and `d` are tightly packed to the right.
+</div>
 
 
 ## `bit_expand` ## {#intro-bit-expand}
@@ -205,19 +202,18 @@ For each one-bit in `m`, a bit from `x`, starting with the least significant bit
 is taken and shifted into the corresponding position of the `m` bit.
 
 <div class="example">
-```text
-x:
-+---+---+---+---+
-| a | b | c | d |
-+---+---+---+---+
-m:                     bit_expand(x, m):
-+---+---+---+---+      +---+---+---+---+
-| 0 | 1 | 0 | 1 |      | 0 | c | 0 | d |
-+---+---+---+---+      +---+---+---+---+
-```
-</div>
 
-Note: Intuitively, `m` is a "mask" that determines where the bits of `x` are unpacked into.
+```cpp
+uint32_t x =        /* ... */;  // a b c d
+uint32_t m =           0b0101;  // 0 1 0 1
+uint32_t z = bit_expand(x, m);  // 0 c 0 d
+```
+
+Notice that the bits `a` and `b` in `x` are ignored
+because the "mask" `m` only has two one-bits.
+The remaining bits `c` and `d` are placed
+where `m` has a one-bit. 
+</div>
 
 
 # Motivation and scope # {#motivation-and-scope}

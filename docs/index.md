@@ -21,6 +21,7 @@ Author: Jan Schultke
 **Slides:** [P3192](../slides/p3104-slides.pdf)
 
 - [Latest](bit-permutations.html)
+- [P3104R3](bit-permutations-p3104r3.html)
 - [P3104R2](bit-permutations-p3104r2.html)
 - [P3104R1](bit-permutations-p3104r1.html)
 - [P3104R0](bit-permutations-p3104r0.html)
