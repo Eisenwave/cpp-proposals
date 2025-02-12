@@ -1,0 +1,805 @@
+<pre class='metadata'>
+Title: <code>break label;</code> and <code>continue label;</code>, tl; dr
+Shortname: P3628
+Revision: 0
+Status: P
+Date: 2025-02-12
+Group: WG21
+Audience: SG22, EWGI
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/break-continue-label-tldr.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/break-continue-label-tldr.bs)
+Markup Shorthands: markdown on
+Abstract: Abridged version of [[P3568R0]].
+</pre>
+
+# Introduction # {#introduction}
+
+Proposed functionality:
+```cpp
+outer: for (auto x : xs) {
+    for (auto y : ys) {
+        if (/* ... */) {
+            continue outer; // OK, continue applies to outer for loop
+            break outer;    // OK, break applies to outer for loop  
+        }
+    }
+}
+
+switch_label: switch (/* ... */) {
+    default: while (true) {
+        if (/* ...*/) {
+            break switch_label; // OK, break applies to switch, not to while loop
+        }
+    }
+}
+
+break outer;       // error: cannot break loop from the outside
+goto outer;        // OK, used to be OK, and is unaffected by this proposal
+
+switch_label:;     // OK, labels can be reused
+goto switch_label; // error: jump target is ambiguous
+```
+
+- Proposed syntax (except label relaxations) is identical to [[N3355]], accepted into C2y.
+
+**Decisions required:**
+1. Do we want `break label` at all?
+2. Do we want this syntax?
+
+Functionality was proposed before in [[N3879]] and rejected at Rapperswil 2014 ([[N4327]]):
+
+<blockquote>
+<p>Straw poll, proposal as a whole:</p>
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>1</td><td>1</td><td>1</td><td>13</td><td>10</td>
+</tr>
+</table>
+<p>"break label;" + "continue label;"</p>
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>3</td><td>8</td><td>4</td><td>9</td><td>3</td>
+</tr>
+</table>
+</blockquote>
+
+However, things have changed since 2014:
+- C2y acceptance.
+- `constexpr` much more common now, but `goto` workaround doesn't work.
+- `break label` staple of new languages; see Rust, Kotlin, Cpp2.
+
+
+# Motivation # {#motivation}
+
+- `break label` and `continue` label useful for controlling nested loops/switches.
+- Early `return` not always viable alternative:
+    - not viable in every function
+    - MISRA-C++:2008 Rule 6-6-5 "A function shall have a single point of exit at the end of the function"
+    - does not replace `continue`
+
+## No good alternative ## {#no-good-alternatives}
+
+```cpp
+process_files: for (const File& text_file : files) {
+    for (std::string_view line : text_file.lines()) {
+        if (makes_me_angry(line)) {
+            continue process_files;
+        }
+        consume(line);
+    }
+    std::println("Processed {}", text_file.path());
+}
+std::println("Processed all files");
+```
+
+- `continue process_files` works really well, very readable.
+- `break;` would skip `std::println`.
+
+### `goto` ### {#alternative-goto}
+
+```cpp
+for (const File& text_file : files) {
+    for (std::string_view line : text_file.lines()) {
+        if (makes_me_angry(line)) {
+            goto done_with_file;
+        }
+        consume(line);
+    }
+    std::println("Processed {}", text_file.path());
+    done_with_file:
+}
+std::println("Processed all files");
+```
+
+Works, but:
+
+- `goto` cannot cross (non-vacuous) initialization
+    (problematic if we add variable before `std::println`)
+- not `constexpr`
+- Discouraged heavily (CppCoreGuidelines, MISRA, etc.)
+- No community consensus when *exactly* `goto` is OK.
+- Meaning of `goto` unclear until seeing label location.
+- Bad label name = confusing control flow.
+- Super controversial.
+
+
+### Immediately invoked lambda expression (IILE) ### {#alternative-iile}
+
+```cpp
+for (const File& text_file : files) {
+    [&] {
+        for (std::string_view line : text_file.lines()) {
+            if (makes_me_angry(line)) {
+                return;
+            }
+            consume(line);
+        }
+        std::println("Processed {}", text_file.path());
+    }();
+}
+std::println("Processed all files");
+```
+
+Works, but:
+
+- Can no longer `break` outer loop.
+- More indentation level.
+- Cost in constant evaluation, debug builds.
+- `return;` expresses intent poorly.
+
+### Mutable `bool` state ### {#alternative-bool-state}
+
+```cpp
+for (const File& text_file : files) {
+    bool success = true;
+    for (std::string_view line : text_file.lines()) {
+        if (makes_me_angry(line)) {
+            success = false;
+            break;
+        }
+        consume(line);
+    }
+    if (success) {
+        std::println("Processed {}", text_file.path());
+    }
+}
+std::println("Processed all files");
+```
+
+Works, but:
+
+- More mutable state to keep track of.
+- Way longer, extra `if`.
+- Needs one `bool` peer loop, doesn't scale.
+
+
+## Argumentum ad populum ## {#argumentum-ad-populum}
+
+- `break label` and `continue label` very popular in other languages.
+- This proposal: positive reception on Reddit.
+- See poll below.
+
+<blockquote>
+Should C++ have "break label" and "continue label" statements
+to apply break/continue to nested loops or switches?
+
+<table>
+<tr>
+    <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
+</tr>
+<tr>
+    <td>21</td><td>21</td><td>12</td><td>6</td><td>4</td>
+</tr>
+</table>
+</blockquote>
+
+Source: Together C & C++ (Discord server).
+
+<table>
+    <tr>
+        <td>Language</td>
+        <td>Syntax</td>
+        <td>Labeled<br>`break`s</td>
+        <td>Labeled<br>`continue`s</td>
+        <td>&Sigma; `break` `continue`</td>
+        <td>`goto`s</td>
+    </tr>
+    <tr>
+        <td>Java</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">424K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AJava+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">152K files</a></td>
+        <td>576K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>JavaScript</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">53.8K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AJavaScript+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">68.7K files</a></td>
+        <td>122.5K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Perl</td>
+        <td>`label: for (...)`<br>`last label;`<br>`next label;`</td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29last+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">34.9K files</a></td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29next+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">31.7K files</a></td>
+        <td>66.6K files</td>
+        <td><a href="https://github.com/search?q=language%3APerl+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">16.9K files</a></td>
+    </tr>
+    <tr>
+        <td>Rust</td>
+        <td>`label: for (...)`<br>`break 'label;`<br>`continue 'label;`</td>
+        <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29break+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">30.6K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ARust+%2F%28%3F-i%29continue+%3F%27%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">29.1K files</a></td>
+        <td>59.7K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>TypeScript</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">11.6K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ATypeScript+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">9K files</a></td>
+        <td>20.6K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Swift</td>
+        <td>`label: for ...`<br>`break label`<br>`continue label`</td>
+        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%5Cn%2F&type=code">12.6K files</a></td>
+        <td><a href="https://github.com/search?q=language%3ASwift+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%5Cn%2F&type=code">5.6K files</a></td>
+        <td>18.2K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>Kotlin</td>
+        <td>`label@ for (...)`<br>`break@label`<br>`continue@label`</td>
+        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29break%40%5B_a-zA-Z0-9%5D%2B%2F&type=code">8.7K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AKotlin+%2F%28%3F-i%29continue%40%5B_a-zA-Z0-9%5D%2B%2F&type=code">7.6K files</a></td>
+        <td>16.3K files</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>D</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">3.5K files</a></td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">2.6K files</a></td>
+        <td>6.1K files</td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">12.3K files</a></td>
+    </tr>
+    <tr>
+        <td>Go</td>
+        <td>`label: for ...`<br>`break label;`<br>`continue label;`</td>
+        <td><a href="https://github.com/search?q=language%3AGo+%2F%28%3F-i%29break+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">270 files</a></td>
+        <td><a href="https://github.com/search?q=language%3AGo+%2F%28%3F-i%29continue+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">252 files</a></td>
+        <td>522</td>
+        <td><a href="https://github.com/search?q=language%3AD+%2F%28%3F-i%29goto+%5Ba-zA-Z0-9%5D%2B%3B%2F&type=code">1.5K files</a></td>
+    </tr>
+    <tr>
+        <td>Cpp2 (cppfront)</td>
+        <td>`label: for ...`<br>`break label;`<br>`continue label;`</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>C</td>
+        <td>`label: for (...)`<br>`break label;`<br>`continue label;`</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td><a href="https://github.com/search?q=language%3AC+%2F%28%3F-i%29goto+%5B_a-zA-Z0-9%5D%2B%3B%2F&type=code">7.8M files</a></td>
+    </tr>
+</table>
+
+
+# Design Considerations # {#design-considerations}
+
+## Alternative `break` and `continue` forms ## {#alternative-break-continue-forms}
+
+- `break N` (e.g. `break 2;`)
+- `break while` (i.e. use keyword as label)
+- `break statement` (e.g. `break break;`)
+
+No, thanks!
+Received poorly, too exotic.
+WG14 wants `break label;`.
+
+## `constexpr` `break label;` and `continue label;` ## {#constexpr-break-continue}
+
+Yes, absolutely!
+See motivation; easier to implement than `constexpr goto`
+because almost exists already:
+
+```cpp
+while (/* ... */) {
+    if (/* ... */) {
+        { { { { { break; } } } } }
+    }
+}
+```
+
+- Arbitrarily deeply nested `break` already implemented.
+- `break label` just skips some statements and breaks more, easy.
+
+## Syntax warzone ## {#syntax}
+
+- I like [[N3355]], accepted into C2y.
+- Competing proposal [[N3377]] seen at Graz, this month.
+
+[[N3377]] syntax:
+```cpp
+for outer (/* ...*/) {
+    while (/* ... */) break outer;
+    while outer (/* ... */) {
+        // OK, applies to the enclosing while loop
+    }
+}
+```
+
+### N3377 benefits ### {#n3377-benefits}
+
+- *block-name*s don't have to be unique, and this is good for macros.
+    - Counterpoint: I relax labels instead, no need for [[N3377]] syntax.
+- Disambiguation between `goto` targets and `break` targets.
+    - Counterpoint: Impact may be overstated, could disambiguate with naming convention, linter scripts.
+
+Note: There are some other minor arguments for [[N3377]], but we don't have the time.
+
+### N3377 problems ### {#n3377-problems}
+
+#### Breaking precedent of most prior art #### {#against-n3377-breaking-precedent}
+
+Breaks most prior art; see language stats above and examples below:
+
+**Perl:**
+```perl
+goto LINE;
+LINE: while (true) {
+    last LINE;  # like our proposed break LINE
+}
+```
+
+**Go:**
+```go
+goto OuterLoop
+OuterLoop: for {
+    break OuterLoop
+}
+```
+
+**D:**
+```d
+goto outer;
+outer: while (true) {
+    break outer;
+}
+```
+</div>
+
+
+However, **Ada:**
+```ada
+goto Target;
+<<Target>>
+Outer: loop
+    exit Outer; -- like our proposed break Outer
+end loop Outer;
+```
+
+- `break label` and `continue label` has decades of precedent in other languages.
+- C++ often used in conjunction with other languages, ergo common syntax = good.
+
+#### Repetition #### {#against-n3377-repetition}
+
+[[N3377]] is bad when loop is targeted by `break` *and* `goto`:
+
+```cpp
+goto outer;
+// ...
+outer: while outer(true) {
+    while(true) {
+        break outer;
+    }
+}
+```
+
+- Option A: copy/paste name, but DRY!
+- Option B: two different names for same loop?!
+
+#### Extendability #### {#against-n3377-extendability}
+
+```cpp
+label: {
+    // OK in Java, JS, TS
+    break label;
+}
+```
+
+- Not proposed, but who knows next 40 years?
+- [[N3377]] syntax generally harder to apply to new features, more existing ones.
+
+#### Blocking contextual keywords #### {#against-n3377-keywords}
+
+```cpp
+while parallel(/* ... */)
+```
+
+- `parallel` cannot be contextual keyword if taken by user.
+- Precedent: `if constexpr`.
+- To be fair, [[N3377]] floats idea `while :parallel: ()`.
+    - But then why not put label in front?
+
+#### Labeling loops expanded from macros #### {#against-n3377-macro-loops}
+
+Example from uthash:
+
+```cpp
+#define HASH_ITER(hh,head,el,tmp) for (/* ... */)
+```
+
+With [[N3355]]:
+```cpp
+struct my_struct *current_user, *tmp;
+
+outer: HASH_ITER(hh, users, current_user, tmp) {
+    for (/* ... */) {
+        if (/* ... */) break outer;
+    }
+}
+```
+
+With [[N3377]]: ask library author to change macro or make your own.
+
+
+## Changes to labels ## {#changes-to-labels}
+
+As stated before, we relax labels as follows:
+
+```cpp
+outer: while (true) {
+    inner: while (true) {
+        break outer; // breaks enclosing outer while loop
+    }
+}
+
+outer: while (true) { // OK, reusing label is permitted
+    inner: while (true) {
+        break outer; // breaks enclosing outer while loop
+    }
+}
+
+goto outer; // error: ambiguous jump target
+```
+
+- OK in Java and JavaScript.
+- With `'outer` and `'inner` instead, this code is OK Rust.
+
+
+### New labels - `goto` ### {#new-labels-goto}
+
+```cpp
+x: f(); // OK
+x: g(); // OK
+goto x; // error: jump is ambiguous
+```
+No existing code broken.
+
+### New labels - nesting? ### {#new-labels-nesting}
+
+Another case to consider is the following:
+
+```cpp
+l: while (true) {
+    l: for (true) { // OK
+        break l; // breaks for loop
+    }
+}
+```
+
+- OK in Rust `'l`, but not in JS, Java.
+- Motivation: macros.
+
+### New labels - direct duplicates? ### {#new-labels-duplicates}
+
+```cpp
+l: l: l: l: for(); // OK
+```
+- Motivation:
+    - Why not?
+    - Macros.
+
+### New labels - what about `break label` for loops with more than one label? ### {#new-labels-break-label-multiple}
+
+```cpp
+x: y: while (true) {
+    break x; // OK
+}
+```
+- Motivation: OK in C2y ([[N3355]] and [[N3377]](?)).
+
+# Impact on existing code # {#impact-on-existing-code}
+
+None.
+
+# Implementation experience # {#implementation-experience}
+
+- Tons of other languages have this; it works.
+- A GCC implementation of [[N3355]]
+- An LLVM implementation is W.I.P.
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+table, th, td {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+table, th, td {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+}
+
+.indent {
+    padding-left: 2em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+}
+ins::not(.ins-block) {
+    text-decoration: underlined;
+}
+
+.ins-block, .ins-block * {
+    text-decoration: none !important;
+}
+.ins-block {
+    background: rgba(136, 255, 93, 0.1) !important;
+}
+
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The wording is relative to [[!N5001]].
+
+Update
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+paragraph 1 as follows:
+
+<blockquote>
+A label can be added to a statement or used anywhere in a *compound-statement*.
+<div class="indent">
+    *label*:<br>
+    <div class="indent">
+        *attribute-specifier-seq*<sub>opt</sub> *identifier* `:`<br>
+        *attribute-specifier-seq*<sub>opt</sub> `case` *constant-expression* `:`<br>
+        *attribute-specifier-seq*<sub>opt</sub> `default` `:`
+    </div>
+    *labeled-statement*:<br>
+    <div class="indent">
+        *label* *statement*
+    </div>
+</div>
+The optional *attribute-specifier-seq* appertains to the label.
+<del>The only use of a label with an *identifier* is as the target of a `goto`.
+No two labels in a function shall have the same identifier.</del>
+A label can be used in a `goto` statement <ins>([stmt.goto])</ins> before its introduction.<ins><br><br>
+[ *Note*: Multiple identical labels within the same function are permitted,
+    but such duplicate labels cannot be used in a `goto` statement. &mdash; *end note* ]
+</ins>
+</blockquote>
+
+In
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+insert a new paragraph after paragraph 1:
+<blockquote>
+<ins>A label **L** of the form *attribute-specifier-seq*<sub>opt</sub> *identifier* `:` *labels* a *statement* **S** if
+<ul>
+    <li>**L** is the *label* and **S** is the *statement* of a *labeled-statement* **X**, or</li>
+    <li>**L** labels **X** (recursively).</li>
+</ul></ins>
+<div class="ins-block">
+[ *Example*:
+<pre>
+a: b: while (0) { }            // both a: and b: label the loop
+c: { d: switch (0) {           // unlike c:, d: labels the switch statement
+    default: while (0) { }     // default: labels nothing
+} }
+</pre>&mdash; *end example* ]
+</div>
+</blockquote>
+
+Note: This defines the term *(to) label*, which is used extensively below.
+We also don't want `case` or `default` labels to label statements, since this would inadvertently
+permit `break i` given `case i:`, considering how we word [stmt.break].
+
+Update
+<a href="https://eel.is/c++draft/stmt.label">[stmt.label]</a>
+paragraph 3 as follows:
+<blockquote>
+A *control-flow-limited statement* is a statement **S** for which:
+<ul>
+    <li>
+        a `case` or `default` label appearing within **S**
+        shall be associated with a `switch` statement ([stmt.switch]) within **S**, and
+    </li>
+    <li>
+        a label declared in **S** shall only be
+        referred to by a statement <del>([stmt.goto])</del> in **S**.
+    </li>
+</ul>
+</blockquote>
+
+Note: While the restriction still primarily applies to `goto`
+(preventing the user from e.g. jumping into an `if constexpr` statement),
+if other statements can also refer to labels, it is misleading to say
+"statement ([stmt.goto])" as if `goto` was the only relevant statement.
+
+---
+
+Update
+<a href="https://eel.is/c++draft/stmt.jump.general">[stmt.jump.general]</a>
+paragraph 1 as follows:
+
+<blockquote>
+Jump statements unconditionally transfer control.
+<div class="indent">
+    *jump-statement*:
+        <div class="indent">
+            <ins>`goto` *identifier* `;`</ins><br>
+            `break` <ins>*identifier*<sub>opt</sub></ins> `;`<br>
+            `continue` <ins>*identifier*<sub>opt</sub></ins> `;`<br>
+            `return` *expr-or-braced-init-list*<sub>opt</sub> `;`<br>
+            <del>`goto` *identifier* `;`</del><br>
+        </div>
+</div>
+</blockquote>
+
+Note: `goto` is being relocated to the top so that all the jump statements with an *identifier*
+are grouped together.
+Of these three, `goto` is being listed first because it models the concept of
+"jumping somewhere" most literally; every following statement is more sophisticated or even
+defined as equivalent to `goto` (in the case of `continue`).
+
+---
+
+Update
+<a href="https://eel.is/c++draft/stmt.break">[stmt.break]</a>
+paragraph 1 as follows:
+
+<blockquote>
+<ins>A *breakable statement* is
+an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch]).</ins>
+A `break` statement shall be enclosed by ([stmt.pre])
+<ins>a breakable statement</ins>
+<del>an *iteration-statement* ([stmt.iter]) or a `switch` statement ([stmt.switch])</del>.
+<ins>If present, the *identifier* shall be part of a label **L** which labels ([stmt.label]) an enclosing breakable statement.</ins> 
+The `break` statement causes termination of<ins>:</ins>
+<del>the smallest such enclosing statement;</del>
+<ul>
+    <li>
+        <ins>if an *identifier* is present, the smallest enclosing breakable statement labeled by **L**,</ins>
+    </li>
+    <li>
+        <ins>otherwise, the smallest enclosing breakable statement.</ins>
+    </li>
+</ul>
+<del>control</del><ins>Control</ins> passes to the statement following the terminated statement, if any.
+<br><br>
+<div class="ins-block">
+[ *Example*:
+<pre>
+a: b: while (/* ... */) {
+    a: a: c: for (/* ... */) {
+        break;              // OK, terminates enclosing for loop
+        break a;            // OK, same
+        break b;            // OK, terminates enclosing while loop
+        y: { break y; }     // error: break does not refer to a breakable statement
+    }
+    break c;                // error: break does not refer to an enclosing statement
+}
+break;                      // error: break must be enclosed by a breakable statement
+</pre>&mdash; *end example* ]
+</div>
+</blockquote>
+
+---
+
+Update
+<a href="https://eel.is/c++draft/stmt.cont">[stmt.cont]</a>
+paragraph 1 as follows:
+
+<blockquote>
+A `continue` statement shall be enclosed by ([stmt.pre]) an *iteration-statement* ([stmt.iter]).
+<ins>If present, the *identifier* shall be part of a label **L** which labels ([stmt.label]) an enclosing *iteration-statement*.</ins> 
+The `continue` statement causes control to pass to the loop-continuation portion of<ins>:</ins>
+<del>the smallest such enclosing statement, that is, to the end of the loop.</del>
+<ul>
+    <li>
+        <ins>if an *identifier* is present, the smallest enclosing *iteration-statement* labeled by **L**,</ins>
+    </li>
+    <li>
+        <ins>otherwise, the smallest enclosing *iteration-statement*.</ins>
+    </li>
+</ul>
+More precisely, in each of the statements
+<pre>
+<ins>label: </ins>while (foo) {
+  {
+    // ...
+  }
+contin: ;
+}
+
+<ins>label: </ins>do {
+  {
+    // ...
+  }
+contin: ;
+} while (foo);
+
+<ins>label: </ins>for (;;) {
+  {
+    // ...
+  }
+contin: ;
+}
+</pre>
+<del>a `continue` not contained in an an enclosed iteration statement is equivalent to `goto contin`.</del>
+<ins>the following are equivalent to `goto contin`:
+<ul>
+    <li>A `continue` not contained in an an enclosed iteration statement.</li>
+    <li>A `continue label` not contained in an enclosed iteration statement labeled `label:`.</li>
+</ul>
+</blockquote>
+
+---
+
+Update
+<a href="https://eel.is/c++draft/stmt.goto">[stmt.goto]</a>
+paragraph 1 as follows:
+
+<blockquote>
+The `goto` statement unconditionally transfers control to <del>the</del><ins>a</ins> statement
+labeled <ins>([stmt.label])</ins> by <del>the identifier</del>
+<ins>a label in the current function containing *identifier*, but not to a `case` label</ins>.
+<del>The identifier shall be a label located in the current function.</del>
+<ins>There shall be exactly one such label.</ins>
+</blockquote>
+
+<pre class=biblio>
+{
+    "N3355": {
+        "authors": ["Alex Celeste"],
+        "title": "N3355: Named loops, v3",
+        "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3355.htm",
+        "date": "2024-09-18"
+    },
+    "N3377": {
+        "authors": ["Erich Keane"],
+        "title": "N3377: Named Loops Should Name Their Loops: An Improved Syntax For N3355",
+        "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3377.pdf"
+    }
+}
+</pre>
