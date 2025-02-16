@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bitint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="26b70ae87994cf610bee6496435f05b771f2d5c4" name="revision">
+  <meta content="7d49d73ce575c371286d8da66253e033e8291af3" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2136,9 +2136,10 @@ However, should this be a fundamental type or a library type?</p>
         <li><a href="#overload-resolution-flexibility"><span class="secno">4.2.4</span> <span class="content">Pro fundamental: <code class="highlight"><c- b>_BitInt</c-></code> offers overload resolution flexibility</span></a>
         <li><a href="#bitint-is-not-portable"><span class="secno">4.2.5</span> <span class="content">Pro library: <code class="highlight"><c- b>_BitInt</c-></code> is not portable, but <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be</span></a>
         <li><a href="#ill-conceived-integer-features"><span class="secno">4.2.6</span> <span class="content">Pro library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span></a>
-        <li><a href="#implementation-effort"><span class="secno">4.2.7</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is much easier to implement</span></a>
-        <li><a href="#teachability"><span class="secno">4.2.8</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span></a>
-        <li><a href="#wording-impact"><span class="secno">4.2.9</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span></a>
+        <li><a href="#implementation-effort"><span class="secno">4.2.7</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span></a>
+        <li><a href="#time-frame"><span class="secno">4.2.8</span> <span class="content">Pro library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span></a>
+        <li><a href="#teachability"><span class="secno">4.2.9</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span></a>
+        <li><a href="#wording-impact"><span class="secno">4.2.10</span> <span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span></a>
        </ol>
      </ol>
     <li>
@@ -2195,10 +2196,12 @@ or should it have a library type (class template)?</p>
      <p>What about more than 128 bits?</p>
    </ul>
    <p>Some use cases extend beyond 128 bits, such as 4096-bit (or more)
-computation for RSA and other cryptographic algorithms.
-The original <a data-link-type="biblio" href="#biblio-n2763" title="Adding a Fundamental Type for N-bit integers">[N2763]</a> C proposal and C++11 proposals which previously proposed this feature
-(<a data-link-type="biblio" href="#biblio-n1692" title="A Proposal to add the Infinite Precision Integer to the C++ Standard Library">[N1692]</a> and <a data-link-type="biblio" href="#biblio-n1744" title="Big Integer Library Proposal for C++0x">[N1744]</a>) contain further motivation.</p>
-   <p>I strongly doubt that the usefulness of integer arithmetic beyond 64 bits is contentious,
+computation for RSA and other cryptographic algorithms.</p>
+   <p>The original <a data-link-type="biblio" href="#biblio-n2763" title="Adding a Fundamental Type for N-bit integers">[N2763]</a> C proposal and C++11 proposals which previously proposed this feature
+(<a data-link-type="biblio" href="#biblio-n1692" title="A Proposal to add the Infinite Precision Integer to the C++ Standard Library">[N1692]</a> and <a data-link-type="biblio" href="#biblio-n1744" title="Big Integer Library Proposal for C++0x">[N1744]</a>) contain further motivation. <a data-link-type="biblio" href="#biblio-n4038" title="Proposal for Unbounded-Precision Integer Types">[N4038]</a> also proposed a "big integer", although a dynamically-sized one. <a data-link-type="biblio" href="#biblio-p1889r1" title="C++ Numerics Work In Progress">[P1889R1]</a> (TS) also contained a <code class="highlight"><c- n>wide_integer</c-></code> class template.</p>
+   <p>N-bit integers seems to have been suggested and worked on <em>many</em> times in the past decades;
+they simply weren’t prioritized by the authors and by WG21 so as to make it into the standard.
+I strongly doubt that the usefulness of integer arithmetic beyond 64 bits is contentious,
 so it won’t be discussed further here.</p>
    <h3 class="heading settled" data-level="2.2" id="c-abi-compatibility"><span class="secno">2.2. </span><span class="content">C-ABI compatibility</span><a class="self-link" href="#c-abi-compatibility"></a></h3>
    <p>C++ currently has no portable way to call a C function such as:</p>
@@ -2208,6 +2211,34 @@ so it won’t be discussed further here.</p>
 This could be accomplished either with a fundamental type that has identical ABI,
 or with a class type in the style of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code> or <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> that has identical ABI
 despite being a class type.</p>
+   <p>This compatibility problem is not a hypothetical concern either; it is an urgent problem.
+There are already targets with <code class="highlight"><c- b>_BitInt</c-></code>, supported by major compilers,
+and used by C developers:</p>
+   <table>
+    <tbody>
+     <tr>
+      <th>Compiler
+      <th><code class="highlight"><c- n>BITINT_MAXWIDTH</c-></code>
+      <th>Targets
+      <th>Languages
+     <tr>
+      <td>clang 16+
+      <td><code class="highlight"><c- mi>8388608</c-></code>
+      <td>all
+      <td>C &amp; C++
+     <tr>
+     <tr>
+      <td>GCC 14+
+      <td><code class="highlight"><c- mi>65535</c-></code>
+      <td>64-bit only
+      <td>C
+     <tr>
+     <tr>
+      <td>MSVC 19.38
+      <td>❌
+      <td>❌
+      <td>❌
+   </table>
    <h2 class="heading settled" data-level="3" id="scope"><span class="secno">3. </span><span class="content">Scope</span><a class="self-link" href="#scope"></a></h2>
    <p>I only propose <em>fixed-width</em>, <em>N-bit</em>, <em>signed and unsigned</em> integers.</p>
    <p>I do not propose dynamically sized, "infinite precision" integers.
@@ -2370,10 +2401,34 @@ and only provide desirable overloads for <code class="highlight"><c- k>operator<
 but diagnosed with Profiles, assuming those will be in C++29.
 Furthermore, <code class="highlight"><c- b>_BitInt</c-></code> in C++ could be restricted
 so that some of this behavior is disallowed (ill-formed).</p>
-   <h4 class="heading settled" data-level="4.2.7" id="implementation-effort"><span class="secno">4.2.7. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is much easier to implement</span><a class="self-link" href="#implementation-effort"></a></h4>
+   <h4 class="heading settled" data-level="4.2.7" id="implementation-effort"><span class="secno">4.2.7. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span><a class="self-link" href="#implementation-effort"></a></h4>
    <p>There are already numerous implementations of multi-precision integers for C++,
 such as Boost.Multiprecision.
-These have been tried and tested over many years, and can be integrated into the standard library.</p>
+These have been tried and tested over many years, and can be integrated into the standard library.
+If a pure library implementation is permitted,
+the burden is lowered from having to implement N-bit operation codegen in a compiler,
+to implementing the underlying <code class="highlight"><c- n>__builtin_add_overflow</c-></code> et al. intrinsics used in the
+standard library (or other library), for a given architecture.</p>
+   <p>Standardizing <code class="highlight"><c- b>_BitInt</c-></code> as a fundamental type also forces the implementation to set an ABI
+for this type in stone.
+Doing so is of much greater consequence than deciding on an ABI for <code class="highlight"><c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>bit_int</c-></code>, where,
+if push comes to shove, an ABI break is more plausible than for a fundamental C type.</p>
+   <p>Even the frontend implementation requires some effort, such as</p>
+   <ul>
+    <li data-md>
+     <p>parsing <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> with appropriate diagnostics,</p>
+    <li data-md>
+     <p>template argument deduction of <code class="highlight"><c- n>N</c-></code> from <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code>,</p>
+    <li data-md>
+     <p>new rules for overload resolution, conversion ranks, etc.,</p>
+    <li data-md>
+     <p>...</p>
+   </ul>
+   <p><strong>❌ Counterpoint:</strong> The implementation effort is non-trivial regardless,
+especially if the implementation has to be of high quality/performance.
+Even a library implementation needs to exploit architectural knowledge in the form of
+intrinsics or inline assembly.</p>
+   <h4 class="heading settled" data-level="4.2.8" id="time-frame"><span class="secno">4.2.8. </span><span class="content">Pro library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span><a class="self-link" href="#time-frame"></a></h4>
    <p>At this point, it is unclear when (or if ever) Microsoft will implement <code class="highlight"><c- b>_BitInt</c-></code>.
 It is not even clear whether 128-bit integer integers are planned,
 let alone 4096-bit support or higher.
@@ -2386,13 +2441,9 @@ depending on how MSVC and possible future compilers prioritize <code class="high
    <p>Note that a pure library implementation of <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be replaced with a wrapper for
 a built-in <code class="highlight"><c- b>_BitInt</c-></code> type at a later date, convenient for implementations.
 The option to have a pure library implementation gets the foot in the door.</p>
-   <p>Even the frontend implementation requires some effort,
-such as the template argument deduction of <code class="highlight"><c- n>N</c-></code> from <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code>.</p>
    <p><strong>❌ Counterpoint:</strong> This point becomes less significant once all compilers support <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> with large <code class="highlight"><c- n>N</c-></code>.
-Maybe this makes for a less timeless design.
-To be fair, the burden of providing a built-in <code class="highlight"><c- b>_BitInt</c-></code> would forever raise the bar of
-implementation effort for new C++ compilers.</p>
-   <h4 class="heading settled" data-level="4.2.8" id="teachability"><span class="secno">4.2.8. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span><a class="self-link" href="#teachability"></a></h4>
+Maybe this makes for a less timeless design.</p>
+   <h4 class="heading settled" data-level="4.2.9" id="teachability"><span class="secno">4.2.9. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span><a class="self-link" href="#teachability"></a></h4>
    <p>Generally speaking, new fundamental types introduce much more complexity for C++ users than
 library types.
 For example, <code class="highlight"><c- b>_BitInt</c-></code> is not subject to integer promotion, but subject to integer conversion.
@@ -2412,7 +2463,7 @@ overloads, and quickly understand how <code class="highlight"><c- n>std</c-><c- 
    <p><strong>❌ Counterpoint:</strong> This point is somewhat subjective and speculative.
 Either way, there will be new sets of types in the language, and new users will have to learn
 about them if they want to use them.</p>
-   <h4 class="heading settled" data-level="4.2.9" id="wording-impact"><span class="secno">4.2.9. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span><a class="self-link" href="#wording-impact"></a></h4>
+   <h4 class="heading settled" data-level="4.2.10" id="wording-impact"><span class="secno">4.2.10. </span><span class="content">Pro library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span><a class="self-link" href="#wording-impact"></a></h4>
    <p>Merely introducing a new class type to the language has no impact on the core wording
 whatsoever, and is absolutely guaranteed not to introduce wording bugs and subtle ABI breaks.</p>
    <p>To name one potential issue, <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i><c- p>(</c-><c- n>W</c-><c- p>)</c-></code> for <code class="highlight"><c- n>W</c-> <c- o>=</c-> <c- b>long</c-> <c- b>long</c-></code> is defined as
@@ -2573,6 +2624,10 @@ While committee time is a valuable resource, wording impact should not dictate d
    <dd>Aaron Ballman; et al. <a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf"><cite>Adding a Fundamental Type for N-bit integers</cite></a>. URL: <a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf">https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf</a>
    <dt id="biblio-n2775">[N2775]
    <dd>Aaron Ballman; Melanie Blower. <a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf"><cite>Literal suffixes for bit-precise integers</cite></a>. URL: <a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf">https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf</a>
+   <dt id="biblio-n4038">[N4038]
+   <dd>Pete Becker. <a href="https://wg21.link/n4038"><cite>Proposal for Unbounded-Precision Integer Types</cite></a>. 23 May 2014. URL: <a href="https://wg21.link/n4038">https://wg21.link/n4038</a>
+   <dt id="biblio-p1889r1">[P1889R1]
+   <dd>Alexander Zaitsev, Antony Polukhin. <a href="https://wg21.link/p1889r1"><cite>C++ Numerics Work In Progress</cite></a>. 27 December 2019. URL: <a href="https://wg21.link/p1889r1">https://wg21.link/p1889r1</a>
    <dt id="biblio-p3104r0">[P3104R0]
    <dd>Jan Schultke. <a href="https://wg21.link/p3104r0"><cite>Bit permutations</cite></a>. 26 January 2024. URL: <a href="https://wg21.link/p3104r0">https://wg21.link/p3104r0</a>
    <dt id="biblio-p3140r0">[P3140R0]

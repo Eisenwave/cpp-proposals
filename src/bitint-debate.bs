@@ -65,9 +65,14 @@ On of my previous proposals ([[P3140R0]]) provides a sea of motivation for
 
 Some use cases extend beyond 128 bits, such as 4096-bit (or more)
 computation for RSA and other cryptographic algorithms.
+
 The original [[N2763]] C proposal and C++11 proposals which previously proposed this feature
 ([[N1692]] and [[N1744]]) contain further motivation.
+[[N4038]] also proposed a "big integer", although a dynamically-sized one.
+[[P1889R1]] (TS) also contained a `wide_integer` class template.
 
+N-bit integers seems to have been suggested and worked on *many* times in the past decades;
+they simply weren't prioritized by the authors and by WG21 so as to make it into the standard.
 I strongly doubt that the usefulness of integer arithmetic beyond 64 bits is contentious,
 so it won't be discussed further here.
 
@@ -82,6 +87,24 @@ This could be accomplished either with a fundamental type that has identical ABI
 or with a class type in the style of `std::complex` or `std::atomic` that has identical ABI
 despite being a class type.
 
+This compatibility problem is not a hypothetical concern either; it is an urgent problem.
+There are already targets with `_BitInt`, supported by major compilers,
+and used by C developers:
+
+<table>
+<tr>
+    <th>Compiler</th><th>`BITINT_MAXWIDTH`</th><th>Targets</th><th>Languages</th>
+</tr>
+</tr>
+    <td>clang 16+</td><td>`8388608`</td><td>all</td><td>C & C++</td>
+<tr>
+</tr>
+    <td>GCC 14+</td><td>`65535`</td><td>64-bit only</td><td>C</td>
+<tr>
+</tr>
+    <td>MSVC 19.38</td><td>❌</td><td>❌</td><td>❌</td>
+</tr>
+</table>
 
 # Scope # {#scope}
 
@@ -289,11 +312,34 @@ but diagnosed with Profiles, assuming those will be in C++29.
 Furthermore, `_BitInt` in C++ could be restricted
 so that some of this behavior is disallowed (ill-formed).
 
-### Pro library: `class bit_int` is much easier to implement ### {#implementation-effort}
+### Pro library: `class bit_int` is easier to implement ### {#implementation-effort}
 
 There are already numerous implementations of multi-precision integers for C++,
 such as Boost.Multiprecision.
 These have been tried and tested over many years, and can be integrated into the standard library.
+If a pure library implementation is permitted,
+the burden is lowered from having to implement N-bit operation codegen in a compiler,
+to implementing the underlying `__builtin_add_overflow` et al. intrinsics used in the
+standard library (or other library), for a given architecture.
+
+Standardizing `_BitInt` as a fundamental type also forces the implementation to set an ABI
+for this type in stone.
+Doing so is of much greater consequence than deciding on an ABI for `class std::bit_int`, where,
+if push comes to shove, an ABI break is more plausible than for a fundamental C type.
+
+Even the frontend implementation requires some effort, such as
+- parsing `_BitInt(N)` and `unsigned _BitInt(N)` with appropriate diagnostics,
+- template argument deduction of `N` from `_BitInt(N)`,
+- new rules for overload resolution, conversion ranks, etc.,
+- ...
+
+**❌ Counterpoint:**
+The implementation effort is non-trivial regardless,
+especially if the implementation has to be of high quality/performance.
+Even a library implementation needs to exploit architectural knowledge in the form of
+intrinsics or inline assembly.
+
+### Pro library: We'll likely get a portable `class bit_int` faster ### {#time-frame}
 
 At this point, it is unclear when (or if ever) Microsoft will implement `_BitInt`.
 It is not even clear whether 128-bit integer integers are planned,
@@ -310,14 +356,9 @@ Note that a pure library implementation of `class bit_int` can be replaced with 
 a built-in `_BitInt` type at a later date, convenient for implementations.
 The option to have a pure library implementation gets the foot in the door.
 
-Even the frontend implementation requires some effort,
-such as the template argument deduction of `N` from `_BitInt(N)`.
-
 **❌ Counterpoint:**
 This point becomes less significant once all compilers support `_BitInt(N)` with large `N`.
 Maybe this makes for a less timeless design.
-To be fair, the burden of providing a built-in `_BitInt` would forever raise the bar of
-implementation effort for new C++ compilers.
 
 ### Pro library: `class bit_int` is easier to teach ### {#teachability}
 
