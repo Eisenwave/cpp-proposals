@@ -197,7 +197,7 @@ of `bit_int` as a fundamental or library type, in no particular order.
 
 **Disclaimer:** the author weakly favors a library type.
 
-### Pro fundamental: Full compatibility with C constructs ### {#full-compatibility}
+### Pro-fundamental: Full compatibility with C constructs ### {#full-compatibility}
 
 C permits the use of `_BitInt` in situations where a C++ library type couldn't be used,
 including `switch`es and bit-fields:
@@ -220,7 +220,7 @@ in those cases, despite being a class type.
 If `std::bit_int` is just a wrapper for `_BitInt`, that may be possible,
 but obviously not if it's purely library-implemented.
 
-### Pro fundamental: `_BitInt` needs to exist in C anyway ### {#fundamental-type-needs-to-exist}
+### Pro-fundamental: `_BitInt` needs to exist in C anyway ### {#fundamental-type-needs-to-exist}
 
 Any postmodern C++ compiler is also a C compiler.
 While GCC has a separate frontend for C and C++, the general machinery behind `_BitInt`
@@ -237,7 +237,7 @@ We should think about the features we want to provide to C++ developers,
 and the guarantees of the C feature are insufficient for that.
 Furthermore, it's unclear when (or if ever) MSVC will support `_BitInt`.
 
-### Pro fundamental: `_BitInt` is fast to compile ### {#lightweight-compilation}
+### Pro-fundamental: `_BitInt` is fast to compile ### {#lightweight-compilation}
 
 A fundamental type would incur very little cost during constant evaluation,
 and would not require any template machinery.
@@ -247,7 +247,7 @@ This may substantially improve compilation speed as compared to a library type.
 if `std::bit_int` is merely a wrapper for a compiler extension type,
 this cost may be relatively low.
 
-### Pro fundamental: `_BitInt` offers overload resolution flexibility ### {#overload-resolution-flexibility}
+### Pro-fundamental: `_BitInt` offers overload resolution flexibility ### {#overload-resolution-flexibility}
 
 With a library type, it may be difficult to achieve certain behavior in overload resolution.
 For example, people have expressed interest in writing overload sets like:
@@ -268,7 +268,7 @@ over lossy conversions to `int`.
 `std::bit_int` is all about being explicit with integer widths,
 and highly flexible implicit conversions "don't fit the theme".
 
-### Pro fundamental: `_BitInt` could have special deduction powers ### {#special-deduction-powers}
+### Pro-fundamental: `_BitInt` could have special deduction powers ### {#special-deduction-powers}
 
 Multiple committee members have expressed interest in the following construct:
 
@@ -305,7 +305,7 @@ which is proposed in [[P2998R0]].
 With that proposal, the motivating example would also work for `class bit_int`.
 
 
-### Pro library: `_BitInt` is not portable, but `class bit_int` can be ### {#bitint-is-not-portable}
+### Pro-library: `_BitInt` is not portable, but `class bit_int` can be ### {#bitint-is-not-portable}
 
 One of the greatest downsides of `_BitInt` is that it's effectively an optional type.
 This stems from the fact that only widths of at least `LLONG_WIDTH` are guaranteed.
@@ -326,7 +326,7 @@ these concerns vanish,
 and the type can be freestanding-mandatory with a very high maximum width.
 After all, the library implementation is basically a `std::array` with some operator overloads.
 
-### Pro library: `_BitInt` inherits many ill-conceived integer features ### {#ill-conceived-integer-features}
+### Pro-library: `_BitInt` inherits many ill-conceived integer features ### {#ill-conceived-integer-features}
 
 `_BitInt` in C inherits many ill-conceived, extremely permissive features
 from other standard integers.
@@ -349,7 +349,7 @@ but diagnosed with Profiles, assuming those will be in C++29.
 Furthermore, `_BitInt` in C++ could be restricted
 so that some of this behavior is disallowed (ill-formed).
 
-### Pro library: `class bit_int` is easier to implement ### {#implementation-effort}
+### Pro-library: `class bit_int` is easier to implement ### {#implementation-effort}
 
 There are already numerous implementations of multi-precision integers for C++,
 such as Boost.Multiprecision.
@@ -376,7 +376,7 @@ especially if the implementation has to be of high quality/performance.
 Even a library implementation needs to exploit architectural knowledge in the form of
 intrinsics or inline assembly.
 
-### Pro library: We'll likely get a portable `class bit_int` faster ### {#time-frame}
+### Pro-library: We'll likely get a portable `class bit_int` faster ### {#time-frame}
 
 At this point, it is unclear when (or if ever) Microsoft will implement `_BitInt`.
 It is not even clear whether 128-bit integer integers are planned,
@@ -397,7 +397,7 @@ The option to have a pure library implementation gets the foot in the door.
 This point becomes less significant once all compilers support `_BitInt(N)` with large `N`.
 Maybe this makes for a less timeless design.
 
-### Pro library: `class bit_int` is easier to teach ### {#teachability}
+### Pro-library: `class bit_int` is easier to teach ### {#teachability}
 
 Generally speaking, new fundamental types introduce much more complexity for C++ users than
 library types.
@@ -423,7 +423,7 @@ This point is somewhat subjective and speculative.
 Either way, there will be new sets of types in the language, and new users will have to learn
 about them if they want to use them.
 
-### Pro library: `class bit_int` has much less wording impact and has fewer gotchas ### {#wording-impact}
+### Pro-library: `class bit_int` has much less wording impact and has fewer gotchas ### {#wording-impact}
 
 Merely introducing a new class type to the language has no impact on the core wording
 whatsoever, and is absolutely guaranteed not to introduce wording bugs and subtle ABI breaks.
