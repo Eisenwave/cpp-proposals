@@ -268,6 +268,43 @@ over lossy conversions to `int`.
 `std::bit_int` is all about being explicit with integer widths,
 and highly flexible implicit conversions "don't fit the theme".
 
+### Pro fundamental: `_BitInt` could have special deduction powers ### {#special-deduction-powers}
+
+Multiple committee members have expressed interest in the following construct:
+
+```cpp
+template <size_t N>
+void foo(bit_int<N>);
+
+foo(0); // OK, calls foo<32> on most platforms
+```
+
+This is obviously impossible with a class template,
+but could be permitted with special deduction rules for `bit_int<N>`
+when passing a standard integer.
+C++ users may perceive this as a case that should *intuitively* work,
+even if it usually doesn't (similar issues with `optional<T>`).
+
+Such deduction is also quite useful because
+- `foo` can accept any signed standard integer and any bit-precise integer,
+- there are fewer instantiations of `foo` if we convert `int` to `bit_int<32>` at the call site, and
+- it gives `foo` quick access to the width, `N`, even when `int` was passed.
+
+**❌ Counterpoint:**
+The problem is much more general, and the usual workaround is to rely on CTAD.
+For example, if `bit_int` was a class template, we could write:
+```cpp
+bit_int(int) -> bit_int<32>; // deduction guide
+// ...
+foo(bit_int(0)); // OK, passes bit_int<32> to foo, and foo deduces as usual
+```
+Similar workarounds are common for `std::optional`, `std::span`, etc.
+Rather than carving out a special case in the deduction rules,
+it would be desirable to solve this in general,
+which is proposed in [[P2998R0]].
+With that proposal, the motivating example would also work for `class bit_int`.
+
+
 ### Pro library: `_BitInt` is not portable, but `class bit_int` can be ### {#bitint-is-not-portable}
 
 One of the greatest downsides of `_BitInt` is that it's effectively an optional type.
