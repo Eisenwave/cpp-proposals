@@ -1,0 +1,390 @@
+<pre class='metadata'>
+Title: The <code>_BitInt</code> Debate
+Shortname: D3639
+Revision: 0
+Status: D
+Date: 2025-02-16
+Group: WG21
+Audience: SG6, LEWGI, LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/bitint.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint.bs)
+Markup Shorthands: markdown on
+Abstract: An N-bit integer type similar to C's `_BitInt` would provide utility
+          and give ABI compatibility to C++.
+          However, should this be a fundamental type or a library type?
+</pre>
+
+
+# Introduction # {#introduction}
+
+[[N2763]] introduced the `_BitInt` set of types to the C23 standard,
+and [[N2775]] further enhanced this feature with literal suffixes. 
+For example, this feature may be used as follows:
+
+```cpp
+// 8-bit unsigned integer initialized with value 255.
+// The literal suffix wb is unnecessary in this case.
+unsigned _BitInt(8) x = 0xFFwb;
+```
+In short, the behavior of these *bit-precise integers* is as follows:
+
+- No integer promotion to `int` takes place.
+- Mixed-signedness comparisons, implicit conversions,
+    and other permissive feature are supported.
+- They have lower conversion rank than standard integers,
+    so an operation between `_BitInt(8)` and `int` yields `int`,
+    as does an operation with `_BitInt(N)` where `N` is the width of `int`.
+    They only have greater conversion rank when their width is greater.
+
+These semantics make it clear that
+bit-precise integers are complementary to the standard integers,
+not a replacement,
+and not an attempt at fixing all the semantics
+that users consider overly permissive about standard integers.
+
+I propose that C++ should also have an N-bit integer type, possibly as a library type.
+This is similarly an attempt at enhancing the language, not at replacing the standard integers.
+The C++ types should be ABI-compatible with `_BitInt` in C.
+Unfortunately, one question blocks any concrete steps:
+
+> Should C++ have a fundamental `_BitInt` type (possibly exposed via alias template),
+> or should it have a library type (class template)?
+
+The sole purpose of this proposal is to reach consensus on a direction.
+
+# Motivation # {#motivation}
+
+## Computation beyond 64 bits ## {#computation-beyond-64-bits}
+
+On of my previous proposals ([[P3140R0]]) provides a sea of motivation for
+128-bit integers alone.
+[[P3140R0]] consistently got the following feedback (from LEWGI and outside):
+- Yes, 128-bit computation is useful!
+- What about more than 128 bits?
+
+Some use cases extend beyond 128 bits, such as 4096-bit (or more)
+computation for RSA and other cryptographic algorithms.
+The original [[N2763]] C proposal and C++11 proposals which previously proposed this feature
+([[N1692]] and [[N1744]]) contain further motivation.
+
+I strongly doubt that the usefulness of integer arithmetic beyond 64 bits is contentious,
+so it won't be discussed further here.
+
+## C-ABI compatibility ## {#c-abi-compatibility}
+
+C++ currently has no portable way to call a C function such as:
+```c
+_BitInt(N) plus(_BitInt(N) x, _BitInt(N) y); // for any N
+```
+We need to call C functions that use `_BitInt` *somehow*.
+This could be accomplished either with a fundamental type that has identical ABI,
+or with a class type in the style of `std::complex` or `std::atomic` that has identical ABI
+despite being a class type.
+
+
+# Scope # {#scope}
+
+I only propose *fixed-width*, *N-bit*, *signed and unsigned* integers.
+
+I do not propose dynamically sized, "infinite precision" integers.
+Such integers
+- would not be motivated by C compatibility,
+- would require discussing allocator-awareness, small object optimizations, and other complex issues, and
+- they obviously should be done as library types anyway.
+
+Therefore, they are outside the scope of this proposal.
+
+
+# Design # {#design}
+
+## Introduction ## {#design-introduction}
+
+At this point, there are two plausible implementations:
+
+<table>
+<tr>
+    <th>Fundamental type</th>
+    <th>Library type</th>
+</tr>
+<tr>
+<td>
+
+```cpp
+template <size_t N>
+using bit_int = _BitInt(N);
+
+
+
+
+
+template <size_t N>
+using bit_uint = unsigned _BitInt(N);
+```
+</td>
+<td>
+
+```cpp
+template <size_t N>
+class bit_int {
+  private:
+    _BitInt(N) _M_value;
+  public:
+    // constructors, operator overloads, ...
+};
+
+// analogous for bit_uint wrapping unsigned _BitInt
+```
+</td>
+</tr>
+</table>
+
+Note: These implementations are already valid C++ code
+when using the Clang `_BitInt` compiler extension.
+Without such an extension, a library type can still be implemented in software,
+similar to [Boost.Multiprecision](https://www.boost.org/doc/libs/1_86_0/libs/multiprecision/doc/html/index.html)'s
+`cpp_int`.
+
+In terms of ABI and performance (after inlining),
+these two approaches should yield the same results.
+
+It may also be possible to allow the `bit_int` alias template to alias a
+class template, but this inevitably results in implementation divergence.
+For example, during overload resolution, `bit_int` in some implementations would have
+user-defined conversion sequences and standard conversion sequences in others.
+This is a minefield for users; it really needs to *always* be fundamental or *always* a class.
+
+It may also be possible to expose the `_BitInt` keyword directly, but this would contradict all
+previous design:
+- `_Atomic` in C is `std::atomic` in C++
+- `_Float128` in C is `std::float128_t` in C++
+- `complex` in C is `std::complex` in C++
+- ...
+
+However, it would be appropriate to define `_BitInt` and `_BitUint` compatibility macros,
+similar to the `_Atomic` C++ macro, which expands to `std::atomic` in C++.
+
+With these secondary concerns out of the way,
+we can discuss the big question: fundamental type or library type?
+
+## `using bit_int` vs. `class bit_int` ## {#pros-and-cons}
+
+In this section, we discuss the advantages and disadvantages
+of `bit_int` as a fundamental or library type, in no particular order.
+
+**Disclaimer:** the author weakly favors a library type.
+
+### Pro fundamental: Full compatibility with C constructs ### {#full-compatibility}
+
+C permits the use of `_BitInt` in situations where a C++ library type couldn't be used,
+including `switch`es and bit-fields:
+
+```c
+// OK: using an unsigned _BitInt(1) in a switch
+switch (0uwb) // ...
+```
+```c
+struct S {
+    _BitInt(32) x : 10; // OK, bit-field
+};
+```
+
+A C++ library type would be less powerful by default,
+and `S` could not be portably used from C++.
+
+**❌ Counterpoint:** Conditionally-supported exemptions could be made which allow the use of `std::bit_int`
+in those cases, despite being a class type.
+If `std::bit_int` is just a wrapper for `_BitInt`, that may be possible,
+but obviously not if it's purely library-implemented.
+
+### Pro fundamental: `_BitInt` needs to exist in C anyway ### {#fundamental-type-needs-to-exist}
+
+Any postmodern C++ compiler is also a C compiler.
+While GCC has a separate frontend for C and C++, the general machinery behind `_BitInt`
+exists already, assuming that C23 is supported.
+Therefore, we are almost "throwing away" what's there already by not guaranteeing that
+`_BitInt` is a library type.
+
+Furthermore, a library type would deviate at least somewhat from the semantics of `_BitInt` in C,
+making code between the languages less interchangeable.
+
+**❌ Counterpoint:** See [[#bitint-is-not-portable]].
+The minimum `_BitInt` support in C23 is highly limited.
+We should think about the features we want to provide to C++ developers,
+and the guarantees of the C feature are insufficient for that.
+Furthermore, it's unclear when (or if ever) MSVC will support `_BitInt`.
+
+### Pro fundamental: `_BitInt` is fast to compile ### {#lightweight-compilation}
+
+A fundamental type would incur very little cost during constant evaluation,
+and would not require any template machinery.
+This may substantially improve compilation speed as compared to a library type.
+
+**❌ Counterpoint:** Similar to `std::array`,
+if `std::bit_int` is merely a wrapper for a compiler extension type,
+this cost may be relatively low.
+
+### Pro fundamental: `_BitInt` offers overload resolution flexibility ### {#overload-resolution-flexibility}
+
+With a library type, it may be difficult to achieve certain behavior in overload resolution.
+For example, people have expressed interest in writing overload sets like:
+
+```cpp
+void f(std::bit_int<32>); // assuming this is _BitInt(32)
+void f(std::bit_int<16>);
+// ...
+```
+When called with `std::bit_int<20>`, this could prefer to call `f(std::bit_int<32>)` because
+the conversion is lossless.
+With class types, this is difficult/impossible to achieve because user-defined conversion sequences
+generally rank the same.
+
+**❌ Counterpoint:** While useful, this idea is novel, and it's not obvious that we want/expect this.
+For example, calling a function with `long` does not prefer lossless conversions to `long long`
+over lossy conversions to `int`.
+`std::bit_int` is all about being explicit with integer widths,
+and highly flexible implicit conversions "don't fit the theme".
+
+### Pro library: `_BitInt` is not portable, but `class bit_int` can be ### {#bitint-is-not-portable}
+
+One of the greatest downsides of `_BitInt` is that it's effectively an optional type.
+This stems from the fact that only widths of at least `LLONG_WIDTH` are guaranteed.
+
+The purpose of `std::bit_int` is primarily to provide portable multi-precision to C++ developers.
+If we are not guaranteed a `BITINT_MAXWIDTH` more than 64 bits,
+then `_BitInt` miserably fails this goal.
+
+It is also unlikely that this limit could be bumped on the C++ side.
+Back when I proposed [[P3104R0]] at LEWG, and in prior discussion,
+it was often put into question whether 128-bit types should be mandatory.
+There were major implementer concerns regarding this,
+and I was advised to make the type freestanding-optional.
+A fundamental `_BitInt(128)` suffers from the same issue and would receive the same criticism.
+
+On the contrary, if `std::bit_int` is allowed to be library-implemented,
+these concerns vanish,
+and the type can be freestanding-mandatory with a very high maximum width.
+After all, the library implementation is basically a `std::array` with some operator overloads.
+
+### Pro library: `_BitInt` inherits many ill-conceived integer features ### {#ill-conceived-integer-features}
+
+`_BitInt` in C inherits many ill-conceived, extremely permissive features
+from other standard integers.
+For example, with `_BitInt`,
+- mixed-signedness implicit conversions can take place, such as in `_BitInt(5) + unsigned`,
+- mixed-signedness comparisons are also possible, and
+- narrowing conversions from e.g. `_BitInt(32)` to `_BitInt(8)` are permitted.
+
+A particular pitfall is that `unsigned _BitInt(N)` with `N <= INT_WIDTH` has lower conversion rank
+than `int`, so `x + 1` changes signedness,
+and `x * int(/* large value */)` may overflow despite `x` being an unsigned bit-precise integer.
+
+With C++26's focus on safety, it is highly questionable whether this behavior should be carried
+over into C++.
+A library type could simply start a safer design from scratch,
+and only provide desirable overloads for `operator+` etc.
+
+**❌ Counterpoint:** Such misuses could be inherited from C,
+but diagnosed with Profiles, assuming those will be in C++29.
+Furthermore, `_BitInt` in C++ could be restricted
+so that some of this behavior is disallowed (ill-formed).
+
+### Pro library: `class bit_int` is much easier to implement ### {#implementation-effort}
+
+There are already numerous implementations of multi-precision integers for C++,
+such as Boost.Multiprecision.
+These have been tried and tested over many years, and can be integrated into the standard library.
+
+At this point, it is unclear when (or if ever) Microsoft will implement `_BitInt`.
+It is not even clear whether 128-bit integer integers are planned,
+let alone 4096-bit support or higher.
+Barely any C23 core features are supported at this time.
+On the contrary, the MSVC STL is largely on par with other standard libraries regarding
+postmodern C++ support.
+
+Ultimately, we want C++ developers to receive a portable feature soon,
+and requiring a fundamental type gets us this feature much later or never,
+depending on how MSVC and possible future compilers prioritize `_BitInt`.
+
+Note that a pure library implementation of `class bit_int` can be replaced with a wrapper for
+a built-in `_BitInt` type at a later date, convenient for implementations.
+The option to have a pure library implementation gets the foot in the door.
+
+Even the frontend implementation requires some effort,
+such as the template argument deduction of `N` from `_BitInt(N)`.
+
+**❌ Counterpoint:**
+This point becomes less significant once all compilers support `_BitInt(N)` with large `N`.
+Maybe this makes for a less timeless design.
+To be fair, the burden of providing a built-in `_BitInt` would forever raise the bar of
+implementation effort for new C++ compilers.
+
+### Pro library: `class bit_int` is easier to teach ### {#teachability}
+
+Generally speaking, new fundamental types introduce much more complexity for C++ users than
+library types.
+For example, `_BitInt` is not subject to integer promotion, but subject to integer conversion.
+Assuming we carry this over into C++, this has surprising consequences such as:
+```cpp
+// Currently valid overload set which covers all existing signed standard integers.
+void awoo(int);
+void awoo(long);
+void awoo(long long);
+```
+`awoo` can be called with any existing signed standard integer,
+but the overload set is insufficient for `_BitInt` because none of these functions are a best match.
+
+On the contrary, With a `class bit_int`, this behavior would be glaringly obvious,
+and such a class type would presumably not have a user-defined conversion function to integers
+anyway.
+In practice, users can simply look at cppreference and find all the constructors, operator
+overloads, and quickly understand how `std::bit_int` works.
+
+**❌ Counterpoint:**
+This point is somewhat subjective and speculative.
+Either way, there will be new sets of types in the language, and new users will have to learn
+about them if they want to use them.
+
+### Pro library: `class bit_int` has much less wording impact and has fewer gotchas ### {#wording-impact}
+
+Merely introducing a new class type to the language has no impact on the core wording
+whatsoever, and is absolutely guaranteed not to introduce wording bugs and subtle ABI breaks.
+
+To name one potential issue, <code><i>IOTA-DIFF-T</i>(W)</code>
+for `W = long long` is defined as
+(<a href="https://eel.is/c++draft/range.iota.view#1.2">[range.iota.view]</a>):
+
+> a signed integer type of width greater than the width of **W** if such a type exists.
+
+If we consider `_BitInt` to be a signed integer type (why wouldn't it be?),
+this breaks ABI because we are redefining a `difference_type`.
+This bug is very similar to `std::intmax_t`, which has prevented the implementation from
+providing extended 128-bit integers without an ABI break.
+
+This `iota_view` issue can be mitigated by requesting that only *standard* signed integers
+are considered in that bullet, not *all* signed integers.
+However, it demonstrates that adding an entirely new set of fundamental integer types
+comes with great wording impact.
+
+Is resolving all these problems a good use of committee time?
+Adding a new class to the standard library *just works*.
+
+**❌ Counterpoint:**
+This is putting the cart before the horse.
+While committee time is a valuable resource, wording impact should not dictate design.
+
+
+<pre class=biblio>
+{
+    "N2763": {
+        "title": "Adding a Fundamental Type for N-bit integers",
+        "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf",
+        "authors": ["Aaron Ballman", "Melanie Blower", "Tommy Hoffner", "Erich Keane"]
+    },
+    "N2775": {
+        "title": "Literal suffixes for bit-precise integers",
+        "href": "https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf",
+        "authors": ["Aaron Ballman", "Melanie Blower"]
+    }
+}
+</pre>
