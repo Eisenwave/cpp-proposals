@@ -42,6 +42,13 @@ Author: Jan Schultke
 - [Latest](break-continue-label.html)
 - [P3568R0](break-continue-label-p3568r0.html)
 
+### D3639: The `_BitInt` Debate
+
+**Status**: Active<br>
+**Audience**: EWG, LEWG, SG6
+
+- [Latest](bitint-debate.html)
+
 ### NP: Carry-less product: `std::clmul`
 
 **Audience**: LEWG-I, LEWG
