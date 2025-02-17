@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bitint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="37a2befc9532e8d5aad0baa2f7a0ce71dc71d089" name="revision">
+  <meta content="be7c2827ae600213f5ec3becb782c438abbe65f7" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2128,16 +2128,18 @@ However, should this be a fundamental type or a library type?</p>
      <ol class="toc">
       <li><a href="#design-introduction"><span class="secno">4.1</span> <span class="content">Introduction</span></a>
       <li><a href="#full-compatibility"><span class="secno">4.2</span> <span class="content">Pro-fundamental: Full compatibility with C constructs</span></a>
-      <li><a href="#fundamental-type-needs-to-exist"><span class="secno">4.3</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> needs to exist in C anyway</span></a>
-      <li><a href="#lightweight-compilation"><span class="secno">4.4</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> is fast to compile</span></a>
-      <li><a href="#overload-resolution-flexibility"><span class="secno">4.5</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> offers overload resolution flexibility</span></a>
-      <li><a href="#special-deduction-powers"><span class="secno">4.6</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> could have special deduction powers</span></a>
-      <li><a href="#bitint-is-not-portable"><span class="secno">4.7</span> <span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> is not portable, but <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be</span></a>
-      <li><a href="#ill-conceived-integer-features"><span class="secno">4.8</span> <span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span></a>
-      <li><a href="#implementation-effort"><span class="secno">4.9</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span></a>
-      <li><a href="#time-frame"><span class="secno">4.10</span> <span class="content">Pro-library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span></a>
-      <li><a href="#teachability"><span class="secno">4.11</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span></a>
-      <li><a href="#wording-impact"><span class="secno">4.12</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span></a>
+      <li><a href="#unsigned-bit-int"><span class="secno">4.3</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-></code></span></a>
+      <li><a href="#fundamental-and-class-coexist"><span class="secno">4.4</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> don’t coexist nicely</span></a>
+      <li><a href="#fundamental-type-needs-to-exist"><span class="secno">4.5</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> needs to exist in C anyway</span></a>
+      <li><a href="#lightweight-compilation"><span class="secno">4.6</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> is fast to compile</span></a>
+      <li><a href="#overload-resolution-flexibility"><span class="secno">4.7</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> offers overload resolution flexibility</span></a>
+      <li><a href="#special-deduction-powers"><span class="secno">4.8</span> <span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> could have special deduction powers</span></a>
+      <li><a href="#bitint-is-not-portable"><span class="secno">4.9</span> <span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> is not portable, but <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be</span></a>
+      <li><a href="#ill-conceived-integer-features"><span class="secno">4.10</span> <span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span></a>
+      <li><a href="#implementation-effort"><span class="secno">4.11</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span></a>
+      <li><a href="#time-frame"><span class="secno">4.12</span> <span class="content">Pro-library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span></a>
+      <li><a href="#teachability"><span class="secno">4.13</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span></a>
+      <li><a href="#wording-impact"><span class="secno">4.14</span> <span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span></a>
      </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2318,7 +2320,7 @@ similar to the <code class="highlight"><c- n>_Atomic</c-><c- p>(</c-><c- n>T</c-
 </pre>
    <p>With these secondary concerns out of the way,
 we can discuss the big question: fundamental type or library type?</p>
-   <p><strong>Disclaimer:</strong> the author weakly favors a library type.</p>
+   <p><strong>Disclaimer:</strong> the author has no strong preference.</p>
    <h3 class="heading settled" data-level="4.2" id="full-compatibility"><span class="secno">4.2. </span><span class="content">Pro-fundamental: Full compatibility with C constructs</span><a class="self-link" href="#full-compatibility"></a></h3>
    <p>C permits the use of <code class="highlight"><c- b>_BitInt</c-></code> in situations where a C++ library type couldn’t be used,
 including <code class="highlight"><c- k>switch</c-></code>es and bit-fields:</p>
@@ -2334,25 +2336,69 @@ and <code class="highlight"><c- n>S</c-></code> could not be portably used from 
    <p><strong>❌ Counterpoint:</strong> Conditionally-supported exemptions could be made which allow the use of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> in those cases, despite being a class type.
 If <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> is just a wrapper for <code class="highlight"><c- b>_BitInt</c-></code>, that may be possible,
 but obviously not if it’s purely library-implemented.</p>
-   <h3 class="heading settled" data-level="4.3" id="fundamental-type-needs-to-exist"><span class="secno">4.3. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> needs to exist in C anyway</span><a class="self-link" href="#fundamental-type-needs-to-exist"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="unsigned-bit-int"><span class="secno">4.3. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-></code></span><a class="self-link" href="#unsigned-bit-int"></a></h3>
+   <p>If there was a <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> and <code class="highlight"><c- b>_BitInt</c-></code> compatibility macro for interop with C,
+then <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-></code> obviously wouldn’t work because it expands to <code class="highlight"><c- b>unsigned</c-> <c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code>.</p>
+   <p>Unless we make <code class="highlight"><c- b>unsigned</c-> <c- k>class</c-> <c- nc>std</c-><c- o>::</c-><c- n>bit_int</c-></code> valid (which would be highly unusual for C++),
+both C and C++ uses are forced to use the <code class="highlight"><c- n>_BitUint</c-></code> macro for unsigned types.
+This seems like needless bullying of C users, who can use <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-></code> just fine.</p>
+   <p>With a <code class="highlight"><c- b>_BitInt</c-></code> fundamental type, we could simply define <code class="highlight"><c- b>_BitInt</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>_BitInt</c-></code> in C++,
+and offer users <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_uint</c-></code> alias templates for a nicer spelling.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This problem does not arise for <code class="highlight"><c- n>_Atomic</c-></code> because we can simply say <code class="highlight"><c- n>_Atomic</c-><c- p>(</c-><c- b>unsigned</c-><c- p>)</c-></code>,
+which is valid in C with no macros, and expands to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- b>unsigned</c-><c- o>></c-></code> in C++.
+It also doesn’t arise for <code class="highlight"><c- n>_Float128</c-></code> or <code class="highlight"><c- n>complex</c-></code> because there are no unsigned floating-point types;
+the issue is entirely limited to <code class="highlight"><c- b>_BitInt</c-></code>.</p>
+   <h3 class="heading settled" data-level="4.4" id="fundamental-and-class-coexist"><span class="secno">4.4. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> and <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> don’t coexist nicely</span><a class="self-link" href="#fundamental-and-class-coexist"></a></h3>
+   <p>When <code class="highlight"><c- n>bit_int</c-></code>is a class template,
+the idiomatic implementation (see above) is to wrap a <code class="highlight"><c- b>_BitInt</c-></code> in that template.
+We can expect that in some implementations, both <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> and <code class="highlight"><c- b>_BitInt</c-></code> exist.
+Clang already provides <code class="highlight"><c- b>_BitInt</c-></code> in C++ mode.</p>
+   <p>This actually leads to some major problems, such as:</p>
+<pre class="language-c highlight"><c- c1>// api.h (C/C++ interoperable header)</c->
+<c- b>_BitInt</c-><c- p>(</c-><c- mi>32</c-><c- p>)</c-> <c- n>gimme_bit_int</c-><c- p>(</c-><c- b>void</c-><c- p>);</c->
+</pre>
+   <p>With the <code class="highlight"><c- b>_BitInt</c-></code> compatibility macro mentioned previously, include order matters:</p>
+<pre class="language-cpp highlight"><c- cp>#include</c-> &lt;cstdint><c- c1> // OK: contains _BitInt compatibility macro</c->
+<c- cp>#include</c-> "api.h"<c- c1>   // OK: gimme_bit_int returns class std::bit_int</c->
+</pre>
+   <p>OR</p>
+<pre class="language-cpp highlight"><c- cp>#include</c-> "api.h"<c- c1>   // OMG: gimme_bit_int returns a non-standard compiler extension</c->
+<c- cp>#include</c-> &lt;cstdint><c- c1> // OMG: compatibility macro now makes it impossible to call gimme_bit_int</c->
+</pre>
+   <p>There is no obvious way to fix this problem:</p>
+   <ul>
+    <li data-md>
+     <p>Predefining <code class="highlight"><c- b>_BitInt</c-></code> in C++ to mean <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> would not be viable because some users
+would like a way to access the underlying type in the compiler, not just the wrapper class.</p>
+    <li data-md>
+     <p>We could define <em>yet another</em> <code class="highlight"><c- n>_CppBitInt</c-></code> macro that expands to either <code class="highlight"><c- b>_BitInt</c-></code> in C, or <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> in C++, but this is much more annoying for C users.</p>
+   </ul>
+   <p class="note" role="note"><span class="marker">Note:</span> This issue arises less for <code class="highlight"><c- n>_Atomic</c-><c- p>(</c-><c- n>T</c-><c- p>)</c-></code> because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> is usually a wrapper class for <code class="highlight"><c- n>T</c-></code>.
+There’s no urgent need for <code class="highlight"><c- n>_Atomic</c-></code> as a builtin type to exist.</p>
+   <p>On the other hand, if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> is merely an alias,
+the compiler can simply never define the compatibility macro,
+and <code class="highlight"><c- b>_BitInt</c-></code> has the same meaning everywhere, regardless of include order.</p>
+   <p><strong>❌ Counterpoint:</strong> If <code class="highlight"><c- o>&lt;</c-><c- n>stdint</c-><c- p>.</c-><c- n>h</c-><c- o>></c-></code> defined the compatibility macro,
+the user could have fixed this problem by including that header in <code class="highlight"><c- n>api</c-><c- p>.</c-><c- n>h</c-></code>.</p>
+   <h3 class="heading settled" data-level="4.5" id="fundamental-type-needs-to-exist"><span class="secno">4.5. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> needs to exist in C anyway</span><a class="self-link" href="#fundamental-type-needs-to-exist"></a></h3>
    <p>Any postmodern C++ compiler is also a C compiler.
 While GCC has a separate frontend for C and C++, the general machinery behind <code class="highlight"><c- b>_BitInt</c-></code> exists already, assuming that C23 is supported.
 Therefore, we are almost "throwing away" what’s there already by not guaranteeing that <code class="highlight"><c- b>_BitInt</c-></code> is a library type.</p>
    <p>Furthermore, a library type would deviate at least somewhat from the semantics of <code class="highlight"><c- b>_BitInt</c-></code> in C,
 making code between the languages less interchangeable.</p>
-   <p><strong>❌ Counterpoint:</strong> See <a href="#bitint-is-not-portable">§ 4.7 Pro-library: _BitInt is not portable, but class bit_int can be</a>.
+   <p><strong>❌ Counterpoint:</strong> See <a href="#bitint-is-not-portable">§ 4.9 Pro-library: _BitInt is not portable, but class bit_int can be</a>.
 The minimum <code class="highlight"><c- b>_BitInt</c-></code> support in C23 is highly limited.
 We should think about the features we want to provide to C++ developers,
 and the guarantees of the C feature are insufficient for that.
 Furthermore, it’s unclear when (or if ever) MSVC will support <code class="highlight"><c- b>_BitInt</c-></code>.</p>
-   <h3 class="heading settled" data-level="4.4" id="lightweight-compilation"><span class="secno">4.4. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> is fast to compile</span><a class="self-link" href="#lightweight-compilation"></a></h3>
+   <h3 class="heading settled" data-level="4.6" id="lightweight-compilation"><span class="secno">4.6. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> is fast to compile</span><a class="self-link" href="#lightweight-compilation"></a></h3>
    <p>A fundamental type would incur very little cost during constant evaluation,
 and would not require any template machinery.
 This may substantially improve compilation speed as compared to a library type.</p>
    <p><strong>❌ Counterpoint:</strong> Similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>array</c-></code>,
 if <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> is merely a wrapper for a compiler extension type,
 this cost may be relatively low.</p>
-   <h3 class="heading settled" data-level="4.5" id="overload-resolution-flexibility"><span class="secno">4.5. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> offers overload resolution flexibility</span><a class="self-link" href="#overload-resolution-flexibility"></a></h3>
+   <h3 class="heading settled" data-level="4.7" id="overload-resolution-flexibility"><span class="secno">4.7. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> offers overload resolution flexibility</span><a class="self-link" href="#overload-resolution-flexibility"></a></h3>
    <p>With a library type, it may be difficult to achieve certain behavior in overload resolution.
 For example, people have expressed interest in writing overload sets like:</p>
 <pre class="language-cpp highlight"><c- b>void</c-> <c- nf>f</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-><c- o>&lt;</c-><c- mi>32</c-><c- o>></c-><c- p>);</c-> <c- c1>// assuming this is _BitInt(32)</c->
@@ -2366,7 +2412,7 @@ generally rank the same.</p>
    <p><strong>❌ Counterpoint:</strong> While useful, this idea is novel, and it’s not obvious that we want/expect this.
 For example, calling a function with <code class="highlight"><c- b>long</c-></code> does not prefer lossless conversions to <code class="highlight"><c- b>long</c-> <c- b>long</c-></code> over lossy conversions to <code class="highlight"><c- b>int</c-></code>. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> is all about being explicit with integer widths,
 and highly flexible implicit conversions "don’t fit the theme".</p>
-   <h3 class="heading settled" data-level="4.6" id="special-deduction-powers"><span class="secno">4.6. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> could have special deduction powers</span><a class="self-link" href="#special-deduction-powers"></a></h3>
+   <h3 class="heading settled" data-level="4.8" id="special-deduction-powers"><span class="secno">4.8. </span><span class="content">Pro-fundamental: <code class="highlight"><c- b>_BitInt</c-></code> could have special deduction powers</span><a class="self-link" href="#special-deduction-powers"></a></h3>
    <p>Multiple committee members have expressed interest in the following construct:</p>
 <pre class="language-cpp highlight"><c- k>template</c-> <c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c->
 <c- b>void</c-> <c- n>foo</c-><c- p>(</c-><c- n>bit_int</c-><c- o>&lt;</c-><c- n>N</c-><c- o>></c-><c- p>);</c->
@@ -2397,7 +2443,7 @@ Rather than carving out a special case in the deduction rules,
 it would be desirable to solve this in general,
 which is proposed in <a data-link-type="biblio" href="#biblio-p2998r0" title="CTAD for function parameter types">[P2998R0]</a>.
 With that proposal, the motivating example would also work for <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code>.</p>
-   <h3 class="heading settled" data-level="4.7" id="bitint-is-not-portable"><span class="secno">4.7. </span><span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> is not portable, but <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be</span><a class="self-link" href="#bitint-is-not-portable"></a></h3>
+   <h3 class="heading settled" data-level="4.9" id="bitint-is-not-portable"><span class="secno">4.9. </span><span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> is not portable, but <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> can be</span><a class="self-link" href="#bitint-is-not-portable"></a></h3>
    <p>One of the greatest downsides of <code class="highlight"><c- b>_BitInt</c-></code> is that it’s effectively an optional type.
 This stems from the fact that only widths of at least <code class="highlight"><c- n>LLONG_WIDTH</c-></code> are guaranteed.</p>
    <p>The purpose of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bit_int</c-></code> is primarily to provide portable multi-precision to C++ developers.
@@ -2413,7 +2459,7 @@ A fundamental <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</
 these concerns vanish,
 and the type can be freestanding-mandatory with a very high maximum width.
 After all, the library implementation is basically a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>array</c-></code> with some operator overloads.</p>
-   <h3 class="heading settled" data-level="4.8" id="ill-conceived-integer-features"><span class="secno">4.8. </span><span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span><a class="self-link" href="#ill-conceived-integer-features"></a></h3>
+   <h3 class="heading settled" data-level="4.10" id="ill-conceived-integer-features"><span class="secno">4.10. </span><span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span><a class="self-link" href="#ill-conceived-integer-features"></a></h3>
    <p><code class="highlight"><c- b>_BitInt</c-></code> in C inherits many ill-conceived, extremely permissive features
 from other standard integers.
 For example, with <code class="highlight"><c- b>_BitInt</c-></code>,</p>
@@ -2436,7 +2482,7 @@ and only provide desirable overloads for <code class="highlight"><c- k>operator<
 but diagnosed with Profiles, assuming those will be in C++29.
 Furthermore, <code class="highlight"><c- b>_BitInt</c-></code> in C++ could be restricted
 so that some of this behavior is disallowed (ill-formed).</p>
-   <h3 class="heading settled" data-level="4.9" id="implementation-effort"><span class="secno">4.9. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span><a class="self-link" href="#implementation-effort"></a></h3>
+   <h3 class="heading settled" data-level="4.11" id="implementation-effort"><span class="secno">4.11. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to implement</span><a class="self-link" href="#implementation-effort"></a></h3>
    <p>There are already numerous implementations of multi-precision integers for C++,
 such as Boost.Multiprecision.
 These have been tried and tested over many years, and can be integrated into the standard library.
@@ -2463,7 +2509,7 @@ if push comes to shove, an ABI break is more plausible than for a fundamental C 
 especially if the implementation has to be of high quality/performance.
 Even a library implementation needs to exploit architectural knowledge in the form of
 intrinsics or inline assembly.</p>
-   <h3 class="heading settled" data-level="4.10" id="time-frame"><span class="secno">4.10. </span><span class="content">Pro-library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span><a class="self-link" href="#time-frame"></a></h3>
+   <h3 class="heading settled" data-level="4.12" id="time-frame"><span class="secno">4.12. </span><span class="content">Pro-library: We’ll likely get a portable <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> faster</span><a class="self-link" href="#time-frame"></a></h3>
    <p>At this point, it is unclear when (or if ever) Microsoft will implement <code class="highlight"><c- b>_BitInt</c-></code>.
 It is not even clear whether 128-bit integer integers are planned,
 let alone 4096-bit support or higher.
@@ -2478,7 +2524,7 @@ a built-in <code class="highlight"><c- b>_BitInt</c-></code> type at a later dat
 The option to have a pure library implementation gets the foot in the door.</p>
    <p><strong>❌ Counterpoint:</strong> This point becomes less significant once all compilers support <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- n>N</c-><c- p>)</c-></code> with large <code class="highlight"><c- n>N</c-></code>.
 Maybe this makes for a less timeless design.</p>
-   <h3 class="heading settled" data-level="4.11" id="teachability"><span class="secno">4.11. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span><a class="self-link" href="#teachability"></a></h3>
+   <h3 class="heading settled" data-level="4.13" id="teachability"><span class="secno">4.13. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> is easier to teach</span><a class="self-link" href="#teachability"></a></h3>
    <p>Generally speaking, new fundamental types introduce much more complexity for C++ users than
 library types.
 For example, <code class="highlight"><c- b>_BitInt</c-></code> is not subject to integer promotion, but subject to integer conversion.
@@ -2498,7 +2544,7 @@ overloads, and quickly understand how <code class="highlight"><c- n>std</c-><c- 
    <p><strong>❌ Counterpoint:</strong> This point is somewhat subjective and speculative.
 Either way, there will be new sets of types in the language, and new users will have to learn
 about them if they want to use them.</p>
-   <h3 class="heading settled" data-level="4.12" id="wording-impact"><span class="secno">4.12. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span><a class="self-link" href="#wording-impact"></a></h3>
+   <h3 class="heading settled" data-level="4.14" id="wording-impact"><span class="secno">4.14. </span><span class="content">Pro-library: <code class="highlight"><c- k>class</c-> <c- nc>bit_int</c-></code> has much less wording impact and has fewer gotchas</span><a class="self-link" href="#wording-impact"></a></h3>
    <p>Merely introducing a new class type to the language has no impact on the core wording
 whatsoever, and is absolutely guaranteed not to introduce wording bugs and subtle ABI breaks.</p>
    <p>To name one potential issue, <code class="highlight"><i><c- n>IOTA</c-><c- o>-</c-><c- n>DIFF</c-><c- o>-</c-><c- n>T</c-></i><c- p>(</c-><c- n>W</c-><c- p>)</c-></code> for <code class="highlight"><c- n>W</c-> <c- o>=</c-> <c- b>long</c-> <c- b>long</c-></code> is defined as

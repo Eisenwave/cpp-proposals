@@ -202,7 +202,7 @@ similar to the `_Atomic(T)` C++ macro for `std::atomic<T>`:
 With these secondary concerns out of the way,
 we can discuss the big question: fundamental type or library type?
 
-**Disclaimer:** the author weakly favors a library type.
+**Disclaimer:** the author has no strong preference.
 
 ## Pro-fundamental: Full compatibility with C constructs ## {#full-compatibility}
 
@@ -226,6 +226,66 @@ and `S` could not be portably used from C++.
 in those cases, despite being a class type.
 If `std::bit_int` is just a wrapper for `_BitInt`, that may be possible,
 but obviously not if it's purely library-implemented.
+
+## Pro-fundamental: `unsigned _BitInt` ## {#unsigned-bit-int}
+
+If there was a `class bit_int` and `_BitInt` compatibility macro for interop with C,
+then `unsigned _BitInt` obviously wouldn't work because it expands to `unsigned std::bit_int`.
+
+Unless we make `unsigned class std::bit_int` valid (which would be highly unusual for C++),
+both C and C++ uses are forced to use the `_BitUint` macro for unsigned types.
+This seems like needless bullying of C users, who can use `unsigned _BitInt` just fine.
+
+With a `_BitInt` fundamental type, we could simply define `_BitInt` and `unsigned _BitInt` in C++,
+and offer users `std::bit_int` and `std::bit_uint` alias templates for a nicer spelling.
+
+Note: This problem does not arise for `_Atomic` because we can simply say `_Atomic(unsigned)`,
+which is valid in C with no macros, and expands to `std::atomic<unsigned>` in C++.
+It also doesn't arise for `_Float128` or `complex` because there are no unsigned floating-point types;
+the issue is entirely limited to `_BitInt`.
+
+## Pro-fundamental: `_BitInt` and `class bit_int` don't coexist nicely ## {#fundamental-and-class-coexist}
+
+When `bit_int`is a class template,
+the idiomatic implementation (see above) is to wrap a `_BitInt` in that template.
+We can expect that in some implementations, both `class bit_int` and `_BitInt` exist.
+Clang already provides `_BitInt` in C++ mode.
+
+This actually leads to some major problems, such as:
+
+```c
+// api.h (C/C++ interoperable header)
+_BitInt(32) gimme_bit_int(void);
+```
+With the `_BitInt` compatibility macro mentioned previously, include order matters:
+
+```cpp
+#include <cstdint> // OK: contains _BitInt compatibility macro
+#include "api.h"   // OK: gimme_bit_int returns class std::bit_int
+```
+OR
+```cpp
+#include "api.h"   // OMG: gimme_bit_int returns a non-standard compiler extension
+#include <cstdint> // OMG: compatibility macro now makes it impossible to call gimme_bit_int
+```
+
+There is no obvious way to fix this problem:
+- Predefining `_BitInt` in C++ to mean `class bit_int` would not be viable because some users
+    would like a way to access the underlying type in the compiler, not just the wrapper class.
+- We could define *yet another* `_CppBitInt` macro that expands to either
+    `_BitInt` in C, or `class bit_int` in C++, but this is much more annoying for C users.
+
+Note: This issue arises less for `_Atomic(T)` because `std::atomic<T>` is usually a wrapper class for `T`.
+There's no urgent need for `_Atomic` as a builtin type to exist.
+
+On the other hand, if `std::bit_int` is merely an alias,
+the compiler can simply never define the compatibility macro,
+and `_BitInt` has the same meaning everywhere, regardless of include order.
+
+**❌ Counterpoint:**
+If `<stdint.h>` defined the compatibility macro,
+the user could have fixed this problem by including that header in `api.h`.
+
 
 ## Pro-fundamental: `_BitInt` needs to exist in C anyway ## {#fundamental-type-needs-to-exist}
 
