@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bitint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="be7c2827ae600213f5ec3becb782c438abbe65f7" name="revision">
+  <meta content="496540009ea38e70640c7210cedf65005321fb35" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2459,6 +2459,10 @@ A fundamental <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>128</
 these concerns vanish,
 and the type can be freestanding-mandatory with a very high maximum width.
 After all, the library implementation is basically a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>array</c-></code> with some operator overloads.</p>
+   <p><strong>❌ Counterpoint:</strong> This concern is mostly theoretical.
+There’s little motivation for an implementation to only provide <code class="highlight"><c- b>_BitInt</c-><c- p>(</c-><c- mi>64</c-><c- p>)</c-></code>.
+In practice, GCC and Clang already provide <code class="highlight"><c- b>_BitInt</c-></code> with very large width (<a href="#c-abi-compatibility">§ 2.2 C-ABI compatibility</a>),
+although GCC does not yet make this type available on 32-bit targets.</p>
    <h3 class="heading settled" data-level="4.10" id="ill-conceived-integer-features"><span class="secno">4.10. </span><span class="content">Pro-library: <code class="highlight"><c- b>_BitInt</c-></code> inherits many ill-conceived integer features</span><a class="self-link" href="#ill-conceived-integer-features"></a></h3>
    <p><code class="highlight"><c- b>_BitInt</c-></code> in C inherits many ill-conceived, extremely permissive features
 from other standard integers.

@@ -393,6 +393,12 @@ these concerns vanish,
 and the type can be freestanding-mandatory with a very high maximum width.
 After all, the library implementation is basically a `std::array` with some operator overloads.
 
+**❌ Counterpoint:**
+This concern is mostly theoretical.
+There's little motivation for an implementation to only provide `_BitInt(64)`.
+In practice, GCC and Clang already provide `_BitInt` with very large width ([[#c-abi-compatibility]]),
+although GCC does not yet make this type available on 32-bit targets.
+
 ## Pro-library: `_BitInt` inherits many ill-conceived integer features ## {#ill-conceived-integer-features}
 
 `_BitInt` in C inherits many ill-conceived, extremely permissive features
@@ -411,7 +417,8 @@ over into C++.
 A library type could simply start a safer design from scratch,
 and only provide desirable overloads for `operator+` etc.
 
-**❌ Counterpoint:** Such misuses could be inherited from C,
+**❌ Counterpoint:**
+Such misuses could be inherited from C,
 but diagnosed with Profiles, assuming those will be in C++29.
 Furthermore, `_BitInt` in C++ could be restricted
 so that some of this behavior is disallowed (ill-formed).
