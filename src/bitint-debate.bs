@@ -177,7 +177,7 @@ For example, during overload resolution, `bit_int` in some implementations would
 user-defined conversion sequences and standard conversion sequences in others.
 This is a minefield for users; it really needs to *always* be fundamental or *always* a class.
 
-It may also be possible to expose the `_BitInt` keyword directly, but this would contradict all
+Also, we could expose the `_BitInt` keyword directly, but this would contradict all
 previous design:
 - `_Atomic` in C is `std::atomic` in C++
 - `_Float128` in C is `std::float128_t` in C++
@@ -185,7 +185,19 @@ previous design:
 - ...
 
 However, it would be appropriate to define `_BitInt` and `_BitUint` compatibility macros,
-similar to the `_Atomic` C++ macro, which expands to `std::atomic` in C++.
+similar to the `_Atomic(T)` C++ macro for `std::atomic<T>`:
+
+```cpp
+#ifdef __cplusplus
+    #define _BitInt(...) std::bit_int<__VA_ARGs__>
+    #define _BitUint(...) std::bit_uint<__VA_ARGs__>
+#elifdef __STDC__
+    // _BitInt is a keyword, so define only _BitUint
+    #define _BitUint(...) typeof(unsigned _BitInt(...))
+#else
+    #error "owo what's this language?"
+#endif
+```
 
 With these secondary concerns out of the way,
 we can discuss the big question: fundamental type or library type?

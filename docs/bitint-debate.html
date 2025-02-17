@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/bitint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="cd34d9abf8fa9b81a15c7abbe8545856e2d70e6a" name="revision">
+  <meta content="37a2befc9532e8d5aad0baa2f7a0ce71dc71d089" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2292,7 +2292,7 @@ class template, but this inevitably results in implementation divergence.
 For example, during overload resolution, <code class="highlight"><c- n>bit_int</c-></code> in some implementations would have
 user-defined conversion sequences and standard conversion sequences in others.
 This is a minefield for users; it really needs to <em>always</em> be fundamental or <em>always</em> a class.</p>
-   <p>It may also be possible to expose the <code class="highlight"><c- b>_BitInt</c-></code> keyword directly, but this would contradict all
+   <p>Also, we could expose the <code class="highlight"><c- b>_BitInt</c-></code> keyword directly, but this would contradict all
 previous design:</p>
    <ul>
     <li data-md>
@@ -2305,7 +2305,17 @@ previous design:</p>
      <p>...</p>
    </ul>
    <p>However, it would be appropriate to define <code class="highlight"><c- b>_BitInt</c-></code> and <code class="highlight"><c- n>_BitUint</c-></code> compatibility macros,
-similar to the <code class="highlight"><c- n>_Atomic</c-></code> C++ macro, which expands to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-></code> in C++.</p>
+similar to the <code class="highlight"><c- n>_Atomic</c-><c- p>(</c-><c- n>T</c-><c- p>)</c-></code> C++ macro for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>atomic</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>:</p>
+<pre class="language-cpp highlight"><c- cp>#ifdef __cplusplus</c->
+    <c- cp>#define _BitInt(...) std::bit_int&lt;__VA_ARGs__></c->
+    <c- cp>#define _BitUint(...) std::bit_uint&lt;__VA_ARGs__></c->
+<c- cp>#elifdef __STDC__</c->
+    <c- c1>// _BitInt is a keyword, so define only _BitUint</c->
+    <c- cp>#define _BitUint(...) typeof(unsigned _BitInt(...))</c->
+<c- cp>#else</c->
+    <c- cp>#error "owo what's this language?"</c->
+<c- cp>#endif</c->
+</pre>
    <p>With these secondary concerns out of the way,
 we can discuss the big question: fundamental type or library type?</p>
    <p><strong>Disclaimer:</strong> the author weakly favors a library type.</p>
