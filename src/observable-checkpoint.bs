@@ -1,5 +1,6 @@
 <pre class='metadata'>
-Title: <code>std::observable&lt;ins&gt;_checkpoint&lt;/ins&gt;()</code>
+Title: std::observable_checkpoint
+H1: <code>std::observable<ins>_checkpoint</ins>()</code>
 Shortname: D3641
 Revision: 0
 Status: D
