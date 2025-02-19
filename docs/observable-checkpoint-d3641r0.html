@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="303cd4c4c66f8ab0c1bd12f71a1f5d9fc65fdf9e" name="revision">
+  <meta content="5d5d4b9a649fc209c462d02d70e03fa1c0707537" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.35);
@@ -2125,9 +2125,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li>
+     <a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+     <ol class="toc">
+      <li><a href="#history"><span class="secno">1.1</span> <span class="content">How did it end up being called <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code>?</span></a>
+     </ol>
     <li><a href="#design"><span class="secno">2</span> <span class="content">Design</span></a>
     <li><a href="#wording"><span class="secno">3</span> <span class="content">Proposed wording</span></a>
+    <li><a href="#acknowledgements"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2138,7 +2143,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> <em>Partial program correctness</em> introduced so-called <em>observable checkpoints</em> into the language,
+   <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> "Partial program correctness"
+introduced so-called <em>observable checkpoints</em> into the language,
 as well as the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-><c- p>()</c-></code> to establish such a checkpoint in the program.</p>
    <p>Three issues with the name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> have been brought up (<a data-link-type="biblio" href="#biblio-reflector" title="std::observable should have a better - ie worse - name">[Reflector]</a>, <a data-link-type="biblio" href="#biblio-reddit" title="WTF std::observable is?">[Reddit]</a>):</p>
    <ul>
@@ -2149,11 +2155,18 @@ as well as the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n
     <li data-md>
      <p>It is a short name, and using it for observable checkpoints now may impede future standardization.</p>
    </ul>
-   <p>The <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> name was not discussed at Hagenberg 2025.
-The last time LEWG saw <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> was during a Telecon,
-and EWG did not discuss it.
-Considering the situation,
-it should be discussed and possibly changed before Sofia 2025.
+   <h3 class="heading settled" data-level="1.1" id="history"><span class="secno">1.1. </span><span class="content">How did it end up being called <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code>?</span><a class="self-link" href="#history"></a></h3>
+   <p>The name originated in P1494R0.</p>
+   <p>LEWG last discussed the name during its review of P1494R2 (<a data-link-type="biblio" href="#biblio-teleconminutes" title="LEWG Telecon Minutes for P1494R2">[TeleconMinutes]</a>).
+Alternative names (including <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>) came up during that discussion,
+but LEWG did not poll names.
+The minutes of LEWG’s review of P1494R3 do not record a discussion of names.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This does not mean to imply that LEWG neglected its duties.
+P1494 itself does not discuss alternative names or request naming feedback.</p>
+   <p>EWG reviews did not poll names,
+and their minutes do not record a discussion of names.
+No further discussion of names occurred until the plenary vote at Hagenberg 2025.</p>
+   <p>Considering the situation, a name change should be polled before Sofia 2025.
 This needs to be done via paper or national body comment
 because <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> has already been approved in plenary.</p>
    <h2 class="heading settled" data-level="2" id="design"><span class="secno">2. </span><span class="content">Design</span><a class="self-link" href="#design"></a></h2>
@@ -2185,6 +2198,8 @@ modify the declaration of <code class="highlight"><c- n>std</c-><c- o>::</c-><c-
     <p><em>Effects</em>: Establishes an observable checkpoint ([intro.abstract]).
 No other effects.</p>
    </blockquote>
+   <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <p>Thanks to Mark Hoemmen for researching <a href="#history">§ 1.1 How did it end up being called std::observable?</a>.</p>
   </main>
 <script>
 (function() {
@@ -2329,4 +2344,6 @@ No other effects.</p>
    <dd>Redditors. <a href="https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/"><cite>WTF std::observable is?</cite></a>. URL: <a href="https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/">https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/</a>
    <dt id="biblio-reflector">[Reflector]
    <dd>WG21. <a href="https://lists.isocpp.org/lib-ext/2025/02/29541.php"><cite>std::observable should have a better - ie worse - name</cite></a>. URL: <a href="https://lists.isocpp.org/lib-ext/2025/02/29541.php">https://lists.isocpp.org/lib-ext/2025/02/29541.php</a>
+   <dt id="biblio-teleconminutes">[TeleconMinutes]
+   <dd>LEWG. <a href="https://wiki.edg.com/bin/view/Wg21telecons2022/P1494"><cite>LEWG Telecon Minutes for P1494R2</cite></a>. 1 February 2022. URL: <a href="https://wiki.edg.com/bin/view/Wg21telecons2022/P1494">https://wiki.edg.com/bin/view/Wg21telecons2022/P1494</a>
   </dl>

@@ -16,7 +16,7 @@ Abstract: Rename `std::observable()` to `std::observable_checkpoint()`.
 
 # Introduction # {#introduction}
 
-[[P1494R4]] *Partial program correctness*
+[[P1494R4]] "Partial program correctness"
 introduced so-called *observable checkpoints* into the language,
 as well as the function `std::observable()` to establish such a checkpoint in the program.
 
@@ -26,11 +26,23 @@ Three issues with the name `std::observable` have been brought up ([[Reflector]]
 - Some associate it with the "observer" design pattern, but it is unrelated.
 - It is a short name, and using it for observable checkpoints now may impede future standardization.
 
-The `std::observable` name was not discussed at Hagenberg 2025.
-The last time LEWG saw [[P1494R4]] was during a Telecon,
-and EWG did not discuss it.
-Considering the situation,
-it should be discussed and possibly changed before Sofia 2025.
+## How did it end up being called `std::observable`? ## {#history}
+
+The name originated in P1494R0.
+
+LEWG last discussed the name during its review of P1494R2 ([[TeleconMinutes]]).
+Alternative names (including `std::observable_checkpoint`) came up during that discussion,
+but LEWG did not poll names.
+The minutes of LEWG's review of P1494R3 do not record a discussion of names.
+
+Note: This does not mean to imply that LEWG neglected its duties.
+P1494 itself does not discuss alternative names or request naming feedback.
+
+EWG reviews did not poll names,
+and their minutes do not record a discussion of names.
+No further discussion of names occurred until the plenary vote at Hagenberg 2025.
+
+Considering the situation, a name change should be polled before Sofia 2025.
 This needs to be done via paper or national body comment
 because [[P1494R4]] has already been approved in plenary.
 
@@ -89,6 +101,10 @@ void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
 No other effects.
 </blockquote>
 
+# Acknowledgements # {#acknowledgements}
+
+Thanks to Mark Hoemmen for researching [[#history]].
+
 <pre class=biblio>
 {
     "Reflector": {
@@ -100,6 +116,12 @@ No other effects.
         "title": "WTF std::observable is?",
         "href": "https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/",
         "authors": ["Redditors"]
+    },
+    "TeleconMinutes": {
+        "title": "LEWG Telecon Minutes for P1494R2",
+        "href": "https://wiki.edg.com/bin/view/Wg21telecons2022/P1494",
+        "authors": ["LEWG"],
+        "date": "1 February 2022"
     }
 }
 </pre>
