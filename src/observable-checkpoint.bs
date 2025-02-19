@@ -20,15 +20,7 @@ Abstract: Rename `std::observable()` to `std::observable_checkpoint()`.
 introduced so-called *observable checkpoints* into the language,
 as well as the function `std::observable()` to establish such a checkpoint in the program.
 
-Many have complained about the name of that function:
-
-- WG21 criticizes the name on the [[Reflector]].
-- Highly upvoted [[Reddit]] comments complain about the name.
-- Anecdotally, I have yet to see one person who strongly defends the name after Hagenberg 2025,
-    but I have seen some who resent it,
-    and many who don't care and would be okay with a change.
-
-Three major issues with the name `std::observable` are typically brought up:
+Three major issues with the name `std::observable` have been brought up ([[Reflector]], [[Reddit]]):
 
 - It doesn't express intent very well, and a longer name could do that better.
 - Some associate it with the "observer" design pattern, but it is unrelated.

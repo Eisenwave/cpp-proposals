@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2935972e4393eb5ed7d723cb0916b53b2be6cc8d" name="revision">
+  <meta content="1ed4c4d0e8a737ff8f5f2d9189b98e9e7633dbe2" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.35);
@@ -2140,18 +2140,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> <em>Partial program correctness</em> introduced so-called <em>observable checkpoints</em> into the language,
 as well as the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-><c- p>()</c-></code> to establish such a checkpoint in the program.</p>
-   <p>Many have complained about the name of that function:</p>
-   <ul>
-    <li data-md>
-     <p>WG21 criticizes the name on the <a data-link-type="biblio" href="#biblio-reflector" title="std::observable should have a better - ie worse - name">[Reflector]</a>.</p>
-    <li data-md>
-     <p>Highly upvoted <a data-link-type="biblio" href="#biblio-reddit" title="WTF std::observable is?">[Reddit]</a> comments complain about the name.</p>
-    <li data-md>
-     <p>Anecdotally, I have yet to see one person who strongly defends the name after Hagenberg 2025,
-but I have seen some who resent it,
-and many who don’t care and would be okay with a change.</p>
-   </ul>
-   <p>Three major issues with the name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> are typically brought up:</p>
+   <p>Three major issues with the name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> have been brought up (<a data-link-type="biblio" href="#biblio-reflector" title="std::observable should have a better - ie worse - name">[Reflector]</a>, <a data-link-type="biblio" href="#biblio-reddit" title="WTF std::observable is?">[Reddit]</a>):</p>
    <ul>
     <li data-md>
      <p>It doesn’t express intent very well, and a longer name could do that better.</p>
