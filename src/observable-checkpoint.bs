@@ -1,0 +1,113 @@
+<pre class='metadata'>
+Title: <code>std::observable&lt;ins&gt;_checkpoint&lt;/ins&gt;()</code>
+Shortname: D3641
+Revision: 0
+Status: D
+Date: 2025-02-19
+Group: WG21
+Audience: LEWG
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/observable-checkpoint.bs)
+Markup Shorthands: markdown on
+Abstract: Rename `std::observable()` to `std::observable_checkpoint()`.
+</pre>
+
+
+# Introduction # {#introduction}
+
+[[P1494R4]] *Partial program correctness*
+introduced so-called *observable checkpoints* into the language,
+as well as the function `std::observable()` to establish such a checkpoint in the program.
+
+Many have complained about the name of that function:
+
+- WG21 criticized the name on the [[Reflector]].
+- Highly upvoted [[Reddit]] comments complain about the name.
+- Anecdotally, I yet have to see one person who strongly defends the name after Hagenberg 2025,
+    but I have seen some who resent it,
+    and many who don't care and would be okay with a change.
+
+Three major issues with the name `std::observable` are typically brought up:
+
+- It doesn't express intent very well, and a longer name could do that better.
+- Some associate it with the "observer" design pattern, but it is unrelated.
+- It is a short name, and using it for observable checkpoints now may impede future standardization.
+
+The `std::observable` name was not discussed at Hagenberg 2025.
+The last time LEWG saw [[P1494R4]] was during a Telecon,
+and EWG did not discuss it.
+Considering the situation,
+it should be discussed and possibly changed before Sofia 2025.
+This needs to be done via paper or national body comment
+because [[P1494R4]] has already been approved in plenary.
+
+# Design # {#design}
+
+In discussions, `std::observable_checkpoint()` has emerged as a favorite suggestion.
+It is a very good name because it is self-explanatory:
+
+> `std::observable_checkpoint()` establishes an observable checkpoint.
+
+This expresses intent as elegantly as `std::unreachable()`,
+which documents that a point in the program is unreachable (or else ...).
+
+`std::observable()` on its own makes little sense
+because it's not trying to say that a point in the program
+*is observable*, or that it *is observable behavior*.
+Instead, `std::observable()` *is a checkpoint* for prior observable behavior.
+This intent should be expressed in the function name.
+
+# Proposed wording # {#wording}
+
+<style>
+ins {
+    background: rgba(136, 255, 93, 0.35);
+    color: inherit;
+}
+
+del {
+    background: rgba(255, 93, 93, 0.35);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The following changes are relative to [[!N5001]] with the changes in [[!P1494R4]] applied.
+
+In subclause
+<a href="https://eel.is/c++draft/cstdlib.syn">[cstdlib.syn]</a>,
+modify the synopsis as follows:
+
+<blockquote>
+<pre>
+[[noreturn]] void quick_exit(int status) noexcept;   // freestanding
+void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
+</pre>
+</blockquote>
+
+In subclause
+<a href="https://eel.is/c++draft/support.start.term">[support.start.term]</a>,
+modify the declaration of `std::observable()` as follows:
+<blockquote>
+<pre>
+void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
+</pre>
+*Effects*: Establishes an observable checkpoint ([intro.abstract]).
+No other effects.
+</blockquote>
+
+<pre class=biblio>
+{
+    "Reflector": {
+        "title": "std::observable should have a better - ie worse - name",
+        "href": "https://lists.isocpp.org/lib-ext/2025/02/29541.php",
+        "authors": ["WG21"]
+    },
+    "Reddit": {
+        "title": "WTF std::observable is?",
+        "href": "https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/",
+        "authors": ["Redditors"]
+    }
+}
+</pre>
