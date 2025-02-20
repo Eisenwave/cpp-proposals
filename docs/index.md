@@ -49,6 +49,14 @@ Author: Jan Schultke
 
 - [Latest](bitint-debate.html)
 
+### P3641: Rename `std::observable` to `std::observable_checkpoint`
+
+**Status**: Active<br>
+**Audience**: LEWG
+
+- [Latest](observable-checkpoint.html)
+- [P3641R0](observable-checkpoint-p3641r0.html)
+
 ### NP: Carry-less product: `std::clmul`
 
 **Audience**: LEWG-I, LEWG
