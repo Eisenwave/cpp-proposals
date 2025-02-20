@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: <code>std::to_signed</code> and <code>std::to_unsigned</code>
-Shortname: P3643R0
+Shortname: P3643
 Revision: 0
 Status: P
 Date: 2025-02-20
