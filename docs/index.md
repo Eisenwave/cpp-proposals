@@ -57,11 +57,13 @@ Author: Jan Schultke
 - [Latest](observable-checkpoint.html)
 - [P3641R0](observable-checkpoint-p3641r0.html)
 
-### NP: Carry-less product: `std::clmul`
+### P3642: Carry-less product: `std::clmul`
 
-**Audience**: LEWG-I, LEWG
+**Status**: Active<br>
+**Audience**: SG6, LEWG
 
 - [Latest](clmul.html)
+- [P3642R0](clmul-p3642r0.html)
 
 ### NP: `std::to_signed`, `std::to_unsigned`
 
