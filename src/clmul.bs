@@ -5,7 +5,7 @@ Revision: 0
 Status: P
 Date: 2025-02-20
 Group: WG21
-Audience: SG6, LEWG
+Audience: SG6, LEWGI
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/clmul.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.bs)
