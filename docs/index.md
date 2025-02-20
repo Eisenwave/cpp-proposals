@@ -44,12 +44,13 @@ Author: Jan Schultke
 - [Latest](break-continue-label.html)
 - [P3568R0](break-continue-label-p3568r0.html)
 
-### D3639: The `_BitInt` Debate
+### P3639: The `_BitInt` Debate
 
 **Status**: Active<br>
 **Audience**: EWG, LEWG, SG6
 
 - [Latest](bitint-debate.html)
+- [Latest](bitint-debate-p3639r0.html)
 
 ### P3641: Rename `std::observable` to `std::observable_checkpoint`
 

@@ -1,11 +1,11 @@
 <pre class='metadata'>
 Title: The <code>_BitInt</code> Debate
-Shortname: D3639
+Shortname: P3639
 Revision: 0
-Status: D
-Date: 2025-02-16
+Status: P
+Date: 2025-02-20
 Group: WG21
-Audience: SG6, LEWGI, LEWG
+Audience: SG6, EWG, LEWG
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/bitint.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint.bs)
@@ -15,6 +15,22 @@ Abstract: An N-bit integer type similar to C's `_BitInt` would provide utility
           However, should this be a fundamental type or a library type?
 </pre>
 
+<style>
+@media (prefers-color-scheme: dark) {
+  c-[mb], c-[mi], c-[mh] {
+    color: #d59393 !important;
+  }
+}
+
+th, td, table {
+    border: 1px solid var(--text);
+}
+
+th, td {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+</style>
 
 # Introduction # {#introduction}
 
@@ -135,14 +151,14 @@ At this point, there are two plausible implementations:
 
 ```cpp
 template <size_t N>
-using bit_int = _BitInt(N);
+using bit_int_t = _BitInt(N);
 
 
 
 
 
 template <size_t N>
-using bit_uint = unsigned _BitInt(N);
+using bit_uint_t = unsigned _BitInt(N);
 ```
 </td>
 <td>
@@ -171,9 +187,9 @@ similar to [Boost.Multiprecision](https://www.boost.org/doc/libs/1_86_0/libs/mul
 In terms of ABI and performance (after inlining),
 these two approaches should yield the same results.
 
-It may also be possible to allow the `bit_int` alias template to alias a
+It may also be possible to allow the `bit_int_t` alias template to alias a
 class template, but this inevitably results in implementation divergence.
-For example, during overload resolution, `bit_int` in some implementations would have
+For example, during overload resolution, `bit_int_t` in some implementations would have
 user-defined conversion sequences and standard conversion sequences in others.
 This is a minefield for users; it really needs to *always* be fundamental or *always* a class.
 
@@ -222,22 +238,23 @@ struct S {
 A C++ library type would be less powerful by default,
 and `S` could not be portably used from C++.
 
-**❌ Counterpoint:** Conditionally-supported exemptions could be made which allow the use of `std::bit_int`
+**❌ Counterpoint:**
+Conditionally-supported exemptions could be made which allow the use of `bit_int`
 in those cases, despite being a class type.
-If `std::bit_int` is just a wrapper for `_BitInt`, that may be possible,
+If `bit_int` is just a wrapper for `_BitInt`, that may be possible,
 but obviously not if it's purely library-implemented.
 
 ## Pro-fundamental: `unsigned _BitInt` ## {#unsigned-bit-int}
 
 If there was a `class bit_int` and `_BitInt` compatibility macro for interop with C,
-then `unsigned _BitInt` obviously wouldn't work because it expands to `unsigned std::bit_int`.
+then `unsigned _BitInt` obviously wouldn't work because it expands to `unsigned bit_int`.
 
-Unless we make `unsigned class std::bit_int` valid (which would be highly unusual for C++),
+Unless we make `unsigned class bit_int` valid (which would be highly unusual for C++),
 both C and C++ uses are forced to use the `_BitUint` macro for unsigned types.
 This seems like needless bullying of C users, who can use `unsigned _BitInt` just fine.
 
 With a `_BitInt` fundamental type, we could simply define `_BitInt` and `unsigned _BitInt` in C++,
-and offer users `std::bit_int` and `std::bit_uint` alias templates for a nicer spelling.
+and offer users `bit_int_t` and `std::bit_uint_t` alias templates for a nicer spelling.
 
 Note: This problem does not arise for `_Atomic` because we can simply say `_Atomic(unsigned)`,
 which is valid in C with no macros, and expands to `std::atomic<unsigned>` in C++.
@@ -261,7 +278,7 @@ With the `_BitInt` compatibility macro mentioned previously, include order matte
 
 ```cpp
 #include <cstdint> // OK: contains _BitInt compatibility macro
-#include "api.h"   // OK: gimme_bit_int returns class std::bit_int
+#include "api.h"   // OK: gimme_bit_int returns class bit_int
 ```
 OR
 ```cpp
@@ -278,7 +295,7 @@ There is no obvious way to fix this problem:
 Note: This issue arises less for `_Atomic(T)` because `std::atomic<T>` is usually a wrapper class for `T`.
 There's no urgent need for `_Atomic` as a builtin type to exist.
 
-On the other hand, if `std::bit_int` is merely an alias,
+On the other hand, if `bit_int_t` is merely an alias,
 the compiler can simply never define the compatibility macro,
 and `_BitInt` has the same meaning everywhere, regardless of include order.
 
@@ -311,8 +328,54 @@ and would not require any template machinery.
 This may substantially improve compilation speed as compared to a library type.
 
 **❌ Counterpoint:** Similar to `std::array`,
-if `std::bit_int` is merely a wrapper for a compiler extension type,
+if `bit_int` is merely a wrapper for a compiler extension type,
 this cost may be relatively low.
+
+## Pro-fundamental: A pure library implementation is only a temporary solution ## {#optimizations}
+
+With current compiler technology,
+certain optimizations are only realistic for fundamental types.
+For example, an integer division with constant divisor like `x / 10` can be turned into a
+fixed-point multiplication with `10`<sup>-1</sup>:
+
+```asm
+; unsigned div10(unsigned x) { return x / 10; }
+div10(unsigned int):
+        mov     ecx, edi
+        mov     eax, 3435973837
+        imul    rax, rcx         ; multiplication with inverse of 10, shifted 35 bits to left
+        shr     rax, 35          ; right-shift by 35 bits to correct
+        ret
+```
+Note: Compilers transform like this
+because integer division is one of the most expensive arithmetic operations;
+it may take over 100 cycles on some architectures.
+`operator/` is also tremendously more complicated to implement than `operator*`
+in multi-precision libraries.
+
+That optimization is possible for fundamental types,
+but a library-implemented division with `bit_int<4096>`
+could result in hundreds or thousands of IR instructions being emitted,
+which the compiler cannot realistically interpret as an integer division.
+
+A pure library implementation is not transparent to the compiler in the same way that `_BitInt` is,
+and prohibits many such optimizations.
+**If we know already that such an implementation is suboptimal and should be replaced eventually,
+why make it an option in the first place?**
+In other words, if `_BitInt` *must* be present for acceptable qualify of implementation,
+any portability/ease-of-implementation argument in favor of `class bit_int` is refuted.
+
+At best, `class bit_int` would be more portable,
+but may optimize dramatically worse when not implemented via intrinsics.
+Furthermore, implementers are not interested in having *both* a library implementation and
+builtin implementation.
+If one obsoletes the other, that is simply twice the work.
+
+**❌ Counterpoint:**
+Not every use case requires these optimizations,
+and not every use case requires integer division.
+Multi-precision libraries have existed long before `_BitInt`,
+and many clever code transformations can be performed by the user manually.
 
 ## Pro-fundamental: `_BitInt` offers overload resolution flexibility ## {#overload-resolution-flexibility}
 
@@ -320,11 +383,11 @@ With a library type, it may be difficult to achieve certain behavior in overload
 For example, people have expressed interest in writing overload sets like:
 
 ```cpp
-void f(std::bit_int<32>); // assuming this is _BitInt(32)
-void f(std::bit_int<16>);
+void f(bit_int_t<32>); // alias for _BitInt(32)
+void f(bit_int_t<16>);
 // ...
 ```
-When called with `std::bit_int<20>`, this could prefer to call `f(std::bit_int<32>)` because
+When called with `bit_int_t<20>`, this could prefer to call `f(bit_int_t<32>)` because
 the conversion is lossless.
 With class types, this is difficult/impossible to achieve because user-defined conversion sequences
 generally rank the same.
@@ -332,7 +395,7 @@ generally rank the same.
 **❌ Counterpoint:** While useful, this idea is novel, and it's not obvious that we want/expect this.
 For example, calling a function with `long` does not prefer lossless conversions to `long long`
 over lossy conversions to `int`.
-`std::bit_int` is all about being explicit with integer widths,
+`bit_int_t` is all about being explicit with integer widths,
 and highly flexible implicit conversions "don't fit the theme".
 
 ## Pro-fundamental: `_BitInt` could have special deduction powers ## {#special-deduction-powers}
@@ -341,20 +404,20 @@ Multiple committee members have expressed interest in the following construct:
 
 ```cpp
 template <size_t N>
-void foo(bit_int<N>);
+void foo(bit_int_t<N>);
 
 foo(0); // OK, calls foo<32> on most platforms
 ```
 
 This is obviously impossible with a class template,
-but could be permitted with special deduction rules for `bit_int<N>`
+but could be permitted with special deduction rules for `bit_int_t<N>`
 when passing a standard integer.
 C++ users may perceive this as a case that should *intuitively* work,
 even if it usually doesn't (similar issues with `optional<T>`).
 
 Such deduction is also quite useful because
 - `foo` can accept any signed standard integer and any bit-precise integer,
-- there are fewer instantiations of `foo` if we convert `int` to `bit_int<32>` at the call site, and
+- there are fewer instantiations of `foo` if we convert `int` to `bit_int_t<32>` at the call site, and
 - it gives `foo` quick access to the width, `N`, even when `int` was passed.
 
 **❌ Counterpoint:**
@@ -377,7 +440,7 @@ With that proposal, the motivating example would also work for `class bit_int`.
 One of the greatest downsides of `_BitInt` is that it's effectively an optional type.
 This stems from the fact that only widths of at least `LLONG_WIDTH` are guaranteed.
 
-The purpose of `std::bit_int` is primarily to provide portable multi-precision to C++ developers.
+The purpose of `bit_int` is primarily to provide portable multi-precision to C++ developers.
 If we are not guaranteed a `BITINT_MAXWIDTH` more than 64 bits,
 then `_BitInt` miserably fails this goal.
 
@@ -388,7 +451,7 @@ There were major implementer concerns regarding this,
 and I was advised to make the type freestanding-optional.
 A fundamental `_BitInt(128)` suffers from the same issue and would receive the same criticism.
 
-On the contrary, if `std::bit_int` is allowed to be library-implemented,
+On the contrary, if `bit_int` is allowed to be library-implemented,
 these concerns vanish,
 and the type can be freestanding-mandatory with a very high maximum width.
 After all, the library implementation is basically a `std::array` with some operator overloads.
@@ -435,7 +498,7 @@ standard library (or other library), for a given architecture.
 
 Standardizing `_BitInt` as a fundamental type also forces the implementation to set an ABI
 for this type in stone.
-Doing so is of much greater consequence than deciding on an ABI for `class std::bit_int`, where,
+Doing so is of much greater consequence than deciding on an ABI for `class bit_int`, where,
 if push comes to shove, an ABI break is more plausible than for a fundamental C type.
 
 Even the frontend implementation requires some effort, such as
@@ -490,7 +553,7 @@ On the contrary, With a `class bit_int`, this behavior would be glaringly obviou
 and such a class type would presumably not have a user-defined conversion function to integers
 anyway.
 In practice, users can simply look at cppreference and find all the constructors, operator
-overloads, and quickly understand how `std::bit_int` works.
+overloads, and quickly understand how `bit_int` works.
 
 **❌ Counterpoint:**
 This point is somewhat subjective and speculative.
