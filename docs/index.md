@@ -37,7 +37,9 @@ Author: Jan Schultke
 ### P3568: `break label;` and `continue label;`
 
 **Status**: Active<br>
-**Audience**: EWG-I, SG22
+**Audience**: EWG-I, SG22<br>
+**Summary**: [P3628](break-continue-label-tldr.html) (tl; dr version for EWGI at Hagenberg 2025)<br>
+**Slides**: [P3630](../slides/p3568-slides.pdf) (Syntax discussion slides for EWG at Hagenberg 2025)
 
 - [Latest](break-continue-label.html)
 - [P3568R0](break-continue-label-p3568r0.html)
