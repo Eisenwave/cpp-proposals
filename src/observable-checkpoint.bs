@@ -1,16 +1,16 @@
 <pre class='metadata'>
-Title: <code>std::observable&lt;ins&gt;_checkpoint&lt;/ins&gt;()</code>
-Shortname: D3641
+Title: Rename <code>std::observable</code> to <code>std::observable_checkpoint</code>
+Shortname: P3641
 Revision: 0
-Status: D
-Date: 2025-02-19
+Status: P
+Date: 2025-02-20
 Group: WG21
 Audience: LEWG
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/observable-checkpoint.bs)
 Markup Shorthands: markdown on
-Abstract: Rename `std::observable()` to `std::observable_checkpoint()`.
+Abstract: Rename `std::observable` to `std::observable_checkpoint`.
 </pre>
 
 
@@ -18,7 +18,7 @@ Abstract: Rename `std::observable()` to `std::observable_checkpoint()`.
 
 [[P1494R4]] "Partial program correctness"
 introduced so-called *observable checkpoints* into the language,
-as well as the function `std::observable()` to establish such a checkpoint in the program.
+as well as the function `std::observable` to establish such a checkpoint in the program.
 
 Three issues with the name `std::observable` have been brought up ([[Reflector]], [[Reddit]]):
 
@@ -36,7 +36,7 @@ but LEWG did not poll names.
 The minutes of LEWG's review of P1494R3 do not record a discussion of names.
 
 Note: This does not mean to imply that LEWG neglected its duties.
-P1494 itself does not discuss alternative names or request naming feedback.
+[[P1494R4]] itself does not discuss alternative names or request naming feedback.
 
 EWG reviews did not poll names,
 and their minutes do not record a discussion of names.
@@ -48,18 +48,18 @@ because [[P1494R4]] has already been approved in plenary.
 
 # Design # {#design}
 
-In discussions, `std::observable_checkpoint()` has emerged as a favorite suggestion.
+In discussions, `std::observable_checkpoint` has emerged as a favorite suggestion.
 It is a very good name because it is self-explanatory:
 
 > `std::observable_checkpoint()` establishes an observable checkpoint.
 
-This expresses intent as elegantly as `std::unreachable()`,
+This expresses intent as elegantly as `std::unreachable`,
 which documents that a point in the program is unreachable (or else ...).
 
-`std::observable()` on its own makes little sense
+`std::observable` on its own makes little sense
 because it's not trying to say that a point in the program
 *is observable*, or that it *is observable behavior*.
-Instead, `std::observable()` *is a checkpoint* for prior observable behavior.
+Instead, `std::observable` *is a checkpoint* for prior observable behavior.
 This intent should be expressed in the function name.
 
 # Proposed wording # {#wording}
@@ -97,7 +97,7 @@ modify the declaration of `std::observable()` as follows:
 <pre>
 void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
 </pre>
-*Effects*: Establishes an observable checkpoint ([intro.abstract]).
+&nbsp;&nbsp;&nbsp;&nbsp;*Effects*: Establishes an observable checkpoint ([intro.abstract]).
 No other effects.
 </blockquote>
 
