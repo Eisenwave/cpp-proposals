@@ -1,23 +1,23 @@
 <pre class='metadata'>
-Title: <code>std::to_signed</code>, <code>std::to_unsigned</code>
-Shortname: Pxxxx
+Title: <code>std::to_signed</code> and <code>std::to_unsigned</code>
+Shortname: P3643R0
 Revision: 0
-Status: NP
-Date: 2024-02-17
+Status: P
+Date: 2025-02-20
 Group: WG21
-Audience: LEWGI, LEWG
+Audience: LEWG
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/to-signed-unsigned.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/to-signed-unsigned.bs)
 Markup Shorthands: markdown on
-Abstract: This proposal is to `std::make_signed` what `std::to_underlying` was to `std::underlying_type`.
+Abstract: Add `std::to_signed` and `std::to_unsigned` function templates in the style of `std::to_underlying`.
 </pre>
 
 
 # Introduction # {#introduction}
 
-In integer numerics and bit-manipulation code, it is common to implement functionality in terms of the
-corresponding signed/unsigned type.
+In integer numerics and bit-manipulation code,
+it is common to implement functionality in terms of the corresponding signed/unsigned type.
 The most concise form is a function-style cast with a very short type name.
 
 ```cpp
@@ -41,42 +41,49 @@ However, this is problematic for two reasons:
     When `static_cast` is used instead, this code becomes substantially more verbose.
 
 2. Repeating the type `T` violates the DRY (Don't Repeat Yourself) principle in software design.
-    Nothing guarantees us that `x` is of type `T` when writing an expression `make_signed_t<T>(x)`.
+    Nothing guarantees us that `x` is of type `T` when writing an expression `std::make_signed_t<T>(x)`.
     In larger code samples, mismatching types and variables is a bug waiting to happen.
     To be safe, we would have to write `std::make_signed_t<decltype(x)>(x)`.
     However, now we are repeating the expression `x`, so we haven't fully solved the problem.
 
 The greater the distance between `T` and the use of `std::make_{un}signed` are, the easier it is to make a mistake.
 
-To solve these issues, this proposal adds the function templates `to_signed(x)` and `to_unsigned(x)`
+To solve these issues, this proposal adds the function templates `std::to_signed(x)` and `std::to_unsigned(x)`,
 which deduce `T` from `x`.
 This is concise and always uses the correct type.
 
 A GitHub code search for
-<a href="https://github.com/search?q=%2F%5B%5Ea-zA-Z_%5D%28to_signed%7Cto_unsigned%29%7Cstatic_cast%3C%28typename%29%3F+%3F%28%28%3A%3A%29%3Fstd%3A%3A%29%3F%28make_signed%7Cmake_unsigned%29%2F+-is%3Afork+language%3Ac%2B%2B&type=code">
+
+<blockquote>
+<a href="https://github.com/search?type=code&q=%2F%5B%5Ea-zA-Z_%5D%28to_signed%7Cto_unsigned%29%7Cstatic_cast%3C%28typename%29%3F+%3F%28%28%3A%3A%29%3Fstd%3A%3A%29%3F%28make_signed%7Cmake_unsigned%29%2F+-is%3Afork+language%3Ac%2B%2B">
 `/[^a-zA-Z_](to_signed|to_unsigned)|static_cast<(typename)? ?((::)?std::)?(make_signed|make_unsigned)/ -is:fork language:c++`
 </a>
-shows that roughly 6.6K C++ files already use a non-standard `to_unsigned` and `to_signed`,
-or `static_cast` to `make_signed` or `make_unsigned`,
-of which 3.2K C++ files convert via `static_cast`.
-This is impressive considering that the feature doesn't exist in the standard library
-and naming the functions `to_{un}signed` is simply a community convention.
+</blockquote>
+
+... shows that roughly 12.9K C++ files already use a non-standard `to_unsigned` and `to_signed`,
+or `static_cast` to `make_signed` or `make_unsigned`.
 
 By comparison,
+
+<blockquote>
 <a href="https://github.com/search?q=%2F%5B%5Ea-zA-Z_%5D%28to_underlying%29%7Cstatic_cast%3C%28typename%29%3F+%3F%28%28%3A%3A%29%3Fstd%3A%3A%29%3F%28underlying_type%29%2F+-is%3Afork+language%3Ac%2B%2B&type=code">
 `/[^a-zA-Z_](to_underlying)|static_cast<(typename)? ?((::)?std::)?(underlying_type)/ -is:fork language:c++`
 </a>
-yields 22.1K C++ files which use `to_underlying` or `static_cast` to `std::underlying_type`,
+</blockquote>
+
+... yields 30.8K C++ files which use `to_underlying` or `static_cast` to `std::underlying_type`,
 of which 11.6K C++ files convert via `static_cast`.
 
-The proposal [[P1682R3]] for `std::to_underlying` had similar rationale and at the time,
+The proposal [[P1682R3]] for `std::to_underlying` had similar rationale, and at the time,
 the author was only able to discover 1000 search results for `to_underlying`.
 
 # Impact on the standard # {#impact-on-the-standard}
 
 This proposal is a pure library extension.
 
-Note: [ranges.syn] already defines an exposition-only function
+Note:
+<a href="https://eel.is/c++draft/ranges.syn">[ranges.syn]</a>
+already defines an exposition-only function
 <code>*to-unsigned-like*</code>, however, this is more powerful than the proposed function
 because it operates on <code>*unsigned-like*</code> types, not unsigned integer types.
 Therefore, the wording in [ranges] remains unaffected.
@@ -85,12 +92,12 @@ Therefore, the wording in [ranges] remains unaffected.
 
 ```cpp
 template<class T>
-[[nodiscard]] constexpr std::make_signed_t<T> to_signed(T x) noexcept {
+constexpr std::make_signed_t<T> to_signed(T x) noexcept {
     return static_cast<std::make_signed_t<T>>(x);
 }
 
 template<class T>
-[[nodiscard]] constexpr std::make_unsigned_t<T> to_unsigned(T x) noexcept {
+constexpr std::make_unsigned_t<T> to_unsigned(T x) noexcept {
     return static_cast<std::make_unsigned_t<T>>(x);
 }
 ```
@@ -100,8 +107,8 @@ template<class T>
 
 This proposal follows precedent:
 Similar to `to_underlying`, the proposed functions are located in `<utility>`.
-The naming scheme is based on `to_underlying` and the 4400 existing uses of `to_{un}signed`
-on GitHub.
+The naming scheme is based on `to_underlying`
+and the search result in [[#introduction]].
 
 
 # Proposed wording # {#proposed-wording}
@@ -126,11 +133,20 @@ del {
     color: inherit;
     text-decoration: strikethrough;
 }
+
+.ins-block, .ins-block * {
+    text-decoration: none !important;
+}
+.ins-block {
+    background: rgba(136, 255, 93, 0.2) !important;
+}
 </style>
 
-The proposed wording is relative to [[!N4950]].
+The proposed wording is relative to [[!N5001]].
 
-In subclause 17.3.2 [version.syn], add the following feature-testing macro:
+In subclause
+<a href="https://eel.is/c++draft/version.syn">[version.syn]</a>,
+add the following feature-testing macro:
 
 <blockquote>
 <pre>
@@ -138,12 +154,14 @@ In subclause 17.3.2 [version.syn], add the following feature-testing macro:
 </pre>
 </blockquote>
 
-In subclause 22.2.1 [utility.syn], update the synopsis as follows:
+In subclause
+<a href="https://eel.is/c++draft/utility.syn">[utility.syn]</a>,
+update the synopsis as follows:
 <blockquote>
 <pre>
 namespace std {
   [...]
-<ins>  // [utility.signconv]
+<ins>  // [utility.sign.conv], sign conversion
   template&lt;class T&gt;
     constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
   template&lt;class T&gt;
@@ -157,10 +175,12 @@ namespace std {
 </pre>
 </blockquote>
 
-In subclause 22.2 [utility.syn], add a subclause prior to [utility.underlying]:
+In subclause <a href="https://eel.is/c++draft/utility">[utility]</a>,
+add a subclause immediately prior to
+<a href="https://eel.is/c++draft/utility#underlying">[utility.underlying]</a>:
 
-<blockquote>
-<b>22.2.8 Sign conversion functions [utility.signconv]</b>
+<blockquote class=ins-block>
+<b>Sign conversion [utility.sign.conv]</b>
 <pre>
 template&lt;class T&gt;
   constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
@@ -177,7 +197,11 @@ template&lt;class T&gt;
 </p>
 </blockquote>
 
-Note: The name of the subclause is based on [meta.trans.sign], sign modifications.
+Note: Neither function template has a *Constraints* specification because the return type
+already acts as a constraint.
+
+Note: The name of the subclause is based on
+<a href="https://eel.is/c++draft/meta.trans.sign">[meta.trans.sign]</a>, sign modifications.
 
 <pre class=biblio>
 {

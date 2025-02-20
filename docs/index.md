@@ -67,9 +67,10 @@ Author: Jan Schultke
 - [Latest](clmul.html)
 - [P3642R0](clmul-p3642r0.html)
 
-### NP: `std::to_signed`, `std::to_unsigned`
+### P3643R0: `std::to_signed`, `std::to_unsigned`
 
 - [Latest](to-signed-unsigned.html)
+- [P3643R0](to-signed-unsigned.html)
 
 
 ## Inactive
