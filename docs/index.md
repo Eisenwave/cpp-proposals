@@ -63,19 +63,9 @@ Author: Jan Schultke
 
 - [Latest](clmul.html)
 
-### NP: Better, `constexpr to_string`
-
-**Audience**: LEWG-I, LEWG
-
-- [Latest](constexpr-to-string.html)
-
 ### NP: `std::to_signed`, `std::to_unsigned`
 
 - [Latest](to-signed-unsigned.html)
-
-### NP: Define `offsetof` semantics in the C++ standard
-
-- [Latest](offsetof.html)
 
 
 ## Inactive
@@ -91,7 +81,7 @@ Author: Jan Schultke
 
 ### P3105: `constexpr std::uncaught_exceptions()`
 
-**Status**: Withdrawn<br>
+**Status**: Superseded by [P3068](https://wg21.link/p3068/github)<br>
 **Audience**: LEWG-I, LEWG
 
 - [Latest](constexpr-uncaught-exceptions.html)
@@ -106,3 +96,21 @@ Author: Jan Schultke
 - [Latest](oxford-variadic-comma.html)
 - [P3176R1](oxford-variadic-comma-p3176r1.html)
 - [P3176R0](oxford-variadic-comma-p3176r0.html)
+
+### NP: Define `offsetof` semantics in the C++ standard
+
+**Status**:
+Superseded by [P2883](wg21.link/p2883/github) before publication.
+That paper was rejected at Hagenberg 2025, but the door is left open for revisiting.
+In any case, I am not pursuing this for now.
+
+- [Latest](offsetof.html)
+
+### NP: Better, `constexpr to_string`
+
+**Status**:
+Superseded by [P3438](https://wg21.link/p3438/github)
+before publication<br>
+**Audience**: LEWG-I, LEWG
+
+- [Latest](constexpr-to-string.html)
