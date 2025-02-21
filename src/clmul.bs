@@ -286,20 +286,16 @@ mul_wide_result<uint64_t> clmul_wide(uint64_t x, uint64_t y) noexcept
 </div>
 
 
-
-
 # Design Considerations # {#design-considerations}
 
-Multiple design choices lean on [[P3161R2]], which has been received positively on LEWG.
+Multiple design choices lean on [[P0543R3]] and [[P3161R2]].
 Specifically,
 
 - the choice of header `<numeric>`,
 - the choice to have a widening operation,
 - the `_wide` naming scheme,
 - the `mul_wide_result` template, and
-- the decision to have a `(T, T)` parameter list
-
-come from that proposal.
+- the decision to have a `(T, T)` parameter list.
 
 ## Naming ## {#naming}
 
@@ -318,6 +314,12 @@ Many but not all use cases of carry-less multiplication operate on large blocks 
 and SIMD is ideal for that purpose.
 I do not yet propose carry-less multiplication for `std::simd`,
 but a future paper, or perhaps this paper could do so, if LEWG wants that.
+
+Note:
+Only ARM supports eight 8-bit multiplications in parallel.
+Other than that, hardware only supports scalar multiplications,
+albeit using vector registers except for RISC-V;
+see [[#hardware-support]].
 
 # Proposed wording # {#proposed-wording}
 

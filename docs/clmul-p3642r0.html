@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/clmul.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6a4350aa33d5e74b973494539b9f1c8713967b4c" name="revision">
+  <meta content="c8b487274604b94f2f7e5b0194886679a59c5270" name="revision">
 <style>
 @media (prefers-color-scheme: dark) {
   c-[mb], c-[mi], c-[mh] {
@@ -2411,7 +2411,7 @@ and <code class="highlight"><c- n>xN</c-></code> denote the amount of operands t
 </pre>
    </div>
    <h2 class="heading settled" data-level="4" id="design-considerations"><span class="secno">4. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
-   <p>Multiple design choices lean on <a data-link-type="biblio" href="#biblio-p3161r2" title="Unified integer overflow arithmetic">[P3161R2]</a>, which has been received positively on LEWG.
+   <p>Multiple design choices lean on <a data-link-type="biblio" href="#biblio-p0543r3" title="Saturation arithmetic">[P0543R3]</a> and <a data-link-type="biblio" href="#biblio-p3161r2" title="Unified integer overflow arithmetic">[P3161R2]</a>.
 Specifically,</p>
    <ul>
     <li data-md>
@@ -2423,9 +2423,8 @@ Specifically,</p>
     <li data-md>
      <p>the <code class="highlight"><c- n>mul_wide_result</c-></code> template, and</p>
     <li data-md>
-     <p>the decision to have a <code class="highlight"><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- n>T</c-><c- p>)</c-></code> parameter list</p>
+     <p>the decision to have a <code class="highlight"><c- p>(</c-><c- n>T</c-><c- p>,</c-> <c- n>T</c-><c- p>)</c-></code> parameter list.</p>
    </ul>
-   <p>come from that proposal.</p>
    <h3 class="heading settled" data-level="4.1" id="naming"><span class="secno">4.1. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
    <p>Carry-less multiplication is also commonly called "Galois Field Multiplication" or "Polynomial Multiplication".</p>
    <p>The name <code class="highlight"><c- n>clmul</c-></code> was chosen because it carries no domain-specific connotation,
@@ -2443,6 +2442,10 @@ and because it is widespread:</p>
 and SIMD is ideal for that purpose.
 I do not yet propose carry-less multiplication for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>simd</c-></code>,
 but a future paper, or perhaps this paper could do so, if LEWG wants that.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Only ARM supports eight 8-bit multiplications in parallel.
+Other than that, hardware only supports scalar multiplications,
+albeit using vector registers except for RISC-V;
+see <a href="#hardware-support">§ 3.1 Hardware support</a>.</p>
    <h2 class="heading settled" data-level="5" id="proposed-wording"><span class="secno">5. </span><span class="content">Proposed wording</span><a class="self-link" href="#proposed-wording"></a></h2>
    <p>The proposed changes are relative to the working draft of the standard as of <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a>,
 with the changes in <a data-link-type="biblio" href="#biblio-p3161r2" title="Unified integer overflow arithmetic">[P3161R2]</a> applied.</p>
@@ -2764,6 +2767,8 @@ append a subclause immediately following <a href="https://eel.is/c++draft/numeri
    <dd>Shay Gueron; Michael E. Kounavis. <a href="https://www.intel.com/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20.pdf"><cite>Intel® Carry-Less Multiplication Instruction and its Usage for Computing the GCM Mode</cite></a>. URL: <a href="https://www.intel.com/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20.pdf">https://www.intel.com/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20.pdf</a>
    <dt id="biblio-intel2">[Intel2]
    <dd>Intel Corporation. <a href="https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4"><cite>Intel® 64 and IA-32 Architectures Software Developer's Manual</cite></a>. URL: <a href="https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4">https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4</a>
+   <dt id="biblio-p0543r3">[P0543R3]
+   <dd>Jens Maurer. <a href="https://wg21.link/p0543r3"><cite>Saturation arithmetic</cite></a>. 19 July 2023. URL: <a href="https://wg21.link/p0543r3">https://wg21.link/p0543r3</a>
    <dt id="biblio-p3104r3">[P3104R3]
    <dd>Jan Schultke. <a href="https://wg21.link/p3104r3"><cite>P3104R3 Bit permutations</cite></a>. URL: <a href="https://wg21.link/p3104r3">https://wg21.link/p3104r3</a>
    <dt id="biblio-rawrunprotected1">[RAWRUNPROTECTED1]
