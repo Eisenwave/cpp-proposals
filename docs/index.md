@@ -52,7 +52,7 @@ Author: Jan Schultke
 - [Latest](bitint-debate.html)
 - [Latest](bitint-debate-p3639r0.html)
 
-### P3641: Rename `std::observable` to `std::observable_checkpoint`
+### P3641: Rename `std::observable` to `std::observable_checkpoint`, and add a feature-test macro
 
 **Status**: Active<br>
 **Audience**: LEWG

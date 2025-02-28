@@ -1,16 +1,17 @@
 <pre class='metadata'>
-Title: Rename <code>std::observable</code> to <code>std::observable_checkpoint</code>
+Title: Rename <code>std::observable</code> to <code>std::observable_checkpoint</code>, and add a feature-test macro
 Shortname: P3641
 Revision: 0
 Status: P
-Date: 2025-02-20
+Date: 2025-02-28
 Group: WG21
 Audience: LEWG
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/observable-checkpoint.bs)
 Markup Shorthands: markdown on
-Abstract: Rename `std::observable` to `std::observable_checkpoint`.
+Abstract: Rename `std::observable` to `std::observable_checkpoint`,
+          and add a feature-test macro.
 </pre>
 
 
@@ -56,11 +57,25 @@ It is a very good name because it is self-explanatory:
 This expresses intent as elegantly as `std::unreachable`,
 which documents that a point in the program is unreachable (or else ...).
 
+Note: Various other options such as `std::checkpoint` have been discussed.
+      `std::observable_checkpoint` is proposed because it's most likely to achieve consensus.
+
 `std::observable` on its own makes little sense
 because it's not trying to say that a point in the program
 *is observable*, or that it *is observable behavior*.
 Instead, `std::observable` *is a checkpoint* for prior observable behavior.
 This intent should be expressed in the function name.
+
+Furthermore it has been suggested in [[Discussion]]
+to add a feature-test macro for the library function.
+After all,
+- there is a `__cpp_lib_unreachable` macro, and `std::unreachable` and `std::observable` are similar,
+- [[P1494R4]] adds no feature-test macro for observable checkpoints (and it shouldn't), and
+- it is useful to know whether the `std::observable_checkpoint` function exists.
+
+Note: I was unable to find any discussion of a feature-test macro in meeting minutes,
+      so lack thereof may be an oversight,
+      rather than conscious design.
 
 # Proposed wording # {#wording}
 
@@ -91,6 +106,16 @@ void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
 </blockquote>
 
 In subclause
+<a href="https://eel.is/c++draft/version.syn">[version.syn]</a>,
+add a feature-test macro as follows:
+
+<blockquote>
+<pre>
+<ins>#define __cpp_lib_observable_checkpoint 2025XXL // freestanding, also in &lt;cstdlib&gt;</ins>
+</pre>
+</blockquote>
+
+In subclause
 <a href="https://eel.is/c++draft/support.start.term">[support.start.term]</a>,
 modify the declaration of `std::observable()` as follows:
 <blockquote>
@@ -116,6 +141,10 @@ Thanks to Mark Hoemmen for researching [[#history]].
         "title": "WTF std::observable is?",
         "href": "https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/",
         "authors": ["Redditors"]
+    },
+    "Discussion": {
+        "title": "[std-discussion] Should there be a library feature-test macro for std::observable?",
+        "href": "https://lists.isocpp.org/std-discussion/2025/02/2901.php"
     },
     "TeleconMinutes": {
         "title": "LEWG Telecon Minutes for P1494R2",

@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3641R0: Rename std::observable to std::observable_checkpoint</title>
+  <title>P3641R0: Rename std::observable to std::observable_checkpoint, and add a feature-test macro</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="caecc91d1e2553afb83f7fd9fd5f7974acfac5fd" name="revision">
+  <meta content="21f338a8ac5b1c7273f7d2ef3b9fbd24bf07690a" name="revision">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.35);
@@ -2099,8 +2099,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3641R0<br>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-02-20">2025-02-20</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3641R0<br>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>, and add a feature-test macro</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-02-28">2025-02-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2120,7 +2120,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>.</p>
+   <p>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>,
+and add a feature-test macro.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -2176,10 +2177,24 @@ It is a very good name because it is self-explanatory:</p>
    </blockquote>
    <p>This expresses intent as elegantly as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>unreachable</c-></code>,
 which documents that a point in the program is unreachable (or else ...).</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Various other options such as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>checkpoint</c-></code> have been discussed. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code> is proposed because it’s most likely to achieve consensus.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> on its own makes little sense
 because it’s not trying to say that a point in the program <em>is observable</em>, or that it <em>is observable behavior</em>.
 Instead, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> <em>is a checkpoint</em> for prior observable behavior.
 This intent should be expressed in the function name.</p>
+   <p>Furthermore it has been suggested in <a data-link-type="biblio" href="#biblio-discussion" title="[std-discussion] Should there be a library feature-test macro for std::observable?">[Discussion]</a> to add a feature-test macro for the library function.
+After all,</p>
+   <ul>
+    <li data-md>
+     <p>there is a <code class="highlight"><c- n>__cpp_lib_unreachable</c-></code> macro, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>unreachable</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> are similar,</p>
+    <li data-md>
+     <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> adds no feature-test macro for observable checkpoints (and it shouldn’t), and</p>
+    <li data-md>
+     <p>it is useful to know whether the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code> function exists.</p>
+   </ul>
+   <p class="note" role="note"><span class="marker">Note:</span> I was unable to find any discussion of a feature-test macro in meeting minutes,
+      so lack thereof may be an oversight,
+      rather than conscious design.</p>
    <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Proposed wording</span><a class="self-link" href="#wording"></a></h2>
    <p>The following changes are relative to <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a> with the changes in <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> applied.</p>
    <p>In subclause <a href="https://eel.is/c++draft/cstdlib.syn">[cstdlib.syn]</a>,
@@ -2187,6 +2202,12 @@ modify the synopsis as follows:</p>
    <blockquote>
 <pre class="highlight"><c- p>[[</c-><c- n>noreturn</c-><c- p>]]</c-> <c- b>void</c-> <c- n>quick_exit</c-><c- p>(</c-><c- b>int</c-> <c- n>status</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->   <c- c1>// freestanding</c->
 <c- b>void</c-> <c- nf>observable</c-><ins><c- nf>_checkpoint</c-></ins><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->               <c- c1>// freestanding</c->
+</pre>
+   </blockquote>
+   <p>In subclause <a href="https://eel.is/c++draft/version.syn">[version.syn]</a>,
+add a feature-test macro as follows:</p>
+   <blockquote>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_observable_checkpoint 2025XXL </c-><c- c1>// freestanding, also in &lt;cstdlib></c-></ins>
 </pre>
    </blockquote>
    <p>In subclause <a href="https://eel.is/c++draft/support.start.term">[support.start.term]</a>,
@@ -2339,6 +2360,8 @@ No other effects.</p>
   </dl>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-discussion">[Discussion]
+   <dd><a href="https://lists.isocpp.org/std-discussion/2025/02/2901.php"><cite>[std-discussion] Should there be a library feature-test macro for std::observable?</cite></a>. URL: <a href="https://lists.isocpp.org/std-discussion/2025/02/2901.php">https://lists.isocpp.org/std-discussion/2025/02/2901.php</a>
    <dt id="biblio-reddit">[Reddit]
    <dd>Redditors. <a href="https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/"><cite>WTF std::observable is?</cite></a>. URL: <a href="https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/">https://www.reddit.com/r/cpp/comments/1is7aqy/wtf_stdobservable_is/</a>
    <dt id="biblio-reflector">[Reflector]
