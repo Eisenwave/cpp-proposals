@@ -3,9 +3,9 @@ Title: <code>Bit-precise integers</code>
 Shortname: Pxxxx
 Revision: 0
 Status: NP
-Date: 2024-01-21
+Date: 2025-02-15
 Group: WG21
-Audience: LEWGI, LEWG, EWGI, EWG, WG21
+Audience: LEWGI, LEWG, EWGI, EWG
 Editor: Jan Schultke, janschultke@gmail.com
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint.bs)
 Markup Shorthands: markdown on
@@ -16,148 +16,227 @@ Abstract: This paper incorporates the bit-precise integers from C23 into the C++
 
 [[N2763]] has introduced bit-precise integers into C23, in the form of a new `_BitInt(N)`
 integer type.
-Unlike the standard integer types such as `int`,
-these have a fixed-width which can be specified exactly using an integral constant expression.
-They are not subject to the usual promotion rules,
-and essentially establish a new set of integers, parallel existing types.
+[[N2775]] subsequently added the `wb` integer literal suffix for these types.
 
-An analogous C++ feature would greatly enhance the capabilities of the programmer in C++.
-It is also necessary to interface with C.
-At the time of writing, clang already implements this feature, and an implementation could
-look as follows:
+Such integers have two notable advantages over the standard integers provided in C++:
+1. They can have an arbitrary (but constant, and up to a certain limit) width.
+2. They are not subject to the usual integer promotion rules.
+
+# Motivation # {#motivation}
+
+## C compatibility ## {#motivation-c-compatibilty}
+
+There is currently no standard way to pass or receive what is a `_BitInt` type on the C side.
+Consider the following C code:
+
 ```cpp
-template <size_t N>
-using bit_int = _BitInt(N);
-
-template <size_t N>
-using bit_uint = unsigned _BitInt(N);
+void f(_BitInt(/* ... */));
 ```
+How would a C++ program portably call such as a C function?
+For specific widths of `_BitInt`, this may be possible,
+but certainly not once the width of `long long` is exceeded.
 
-# Motivation and scope # {#motivation}
+## Hardware representation ## {#hardware-representation}
 
-Bit-precise integers are a perfect fit for C++.
-There are two long-standing design goals that are impossible to meet without them:
-
-1. Keep compatibility with C, if possible.
-2. Keep C++ a low-level language, requiring nothing underneath.
-
-It's obviously not possible for ISO C++ to have C compatibility if C types don't have some
-counterpart in C++.
-This reason alone justifies bit-precise integers in C++.
-
-Furthermore, as [[N2763]] motivates, arbitrary precision integers are useful for representing
+As [[N2763]] motivates, arbitrary precision integers are useful for representing
 hardware types.
 Certain applications involving FPGAs use up to 2031-bit integers.
 To utilize these hardware capabilities, C++ needs an integer type that can represent them.
 
-This requires relatively large-scale changes both to the core language, and to the standard library.
-To name a few examples:
+## Large-width computations ## {#motivation-large-width-computations}
 
-- Promotion and conversion rules need to be revised.
-- Non-type template argument deduction from bit-precise integers.
-- Overload resolution with bit-precise integers. 
-- Type traits such as `std::is_integral` or `std::is_unsigned` need to receive specializations.
-- In places where an implementation-defined unsinged integer type is chosen, it must be decided
-    whether such a type can be bit-precise, or a standard integer.
-- Functions in `<cmath>`, `<bit>`, and other numerics utilities may be affected.
-- Specializations of `std::numeric_limits` are necessary.
-
-
+Certain applications require much greater integer widths than the standard integers in C++ can provide.
+For example, RSA and other cryptosystems may use `_BitInt(4096)` or wider.
 
 # Design Considerations # {#design-considerations}
 
-The vast majority of the design is set in stone because it has been standardized in C.
+We pursue the following design goals:
+- Provide a type with zero overhead (compared to C's `_BitInt`).
+- Prioritize safety and ease of use over similarity with fundamental integers.
+- Prioritize design quality in C++ over interoperability with C.
 
-## Implementing bit-precise integers as a class template ## {#impl-class-template}
+## Why not a fundamental type? ## {#why-not-a-fundamental-type}
 
-An initial design questions is whether to implement bit-precise integers as a class type,
-not as a fundamental type.
-This approach has worked for `std::atomic`/`_Atomic`, but is not feasible for
-bit-precise integers.
+The most notable design decision is to provide a library `std::bit_int` type,
+rather than exposing a `_BitInt` fundamental type.
 
-### Concerns regarding `signed` and `unsigned` syntax ### {#concerns-regarding-signed-unsigned-syntax}
+*Why?* Because it's possible, and all prior art in C++ makes this design choice.
+C's `complex float` is `std::complex<float>`, and `_Atomic` is `std::atomic`.
+Furthermore, it's much easier for C++ users to learn a library type
+(if they feel the need to use it)
+than to learn an entirely new set of integer types, with distinct behavior.
 
-C uses the syntax `unsigned _BitInt`.
-Even if C++ has a compatibility macro for `_BitInt`, adding `unsigned` to class types is not
-possible.
-At the very least, this would require an additional `_UnsignedBitInt` macro which is used both in
-C and C++, if one wants to achive compatibility.
+### Drastic library impact ### {#drastic-library-impact}
 
-### Concerns compatibility with implementation-defined choices ### {#concerns-regarding-impl-defined-choices}
+At the very least, the following parts of the core language would be impacted:
 
-C allows bit-precise integers as an implementation-defined choice in practically
-all places.
-For example, it is conforming for an implementation to define `size_t` as `_BitInt(64)`.
-To remain compatible with such a choice would require the `sizeof` operator to possibly
-return a class type.
-Either compatibility with such C implementations would be broken, or the capabilities of
-class types would need to be *drastically* extended.
+- Promotion and conversions rules.
+- Deduction of `N` from `_BitInt(N)` in templates.
+- Overload resolution with bit-precise integers.
+
+Furthermore, bit-precise integers may be a valid choice for the result of `sizeof`,
+pointer differences, `size_type`s in the library, and many more implementation choices.
+
+### ABI Break ### {#abi-break}
+
+The introduction of new integers, even if they are not standard integers,
+would currently break ABI.
+This is due to the fact that say, `_BitInt(128)` would bump up the
+corresponding `difference_type` of `std::ranges::iota_view`.
+
+### Drastic library impact ### {#drastic-library-impact}
+
+Furthermore, if these new types are considered integral types,
+every part of the library that is said to take integers
+(`<bit>`, `<cmath>`, `<format>`, and many more) would need to be implemented
+for N-bit integers out of a sudden, or reworded to not accept them, case-by-case.
+
+### `_BitInt` is an enhancement, not a replacement ### {#enhancement-not-replacement}
+
+The drastic changes above are a seemingly pointless endavour
+considering that C's `_BitInt` is not a
+complete replacement for the standard integers anyway.
+For example, `123wb8 + 0` (where `123wb8` is of type `_BitInt(8)`) is of type `int`.
+The standard integers generally win in conversions, and `_BitInt` is an
+enhancement, not a replacement.
+This is the role between a C++ library type as well.
+
+I have heard many people express that they would like `_BitInt`
+to "fix and replace" the "old integers", but this would require deviating
+in our design from C's.
+It seems unrealistic for C++ to have a different fundamental `_BitInt` from C.
+
+## Problems and solutions ## {#problems-and-solutions}
+
+### Type trait changes ### {#type-trait-changes}
+
+**Problem:** Changing the meaning of some type traits would impact existing code.
+If we were to change the result of `std::is_integral_v` and other traits
+so that `std::bit_int` is accepted, this would suddenly underconstrain
+any existing code.
+
+This is quite a big issue because a user expects that integers can be fed into
+many library parts that would not support `std::bit_int`.
+Even `std::make_unsigned_t` could be used in a return type for the purpose of SFINAE.
+
+**Solution:**
+For now, we remain conservative and don't broaden any type traits.
+`std::is_integral_v<std::atomic_int>` is `false`,
+so why should this design be any different for `std::bit_int`?
+The user can trivially define traits that handle `std::bit_int` themselves.
+
+
+### C compatibilty macros ### {#c-compatibility-macros}
+
+**Problem:** Neither the spelling `_BitInt` nor `std::bit_int` can be used
+in both languages, making it difficult to interop between C and C++.
+
+**Solution:** Similar to `_Atomic(type)`, which is
+- a type specifier in C, or
+- a macro which expands to `std::atomic<type>` in C++,
+
+we introduce the `_BitInt` and `_BitUint` compatibility macros:
+
+```cpp
+#ifdef __cplusplus
+// note: don't define _BitInt if it's a compiler-intrinsic already
+#define _BitInt(...) ::std::bit_int<(__VA_ARGS__)>
+#define _BitUint(...) ::std::bit_int<(__VA_ARGS__)>
+#else
+// _BitInt is a keyword in C, so don't attempt to define it
+#define _BitUint(...) typeof(unsigned _BitInt(__VA_ARGS__))
+#endif
+```
+
+Unfortunately, `unsigned _BitInt(32)` would not be valid in C++ even with such macros
+because `unsigned` cannot be combined with class types.
+This is a sacrifice we are willing to make, and it's only relevant to C/C++ interoperable code anyway,
+which is typically limited to header files.
 
 ### Concerns regarding overload resolution ### {#concerns-regarding-overload-resolution}
 
-Some of the desired semantics may be difficult to achieve with class types.
-For example, in overload resolution:
+**Problem:** With a class type, certain forms of overload resolution cannot be easily facilitated:
 ```cpp
-void foo(std::bit_int<32> x);
-void foo(std::bit_int<16> y);
-int main() {
-    foo(std::bit_int<8>(0)); // should call foo(std::bit_int<16>)
-}
+void foo(std::bit_int<32>);
+void foo(std::bit_int<16>);
+foo(std::bit_int<8>(0)); // should call foo(std::bit_int<16>), but is ambiguous
 ```
-To implement such behavior for a class type is not trivial.
-It would be possible via a recursive `concept` which makes the 16-bit constructor more constrained,
-or via a "magic" constraint.
-However, these solutions may slow down compilation too much, or require counter-intuitive
-special compiler support that class types normally don't have,
-which defeats the purpose of using them.
 
-### Concerns in the long run ### {#concerns-in-the-long-run}
+**Solution:** None.
+However, this is not a novel problem.
+This existing code is also ill-formed:
+```cpp
+void foo(long);
+void foo(long long);
+foo(0); // error: ambiguous
+```
 
-Last but not least, it is not unthinkable for bit-precise integers to replace standard integers
-in the long run.
-Not today, not in a year, not in a decade, but possibly within half a century.
-It may be short-sighted not to implement them as a core language feature.
-Defining bit-precise integers to be class types may have massive unforseen consequences,
-and may make them unattractive due to impact on compilation speed.
-Unlike `std::atomic`, they may be used directly in *millions* of lines of code within a code base.
+## Obtaining the width ## {#width}
 
+**Problem:** If we are not deducing the width of a `std::bit_int`,
+we may still want to access it.
+
+**Solution:** We propose a long overdue addition:
+`std::numeric_limits<T>::width`, which would yield the width of an integer.
+Note that `digits` instead returns the maximum representible digits,
+which would be `31` for a 32-bit integer signed integer; this is not the *width*.
+
+## Conversion to bit_int ## {#to-bit-int}
+
+**Problem:**
+It is often desirable to implement numeric functions using `std::bit_int`,
+but provide an interface that (also or exclusively) accepts integral types.
+For example, say we wanted `std::popcount` to accept both integral types and `std::bit_int`.
+Then, an implementation may look as follows:
+```cpp
+template </* unsigned integral or bit_uint */ T>
+
+```
+
+```cpp
+template <typename T>
+std::bit_int<std::numeric_limits<T>::width> to_bit_int(const T& x);
+```
 
 # Impact on the standard # {#impact-on-the-standard}
 
-The strategy is to re-define the integer types as *standard integer types* and expand the
-category by additional *bit-precise integers*, just like in C.
-This obviously requires reviewing every use "integer", "integral", and "arithmetic"
-in the standard, and update existing wording as needed.
+The core language is unaffected.
 
-## Lexical conventions [lex] ## {#impact-lex}
+The library impact consist of:
+- Adding the class template `std::bit_int`
+- Adding the compatibility macros `_BitInt` and `_BitUint`
+- Adding partial specializations of various type traits.
 
-It is worth considering whether to support integer suffices for bit-precise integers.
-Similar to Rust, `1u32` could be equivalent to `static_cast<unsigned _BitInt(32)>(1)`.
-It would then need to be discussed how bit-precise integers interact with the preprocessor.
+# Implementation experience # {#implementation-experience}
 
-## Basics [basic] ## {#impact-basic}
+Clang makes the following implementation possible in C++, on any target:
+```cpp
+template <size_t N>
+class bit_int {
+private:
+    _BitInt(N) _M_value;
+public:
+    // ...
+}
+```
 
-### Fundamental types [basic.fundamental] ## {#impact-basic-fundamental}
+Note: `bit_uint` would be implemented analogously,
+just with `unsigned _BitInt` as the internal value.
 
-Here is where the bulk of the changes takes places:
-- the signed integer types would now comprise standard signed integer types,
-    extended signed integer types, and bit-precise signed integer types
-- the unsigned integer types would now comprise unsigned signed integer types,
-    extended unsigned integer types, and bit-precise unsigned integer types
-- the bit-precise signed integer types and bit-precise unsigned integer types
-    would be collectively called *bit-precise integer types*
+This is the ideal implementation because it
+- easily achieves ABI-compatibility with C,
+- bypasses the optimization limitations that a pure library implementation would have, and
+- instantiates very little C++ code.
 
-Furthermore,
-- Can `wchar_t` have a bit-precise integer type as its underlying type?
-- Can `char8_t` have a bit-precise integer type as its underlying type?
-- Can `bool` have a bit-precise integer type as its underlying type?
+A pure library implementation is also possible; see Boost.Multiprecision.
 
-### Conversion ranks [conv.rank] ## {#impact-conv-rank}
+The remaining proposed compatibilty macros and minor changes are obviously implementable,
+and sample implementations are provided in this proposal.
 
-The conversion rank of bit-precise integers would have to be specified,
-both between two bit-precise integers, and between bit-precise integers and standard or extended
-integer types.
 
+# Proposed wording # {#proposed-wording}
+
+The wording is relative to [[!N5001]].
 
 <pre class=biblio>
 {
