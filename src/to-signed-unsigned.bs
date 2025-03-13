@@ -186,19 +186,27 @@ template&lt;class T&gt;
   constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
 </pre>
 <p class=indent>
-1 *Returns*: `static_cast<make_signed_t<T>>(x)`.
+*Constraints*: `is_integral_v<T>` is `true`.
+</p>
+<p class=indent>
+*Returns*: `static_cast<make_signed_t<T>>(x)`.
 </p>
 <pre>
 template&lt;class T&gt;
   constexpr make_unsigned_t&lt;T&gt; to_unsigned(T value) noexcept;
 </pre>
 <p class=indent>
-2 *Returns*: `static_cast<make_unsigned_t<T>>(x)`.
+*Constraints*: `is_integral_v<T>` is `true`.
+</p>
+<p class=indent>
+*Returns*: `static_cast<make_unsigned_t<T>>(x)`.
 </p>
 </blockquote>
 
-Note: Neither function template has a *Constraints* specification because the return type
-already acts as a constraint.
+Note: Because `make_unsigned_t` *Mandates* that `T` is an integral type,
+`to_unsigned` is arguably not SFINAE-friendly because say,
+`make_unsigned_t<int*>` is ill-formed without being instantiated.
+I don't attempt to fix this; I assume that the above specification "just works".
 
 Note: The name of the subclause is based on
 <a href="https://eel.is/c++draft/meta.trans.sign">[meta.trans.sign]</a>, sign modifications.
