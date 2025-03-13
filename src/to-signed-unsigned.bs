@@ -186,7 +186,7 @@ template&lt;class T&gt;
   constexpr make_signed_t&lt;T&gt; to_signed(T value) noexcept;
 </pre>
 <p class=indent>
-*Constraints*: `is_integral_v<T>` is `true`.
+*Constraints*: `T` is an integral or enumeration type other than *cv* `bool`.
 </p>
 <p class=indent>
 *Returns*: `static_cast<make_signed_t<T>>(x)`.
@@ -196,7 +196,7 @@ template&lt;class T&gt;
   constexpr make_unsigned_t&lt;T&gt; to_unsigned(T value) noexcept;
 </pre>
 <p class=indent>
-*Constraints*: `is_integral_v<T>` is `true`.
+*Constraints*: `T` is an integral or enumeration type other than *cv* `bool`.
 </p>
 <p class=indent>
 *Returns*: `static_cast<make_unsigned_t<T>>(x)`.
