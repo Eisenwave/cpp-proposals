@@ -3,7 +3,7 @@ Title: Rename <code>std::observable</code> to <code>std::observable_checkpoint</
 Shortname: P3641
 Revision: 0
 Status: P
-Date: 2025-02-28
+Date: 2025-03-13
 Group: WG21
 Audience: LEWG
 Editor: Jan Schultke, janschultke@gmail.com
@@ -17,7 +17,7 @@ Abstract: Rename `std::observable` to `std::observable_checkpoint`,
 
 # Introduction # {#introduction}
 
-[[P1494R4]] "Partial program correctness"
+[[P1494R5]] "Partial program correctness"
 introduced so-called *observable checkpoints* into the language,
 as well as the function `std::observable` to establish such a checkpoint in the program.
 
@@ -37,7 +37,7 @@ but LEWG did not poll names.
 The minutes of LEWG's review of P1494R3 do not record a discussion of names.
 
 Note: This does not mean to imply that LEWG neglected its duties.
-[[P1494R4]] itself does not discuss alternative names or request naming feedback.
+[[P1494R5]] itself does not discuss alternative names or request naming feedback.
 
 EWG reviews did not poll names,
 and their minutes do not record a discussion of names.
@@ -45,7 +45,7 @@ No further discussion of names occurred until the plenary vote at Hagenberg 2025
 
 Considering the situation, a name change should be polled before Sofia 2025.
 This needs to be done via paper or national body comment
-because [[P1494R4]] has already been approved in plenary.
+because [[P1494R5]] has already been approved in plenary.
 
 # Design # {#design}
 
@@ -70,7 +70,7 @@ Furthermore it has been suggested in [[Discussion]]
 to add a feature-test macro for the library function.
 After all,
 - there is a `__cpp_lib_unreachable` macro, and `std::unreachable` and `std::observable` are similar,
-- [[P1494R4]] adds no feature-test macro for observable checkpoints (and it shouldn't), and
+- [[P1494R5]] adds no feature-test macro for observable checkpoints (and it shouldn't), and
 - it is useful to know whether the `std::observable_checkpoint` function exists.
 
 Note: I was unable to find any discussion of a feature-test macro in meeting minutes,
@@ -92,16 +92,25 @@ del {
 }
 </style>
 
-The following changes are relative to [[!N5001]] with the changes in [[!P1494R4]] applied.
+The following changes are relative to [[!N5001]] with the changes in [[!P1494R5]] applied.
 
 In subclause
-<a href="https://eel.is/c++draft/cstdlib.syn">[cstdlib.syn]</a>,
+<a href="https://eel.is/c++draft/intro.abstract">[intro.abstract]</a>,
+modify the note attached to paragraph 5 as follows:
+
+<blockquote>
+[ *Note*: A call to <code>std::observable<ins>_checkpoint</ins></code> ([utility.undefined]) is an observable checkpoint. &mdash; *end note* ]
+</blockquote>
+
+In subclause
+<a href="https://eel.is/c++draft/utility.syn">[utility.syn]</a>,
 modify the synopsis as follows:
 
 <blockquote>
 <pre>
-[[noreturn]] void quick_exit(int status) noexcept;   // freestanding
-void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
+// [utility.undefined], <i>undefined behavior</i>
+[[noreturn]] void unreachable() noexcept;
+void observable<ins>_checkpoint</ins>() noexcept;
 </pre>
 </blockquote>
 
@@ -111,19 +120,18 @@ add a feature-test macro as follows:
 
 <blockquote>
 <pre>
-<ins>#define __cpp_lib_observable_checkpoint 2025XXL // freestanding, also in &lt;cstdlib&gt;</ins>
+<ins>#define __cpp_lib_observable_checkpoint 2025XXL // freestanding, also in &lt;utility&gt;</ins>
 </pre>
 </blockquote>
 
 In subclause
-<a href="https://eel.is/c++draft/support.start.term">[support.start.term]</a>,
+<a href="https://eel.is/c++draft/utility.undefined">[utility.undefined]</a>,
 modify the declaration of `std::observable()` as follows:
 <blockquote>
 <pre>
-void observable<ins>_checkpoint</ins>() noexcept;               // freestanding
+void observable<ins>_checkpoint</ins>() noexcept;
 </pre>
 &nbsp;&nbsp;&nbsp;&nbsp;*Effects*: Establishes an observable checkpoint ([intro.abstract]).
-No other effects.
 </blockquote>
 
 # Acknowledgements # {#acknowledgements}
@@ -151,6 +159,11 @@ Thanks to Mark Hoemmen for researching [[#history]].
         "href": "https://wiki.edg.com/bin/view/Wg21telecons2022/P1494",
         "authors": ["LEWG"],
         "date": "1 February 2022"
+    },
+    "P1494R5": {
+        "title": "Partial program correctness",
+        "authors": ["S. David Herring"],
+        "href": "https://wg21.link/P1494R5"
     }
 }
 </pre>

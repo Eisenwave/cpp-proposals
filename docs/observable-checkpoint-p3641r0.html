@@ -1561,10 +1561,11 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
+  <meta content="Bikeshed version 4b8aed3f7, updated Thu Mar 6 12:35:01 2025 -0800" name="generator">
   <link href="https://eisenwave.github.io/cpp-proposals/observable-checkpoint.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="21f338a8ac5b1c7273f7d2ef3b9fbd24bf07690a" name="revision">
+  <meta content="8519706a5d580ea9a616e7770ad0c09d547b7b54" name="revision">
+  <meta content="dark light" name="color-scheme">
 <style>
 ins {
     background: rgba(136, 255, 93, 0.35);
@@ -2100,7 +2101,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3641R0<br>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>, and add a feature-test macro</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-02-28">2025-02-28</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-03-13">2025-03-13</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2144,7 +2145,7 @@ and add a feature-test macro.</p>
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> "Partial program correctness"
+   <p><a data-link-type="biblio" href="#biblio-p1494r5" title="Partial program correctness">[P1494R5]</a> "Partial program correctness"
 introduced so-called <em>observable checkpoints</em> into the language,
 as well as the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> to establish such a checkpoint in the program.</p>
    <p>Three issues with the name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> have been brought up (<a data-link-type="biblio" href="#biblio-reflector" title="std::observable should have a better - ie worse - name">[Reflector]</a>, <a data-link-type="biblio" href="#biblio-reddit" title="WTF std::observable is?">[Reddit]</a>):</p>
@@ -2162,13 +2163,13 @@ as well as the function <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n
 Alternative names (including <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code>) came up during that discussion,
 but LEWG did not poll names.
 The minutes of LEWG’s review of P1494R3 do not record a discussion of names.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> This does not mean to imply that LEWG neglected its duties. <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> itself does not discuss alternative names or request naming feedback.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This does not mean to imply that LEWG neglected its duties. <a data-link-type="biblio" href="#biblio-p1494r5" title="Partial program correctness">[P1494R5]</a> itself does not discuss alternative names or request naming feedback.</p>
    <p>EWG reviews did not poll names,
 and their minutes do not record a discussion of names.
 No further discussion of names occurred until the plenary vote at Hagenberg 2025.</p>
    <p>Considering the situation, a name change should be polled before Sofia 2025.
 This needs to be done via paper or national body comment
-because <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> has already been approved in plenary.</p>
+because <a data-link-type="biblio" href="#biblio-p1494r5" title="Partial program correctness">[P1494R5]</a> has already been approved in plenary.</p>
    <h2 class="heading settled" data-level="2" id="design"><span class="secno">2. </span><span class="content">Design</span><a class="self-link" href="#design"></a></h2>
    <p>In discussions, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code> has emerged as a favorite suggestion.
 It is a very good name because it is self-explanatory:</p>
@@ -2188,7 +2189,7 @@ After all,</p>
     <li data-md>
      <p>there is a <code class="highlight"><c- n>__cpp_lib_unreachable</c-></code> macro, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>unreachable</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-></code> are similar,</p>
     <li data-md>
-     <p><a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> adds no feature-test macro for observable checkpoints (and it shouldn’t), and</p>
+     <p><a data-link-type="biblio" href="#biblio-p1494r5" title="Partial program correctness">[P1494R5]</a> adds no feature-test macro for observable checkpoints (and it shouldn’t), and</p>
     <li data-md>
      <p>it is useful to know whether the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable_checkpoint</c-></code> function exists.</p>
    </ul>
@@ -2196,27 +2197,30 @@ After all,</p>
       so lack thereof may be an oversight,
       rather than conscious design.</p>
    <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Proposed wording</span><a class="self-link" href="#wording"></a></h2>
-   <p>The following changes are relative to <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a> with the changes in <a data-link-type="biblio" href="#biblio-p1494r4" title="Partial program correctness">[P1494R4]</a> applied.</p>
-   <p>In subclause <a href="https://eel.is/c++draft/cstdlib.syn">[cstdlib.syn]</a>,
+   <p>The following changes are relative to <a data-link-type="biblio" href="#biblio-n5001" title="Working Draft, Programming Languages — C++">[N5001]</a> with the changes in <a data-link-type="biblio" href="#biblio-p1494r5" title="Partial program correctness">[P1494R5]</a> applied.</p>
+   <p>In subclause <a href="https://eel.is/c++draft/intro.abstract">[intro.abstract]</a>,
+modify the note attached to paragraph 5 as follows:</p>
+   <blockquote> [ <em>Note</em>: A call to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-><ins><c- n>_checkpoint</c-></ins></code> ([utility.undefined]) is an observable checkpoint. — <em>end note</em> ] </blockquote>
+   <p>In subclause <a href="https://eel.is/c++draft/utility.syn">[utility.syn]</a>,
 modify the synopsis as follows:</p>
    <blockquote>
-<pre class="highlight"><c- p>[[</c-><c- n>noreturn</c-><c- p>]]</c-> <c- b>void</c-> <c- n>quick_exit</c-><c- p>(</c-><c- b>int</c-> <c- n>status</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->   <c- c1>// freestanding</c->
-<c- b>void</c-> <c- nf>observable</c-><ins><c- nf>_checkpoint</c-></ins><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->               <c- c1>// freestanding</c->
+<pre class="highlight"><c- c1>// [utility.undefined], </c-><i><c- c1>undefined behavior</c-></i>
+<c- p>[[</c-><c- n>noreturn</c-><c- p>]]</c-> <c- b>void</c-> <c- n>unreachable</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
+<c- b>void</c-> <c- nf>observable</c-><ins><c- nf>_checkpoint</c-></ins><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
    </blockquote>
    <p>In subclause <a href="https://eel.is/c++draft/version.syn">[version.syn]</a>,
 add a feature-test macro as follows:</p>
    <blockquote>
-<pre class="highlight"><ins><c- cp>#define __cpp_lib_observable_checkpoint 2025XXL </c-><c- c1>// freestanding, also in &lt;cstdlib></c-></ins>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_observable_checkpoint 2025XXL </c-><c- c1>// freestanding, also in &lt;utility></c-></ins>
 </pre>
    </blockquote>
-   <p>In subclause <a href="https://eel.is/c++draft/support.start.term">[support.start.term]</a>,
+   <p>In subclause <a href="https://eel.is/c++draft/utility.undefined">[utility.undefined]</a>,
 modify the declaration of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>observable</c-><c- p>()</c-></code> as follows:</p>
    <blockquote>
-<pre class="highlight"><c- b>void</c-> <c- nf>observable</c-><ins><c- nf>_checkpoint</c-></ins><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->               <c- c1>// freestanding</c->
+<pre class="highlight"><c- b>void</c-> <c- nf>observable</c-><ins><c- nf>_checkpoint</c-></ins><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
-    <p>    <em>Effects</em>: Establishes an observable checkpoint ([intro.abstract]).
-No other effects.</p>
+    <p>    <em>Effects</em>: Establishes an observable checkpoint ([intro.abstract]).</p>
    </blockquote>
    <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>Thanks to Mark Hoemmen for researching <a href="#history">§ 1.1 How did it end up being called std::observable?</a>.</p>
@@ -2355,8 +2359,8 @@ No other effects.</p>
   <dl>
    <dt id="biblio-n5001">[N5001]
    <dd>Thomas Köppe. <a href="https://wg21.link/n5001"><cite>Working Draft, Programming Languages — C++</cite></a>. 17 December 2024. URL: <a href="https://wg21.link/n5001">https://wg21.link/n5001</a>
-   <dt id="biblio-p1494r4">[P1494R4]
-   <dd>S. Davis Herring. <a href="https://wg21.link/p1494r4"><cite>Partial program correctness</cite></a>. 15 October 2024. URL: <a href="https://wg21.link/p1494r4">https://wg21.link/p1494r4</a>
+   <dt id="biblio-p1494r5">[P1494R5]
+   <dd>S. David Herring. <a href="https://wg21.link/P1494R5"><cite>Partial program correctness</cite></a>. URL: <a href="https://wg21.link/P1494R5">https://wg21.link/P1494R5</a>
   </dl>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
