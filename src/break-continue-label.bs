@@ -38,7 +38,7 @@ with the following polls:
     <td>SF</td><td>F</td><td>N</td><td>A</td><td>SA</td>
 </tr>
 <tr>
-    <td>4</td><td>16</td><td>5</td><td>9</td><td>5</td>
+    <td>7</td><td>13</td><td>5</td><td>5</td><td>8</td>
 </tr>
 </table>
 <p><b>P3568R0</b>: If C has it, we are interested in this feature too.</p>
@@ -72,8 +72,8 @@ The authors of [[N3377]] have expressed that they are no longer pursuing the pap
 therefore, R1 of this paper assumes that the debate on label syntax is entirely settled,
 and C++ follows the [[N3355]] syntax.
 
-Furthermore, the proposed wording as improved slightly,
-and a `__cpp_break_label` feature-test macro is included.
+Furthermore, the proposed wording has been improved slightly,
+and a `__cpp_break_label` feature-test macro is now included.
 
 # Introduction # {#introduction}
 
