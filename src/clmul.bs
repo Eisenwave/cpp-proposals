@@ -3,7 +3,7 @@ Title: Carry-less product: `std::clmul`
 Shortname: P3642
 Revision: 0
 Status: P
-Date: 2025-02-20
+Date: 2025-03-13
 Group: WG21
 Audience: SG6, LEWGI
 Editor: Jan Schultke, janschultke@gmail.com
@@ -49,7 +49,7 @@ Carry-less multiplication is an important operation in a number of use cases:
 - **CRC Computation:** While cyclic redundancy checks can theoretically be performed with a finite
     field of any length, in practice,
     <a href="https://en.wikipedia.org/wiki/GF(2)">GF(2)&lsqb;X&rsqb;</a>,
-    the *polynomial ring* over the *Golois field* with two elements is used.
+    the *polynomial ring* over the *Galois field* with two elements is used.
     Polynomial addition in this ring can be implemented via `xor`, and multiplication via `clmul`,
     which makes cyclic redundancy checks considerably faster.
 
@@ -167,7 +167,7 @@ a b e f
 <div class="example">
 `clmul` can be used to implement bit-interleaving in order to generate a
 [Z-order curves](https://en.wikipedia.org/wiki/Z-order_curve).
-<pre line-highlight=5-6>
+<pre line-highlight=3-4>
 uint32_t xy_to_morton(uint32_t x, uint32_t y)
 {
     uint32_t lo = std::clmul(x, x) &lt;&lt; 0; // abcd -&gt; 0a0b0c0d
@@ -226,27 +226,20 @@ and `xN` denote the amount of operands that are processed in parallel.
 
 <table>
 <tr>
-    <th>Operation</th><th>x86_64</th><th>ARM</th><th>RISC-V</th>
+    <th>Operation</th><th>x86_64</th><th>ARM</th><th>RV64</th>
 </tr>
 
 <tr>
     <td><code highlight="text">clmul u64 -> u128</code></td>
     <td>`pclmulqdq`<sup>PCLMULQDQ</sup></td>
     <td>`pmull`+`pmull2`<sup>Neon</sup></td>
-    <td></td>
+    <td>`clmul`+`clmulh`<sup>Zbc, Zbkc</sup></td>
 </tr>
 
 <tr>
     <td><code highlight="text">clmul u64 -> u64</code></td>
     <td></td>
     <td>`pmull`<sup>Neon</sup></td>
-    <td>`clmul`+`clmulh`<sup>Zbc, Zbkc</sup></td>
-</tr>
-
-<tr>
-    <td><code highlight="text">clmul u32 -> u64</code></td>
-    <td></td>
-    <td></td>
     <td>`clmul`<sup>Zbc, Zbkc</sup></td>
 </tr>
 
@@ -469,12 +462,11 @@ template&lt;class T&gt;
     The result object is initialized so that
     <ul class=indent>
         <li>the bits of `low_bits` are the *w* least significant bits of *c*, and</li>
-        <li>the bits of `high_bits` are subsequent bits of *c*</li>.
+        <li>the bits of `high_bits` are subsequent bits of *c*.</li>
     </ul>
     <div class=indent-2 title="c_n = \bigoplus_{i=0}^n{x_i y_{n-i}}">
         <svg xmlns="http://www.w3.org/2000/svg" width="120.216px" height="50.792px" viewBox="0 -1561.5 6641.8 2806.5" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><defs><path id="MJX-20-TEX-I-1D450" d="M34 159Q34 268 120 355T306 442Q362 442 394 418T427 355Q427 326 408 306T360 285Q341 285 330 295T319 325T330 359T352 380T366 386H367Q367 388 361 392T340 400T306 404Q276 404 249 390Q228 381 206 359Q162 315 142 235T121 119Q121 73 147 50Q169 26 205 26H209Q321 26 394 111Q403 121 406 121Q410 121 419 112T429 98T420 83T391 55T346 25T282 0T202 -11Q127 -11 81 37T34 159Z"></path><path id="MJX-20-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-20-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-20-TEX-LO-2A01" d="M668 944Q697 949 744 949Q803 949 814 948Q916 937 1006 902T1154 826T1262 730T1336 638T1380 563Q1454 415 1454 250Q1454 113 1402 -14T1258 -238T1036 -391T755 -449Q608 -449 477 -392T255 -240T110 -16T56 250Q56 387 105 510T239 723T434 871T668 944ZM706 299V850H704Q519 832 386 725T198 476Q181 433 169 379T156 300Q156 299 431 299H706ZM1116 732Q1054 778 982 807T871 842T810 849L804 850V299H1079Q1354 299 1354 300Q1354 311 1352 329T1336 402T1299 506T1228 620T1116 732ZM706 -350V201H431Q156 201 156 200Q156 189 158 171T174 98T211 -6T282 -120T395 -232Q428 -257 464 -277T527 -308T587 -328T636 -339T678 -346T706 -350ZM1354 200Q1354 201 1079 201H804V-350Q808 -349 838 -345T887 -338T940 -323T1010 -295Q1038 -282 1067 -265T1144 -208T1229 -121T1301 0T1349 158Q1354 188 1354 200Z"></path><path id="MJX-20-TEX-I-1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path><path id="MJX-20-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-20-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-20-TEX-I-1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-20-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D450" xlink:href="#MJX-20-TEX-I-1D450"></use></g><g data-mml-node="mi" transform="translate(466,-150) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-20-TEX-I-1D45B"></use></g></g><g data-mml-node="mo" transform="translate(1218,0)"><use data-c="3D" xlink:href="#MJX-20-TEX-N-3D"></use></g><g data-mml-node="munderover" transform="translate(2273.8,0)"><g data-mml-node="mo"><use data-c="2A01" xlink:href="#MJX-20-TEX-LO-2A01"></use></g><g data-mml-node="TeXAtom" transform="translate(181.7,-1086.9) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D456" xlink:href="#MJX-20-TEX-I-1D456"></use></g><g data-mml-node="mo" transform="translate(345,0)"><use data-c="3D" xlink:href="#MJX-20-TEX-N-3D"></use></g><g data-mml-node="mn" transform="translate(1123,0)"><use data-c="30" xlink:href="#MJX-20-TEX-N-30"></use></g></g><g data-mml-node="mi" transform="translate(543.4,1149) scale(0.707)"><use data-c="1D45B" xlink:href="#MJX-20-TEX-I-1D45B"></use></g></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(3951.5,0)"><g data-mml-node="msub"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-20-TEX-I-1D465"></use></g><g data-mml-node="mi" transform="translate(605,-150) scale(0.707)"><use data-c="1D456" xlink:href="#MJX-20-TEX-I-1D456"></use></g></g><g data-mml-node="msub" transform="translate(899,0)"><g data-mml-node="mi"><use data-c="1D466" xlink:href="#MJX-20-TEX-I-1D466"></use></g><g data-mml-node="TeXAtom" transform="translate(523,-150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-20-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(600,0)"><use data-c="2212" xlink:href="#MJX-20-TEX-N-2212"></use></g><g data-mml-node="mi" transform="translate(1378,0)"><use data-c="1D456" xlink:href="#MJX-20-TEX-I-1D456"></use></g></g></g></g></g></g></svg>
     </div>
-</p>
 </blockquote>
 
 Note: Italicized text such as *c* shall be in math font.
