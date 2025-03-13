@@ -3,7 +3,7 @@ Title: <code>std::to_signed</code> and <code>std::to_unsigned</code>
 Shortname: P3643
 Revision: 0
 Status: P
-Date: 2025-02-20
+Date: 2025-03-13
 Group: WG21
 Audience: LEWG
 Editor: Jan Schultke<janschultke@gmail.com>, janschultke@gmail.com
