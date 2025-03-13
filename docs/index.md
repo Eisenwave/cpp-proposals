@@ -42,6 +42,7 @@ Author: Jan Schultke
 **Slides**: [P3630](../slides/p3568-slides.pdf) (Syntax discussion slides for EWG at Hagenberg 2025)
 
 - [Latest](break-continue-label.html)
+- [P3568R1](break-continue-label-p3568r1.html)
 - [P3568R0](break-continue-label-p3568r0.html)
 
 ### P3639: The `_BitInt` Debate
