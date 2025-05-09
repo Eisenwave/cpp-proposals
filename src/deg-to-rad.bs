@@ -1,0 +1,100 @@
+<pre class='metadata'>
+Title: `std::numbers::deg_to_rad` and `std::numbers_rad_to_deg`
+Shortname: Pxxxx
+Revision: 0
+Status: P
+Date: 2025-04-13
+Group: WG21
+Audience: SG6, LEWGI
+Editor: Jan Schultke, janschultke@gmail.com
+ED: https://eisenwave.github.io/cpp-proposals/deg-to-rad.html
+!Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/deg-to-rad.bs)
+Markup Shorthands: markdown on
+Abstract: Add conversion ratios between degrees and radians to `std::numbers`.
+</pre>
+
+
+# Introduction # {#introduction}
+
+Degrees and radians are the most common representations of angles.
+C++ currently provides no way to convert between these quantities conveniently,
+which is a common task in a wide variety of software.
+
+It should be noted that [[P3045R5]] provides a way to convert in principle,
+but a whole units and quantities framework is simply overkill for the common use case.
+
+<table>
+<tr>
+    <th>P3045R5</th><th>This proposal</th>
+</tr>
+<tr>
+<td>
+```cpp
+float get_degrees_from_user();
+void do_math(float radians);
+```
+</td>
+<td>
+```cpp
+float get_degrees_from_user();
+void do_math(float radians);
+
+void f() {
+    auto deg = std::si::degree(get_degrees_from_user());
+    auto rad = std::si::value_cast<std::si::angular::radian>(deg);
+    
+}
+```
+</td>
+</tr>
+</table>
+
+
+# Proposed wording # {#proposed-wording}
+
+<style>
+.indent {
+    margin-left: 2em;
+}
+
+.indent-2 {
+    margin-left: 12em;
+}
+
+svg {
+    background: none;
+    vertical-align: middle;
+}
+
+ins {
+    background: rgba(136, 255, 93, 0.2);
+    color: inherit;
+    text-decoration: none;
+}
+.ins-block, .ins-block * {
+    text-decoration: none !important;
+}
+.ins-block {
+    background: rgba(136, 255, 93, 0.2) !important;
+}
+
+.ins-block ul, .ins-block li {
+    background: none;
+}
+
+del {
+    background: rgba(255, 93, 93, 0.2);
+    color: inherit;
+    text-decoration: strikethrough;
+}
+</style>
+
+The proposed changes are relative to the working draft of the standard as of [[!N5001]],
+with the changes in [[!P3161R2]] applied.
+
+
+
+<pre class=biblio>
+{
+}
+</pre>
