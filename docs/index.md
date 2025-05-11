@@ -74,6 +74,12 @@ Author: Jan Schultke
 - [Latest](to-signed-unsigned.html)
 - [P3643R0](to-signed-unsigned.html)
 
+### D3688R0: ASCII character utilities
+
+**Status**: Active<br>
+**Audience**: SG16, LEWG
+
+- [Latest](ascii.html)
 
 ## Inactive
 
