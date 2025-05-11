@@ -454,13 +454,12 @@ tag_name.ascii_case_insensitive_equals("div");
 
 Therefore, it may be useful to provide views such as \code[cpp]{std::views::ascii_lower}
 and even algorithms like \code[cpp]{std::ranges::equal_ascii_case_insensitive}.
+These are not currently not included
+because there is no consensus among the authors whether to include them.
 
 \decision{
 If LEWG is interested,
 such views and/or algorithms could be included in a subsequent revision.
-
-These are not currently not included
-because there is no consensus among the authors whether to include them.
 }
 
 \h3[id=why-just-ascii]{Why just ASCII?}
@@ -472,7 +471,7 @@ However, this is not proposed for multiple reasons:
     You cannot pass \code[cpp]{char8_t} into a UTF-8 \code[cpp]{is_upper} function
     and expect meaningful results.
     In general, operations on variable-length encodings require sequences of code units.
-    The interface we propose \em{only} only makes sense for ASCII.
+    The interface we propose \em{only} makes sense for ASCII.
 }
 \item{
     Unicode utilities are tremendously more complex than ASCII utilities.

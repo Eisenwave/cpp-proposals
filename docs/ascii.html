@@ -1885,13 +1885,12 @@ To identify a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- d
 
 <p>Therefore, it may be useful to provide views such as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-></code>
 and even algorithms like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>equal_ascii_case_insensitive</h-></code>.
+These are not currently not included
+because there is no consensus among the authors whether to include them.
 </p>
 <decision-block><p><intro-></intro-> 
 If LEWG is interested,
 such views and/or algorithms could be included in a subsequent revision.
-</p>
-<p>These are not currently not included
-because there is no consensus among the authors whether to include them.
 </p></decision-block>
 
 <h3 id=why-just-ascii><a class=para href=#why-just-ascii></a>2.8. Why just ASCII?</h3>
@@ -1903,7 +1902,7 @@ However, this is not proposed for multiple reasons:
     You cannot pass <code><h- data-h=kw_type>char8_t</h-></code> into a UTF-8 <code><h- data-h=id>is_upper</h-></code> function
     and expect meaningful results.
     In general, operations on variable-length encodings require sequences of code units.
-    The interface we propose <em>only</em> only makes sense for ASCII.
+    The interface we propose <em>only</em> makes sense for ASCII.
 </li>
 <li>
     Unicode utilities are tremendously more complex than ASCII utilities.
