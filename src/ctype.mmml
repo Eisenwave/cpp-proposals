@@ -1,0 +1,747 @@
+\wg21-head[
+    title = ASCII character utilities
+]{
+\dl{
+    \dt{Document number:} \dd{\ref[https://wg21.link/D3688R0]{D3688R0}}
+    \dt{Date:}            \dd{\tt{2025-05-09}}
+    \dt{Audience:}        \dd{LEWG, SG16}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ctype.mmml]}
+}
+\hr
+}
+
+\abstract{
+The utilities in \tt{<cctype>} or \tt{<locale>}
+are locale-specific,
+not \code[cpp]{constexpr},
+and provide no support for Unicode character types.
+We propose lightweight, locale-independent alternatives.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+Testing whether a character falls into a specific subset of ASCII characters
+or performing some simple transformations are common tasks in text processing.
+For example, applications may need to check if identifiers
+are comprised of alphanumeric ASCII characters or underscores;
+Unicode properties are not relevant to this task,
+and usually, neither are locales.
+
+Unfortunately, these common and simple tasks are only supported
+through functions in the \tt{<cctype>} and \tt{<locale>} headers, such as:
+\codeblock[cpp]{
+// <cctype>
+int isalnum(int ch);
+int isalpha(int ch);
+// ...
+int toupper(int ch);
+
+// <locale>
+template<class charT> bool isalnum(charT c, const locale& loc); 
+}
+
+Especially the \tt{<cctype>} functions are ridden with problems:
+\ol{
+\item{
+    There is no support for Unicode character types
+    (\code[cpp]{char8_t}, \code[cpp]{char16_t}, and \code[cpp]{char32_t}).
+}
+\item{
+    These functions are not \code[cpp]{constexpr},
+    but performing basic characters tests would be useful at compile time.
+}
+\item{
+    There are distinct function names for \code[cpp]{char} and \code[cpp]{wchar_t}
+    such as \code[cpp]{std::isalnum} and \code[cpp]{std::iswalnum},
+    making generic programming more difficult.
+}
+\item{
+    If \code[cpp]{char} is signed,
+    these functions can easily result in undefined behavior
+    because the input must be representable as \code[cpp]{unsigned char} or be \code[cpp]{EOF}.
+    If \code[cpp]{char} represents a UTF-8 code unit,
+    passing any non-ASCII code unit into these functions has undefined behavior.
+}
+\item{
+    These functions violate the zero-overhead principle
+    by also handling an \code[cpp]{EOF} input,
+    and in many use cases, \code[cpp]{EOF} will never be passed into these functions anyway.
+    The caller can easily deal with \code[cpp]{EOF} themselves.
+}
+\item{
+    The return type of charater tests is \code[cpp]{int},
+    where a nonzero return value indicates that a test succeeded.
+    This is very unnatural in C++, where \code[cpp]{bool} is more idiomatic.
+}
+\item{
+    Some functions use the currently installed \code[cpp]{"C"} locale,
+    which makes their use questionable for high-performance tasks
+    because each invocation is typically an opaque call that checks the current locale.
+}
+}
+
+\strong{We propose lightweight replacement functions which address all these problems.}
+
+\note{
+Many of these problems are resolved by the
+\code[cpp]{std::locale} overloads in \tt{<locale>},
+but their locale dependence makes them unfit for what this proposal aims to achieve.
+
+Testing whether a \code[cpp]{char8_t} (assumed to be a UTF-8 code unit)
+is an ASCII digit is obviously a locale-independent task.
+}
+
+\h2{Design}
+
+All proposed functions are \code[cpp]{constexpr},
+locale-independent,
+overloaded (i.e. no separate name for separate input types),
+and accept any character type
+(\code[cpp]{char}, \code[cpp]{wchar_t}, \code[cpp]{char8_t}, \code[cpp]{char16_t}, and \code[cpp]{char32_t}).
+Furthermore, all function names contain \tt{ascii}
+to raise awareness for the fact that these functions do not handle Unicode characters.
+A user would expect \code[cpp]{is_upper(U'Ä')} to be \code[cpp]{true},
+but \code[cpp]{is_ascii_upper(U'Ä')} to be \code[cpp]{false}.
+
+\example{
+The counterpart to \code[cpp]{std::isalpha} is declared follows:
+\codeblock[cpp]{
+constexpr bool is_ascii_alpha(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+}
+
+\code[cpp]{\i{\html-h-[data-h=id]{character-type}}} means that there exists an overload set where
+this placeholder is replaced with each of the character types.
+
+\style{
+#fun-table {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 95%;
+    table-layout: auto;
+}
+#fun-table td:not(:last-child),
+#fun-table th {
+    white-space: nowrap;
+    vertical-align: top;
+}
+#fun-table td:last-child,
+#fun-table th:last-child {
+    width: 100%;
+    text-align: center;
+}
+}
+
+\h3{List of proposed functions}
+
+Find below a list of proposed functions.
+Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
+
+\table[id=fun-table]{
+\tr{
+    \th{\tt{<cctype>} counterpart}
+    \th{Proposed name}
+    \th{Returns (given \code[cpp]{char c})}
+}
+\tr{
+    \td{\code[cpp]{isdigit}}
+    \td{\code[cpp]{is_ascii_digit}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[0-9]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{N/A}
+    \td{\code[cpp]{is_ascii_bit}}
+    \td{\code[cpp]{c == '0' || c == '1'}}
+}
+\tr{
+    \td{N/A}
+    \td{\code[cpp]{is_ascii_octal_digit}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[0-7]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{\code[cpp]{isxdigit}}
+    \td{\code[cpp]{is_ascii_hex_digit}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[0-9A-Fa-f]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{\code[cpp]{islower}}
+    \td{\code[cpp]{is_ascii_lower}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[a-z]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{\code[cpp]{isupper}}
+    \td{\code[cpp]{is_ascii_upper}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[A-Z]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{\code[cpp]{isalpha}}
+    \td{\code[cpp]{is_ascii_alpha}}
+    \td{\code[cpp]{is_ascii_lower(c) || is_ascii_upper(c)}}
+}
+\tr{
+    \td{\code[cpp]{isalnum}}
+    \td{\code[cpp]{is_ascii_alphanumeric}}
+    \td{\code[cpp]{is_ascii_alpha(c) || is_asci_digit(c)}}
+}
+\tr{
+    \td{\code[cpp]{ispunct}}
+    \td{\code[cpp]{is_ascii_punctuation}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[!"#$%&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~]}}, otherwise \code[cpp]{false}}
+}\comment{Repair TeX syntax highlighting $\{}
+\tr{
+    \td{\code[cpp]{isgraph}}
+    \td{\code[cpp]{is_ascii_graphical}}
+    \td{\code[cpp]{is_ascii_alphanumeric(c) || is_ascii_punctuation(c)}}
+}
+\tr{
+    \td{\code[cpp]{isprint}}
+    \td{\code[cpp]{is_ascii_printable}}
+    \td{\code[cpp]{is_ascii_graphical(c) || c == ' '}}
+}
+\tr{
+    \td{\code[cpp]{isblank}}
+    \td{\code[cpp]{is_ascii_horizontal_whitespace}}
+    \td{\code[cpp]{c == ' ' || c == '\\t'}}
+}
+\tr{
+    \td{\code[cpp]{isspace}}
+    \td{\code[cpp]{is_ascii_whitespace}}
+    \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[ \\f\\n\\r\\t\\v]}}, otherwise \code[cpp]{false}}
+}
+\tr{
+    \td{\code[cpp]{iscntrl}}
+    \td{\code[cpp]{is_ascii_control}}
+    \td{\code[cpp]{(c >= 0 && c <= 0x1F) || c == '\\N{DELETE}'}}
+}
+\tr{
+    \td{\code[cpp]{tolower}}
+    \td{\code[cpp]{ascii_to_lower}}
+    \td{the respective lower-case character if \code[cpp]{is_ascii_upper(c)} is \code[cpp]{true}, otherwise \code[cpp]{c}}
+}
+\tr{
+    \td{\code[cpp]{toupper}}
+    \td{\code[cpp]{ascii_to_upper}}
+    \td{the respective upper-case character if \code[cpp]{is_ascii_lower(c)} is \code[cpp]{true}, otherwise \code[cpp]{c}}
+}
+\tr{
+    \td{N/A}
+    \td{\code[cpp]{ascii_case_insensitive_compare}}
+    \td{\i{see below}}
+}
+\tr{
+    \td{N/A}
+    \td{\code[cpp]{ascii_case_insensitive_equals}}
+    \td{\i{see below}}
+}
+}
+
+\decision{
+The proposed names are mostly unabbreviated
+to fit the rest of the standard library style.
+Shorter names such as \code[cpp]{is_ascii_alphanum} or \code[cpp]{is_ascii_alnum}
+could also be used.
+}
+
+\decision{
+\code[cpp]{isgraph} should perhaps have no new version
+it is of questionable use,
+and both the old and new name aren't obvious.
+In the default \code[cpp]{"C"} locale,
+\code[cpp]{isgraph} is simply \code[cpp]{isprint} without \code[cpp]{' '}.
+}
+
+\h3[id=base-parameter]{\code[cpp]{base} parameter in \code[cpp]{is_ascii_digit}}
+
+Similar to \code[cpp]{std::to_chars},
+\code[cpp]{std::is_ascii_digit} can also take a \code[cpp]{base} parameter:
+
+\codeblock[cpp]{
+constexpr bool is_ascii_digit(\i{\html-h-[data-h=id]{character-type}} c, int base = 10);
+}
+
+If \code[cpp]{base} \c{le} \code[cpp]{10},
+the range of valid ASCII digit character is simply limited.
+For greater \code[cpp]{base}, a subset of alphabetic characters is also accepted,
+starting with \code[cpp]{'a'} or \code[cpp]{'A'}.
+Such a function is useful when parsing numbers with a base of choice,
+which is what \code[cpp]{std::to_chars} does, for example.
+
+\h3{Case-insensitive comparison functions}
+
+As shown in the table above,
+we also propose the case-insensitive comparison functions.
+
+\codeblock[cpp]{
+constexpr strong_ordering ascii_case_insensitive_compare(
+    \i{\html-h-[data-h=id]{character-type}} a,
+    \i{\html-h-[data-h=id]{character-type}} b
+) {
+    return ascii_to_upper(a) <=> ascii_to_upper(b);
+}
+
+constexpr strong_ordering ascii_case_insensitive_equals(
+    \i{\html-h-[data-h=id]{character-type}} a,
+    \i{\html-h-[data-h=id]{character-type}} b
+) {
+    return ascii_to_upper(a) == ascii_to_upper(b);
+}
+}
+
+\decision{
+It may also be useful to define function objects in the style of \code[cpp]{std::less}
+to enable interoperability with algorithms.
+In general, passing these characters tests into algorithms is desirable,
+so perhaps all proposed functions should be implemented as function objects
+so that the user could write:
+\codeblock[cpp]{
+std::string_view str = "abc123";
+// This does not work if is_ascii_digit is an overloaded function or function template.
+auto it = std::ranges::find(str, is_ascii_digit);
+}
+
+However, defining function objects for this purpose may be obsoleted by
+\ref[P3312R1] Overload Set Types.
+}
+
+\h3{Addressing character encoding}
+
+\h4{Simple cases}
+
+The behavior of all the functions is effectively defined in terms of code points,
+it is locale-independent,
+and it assumes literal encoding for the input character.
+
+For \code[cpp]{char8_t}, \code[cpp]{char16_t}, and \code[cpp]{char32_t},
+this is very simple because that encoding is UTF-8, UTF-16, and UTF-32 respectively.
+ASCII characters occupy a single code unit in Unicode encodings.
+
+For characters in the basic character set,
+there already exists a 1:1 mapping between code points
+and code units with literal encoding.
+We can simply say that \code[cpp]{is_ascii_digit('0')} is \code[cpp]{true}
+no matter how \code[cpp]{'0'} is encoded,
+\em{even} if the literal encoding is ASCII-incompatible.
+
+\h4[id=is_ascii_control]{The edge case of \code[cpp]{is_ascii_control}}
+
+\code[cpp]{is_ascii_control} is a weird edge case because it performs a test on code units
+outside the basic character set.
+It is clear what it should do for Unicode character types,
+but what if the input is \code[cpp]{char} and the encoding is
+\ref[https://en.wikipedia.org/wiki/EBCDIC]{EBCDEC}?
+This case could be handled in at least two ways:
+
+\ul{
+    \item{Always return \code[cpp]{false} if the literal encoding is not "ASCII-compatible" (hard to define).}
+    \item{Make this case implementation-defined.}
+}
+
+The proposal opts for the second choice
+because it is not worth spending much committee time on this.
+It is hard to define what an "ASCII-compatible" encoding actually is,
+although the answer is obvious for most encodings.
+Furthermore, even if the encoding is EBCDEC,
+the platform will likely require its own set of utility functions beyond those proposed here.
+
+\note{
+It is also possible to define control character as
+\code[cpp]{!is_ascii_printable(c) && !is_ascii_whitespace(c)},
+but if \code[cpp]{c} is say, a UTF-8 code unit,
+this would result in treating surrogate code units as ASCII control characters,
+which is likely not what the user expects.
+}
+
+\h3{What if the input is a non-ASCII code unit?}
+
+It is possible (and expected) that the user calls say, \code[cpp]{is_ascii_digit(U'ö')}.
+For the sake of convenience, all proposed functions should handle such inputs by
+\ul{
+    \item{returning \code[cpp]{false} in the case of all testing functions, and}
+    \item{applying an identity transformation in transformation/testing functions.}
+}
+
+\example{
+With these semantics, the user can safely write:
+\codeblock[cpp]{
+std::u8string_view str = u8"öab 123";
+// it is an iterator to '1'
+auto it = std::ranges::find(str, [](char8_t c) { return std::is_ascii_digit(c); });
+}
+}
+Making ASCII inputs a precondition
+would make these functions just as unsafe and commonly misused as the \tt{<cctype>} functions.
+Throwing on non-ASCII inputs would make them much less convenient to use in algorithms.
+
+The proposed behavior also works very well with any ASCII-compatible encoding, such as UTF-8.
+Surrogate code units in UTF-8 are all greater than \code[cpp]{0x7F},
+so none of the tests have false positives,
+and none of the transformations would affect non-ASCII code units.
+
+\h2{Implementation experience}
+
+An early version of most proposed functions can be found at
+\ref[CompilerExplorer].
+A naive implementation of all utilities is quite trivial, often a one-liner.
+
+A more advanced implementation of some functions can be found in \ref[µlight].
+Character tests can be optimized using 128-bit or 256-bit bitsets.
+
+\h2{Wording}
+
+The wording changes are relative to \ref[N5008].
+
+In subclause \ref[https://eel.is/c++draft/version.syn],
+update the synopsis as follows:
+
+\diff{\codeblock[cpp,borders=no]{
+\serif{\html{[...]}}
+#define __cpp_lib_as_const                          201510L // freestanding, also in <utility>
+\ins{#define __cpp_lib_ascii                             20XXXXL // freestanding, also in <ascii>}
+#define __cpp_lib_associative_heterogeneous_erasure 202110L // also in \serif{[...]}
+\serif{\html{[...]}}
+}}
+
+In Clause \ref[https://eel.is/c++draft/text],
+append a new subclause:
+
+\style{
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+.borderless {
+    font-size: 95%;
+}
+del h-,
+ins h- {
+    color: inherit !important;
+}
+}
+
+\insblock{
+\h2[listed=no]{ASCII utilities \html-span[class=stable-ref]{[ascii]}}
+
+Subclause [ascii] describes components for dealing with characters that are encoded using ASCII
+or encodings that are ASCII-compatible, such as UTF-8.
+
+Let \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)} be defined as follows:
+\ul{
+    \item{
+        If \code[cpp]{c} is of type
+        \code[cpp]{char8_t}, \code[cpp]{char16_t}, or \code[cpp]{char32_t},
+        or if the literal encoding (\ref[https://eel.is/c++draft/lex.charset])
+        for character literals of the type of \code[cpp]{c}
+        is a Unicode character encoding,
+        \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)} is \code[cpp]{static_cast<char32_t>(c)}.
+    }
+    \item{
+        Otherwise, if there exists a character \i{b} in the basic character set
+        which equals \code[cpp]{c}
+        when encoded using a character literal (\ref[https://eel.is/c++draft/lex.ccon])
+        of the type of \code[cpp]{c},
+        \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)}
+        is a UTF-32 character literal which encodes \i{b}.
+        \br
+        \wg21-example{
+            \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}('x')} is \code[cpp]{U'x'},
+            no matter what the ordinary character literal encoding is.
+        }
+    }
+    \item{
+        Otherwise, \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)}
+        is a prvalue of type \code[cpp]{char32_t} whose value is implementation-defined.
+    }
+}
+
+\h3[listed=no]{Header \tt{<ascii>} synopsis \html-span[class=stable-ref]{[ascii.syn]}}
+
+When a function is specified with a type placeholder of
+\code[cpp]{\i{\html-h-[data-h=id]{character-type}}},
+the implementation provides overloads for all cv-unqualified 
+character types (\ref[https://eel.is/c++draft/basic.fundamental])
+in lieu of \code[cpp]{\i{\html-h-[data-h=id]{character-type}}}.
+
+\codeblock[cpp,borders=no]{
+// \serif{all freestanding}
+namespace std {
+  // \serif{[ascii.chars.test], ASCII character testing}
+  constexpr bool is_ascii_digit(\i{\html-h-[data-h=id]{character-type}} c, int base = 10);
+  constexpr bool is_ascii_bit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_octal_digit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_hex_digit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  constexpr bool is_ascii_lower(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_upper(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_alpha(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_alphanumeric(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  constexpr bool is_ascii_punctuation(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_graphical(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_printable(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  constexpr bool is_ascii_horizontal_whitespace(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr bool is_ascii_whitespace(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  constexpr bool is_ascii_control(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  // \serif{[ascii.chars.transform], ASCII character transformation}
+  constexpr \i{\html-h-[data-h=id]{character-type}} ascii_to_lower(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+  constexpr \i{\html-h-[data-h=id]{character-type}} ascii_to_upper(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+
+  // \serif{[ascii.chars.case.compare], ASCII case-insensitive character comparison}
+  constexpr \i{\html-h-[data-h=id]{character-type}} ascii_case_insensitive_compare(\i{\html-h-[data-h=id]{character-type}} a
+                                                          \i{\html-h-[data-h=id]{character-type}} b) noexcept;
+  constexpr bool ascii_case_insensitive_equals(\i{\html-h-[data-h=id]{character-type}} a
+                                               \i{\html-h-[data-h=id]{character-type}} b) noexcept;
+}
+}
+
+\h3[listed=no]{ASCII character testing \html-span[class=stable-ref]{[ascii.chars.test]}}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_digit(\i{\html-h-[data-h=id]{character-type}} c, int base = 10);
+}
+\indent{
+\p{
+    \i{Preconditions}:
+    \code[cpp]{base} has a value between 2 and 36 (inclusive).
+}
+\p{
+    \i{Returns}:
+    \codeblock[cpp,borders=no]{\comment   (\i{\html-h-[data-h=id]{TO-CHAR32}}(c) >= U'0' && \i{\html-h-[data-h=id]{TO-CHAR32}}(c) < U'0' + min(base, 10))
+|| (\i{\html-h-[data-h=id]{TO-CHAR32}}(c) >= U'a' && \i{\html-h-[data-h=id]{TO-CHAR32}}(c) < U'a' + max(base - 10, 0))
+|| (\i{\html-h-[data-h=id]{TO-CHAR32}}(c) >= U'A' && \i{\html-h-[data-h=id]{TO-CHAR32}}(c) < U'A' + max(base - 10, 0))
+    }
+}
+\p{
+    \i{Remarks}:
+    A function call expression that violates the precondition
+    in the \i{Preconditions}: element
+    is not a core constant expression.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_bit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_digit(c, 2)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_octal_digit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_digit(c, 8)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_hex_digit(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_digit(c, 16)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_lower(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c) >= U'a' && \i{\html-h-[data-h=id]{TO-CHAR32}}(c) <= U'z'}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_upper(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c) >= U'A' && \i{\html-h-[data-h=id]{TO-CHAR32}}(c) <= U'Z'}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_alpha(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_lower(c) || is_ascii_upper(c)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_alphanumeric(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_alpha(c) || is_ascii_digit(c)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_punctuation(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{u32string_view(U"!\\"#$%&'()*+,-./:;<=>?@[\\\\]^_`{|}~").contains(\i{\html-h-[data-h=id]{TO-CHAR32}}(c))}.
+    \comment{Repair TeX highlighting: $\}}
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_graphical(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_alphanumeric(c) || is_ascii_punctuation(c)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_printable(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_graphical(c) || \i{\html-h-[data-h=id]{TO-CHAR32}}(c) == U' '}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_horizontal_whitespace(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c) == U' ' || \i{\html-h-[data-h=id]{TO-CHAR32}}(c) == U'\\t'}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_whitespace(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{u32string_view(U" \\f\\n\\r\\t\\v").contains(\i{\html-h-[data-h=id]{TO-CHAR32}}(c))}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool is_ascii_control(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c) <= 0x1F || \i{\html-h-[data-h=id]{TO-CHAR32}}(c) == U'\\N{DELETE}'}.
+}
+}
+
+\h3[listed=no]{ASCII character transformation \html-span[class=stable-ref]{[ascii.chars.transform]}}
+
+Let \code[cpp]{x} be an expression of integer type
+and let \code[cpp]{T} be a character type (\ref[https://eel.is/c++draft/basic.fundamental]).
+Let \code[cpp]{\i{\html-h-[data-h=id]{CHAR-ENCODE}}<T>(x)} be a
+is a \gterm{character-literal} of type \code[cpp]{T} containing a single
+\gterm{universal-character-name} which encodes the value of \code[cpp]{x} interpreted as a Unicode code point.
+\br\wg21-example{
+\code[cpp]{\i{\html-h-[data-h=id]{CHAR-ENCODE}}<char>(0x10 * 2)} is \code[cpp]{'\\u0020'}.
+\code[cpp]{\i{\html-h-[data-h=id]{CHAR-ENCODE}}<char32_t>(x)} is equivalent to \code[cpp]{static_cast<char32_t>(x)}
+for \code[cpp]{x} \c{le} \code[cpp]{0x10FFFF}.
+}
+
+\codeblock[cpp,borders=no]{
+constexpr \i{\html-h-[data-h=id]{character-type}} to_ascii_lower(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_upper(c) ? \i{\html-h-[data-h=id]{CHAR-ENCODE}}<\i{\html-h-[data-h=id]{character-type}}>(\i{\html-h-[data-h=id]{TO-CHAR32}}(c) - U'A' + U'a') : c}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr \i{\html-h-[data-h=id]{character-type}} to_ascii_upper(\i{\html-h-[data-h=id]{character-type}} c) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{is_ascii_lower(c) ? \i{\html-h-[data-h=id]{CHAR-ENCODE}}<\i{\html-h-[data-h=id]{character-type}}>(\i{\html-h-[data-h=id]{TO-CHAR32}}(c) - U'a' + U'A') : c}.
+}
+}
+
+\h3[listed=no]{ASCII case-insensitive character comparison \html-span[class=stable-ref]{[ascii.chars.case.compare]}}
+
+\codeblock[cpp,borders=no]{
+constexpr std::strong_ordering ascii_case_insensitive_compare(\i{\html-h-[data-h=id]{character-type}} a,
+                                                              \i{\html-h-[data-h=id]{character-type}} b) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{ascii_to_upper(a) <=> ascii_to_upper(b)}.
+}
+}
+
+\codeblock[cpp,borders=no]{
+constexpr bool ascii_case_insensitive_equals(\i{\html-h-[data-h=id]{character-type}} a,
+                                             \i{\html-h-[data-h=id]{character-type}} b) noexcept;
+}
+\indent{
+\p{
+    \i{Returns}: \code[cpp]{ascii_to_upper(a) == ascii_to_upper(b)}.
+}
+}
+
+}
+
+
+\h2{References}
+
+\comment{Remove this workaround, do this in MMML:}
+\style{
+.bib-link {
+    display: block;
+}
+}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = P3312R1,
+    title = Overload Set Types,
+    date = 2025-04-16,
+    author = Bengt Gustafsson,
+    link = https://wg21.link/p3312r1,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+]
+\bib[
+    id = CompilerExplorer,
+    title = Partial implementation of character utilities,
+    author = Corentin Jabot,
+    link = https://godbolt.org/z/qbajdhfWE
+]
+\bib[
+    id = µlight,
+    title = ascii_chars.hpp utilities in µlight,
+    author = Jan Schultke,
+    link = https://github.com/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars.hpp
+]
+
+\make-bib
