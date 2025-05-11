@@ -463,6 +463,24 @@ These are not currently not included
 because there is no consensus among the authors whether to include them.
 }
 
+\h3[id=why-just-ascii]{Why just ASCII?}
+
+It may be tempting to generalize the proposed utilities beyond ASCII, e.g. to UTF-8.
+However, this is not proposed for multiple reasons:
+\ul{
+\item{
+    You cannot pass \code[cpp]{char8_t} into a UTF-8 \code[cpp]{is_upper} function
+    and expect meaningful results.
+    In general, operations on variable-length encodings require sequences of code units.
+    The interface we propose \em{only} only makes sense for ASCII.
+}
+\item{
+    Unicode utilities are tremendously more complex than ASCII utilities.
+    Some Unicode case conversions even require multi-code-point changes.
+}
+}
+
+
 \h2{Implementation experience}
 
 An early version of most proposed functions can be found at
@@ -476,7 +494,7 @@ Character tests can be optimized using 128-bit or 256-bit bitsets.
 
 \important{
 The following wording assumes that in
-\ref[#encoding]{2.5 What to do for ASCII-incompatible \code[cpp]{char} and \code[cpp]{wchar_t}},
+\ref[#encoding],
 the second option is chosen.
 That is, \code[cpp]{char} is transcoded to \code[cpp]{char32_t} prior to character tests.
 
@@ -510,13 +528,6 @@ ins-block .para::before {
 
 .stable-ref {
     float: right;
-}
-.borderless {
-    font-size: 95%;
-}
-del h-,
-ins h- {
-    color: inherit !important;
 }
 }
 
@@ -798,13 +809,6 @@ constexpr bool ascii_case_insensitive_equals(\i{\html-h-[data-h=id]{character-ty
 
 
 \h2{References}
-
-\comment{Remove this workaround, do this in MMML:}
-\style{
-.bib-link {
-    display: block;
-}
-}
 
 \bib[
     id = N5008,

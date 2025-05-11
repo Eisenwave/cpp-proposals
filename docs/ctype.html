@@ -580,10 +580,10 @@ code-block:not(.borderless) {
     border: 1px solid var(--border-color);
 }
 
-code-block:not(.borderless),
+code-block,
 pre,
 samp {
-    font-size: 90%;
+    font-size: 95%;
     width: 100%;
 }
 
@@ -593,6 +593,8 @@ samp {
     white-space: pre;
     overflow-x: auto;
 }
+
+/* INSERTIONS AND DELETIONS */
 
 ins,
 ins-lines {
@@ -604,7 +606,7 @@ ins-lines {
 
 code-block ins,
 code-block ins-lines {
-    text-decoration: none;
+    text-decoration: inherit;
 }
 
 del {
@@ -621,6 +623,14 @@ ins-lines,
 del-lines {
     display: inline-block;
     width: 100%;
+}
+
+ins h-,
+ins-lines h-,
+del h-,
+del-lines h- {
+    color: inherit !important;
+    background-color: inherit !important;
 }
 
 kbd {
@@ -920,7 +930,7 @@ th {
 }
 
 .bib-link {
-    display: inline-block;
+    display: block;
     margin-left: var(--indent);
 
     font-family: var(--sans-serif-family);
@@ -1437,7 +1447,7 @@ if (theme !== null) {
 <p><div class=wg21-head><h1>ASCII character utilities</h1>
 
 <dl>
-    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/D3688R0 class=sans>D3688R0</a></dd>
+    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/D3688R0>D3688R0</a></dd>
     <dt>Date:</dt>            <dd><tt->2025-05-09</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG, SG16</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
@@ -1459,7 +1469,7 @@ We propose lightweight, locale-independent alternatives.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison-functions><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.5.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.5.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.5.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding-(proposed)><h4>Treat the input as ASCII, regardless of the literal encoding (proposed)</h4></a><div class=toc-num data-level=3>2.6</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.7</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison-functions><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.5.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.5.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.5.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding-(proposed)><h4>Treat the input as ASCII, regardless of the literal encoding (proposed)</h4></a><div class=toc-num data-level=3>2.6</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.7</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=3>2.8</div><a href=#why-just-ascii><h3>Why just ASCII?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1884,6 +1894,24 @@ such views and/or algorithms could be included in a subsequent revision.
 because there is no consensus among the authors whether to include them.
 </p></decision-block>
 
+<h3 id=why-just-ascii><a class=para href=#why-just-ascii></a>2.8. Why just ASCII?</h3>
+
+<p>It may be tempting to generalize the proposed utilities beyond ASCII, e.g. to UTF-8.
+However, this is not proposed for multiple reasons:
+</p><ul>
+<li>
+    You cannot pass <code><h- data-h=kw_type>char8_t</h-></code> into a UTF-8 <code><h- data-h=id>is_upper</h-></code> function
+    and expect meaningful results.
+    In general, operations on variable-length encodings require sequences of code units.
+    The interface we propose <em>only</em> only makes sense for ASCII.
+</li>
+<li>
+    Unicode utilities are tremendously more complex than ASCII utilities.
+    Some Unicode case conversions even require multi-code-point changes.
+</li>
+</ul>
+
+
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>3. Implementation experience</h2>
 
 <p>An early version of most proposed functions can be found at
@@ -1897,7 +1925,7 @@ Character tests can be optimized using 128-bit or 256-bit bitsets.
 
 <important-block><p><intro-></intro-> 
 The following wording assumes that in
-<a href=#encoding>2.5 What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></a>,
+<a href=#encoding>§2.5. What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></a>,
 the second option is chosen.
 That is, <code><h- data-h=kw_type>char</h-></code> is transcoded to <code><h- data-h=kw_type>char32_t</h-></code> prior to character tests.
 </p>
@@ -1929,13 +1957,6 @@ ins-block .para::before {
 
 .stable-ref {
     float: right;
-}
-.borderless {
-    font-size: 95%;
-}
-del h-,
-ins h- {
-    color: inherit !important;
 }
 </style>
 
@@ -2178,13 +2199,6 @@ for <code><h- data-h=id>x</h-></code> &le; <code><h- data-h=num_deco>0x</h-><h- 
 
 
 <h2 id=references><a class=para href=#references></a>5. References</h2>
-
-
-<style>
-.bib-link {
-    display: block;
-}
-</style>
 
 
 
