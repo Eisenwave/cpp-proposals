@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel=preconnent href=https://fonts%2egoogleapis%2ecom/>
+  <meta charset=UTF-8 /><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
   <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
   <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
   <style>
@@ -1459,7 +1459,7 @@ We propose lightweight, locale-independent alternatives.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#case-insensitive-comparison-functions><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.4</div><a href=#addressing-character-encoding><h3>Addressing character encoding</h3></a><div class=toc-num data-level=4>2.4.1</div><a href=#simple-cases><h4>Simple cases</h4></a><div class=toc-num data-level=4>2.4.2</div><a href=#is_ascii_control><h4>The edge case of <code><h- data-h=id>is_ascii_control</h-></code></h4></a><div class=toc-num data-level=3>2.5</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison-functions><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.5.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.5.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.5.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding-(proposed)><h4>Treat the input as ASCII, regardless of the literal encoding (proposed)</h4></a><div class=toc-num data-level=3>2.6</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.7</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1551,6 +1551,10 @@ The counterpart to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data
 
 <p><code><i><h- data-h=id>character-type</h-></i></code> means that there exists an overload set where
 this placeholder is replaced with each of the character types.
+This design is more consistent with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>from_chars</h-></code> and <tt->&lt;cmath&gt;</tt-> functions
+than say, <code><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>Char</h-><h- data-h=sym_op>&gt;</h-></code>.
+Equivalent functions could also be added to C, if there is interest.
+This signature also allows the use with types that are convertible to a specific character type.
 </p>
 <style>
 #fun-table {
@@ -1580,7 +1584,7 @@ Note that the character set notation <tt->[</tt->...<tt->]</tt-> is taken from R
 <tr>
     <th><tt->&lt;cctype&gt;</tt-> counterpart</th>
     <th>Proposed name</th>
-    <th>Returns (given <code><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-></code>)</th>
+    <th>Returns (given ASCII <code><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-></code>)</th>
 </tr>
 <tr>
     <td><code><h- data-h=id>isdigit</h-></code></td>
@@ -1682,11 +1686,15 @@ could also be used.
 </p></decision-block>
 
 <decision-block><p><intro-></intro-> 
-<code><h- data-h=id>isgraph</h-></code> should perhaps have no new version
-it is of questionable use,
+<code><h- data-h=id>isgraph</h-></code> should perhaps have no new version.
+It is of questionable use,
 and both the old and new name aren't obvious.
 In the default <code><h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-></code> locale,
 <code><h- data-h=id>isgraph</h-></code> is simply <code><h- data-h=id>isprint</h-></code> without <code><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>.
+</p>
+<p>Similarly, <code><h- data-h=id>isblank</h-></code> should perhaps have no new version either.
+This proposal simply has a new version for every <tt->&lt;cctype&gt;</tt-> function;
+if need be, they are easy to remove.
 </p></decision-block>
 
 <h3 id=base-parameter><a class=para href=#base-parameter></a>2.2. <code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3>
@@ -1703,7 +1711,26 @@ starting with <code><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=st
 Such a function is useful when parsing numbers with a base of choice,
 which is what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>to_chars</h-></code> does, for example.
 </p>
-<h3 id=case-insensitive-comparison-functions><a class=para href=#case-insensitive-comparison-functions></a>2.3. Case-insensitive comparison functions</h3>
+<h3 id=binary-and-octal-is-digit><a class=para href=#binary-and-octal-is-digit></a>2.3. <code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3>
+
+<p>C++ and various other programming languages support binary and octal literals,
+so it seems like an arbitrary choice to only have dedicated overloads for (hexa)decimal digits.
+<code><h- data-h=id>is_ascii_bit</h-></code> may be especially useful,
+such as when dealing with bit-strings like one of the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>bitset</h-></code> constructors.
+</p>
+<p>In conclusion, we may as well have functions for bases 2, 8, 10, and 16;
+they're not doing much harm, they're trivial to implement,
+and some users may find them useful.
+</p>
+<decision-block><p><intro-></intro-> 
+None of the authors feel strongly about this,
+so if LEWG insists,
+we could remove <code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code>,
+and even remove <code><h- data-h=id>is_ascii_hex_digit</h-></code>,
+leaving only the multi-base <code><h- data-h=id>is_ascii_digit</h-></code>.
+</p></decision-block>
+
+<h3 id=case-insensitive-comparison-functions><a class=para href=#case-insensitive-comparison-functions></a>2.4. Case-insensitive comparison functions</h3>
 
 <p>As shown in the table above,
 we also propose the case-insensitive comparison functions.
@@ -1736,61 +1763,84 @@ so that the user could write:
 <a href="https://wg21%2elink/p3312r1">[P3312R1]</a> Overload Set Types.
 </p></decision-block>
 
-<h3 id=addressing-character-encoding><a class=para href=#addressing-character-encoding></a>2.4. Addressing character encoding</h3>
+<h3 id=encoding><a class=para href=#encoding></a>2.5. What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3>
 
-<h4 id=simple-cases><a class=para href=#simple-cases></a>2.4.1. Simple cases</h4>
+<p>Not every ordinary and wide character encoding is ASCII-compatible,
+such as EBCDIC, Shift-JIS, and (defunct) ISO-646,
+i.e. code units &le; <code><h- data-h=num_deco>0x</h-><h- data-h=num>7f</h-></code> do not represent the same characters as ASCII.
+So, what should <code><h- data-h=id>is_ascii_foo</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char</h-><h- data-h=sym_par>(</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code> do?
+We have three options, discussed below.
+</p>
+<decision-block><p><intro-></intro-> 
+The authors of this paper disagree on the best approach.
+Consensus on one of these three options is needed.
+</p></decision-block>
 
-<p>The behavior of all the functions is effectively defined in terms of code points,
-it is locale-independent,
-and it assumes literal encoding for the input character.
-</p>
-<p>For <code><h- data-h=kw_type>char8_t</h-></code>, <code><h- data-h=kw_type>char16_t</h-></code>, and <code><h- data-h=kw_type>char32_t</h-></code>,
-this is very simple because that encoding is UTF-8, UTF-16, and UTF-32 respectively.
-ASCII characters occupy a single code unit in Unicode encodings.
-</p>
-<p>For characters in the basic character set,
-there already exists a 1:1 mapping between code points
-and code units with literal encoding.
-We can simply say that <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=bool>true</h-></code>
-no matter how <code><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-></code> is encoded,
-<em>even</em> if the literal encoding is ASCII-incompatible.
-</p>
-<h4 id=is_ascii_control><a class=para href=#is_ascii_control></a>2.4.2. The edge case of <code><h- data-h=id>is_ascii_control</h-></code></h4>
+<h4 id=conditionally-supported--overloads><a class=para href=#conditionally-supported--overloads></a>2.5.1. Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4>
 
-<p><code><h- data-h=id>is_ascii_control</h-></code> is a weird edge case because it performs a test on code units
-outside the basic character set.
-It is clear what it should do for Unicode character types,
-but what if the input is <code><h- data-h=kw_type>char</h-></code> and the encoding is
-<a href=https://en%2ewikipedia%2eorg/wiki/EBCDIC class=sans>EBCDEC</a>?
-This case could be handled in at least two ways:
+<p>We could mandate that the ordinary literal encoding is an ASCII superset
+for the <code><h- data-h=kw_type>char</h-></code> overload to exist.
+This would force a cast (to <code><h- data-h=kw_type>char8_t</h-></code>) to use the functions on EBCDIC platforms.
+It is not clear how implementations would treat Shift-JIS;
+GCC assumes <code><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>\</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>¥</h-><h- data-h=str_dlim>'</h-></code> to be <code><h- data-h=bool>true</h-></code>,
+so this option may not be enough to alleviate
+the awkwardness of <code><h- data-h=id>is_ascii_punctuation</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>¥</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code>.
 </p>
-<ul>
-    <li>Always return <code><h- data-h=bool>false</h-></code> if the literal encoding is not "ASCII-compatible" (hard to define).</li>
-    <li>Make this case implementation-defined.</li>
-</ul>
+<h4 id=transcode--to-ascii><a class=para href=#transcode--to-ascii></a>2.5.2. Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4>
 
-<p>The proposal opts for the second choice
-because it is not worth spending much committee time on this.
-It is hard to define what an "ASCII-compatible" encoding actually is,
-although the answer is obvious for most encodings.
-Furthermore, even if the encoding is EBCDEC,
-the platform will likely require its own set of utility functions beyond those proposed here.
+<p>We could transcode to ASCII and produce an answer for the result of that transcoding.
+This would be a greater burden for implementations,
+especially on EBCDIC platforms.
+The benefit is that <code><h- data-h=id>is_ascii_alpha</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code> is always <code><h- data-h=bool>true</h-></code>,
+although <code><h- data-h=id>is_ascii_alpha</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>0x</h-><h- data-h=num>61</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code> may not be.
+</p>
+<p>It probably does not solve the <code><h- data-h=id>is_ascii_punctuation</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>¥</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code> case,
+as implementers may keep transcoding <code><h- data-h=str_dlim>'</h-><h- data-h=str>¥</h-><h- data-h=str_dlim>'</h-></code> and <code><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>\</h-><h- data-h=str_dlim>'</h-></code> in the same way.
+It would also give incorrect answers for stateful encodings.
+There are EBCDIC control characters that do not have an ASCII equivalent,
+so if we were to do conversions, we would have to decide what,
+for example, <code><h- data-h=id>is_ascii_control</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>u008B</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code> should produce.
 </p>
 <note-block><p><intro-></intro-> 
-It is also possible to define control character as
-<code><h- data-h=sym_op>!</h-><h- data-h=id>is_ascii_printable</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=id>is_ascii_whitespace</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>,
-but if <code><h- data-h=id>c</h-></code> is say, a UTF-8 code unit,
-this would result in treating surrogate code units as ASCII control characters,
-which is likely not what the user expects.
+If we want to perform ASCII tests on <code><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-></code> that is not ASCII-encoded,
+we can still do so via <code><h- data-h=id>is_ascii_foo</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code> with this option.
 </p></note-block>
 
-<h3 id=what-if-the-input-is-a-non-ascii-code-unit?><a class=para href=#what-if-the-input-is-a-non-ascii-code-unit?></a>2.5. What if the input is a non-ASCII code unit?</h3>
+<h4 id=treat-the-input-as-ascii,-regardless-of-the-literal-encoding-(proposed)><a class=para href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding-(proposed)></a>2.5.3. Treat the input as ASCII, regardless of the literal encoding (proposed)</h4>
+
+<p>The most simple option is to ignore literal encoding entirely,
+and assume that <code><h- data-h=kw_type>char</h-></code> inputs are ASCII-encoded.
+The greatest downside is that depending on encoding,
+<code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code> may be <code><h- data-h=bool>false</h-></code>,
+which may be surprising to the user.
+</p>
+<p>It is important to note that the are use cases for this behavior on EBCDIC platforms.
+A lot of protocols (HTTP, POP) and file formats (JSON, XML) are ASCII/UTF-8-based
+and need to be supported on EBCDIC systems,
+making these functions universally useful,
+especially as <tt->&lt;cctype&gt;</tt-> functions cannot easily be used to deal with ASCII on these platforms.
+</p>
+<p>Ultimately, do we want functions to deal with ASCII or the literal encoding?
+If we want them to be a general way to query the ordinary literal encoding,
+<code><h- data-h=id>is_ascii</h-></code> is a terrible name,
+and finding a more general name would prove difficult.
+</p>
+<note-block><p><intro-></intro-> 
+If we choose this option,
+we can still provide the same transcoding functionality as the previous option
+by offering a (literal-encoded) <code><h- data-h=kw_type>char</h-></code> &rightarrow; (code point) <code><h- data-h=kw_type>char32_t</h-></code>
+function.
+Such an (exposition only) function is currently used in the wording:
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
+</p></note-block>
+
+<h3 id=what-if-the-input-is-a-non-ascii-code-unit?><a class=para href=#what-if-the-input-is-a-non-ascii-code-unit?></a>2.6. What if the input is a non-ASCII code unit?</h3>
 
 <p>It is possible (and expected) that the user calls say, <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code>.
 For the sake of convenience, all proposed functions should handle such inputs by
 </p><ul>
     <li>returning <code><h- data-h=bool>false</h-></code> in the case of all testing functions, and</li>
-    <li>applying an identity transformation in transformation/testing functions.</li>
+    <li>applying an identity transformation in transformation/case-insensitive comparison functions.</li>
 </ul>
 
 <example-block><p><intro-></intro-> 
@@ -1808,6 +1858,32 @@ Surrogate code units in UTF-8 are all greater than <code><h- data-h=num_deco>0x<
 so none of the tests have false positives,
 and none of the transformations would affect non-ASCII code units.
 </p>
+<h3 id=ascii-case-insensitive-views-and-algorithms><a class=para href=#ascii-case-insensitive-views-and-algorithms></a>2.7. ASCII case-insensitive views and algorithms</h3>
+
+<p>Ignoring ASCII case in algorithms is a fairly common problem.
+</p>
+<example-block><p><intro-></intro-> 
+HTML tag names are case-insensitive and comprised of ASCII characters,
+like <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code>, <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>DIV</h-><h- data-h=sym_punc>&gt;</h-></code> etc.
+To identify a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code> element, it would be nice if the user could write:
+</p><code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>equal</h-><h- data-h=sym_par>(</h-><h- data-h=id>tag_name</h-> <h- data-h=sym_op>|</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> or</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_case_insensitive_equal</h-><h- data-h=sym_par>(</h-><h- data-h=id>tag_name</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> or</h->
+<h- data-h=id>tag_name</h-><h- data-h=sym_op>.</h-><h- data-h=id>ascii_case_insensitive_equals</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
+</example-block>
+
+<p>Therefore, it may be useful to provide views such as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-></code>
+and even algorithms like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>equal_ascii_case_insensitive</h-></code>.
+</p>
+<decision-block><p><intro-></intro-> 
+If LEWG is interested,
+such views and/or algorithms could be included in a subsequent revision.
+</p>
+<p>These are not currently not included
+because there is no consensus among the authors whether to include them.
+</p></decision-block>
+
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>3. Implementation experience</h2>
 
 <p>An early version of most proposed functions can be found at
@@ -1818,6 +1894,19 @@ A naive implementation of all utilities is quite trivial, often a one-liner.
 Character tests can be optimized using 128-bit or 256-bit bitsets.
 </p>
 <h2 id=wording><a class=para href=#wording></a>4. Wording</h2>
+
+<important-block><p><intro-></intro-> 
+The following wording assumes that in
+<a href=#encoding>2.5 What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></a>,
+the second option is chosen.
+That is, <code><h- data-h=kw_type>char</h-></code> is transcoded to <code><h- data-h=kw_type>char32_t</h-></code> prior to character tests.
+</p>
+<p>If the last option is chosen instead (simply assuming <code><h- data-h=kw_type>char</h-></code> is ASCII),
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>
+can be replaced with <code><h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>char32_t</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>,
+and <code><i><h- data-h=id>CHAR-ENCODE</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-></code>
+can be replaced with <code><h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-></code>.
+</p></important-block>
 
 <p>The wording changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>

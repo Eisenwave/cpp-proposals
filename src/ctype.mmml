@@ -120,6 +120,10 @@ constexpr bool is_ascii_alpha(\i{\html-h-[data-h=id]{character-type}} c) noexcep
 
 \code[cpp]{\i{\html-h-[data-h=id]{character-type}}} means that there exists an overload set where
 this placeholder is replaced with each of the character types.
+This design is more consistent with \code[cpp]{std::from_chars} and \tt{<cmath>} functions
+than say, \code[cpp]{template<class Char>}.
+Equivalent functions could also be added to C, if there is interest.
+This signature also allows the use with types that are convertible to a specific character type.
 
 \style{
 #fun-table {
@@ -149,7 +153,7 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 \tr{
     \th{\tt{<cctype>} counterpart}
     \th{Proposed name}
-    \th{Returns (given \code[cpp]{char c})}
+    \th{Returns (given ASCII \code[cpp]{char c})}
 }
 \tr{
     \td{\code[cpp]{isdigit}}
@@ -195,7 +199,7 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
     \td{\code[cpp]{ispunct}}
     \td{\code[cpp]{is_ascii_punctuation}}
     \td{\code[cpp]{true} if \code[cpp]{c} is in \html-code{\html-h-[data-h=str]{[!"#$%&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~]}}, otherwise \code[cpp]{false}}
-}\comment{Repair TeX syntax highlighting $\{}
+}\comment{Repair TeX syntax highlighting $\{\}\}\}\}}
 \tr{
     \td{\code[cpp]{isgraph}}
     \td{\code[cpp]{is_ascii_graphical}}
@@ -251,11 +255,15 @@ could also be used.
 }
 
 \decision{
-\code[cpp]{isgraph} should perhaps have no new version
-it is of questionable use,
+\code[cpp]{isgraph} should perhaps have no new version.
+It is of questionable use,
 and both the old and new name aren't obvious.
 In the default \code[cpp]{"C"} locale,
 \code[cpp]{isgraph} is simply \code[cpp]{isprint} without \code[cpp]{' '}.
+
+Similarly, \code[cpp]{isblank} should perhaps have no new version either.
+This proposal simply has a new version for every \tt{<cctype>} function;
+if need be, they are easy to remove.
 }
 
 \h3[id=base-parameter]{\code[cpp]{base} parameter in \code[cpp]{is_ascii_digit}}
@@ -273,6 +281,25 @@ For greater \code[cpp]{base}, a subset of alphabetic characters is also accepted
 starting with \code[cpp]{'a'} or \code[cpp]{'A'}.
 Such a function is useful when parsing numbers with a base of choice,
 which is what \code[cpp]{std::to_chars} does, for example.
+
+\h3[id=binary-and-octal-is-digit]{\code[cpp]{is_ascii_bit} and \code[cpp]{is_ascii_octal_digit}}
+
+C++ and various other programming languages support binary and octal literals,
+so it seems like an arbitrary choice to only have dedicated overloads for (hexa)decimal digits.
+\code[cpp]{is_ascii_bit} may be especially useful,
+such as when dealing with bit-strings like one of the \code[cpp]{std::bitset} constructors.
+
+In conclusion, we may as well have functions for bases 2, 8, 10, and 16;
+they're not doing much harm, they're trivial to implement,
+and some users may find them useful.
+
+\decision{
+None of the authors feel strongly about this,
+so if LEWG insists,
+we could remove \code[cpp]{is_ascii_bit} and \code[cpp]{is_ascii_octal_digit},
+and even remove \code[cpp]{is_ascii_hex_digit},
+leaving only the multi-base \code[cpp]{is_ascii_digit}.
+}
 
 \h3{Case-insensitive comparison functions}
 
@@ -311,52 +338,75 @@ However, defining function objects for this purpose may be obsoleted by
 \ref[P3312R1] Overload Set Types.
 }
 
-\h3{Addressing character encoding}
+\h3[id=encoding]{What to do for ASCII-incompatible \code[cpp]{char} and \code[cpp]{wchar_t}}
 
-\h4{Simple cases}
+Not every ordinary and wide character encoding is ASCII-compatible,
+such as EBCDIC, Shift-JIS, and (defunct) ISO-646,
+i.e. code units \c{le} \code[cpp]{0x7f} do not represent the same characters as ASCII.
+So, what should \code[cpp]{is_ascii_foo(char(/* ... */))} do?
+We have three options, discussed below.
 
-The behavior of all the functions is effectively defined in terms of code points,
-it is locale-independent,
-and it assumes literal encoding for the input character.
-
-For \code[cpp]{char8_t}, \code[cpp]{char16_t}, and \code[cpp]{char32_t},
-this is very simple because that encoding is UTF-8, UTF-16, and UTF-32 respectively.
-ASCII characters occupy a single code unit in Unicode encodings.
-
-For characters in the basic character set,
-there already exists a 1:1 mapping between code points
-and code units with literal encoding.
-We can simply say that \code[cpp]{is_ascii_digit('0')} is \code[cpp]{true}
-no matter how \code[cpp]{'0'} is encoded,
-\em{even} if the literal encoding is ASCII-incompatible.
-
-\h4[id=is_ascii_control]{The edge case of \code[cpp]{is_ascii_control}}
-
-\code[cpp]{is_ascii_control} is a weird edge case because it performs a test on code units
-outside the basic character set.
-It is clear what it should do for Unicode character types,
-but what if the input is \code[cpp]{char} and the encoding is
-\ref[https://en.wikipedia.org/wiki/EBCDIC]{EBCDEC}?
-This case could be handled in at least two ways:
-
-\ul{
-    \item{Always return \code[cpp]{false} if the literal encoding is not "ASCII-compatible" (hard to define).}
-    \item{Make this case implementation-defined.}
+\decision{
+The authors of this paper disagree on the best approach.
+Consensus on one of these three options is needed.
 }
 
-The proposal opts for the second choice
-because it is not worth spending much committee time on this.
-It is hard to define what an "ASCII-compatible" encoding actually is,
-although the answer is obvious for most encodings.
-Furthermore, even if the encoding is EBCDEC,
-the platform will likely require its own set of utility functions beyond those proposed here.
+\h4{Conditionally supported \code[cpp]{char} overloads}
+
+We could mandate that the ordinary literal encoding is an ASCII superset
+for the \code[cpp]{char} overload to exist.
+This would force a cast (to \code[cpp]{char8_t}) to use the functions on EBCDIC platforms.
+It is not clear how implementations would treat Shift-JIS;
+GCC assumes \code[cpp]{'\\\\' == '¥'} to be \code[cpp]{true},
+so this option may not be enough to alleviate
+the awkwardness of \code[cpp]{is_ascii_punctuation('¥')}.
+
+\h4{Transcode \code[cpp]{char} to ASCII}
+
+We could transcode to ASCII and produce an answer for the result of that transcoding.
+This would be a greater burden for implementations,
+especially on EBCDIC platforms.
+The benefit is that \code[cpp]{is_ascii_alpha('a')} is always \code[cpp]{true},
+although \code[cpp]{is_ascii_alpha(char(0x61))} may not be.
+
+It probably does not solve the \code[cpp]{is_ascii_punctuation('¥')} case,
+as implementers may keep transcoding \code[cpp]{'¥'} and \code[cpp]{'\\\\'} in the same way.
+It would also give incorrect answers for stateful encodings.
+There are EBCDIC control characters that do not have an ASCII equivalent,
+so if we were to do conversions, we would have to decide what,
+for example, \code[cpp]{is_ascii_control('\\u008B')} should produce.
 
 \note{
-It is also possible to define control character as
-\code[cpp]{!is_ascii_printable(c) && !is_ascii_whitespace(c)},
-but if \code[cpp]{c} is say, a UTF-8 code unit,
-this would result in treating surrogate code units as ASCII control characters,
-which is likely not what the user expects.
+If we want to perform ASCII tests on \code[cpp]{char c} that is not ASCII-encoded,
+we can still do so via \code[cpp]{is_ascii_foo(char8_t(c))} with this option.
+}
+
+\h4{Treat the input as ASCII, regardless of the literal encoding (proposed)}
+
+The most simple option is to ignore literal encoding entirely,
+and assume that \code[cpp]{char} inputs are ASCII-encoded.
+The greatest downside is that depending on encoding,
+\code[cpp]{is_ascii_digit('0')} may be \code[cpp]{false},
+which may be surprising to the user.
+
+It is important to note that the are use cases for this behavior on EBCDIC platforms.
+A lot of protocols (HTTP, POP) and file formats (JSON, XML) are ASCII/UTF-8-based
+and need to be supported on EBCDIC systems,
+making these functions universally useful,
+especially as \tt{<cctype>} functions cannot easily be used to deal with ASCII on these platforms.
+
+Ultimately, do we want functions to deal with ASCII or the literal encoding?
+If we want them to be a general way to query the ordinary literal encoding,
+\code[cpp]{is_ascii} is a terrible name,
+and finding a more general name would prove difficult.
+
+\note{
+If we choose this option,
+we can still provide the same transcoding functionality as the previous option
+by offering a (literal-encoded) \code[cpp]{char} \c{rightarrow} (code point) \code[cpp]{char32_t}
+function.
+Such an (exposition only) function is currently used in the wording:
+\code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)}.
 }
 
 \h3{What if the input is a non-ASCII code unit?}
@@ -365,7 +415,7 @@ It is possible (and expected) that the user calls say, \code[cpp]{is_ascii_digit
 For the sake of convenience, all proposed functions should handle such inputs by
 \ul{
     \item{returning \code[cpp]{false} in the case of all testing functions, and}
-    \item{applying an identity transformation in transformation/testing functions.}
+    \item{applying an identity transformation in transformation/case-insensitive comparison functions.}
 }
 
 \example{
@@ -385,6 +435,34 @@ Surrogate code units in UTF-8 are all greater than \code[cpp]{0x7F},
 so none of the tests have false positives,
 and none of the transformations would affect non-ASCII code units.
 
+\h3{ASCII case-insensitive views and algorithms}
+
+Ignoring ASCII case in algorithms is a fairly common problem.
+
+\example{
+HTML tag names are case-insensitive and comprised of ASCII characters,
+like \code[html]{<div>}, \code[html]{<DIV>} etc.
+To identify a \code[html]{<div>} element, it would be nice if the user could write:
+\codeblock[cpp]{
+std::ranges::equal(tag_name | std::views::ascii_lower, "div");
+// or
+std::ranges::ascii_case_insensitive_equal(tag_name, "div");
+// or
+tag_name.ascii_case_insensitive_equals("div");
+}
+}
+
+Therefore, it may be useful to provide views such as \code[cpp]{std::views::ascii_lower}
+and even algorithms like \code[cpp]{std::ranges::equal_ascii_case_insensitive}.
+
+\decision{
+If LEWG is interested,
+such views and/or algorithms could be included in a subsequent revision.
+
+These are not currently not included
+because there is no consensus among the authors whether to include them.
+}
+
 \h2{Implementation experience}
 
 An early version of most proposed functions can be found at
@@ -395,6 +473,19 @@ A more advanced implementation of some functions can be found in \ref[µlight].
 Character tests can be optimized using 128-bit or 256-bit bitsets.
 
 \h2{Wording}
+
+\important{
+The following wording assumes that in
+\ref[#encoding]{2.5 What to do for ASCII-incompatible \code[cpp]{char} and \code[cpp]{wchar_t}},
+the second option is chosen.
+That is, \code[cpp]{char} is transcoded to \code[cpp]{char32_t} prior to character tests.
+
+If the last option is chosen instead (simply assuming \code[cpp]{char} is ASCII),
+\code[cpp]{\i{\html-h-[data-h=id]{TO-CHAR32}}(c)}
+can be replaced with \code[cpp]{static_cast<char32_t>(c)},
+and \code[cpp]{\i{\html-h-[data-h=id]{CHAR-ENCODE}}<T>(x)}
+can be replaced with \code[cpp]{static_cast<T>(x)}.
+}
 
 The wording changes are relative to \ref[N5008].
 
