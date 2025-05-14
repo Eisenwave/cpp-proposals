@@ -1,8 +1,15 @@
 \def[\cpp{...}]{\code[cpp]{\put}}
+\def[\cppblock{...}]{\codeblock[cpp]{\put}}
 \def[\charset{...}]{\html-code{\html-h-[data-h=str]{[\put]}}}
 \def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
 \def[\ctype]{\exposid{character-type}}
 \def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
+\def[\wording-decl{...}]{\codeblock[cpp,borders=no]{\put}}
+\def[\header{...}]{\tt{<\put>}}
+
+\comment{This solely exists to interfere less with TeX highlighting:}
+\def[\dollar]{\U{24}}
+\def[\percent]{\U{25}}
 
 \wg21-head[
     title = ASCII character utilities
@@ -21,7 +28,7 @@
 }
 
 \abstract{
-The utilities in \tt{<cctype>} or \tt{<locale>}
+The utilities in \header{cctype} or \header{locale}
 are locale-specific,
 not \cpp{constexpr},
 and provide no support for Unicode character types.
@@ -42,8 +49,8 @@ Unicode properties are not relevant to this task,
 and usually, neither are locales.
 
 Unfortunately, these common and simple tasks are only supported
-through functions in the \tt{<cctype>} and \tt{<locale>} headers, such as:
-\codeblock[cpp]{
+through functions in the \header{cctype} and \header{locale} headers, such as:
+\cppblock{
 // <cctype>
 int isalnum(int ch);
 int isalpha(int ch);
@@ -54,7 +61,7 @@ int toupper(int ch);
 template<class charT> bool isalnum(charT c, const locale& loc); 
 }
 
-Especially the \tt{<cctype>} functions are ridden with problems:
+Especially the \header{cctype} functions are ridden with problems:
 \ol{
 \item{
     There is no support for Unicode character types
@@ -98,7 +105,7 @@ Especially the \tt{<cctype>} functions are ridden with problems:
 
 \note{
 Many of these problems are resolved by the
-\cpp{std::locale} overloads in \tt{<locale>},
+\cpp{std::locale} overloads in \header{locale},
 but their locale dependence makes them unfit for what this proposal aims to achieve.
 
 Testing whether a \cpp{char8_t} (assumed to be a UTF-8 code unit)
@@ -119,14 +126,14 @@ but \cpp{is_ascii_upper(U'Ä')} to be \cpp{false}.
 
 \example{
 The counterpart to \cpp{std::isalpha} is declared follows:
-\codeblock[cpp]{
+\cppblock{
 constexpr bool is_ascii_alpha(\exposid{character-type} c) noexcept;
 }
 }
 
 \cpp{\ctype} means that there exists an overload set where
 this placeholder is replaced with each of the character types.
-This design is more consistent with \cpp{std::from_chars} and \tt{<cmath>} functions
+This design is more consistent with \cpp{std::from_chars} and \header{cmath} functions
 than say, \cpp{template<class Char>}.
 Equivalent functions could also be added to C, if there is interest.
 This signature also allows the use with types that are convertible to a specific character type.
@@ -157,7 +164,7 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 
 \table[id=fun-table]{
 \tr{
-    \th{\tt{<cctype>} counterpart}
+    \th{\header{cctype} counterpart}
     \th{Proposed name}
     \th{Returns (given ASCII \cpp{char c})}
 }
@@ -204,8 +211,8 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 \tr{
     \td{\cpp{ispunct}}
     \td{\cpp{is_ascii_punctuation}}
-    \td{\cpp{true} if \cpp{c} is in \charset{!"#$%&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~}, otherwise \cpp{false}}
-}\comment{Repair TeX syntax highlighting $\}\}}
+    \td{\cpp{true} if \cpp{c} is in \charset{!"#\dollar\percent&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~}, otherwise \cpp{false}}
+}
 \tr{
     \td{\cpp{isgraph}}
     \td{\cpp{is_ascii_graphical}}
@@ -268,7 +275,7 @@ In the default \cpp{"C"} locale,
 \cpp{isgraph} is simply \cpp{isprint} without \cpp{' '}.
 
 Similarly, \cpp{isblank} should perhaps have no new version either.
-This proposal simply has a new version for every \tt{<cctype>} function;
+This proposal simply has a new version for every \header{cctype} function;
 if need be, they are easy to remove.
 }
 
@@ -277,7 +284,7 @@ if need be, they are easy to remove.
 Similar to \cpp{std::to_chars},
 \cpp{std::is_ascii_digit} can also take a \cpp{base} parameter:
 
-\codeblock[cpp]{
+\cppblock{
 constexpr bool is_ascii_digit(\ctype c, int base = 10);
 }
 
@@ -312,7 +319,7 @@ leaving only the multi-base \cpp{is_ascii_digit}.
 As shown in the table above,
 we also propose the case-insensitive comparison functions.
 
-\codeblock[cpp]{
+\cppblock{
 constexpr strong_ordering ascii_case_insensitive_compare(
     \ctype a,
     \ctype b
@@ -334,7 +341,7 @@ to enable interoperability with algorithms.
 In general, passing these characters tests into algorithms is desirable,
 so perhaps all proposed functions should be implemented as function objects
 so that the user could write:
-\codeblock[cpp]{
+\cppblock{
 std::string_view str = "abc123";
 // This does not work if is_ascii_digit is an overloaded function or function template.
 auto it = std::ranges::find(str, is_ascii_digit);
@@ -399,7 +406,7 @@ It is important to note that the are use cases for this behavior on EBCDIC platf
 A lot of protocols (HTTP, POP) and file formats (JSON, XML) are ASCII/UTF-8-based
 and need to be supported on EBCDIC systems,
 making these functions universally useful,
-especially as \tt{<cctype>} functions cannot easily be used to deal with ASCII on these platforms.
+especially as \header{cctype} functions cannot easily be used to deal with ASCII on these platforms.
 
 Ultimately, do we want functions to deal with ASCII or the literal encoding?
 If we want them to be a general way to query the ordinary literal encoding,
@@ -426,14 +433,14 @@ For the sake of convenience, all proposed functions should handle such inputs by
 
 \example{
 With these semantics, the user can safely write:
-\codeblock[cpp]{
+\cppblock{
 std::u8string_view str = u8"öab 123";
 // it is an iterator to '1'
 auto it = std::ranges::find(str, [](char8_t c) { return std::is_ascii_digit(c); });
 }
 }
 Making ASCII inputs a precondition
-would make these functions just as unsafe and commonly misused as the \tt{<cctype>} functions.
+would make these functions just as unsafe and commonly misused as the \header{cctype} functions.
 Throwing on non-ASCII inputs would make them much less convenient to use in algorithms.
 
 The proposed behavior also works very well with any ASCII-compatible encoding, such as UTF-8.
@@ -449,7 +456,7 @@ Ignoring ASCII case in algorithms is a fairly common problem.
 HTML tag names are case-insensitive and comprised of ASCII characters,
 like \code[html]{<div>}, \code[html]{<DIV>} etc.
 To identify a \code[html]{<div>} element, it would be nice if the user could write:
-\codeblock[cpp]{
+\cppblock{
 std::ranges::equal(tag_name | std::views::ascii_lower, "div");
 // or
 std::ranges::ascii_case_insensitive_equal(tag_name, "div");
@@ -571,7 +578,7 @@ Let \cpp{\exposid{TO-CHAR32}(c)} be defined as follows:
     }
 }
 
-\h3[listed=no]{Header \tt{<ascii>} synopsis \stable-ref{ascii.syn}}
+\h3[listed=no]{Header \header{ascii} synopsis \stable-ref{ascii.syn}}
 
 When a function is specified with a type placeholder of
 \cpp{\ctype},
@@ -616,7 +623,7 @@ namespace std {
 
 \h3[listed=no]{ASCII character testing \stable-ref{ascii.chars.test}}
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_digit(\ctype c, int base = 10);
 }
 \indent{
@@ -639,7 +646,7 @@ constexpr bool is_ascii_digit(\ctype c, int base = 10);
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_bit(\ctype c) noexcept;
 }
 \indent{
@@ -648,7 +655,7 @@ constexpr bool is_ascii_bit(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_octal_digit(\ctype c) noexcept;
 }
 \indent{
@@ -657,7 +664,7 @@ constexpr bool is_ascii_octal_digit(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_hex_digit(\ctype c) noexcept;
 }
 \indent{
@@ -666,7 +673,7 @@ constexpr bool is_ascii_hex_digit(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_lower(\ctype c) noexcept;
 }
 \indent{
@@ -675,7 +682,7 @@ constexpr bool is_ascii_lower(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_upper(\ctype c) noexcept;
 }
 \indent{
@@ -684,7 +691,7 @@ constexpr bool is_ascii_upper(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_alpha(\ctype c) noexcept;
 }
 \indent{
@@ -693,7 +700,7 @@ constexpr bool is_ascii_alpha(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_alphanumeric(\ctype c) noexcept;
 }
 \indent{
@@ -702,7 +709,7 @@ constexpr bool is_ascii_alphanumeric(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_punctuation(\ctype c) noexcept;
 }
 \indent{
@@ -712,7 +719,7 @@ constexpr bool is_ascii_punctuation(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_graphical(\ctype c) noexcept;
 }
 \indent{
@@ -721,7 +728,7 @@ constexpr bool is_ascii_graphical(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_printable(\ctype c) noexcept;
 }
 \indent{
@@ -730,7 +737,7 @@ constexpr bool is_ascii_printable(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_horizontal_whitespace(\ctype c) noexcept;
 }
 \indent{
@@ -739,7 +746,7 @@ constexpr bool is_ascii_horizontal_whitespace(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_whitespace(\ctype c) noexcept;
 }
 \indent{
@@ -748,7 +755,7 @@ constexpr bool is_ascii_whitespace(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool is_ascii_control(\ctype c) noexcept;
 }
 \indent{
@@ -770,7 +777,7 @@ is a \gterm{character-literal} of type \cpp{T} containing a single
 for \cpp{x} \c{le} \cpp{0x10FFFF}.
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr \ctype to_ascii_lower(\ctype c) noexcept;
 }
 \indent{
@@ -779,7 +786,7 @@ constexpr \ctype to_ascii_lower(\ctype c) noexcept;
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr \ctype to_ascii_upper(\ctype c) noexcept;
 }
 \indent{
@@ -790,7 +797,7 @@ constexpr \ctype to_ascii_upper(\ctype c) noexcept;
 
 \h3[listed=no]{ASCII case-insensitive character comparison \stable-ref{ascii.chars.case.compare}}
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr std::strong_ordering ascii_case_insensitive_compare(\ctype a,
                                                               \ctype b) noexcept;
 }
@@ -800,7 +807,7 @@ constexpr std::strong_ordering ascii_case_insensitive_compare(\ctype a,
 }
 }
 
-\codeblock[cpp,borders=no]{
+\wording-decl{
 constexpr bool ascii_case_insensitive_equals(\ctype a,
                                              \ctype b) noexcept;
 }
