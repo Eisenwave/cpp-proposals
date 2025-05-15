@@ -1723,7 +1723,11 @@ if <code><h- data-h=id>D</h-></code> is a Unicode character type (<a href=https:
 applied to a Unicode character type other than <code><h- data-h=id>D</h-></code>.
 </ins></li>
 </ul>
-<p><del>A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.</del>
+<p><ins><wg21-block>[<i>Note</i>: 
+This deprecation also applies to cv-qualified Unicode character types
+because prvalues of such types are adjusted to cv-unqualified types; see <a href=https://eel%2eis/c++draft/expr%2etype>[expr.type]</a>.
+ — <i>end note</i>]</wg21-block></ins><br/>
+<del>A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.</del>
 </p></diff-block>
 
 <p>Insert a new paragraph immediately following <a href=https://eel%2eis/c++draft/conv%2eintegral#1>[conv.integral] paragraph 1</a>:
@@ -1732,6 +1736,34 @@ applied to a Unicode character type other than <code><h- data-h=id>D</h-></code>
 <p>A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.
 </p></ins-block>
 
+<p>Change <a href=https://eel%2eis/c++draft/expr%2earith%2econv#1>[expr.arith.conv] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>Many binary operators that expect operands of arithmetic or enumeration type
+cause conversions and yield result types in a similar way.
+The purpose is to yield a common type, which is also the type of the result.
+This pattern is called the <i>usual arithmetic conversions</i>, which are defined as follows:
+</p><ul>
+<li>
+The lvalue-to-rvalue conversion (<a href=https://eel%2eis/c++draft/conv%2elval>[conv.lval]</a>) is applied to each operand
+and the resulting prvalues are used in place of the original operands
+for the remainder of this section.
+</li>
+<li>[...]</li>
+<li>
+Otherwise, each operand is converted to a common type <code><h- data-h=id>C</h-></code>.
+<ins>The conversion is deprecated if the operands
+are of different Unicode character types ([depr.conv.unicode]).</ins>
+The integral promotion rules (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>) are used
+to determine a type <code><h- data-h=id>T1</h-></code> and type <code><h- data-h=id>T2</h-></code> for each operand.
+Then the following rules are applied to determine C:
+<ul>
+    <li>[...]</li>
+</ul>
+</li>
+</ul>
+</diff-block>
+
 <p>Insert a new subclause in <a href=https://eel%2eis/c++draft/depr>[depr]</a> between <a href=https://eel%2eis/c++draft/depr%2elocal>[depr.local]</a> and <a href=https://eel%2eis/c++draft/depr%2ecapture%2ethis>[depr.capture.this]</a>.
 </p>
 <ins-block>
@@ -1739,7 +1771,10 @@ applied to a Unicode character type other than <code><h- data-h=id>D</h-></code>
 
 <p>Integral conversions (<a href=https://eel%2eis/c++draft/conv%2eintegral>[conv.integral]</a>)
 where the source and destination type are
-different Unicode character types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>) are deprecated.
+different Unicode character types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>),
+and usual arithmetic conversions (<a href=https://eel%2eis/c++draft/expr%2earith%2econv>[expr.arith.conv]</a>)
+with two different Unicode character types,
+are deprecated.
 </p>
 <p><wg21-block>[<i>Example</i>: 
 <code-block class=borderless><h- data-h=kw_type>bool</h-> <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->

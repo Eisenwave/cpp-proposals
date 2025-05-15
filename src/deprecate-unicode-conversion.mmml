@@ -291,6 +291,10 @@ if \tcode{D} is a Unicode character type (\eelis{basic.fundamental}), and
 applied to a Unicode character type other than \tcode{D}.
 }}
 }
+\ins{\wg21-note{
+This deprecation also applies to cv-qualified Unicode character types
+because prvalues of such types are adjusted to cv-unqualified types; see \eelis{expr.type}.
+}}\br
 \del{A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.}
 }
 
@@ -300,6 +304,34 @@ Insert a new paragraph immediately following \eelis{conv.integral#1}:
 A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.
 }
 
+Change \eelis{expr.arith.conv#1} as follows:
+
+\diff{
+Many binary operators that expect operands of arithmetic or enumeration type
+cause conversions and yield result types in a similar way.
+The purpose is to yield a common type, which is also the type of the result.
+This pattern is called the \i{usual arithmetic conversions}, which are defined as follows:
+\ul{
+\item{
+The lvalue-to-rvalue conversion (\eelis{conv.lval}) is applied to each operand
+and the resulting prvalues are used in place of the original operands
+for the remainder of this section.
+}
+\item{[...]}
+\item{
+Otherwise, each operand is converted to a common type \tcode{C}.
+\ins{The conversion is deprecated if the operands
+are of different Unicode character types ([depr.conv.unicode]).}
+The integral promotion rules (\eelis{conv.prom}) are used
+to determine a type \tcode{T1} and type \tcode{T2} for each operand.
+Then the following rules are applied to determine C:
+\ul{
+    \item{[...]}
+}
+}
+}
+}
+
 Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{depr.capture.this}.
 
 \insblock{
@@ -307,7 +339,10 @@ Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{dep
 
 Integral conversions (\eelis{conv.integral})
 where the source and destination type are
-different Unicode character types (\eelis{basic.fundamental}) are deprecated.
+different Unicode character types (\eelis{basic.fundamental}),
+and usual arithmetic conversions (\eelis{expr.arith.conv})
+with two different Unicode character types,
+are deprecated.
 
 \wg21-example{
 \codeblock[cpp,borders=no]{
