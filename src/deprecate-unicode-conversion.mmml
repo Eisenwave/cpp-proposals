@@ -312,10 +312,10 @@ different Unicode character types (\eelis{basic.fundamental}) are deprecated.
 \wg21-example{
 \codeblock[cpp,borders=no]{
 bool is_oe(char8_t c) {
-    return c == U'ö'; // \serif{deprecated} 
+    return c == U'ö';   // \serif{deprecated}
 }
 void f() {
-    is_umlaut(U'ö'); // \serif{deprecated}
+    is_oe(U'ö');        // \serif{deprecated}
 }
 }
 }
