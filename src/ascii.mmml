@@ -6,6 +6,7 @@
 \def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
 \def[\wording-decl{...}]{\codeblock[cpp,borders=no]{\put}}
 \def[\header{...}]{\tt{<\put>}}
+\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
 
 \comment{This solely exists to interfere less with TeX highlighting:}
 \def[\dollar]{\U{24}}
@@ -519,7 +520,7 @@ can be replaced with \cpp{static_cast<T>(x)}.
 
 The wording changes are relative to \ref[N5008].
 
-In subclause \ref[https://eel.is/c++draft/version.syn],
+In subclause \eelis{version.syn},
 update the synopsis as follows:
 
 \diff{\codeblock[cpp,borders=no]{
@@ -530,7 +531,7 @@ update the synopsis as follows:
 \serif{\html{[...]}}
 }}
 
-In Clause \ref[https://eel.is/c++draft/text],
+In Clause \eelis{text},
 append a new subclause:
 
 \style{
@@ -554,7 +555,7 @@ Let \cpp{\exposid{TO-CHAR32}(c)} be defined as follows:
     \item{
         If \cpp{c} is of type
         \cpp{char8_t}, \cpp{char16_t}, or \cpp{char32_t},
-        or if the literal encoding (\ref[https://eel.is/c++draft/lex.charset])
+        or if the literal encoding (\eelis{lex.charset})
         for character literals of the type of \cpp{c}
         is a Unicode character encoding,
         \cpp{\exposid{TO-CHAR32}(c)} is \cpp{static_cast<char32_t>(c)}.
@@ -562,7 +563,7 @@ Let \cpp{\exposid{TO-CHAR32}(c)} be defined as follows:
     \item{
         Otherwise, if there exists a character \i{b} in the basic character set
         which equals \cpp{c}
-        when encoded using a character literal (\ref[https://eel.is/c++draft/lex.ccon])
+        when encoded using a character literal (\eelis{lex.ccon})
         of the type of \cpp{c},
         \cpp{\exposid{TO-CHAR32}(c)}
         is a UTF-32 character literal which encodes \i{b}.
@@ -583,7 +584,7 @@ Let \cpp{\exposid{TO-CHAR32}(c)} be defined as follows:
 When a function is specified with a type placeholder of
 \cpp{\ctype},
 the implementation provides overloads for all cv-unqualified 
-character types (\ref[https://eel.is/c++draft/basic.fundamental])
+character types (\eelis{basic.fundamental})
 in lieu of \cpp{\ctype}.
 
 \codeblock[cpp,borders=no]{
@@ -767,7 +768,7 @@ constexpr bool is_ascii_control(\ctype c) noexcept;
 \h3[listed=no]{ASCII character transformation \stable-ref{ascii.chars.transform}}
 
 Let \cpp{x} be an expression of integer type
-and let \cpp{T} be a character type (\ref[https://eel.is/c++draft/basic.fundamental]).
+and let \cpp{T} be a character type (\eelis{basic.fundamental}).
 Let \cpp{\exposid{CHAR-ENCODE}<T>(x)} be a
 is a \gterm{character-literal} of type \cpp{T} containing a single
 \gterm{universal-character-name} which encodes the value of \cpp{x} interpreted as a Unicode code point.
