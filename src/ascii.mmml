@@ -504,6 +504,32 @@ Surrogate code units in UTF-8 are all greater than \tcode{0x7F},
 so if we implement say, \tcode{is_ascii_digit} naively by checking
 \tcode{c >= '0' && c <= '9'}, it "just works".
 
+\h3[id=why-not-integers]{Why not accept any integer type?}
+
+Some people argue that a test like \tcode{is_ascii_digit('0')}
+is a purely numerical test using the ASCII table,
+and so passing \tcode{is_ascii_digit(0x30)} should also be valid.
+
+However, this permissive interface would invite bugs.
+For example, \tcode{c - '0'} is the difference between ASCII characters, not an ASCII character,
+so passing it into \tcode{is_ascii_digit} would be nonsensical.
+Static type systems exist for a reason:
+to protect us from stupid mistakes.
+While \tcode{char}, \tcode{char32_t} etc. are not required to be ASCII-encoded,
+they are at least characters,
+so passing them into our functions is likely something the user intended to do,
+which we cannot say with confidence about \tcode{int}, \tcode{unsigned int}, etc.
+
+Additionally, if we allowed passing signed integers,
+we may want to make the behavior erroneous or undefined for negative inputs
+because \tcode{is_ascii_digit(-1'000'000)} is most likely a developer mistake.
+Our interface is very simple:
+it has a wide contract and almost all functions are \tcode{noexcept}.
+Let's keep it that way!
+
+Lastly, even proponents of passing integer types would not want
+\tcode{is_ascii_digit(true)} to be valid.
+
 \h3{ASCII case-insensitive views and algorithms}
 
 Ignoring ASCII case in algorithms is a fairly common problem.
@@ -546,7 +572,9 @@ However, this is not proposed for multiple reasons:
 
 \h2{Implementation experience}
 
-A naive implementation of all proposed functions can be found at \ref[CompilerExplorer].
+A naive implementation of all proposed functions can be found at \ref[CompilerExplorer],
+although these are implemented as function templates,
+not as overload sets (as proposed).
 
 A more advanced implementation of some functions can be found in \ref[µlight].
 Character tests can be optimized using 128-bit or 256-bit bitsets.

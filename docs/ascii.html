@@ -1491,7 +1491,7 @@ We propose lightweight, locale-independent alternatives.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href="#can%27t-you-implement-this-trivially-yourself?"><h3>Can't you implement this trivially yourself?</h3></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#why-no-function-objects><h3>Why no function objects?</h3></a><div class=toc-num data-level=3>2.6</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.6.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.6.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.6.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding><h4>Treat the input as ASCII, regardless of the literal encoding</h4></a><div class=toc-num data-level=3>2.7</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.8</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=3>2.9</div><a href=#why-just-ascii><h3>Why just ASCII?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href="#can%27t-you-implement-this-trivially-yourself?"><h3>Can't you implement this trivially yourself?</h3></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#why-no-function-objects><h3>Why no function objects?</h3></a><div class=toc-num data-level=3>2.6</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.6.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.6.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.6.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding><h4>Treat the input as ASCII, regardless of the literal encoding</h4></a><div class=toc-num data-level=3>2.7</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.8</div><a href=#why-not-integers><h3>Why not accept any integer type?</h3></a><div class=toc-num data-level=3>2.9</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=3>2.10</div><a href=#why-just-ascii><h3>Why just ASCII?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1934,7 +1934,33 @@ Surrogate code units in UTF-8 are all greater than <code><h- data-h=num_deco>0x<
 so if we implement say, <code><h- data-h=id>is_ascii_digit</h-></code> naively by checking
 <code><h- data-h=id>c</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>9</h-><h- data-h=str_dlim>'</h-></code>, it "just works".
 </p>
-<h3 id=ascii-case-insensitive-views-and-algorithms><a class=para href=#ascii-case-insensitive-views-and-algorithms></a>2.8. ASCII case-insensitive views and algorithms</h3>
+<h3 id=why-not-integers><a class=para href=#why-not-integers></a>2.8. Why not accept any integer type?</h3>
+
+<p>Some people argue that a test like <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-></code>
+is a purely numerical test using the ASCII table,
+and so passing <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>0x</h-><h- data-h=num>30</h-><h- data-h=sym_par>)</h-></code> should also be valid.
+</p>
+<p>However, this permissive interface would invite bugs.
+For example, <code><h- data-h=id>c</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-></code> is the difference between ASCII characters, not an ASCII character,
+so passing it into <code><h- data-h=id>is_ascii_digit</h-></code> would be nonsensical.
+Static type systems exist for a reason:
+to protect us from stupid mistakes.
+While <code><h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw_type>char32_t</h-></code> etc. are not required to be ASCII-encoded,
+they are at least characters,
+so passing them into our functions is likely something the user intended to do,
+which we cannot say with confidence about <code><h- data-h=kw_type>int</h-></code>, <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-></code>, etc.
+</p>
+<p>Additionally, if we allowed passing signed integers,
+we may want to make the behavior erroneous or undefined for negative inputs
+because <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=num_dlim>'</h-><h- data-h=num>000</h-><h- data-h=num_dlim>'</h-><h- data-h=num>000</h-><h- data-h=sym_par>)</h-></code> is most likely a developer mistake.
+Our interface is very simple:
+it has a wide contract and almost all functions are <code><h- data-h=kw>noexcept</h-></code>.
+Let's keep it that way!
+</p>
+<p>Lastly, even proponents of passing integer types would not want
+<code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-></code> to be valid.
+</p>
+<h3 id=ascii-case-insensitive-views-and-algorithms><a class=para href=#ascii-case-insensitive-views-and-algorithms></a>2.9. ASCII case-insensitive views and algorithms</h3>
 
 <p>Ignoring ASCII case in algorithms is a fairly common problem.
 Therefore, it may be useful to provide views such as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-></code>
@@ -1954,7 +1980,7 @@ To identify a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- d
 <p>We intend to propose such utilities in a future paper.
 This proposal is focused exclusively on operations involving character types.
 </p>
-<h3 id=why-just-ascii><a class=para href=#why-just-ascii></a>2.9. Why just ASCII?</h3>
+<h3 id=why-just-ascii><a class=para href=#why-just-ascii></a>2.10. Why just ASCII?</h3>
 
 <p>It may be tempting to generalize the proposed utilities beyond ASCII, e.g. to UTF-8.
 However, this is not proposed for multiple reasons:
@@ -1974,7 +2000,9 @@ However, this is not proposed for multiple reasons:
 
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>3. Implementation experience</h2>
 
-<p>A naive implementation of all proposed functions can be found at <a href="https://godbolt%2eorg/z/5nvWzdf8G">[CompilerExplorer]</a>.
+<p>A naive implementation of all proposed functions can be found at <a href="https://godbolt%2eorg/z/5nvWzdf8G">[CompilerExplorer]</a>,
+although these are implemented as function templates,
+not as overload sets (as proposed).
 </p>
 <p>A more advanced implementation of some functions can be found in <a href="https://github%2ecom/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars%2ehpp">[µlight]</a>.
 Character tests can be optimized using 128-bit or 256-bit bitsets.
