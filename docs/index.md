@@ -69,17 +69,24 @@ Author: Jan Schultke
 - [Latest](clmul.html)
 - [P3642R0](clmul-p3642r0.html)
 
-### P3643R0: `std::to_signed`, `std::to_unsigned`
+### P3643: `std::to_signed`, `std::to_unsigned`
 
 - [Latest](to-signed-unsigned.html)
 - [P3643R0](to-signed-unsigned.html)
 
-### D3688R0: ASCII character utilities
+### P3688: ASCII character utilities
 
 **Status**: Active<br>
 **Audience**: SG16, LEWG
 
 - [Latest](ascii.html)
+
+### P3695: Deprecate implicit conversions between `char8_t`, `char16_t`, and `char32_t`
+
+**Status**: Active<br>
+**Audience**: SG16, EWG
+
+- [Latest](deprecate-unicode-conversion.html)
 
 ## Inactive
 
