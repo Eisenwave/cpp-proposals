@@ -28,7 +28,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\ref[https://wg21.link/D3688R0]{D3688R0}}
-    \dt{Date:}            \dd{\tt{2025-05-09}}
+    \dt{Date:}            \dd{\tt{2025-05-15}}
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
