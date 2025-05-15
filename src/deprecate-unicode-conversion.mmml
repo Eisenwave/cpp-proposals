@@ -82,7 +82,7 @@ so the \tcode{char32_t(0xa0)} value matches the second UTF-8 code unit of U+0520
 }
 
 \bug{
-Such bad comparisons often doesn't occur directly, but within \header{algorithm}:
+Such bad comparisons often don't occur directly, but within \header{algorithm}:
 \cppblock{
 constexpr bool is_umlaut(char32_t c) {
     return c == U'ä' || c == U'ö' || c == U'ü';
