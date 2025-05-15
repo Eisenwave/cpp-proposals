@@ -1458,6 +1458,13 @@ if (theme !== null) {
 
 
 
+
+
+
+
+
+
+
 <p><div class=wg21-head><h1>ASCII character utilities</h1>
 
 <dl>
@@ -1474,7 +1481,7 @@ if (theme !== null) {
 </div></p>
 
 <abstract-block><p><intro-></intro-> 
-The utilities in <tt->&lt;cctype&gt;</tt-> or <tt->&lt;locale&gt;</tt->
+The utilities in <code><h- data-h=str>&lt;cctype&gt;</h-></code> or <code><h- data-h=str>&lt;locale&gt;</h-></code>
 are locale-specific,
 not <code><h- data-h=kw>constexpr</h-></code>,
 and provide no support for Unicode character types.
@@ -1495,7 +1502,7 @@ Unicode properties are not relevant to this task,
 and usually, neither are locales.
 </p>
 <p>Unfortunately, these common and simple tasks are only supported
-through functions in the <tt->&lt;cctype&gt;</tt-> and <tt->&lt;locale&gt;</tt-> headers, such as:
+through functions in the <code><h- data-h=str>&lt;cctype&gt;</h-></code> and <code><h- data-h=str>&lt;locale&gt;</h-></code> headers, such as:
 </p><code-block><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> &lt;cctype&gt;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>isalnum</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>ch</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>isalpha</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>ch</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
@@ -1505,7 +1512,7 @@ through functions in the <tt->&lt;cctype&gt;</tt-> and <tt->&lt;locale&gt;</tt->
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> &lt;locale&gt;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>charT</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>isalnum</h-><h- data-h=sym_par>(</h-><h- data-h=id>charT</h-> <h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>locale</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>loc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p>Especially the <tt->&lt;cctype&gt;</tt-> functions are ridden with problems:
+<p>Especially the <code><h- data-h=str>&lt;cctype&gt;</h-></code> functions are ridden with problems:
 </p><ol>
 <li>
     There is no support for Unicode character types
@@ -1549,7 +1556,7 @@ through functions in the <tt->&lt;cctype&gt;</tt-> and <tt->&lt;locale&gt;</tt->
 
 <note-block><p><intro-></intro-> 
 Many of these problems are resolved by the
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>locale</h-></code> overloads in <tt->&lt;locale&gt;</tt->,
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>locale</h-></code> overloads in <code><h- data-h=str>&lt;locale&gt;</h-></code>,
 but their locale dependence makes them unfit for what this proposal aims to achieve.
 </p>
 <p>Testing whether a <code><h- data-h=kw_type>char8_t</h-></code> (assumed to be a UTF-8 code unit)
@@ -1575,7 +1582,7 @@ The counterpart to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data
 
 <p><code><i><h- data-h=id>character-type</h-></i></code> means that there exists an overload set where
 this placeholder is replaced with each of the character types.
-This design is more consistent with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>from_chars</h-></code> and <tt->&lt;cmath&gt;</tt-> functions
+This design is more consistent with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>from_chars</h-></code> and <code><h- data-h=str>&lt;cmath&gt;</h-></code> functions
 than say, <code><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>Char</h-><h- data-h=sym_op>&gt;</h-></code>.
 Equivalent functions could also be added to C, if there is interest.
 This signature also allows the use with types that are convertible to a specific character type.
@@ -1606,7 +1613,7 @@ Note that the character set notation <tt->[</tt->...<tt->]</tt-> is taken from R
 </p>
 <table id=fun-table>
 <tr>
-    <th><tt->&lt;cctype&gt;</tt-> counterpart</th>
+    <th><code><h- data-h=str>&lt;cctype&gt;</h-></code> counterpart</th>
     <th>Proposed name</th>
     <th>Returns (given ASCII <code><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-></code>)</th>
 </tr>
@@ -1717,7 +1724,7 @@ In the default <code><h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=s
 <code><h- data-h=id>isgraph</h-></code> is simply <code><h- data-h=id>isprint</h-></code> without <code><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>.
 </p>
 <p>Similarly, <code><h- data-h=id>isblank</h-></code> should perhaps have no new version either.
-This proposal simply has a new version for every <tt->&lt;cctype&gt;</tt-> function;
+This proposal simply has a new version for every <code><h- data-h=str>&lt;cctype&gt;</h-></code> function;
 if need be, they are easy to remove.
 </p></decision-block>
 
@@ -1842,7 +1849,7 @@ which may be surprising to the user.
 A lot of protocols (HTTP, POP) and file formats (JSON, XML) are ASCII/UTF-8-based
 and need to be supported on EBCDIC systems,
 making these functions universally useful,
-especially as <tt->&lt;cctype&gt;</tt-> functions cannot easily be used to deal with ASCII on these platforms.
+especially as <code><h- data-h=str>&lt;cctype&gt;</h-></code> functions cannot easily be used to deal with ASCII on these platforms.
 </p>
 <p>Ultimately, do we want functions to deal with ASCII or the literal encoding?
 If we want them to be a general way to query the ordinary literal encoding,
@@ -1874,7 +1881,7 @@ With these semantics, the user can safely write:
 <h- data-h=kw>auto</h-> <h- data-h=id>it</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>find</h-><h- data-h=sym_par>(</h-><h- data-h=id>str</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 </example-block>
 <p>Making ASCII inputs a precondition
-would make these functions just as unsafe and commonly misused as the <tt->&lt;cctype&gt;</tt-> functions.
+would make these functions just as unsafe and commonly misused as the <code><h- data-h=str>&lt;cctype&gt;</h-></code> functions.
 Throwing on non-ASCII inputs would make them much less convenient to use in algorithms.
 </p>
 <p>The proposed behavior also works very well with any ASCII-compatible encoding, such as UTF-8.
@@ -2008,7 +2015,7 @@ or encodings that are ASCII-compatible, such as UTF-8.
     </li>
 </ul>
 
-<h3 id=header--synopsis><a class=para href=#header--synopsis></a>Header <tt->&lt;ascii&gt;</tt-> synopsis <span class=stable-ref>[ascii.syn]</span></h3>
+<h3 id=header--synopsis><a class=para href=#header--synopsis></a>Header <code><h- data-h=str>&lt;ascii&gt;</h-></code> synopsis <span class=stable-ref>[ascii.syn]</span></h3>
 
 <p>When a function is specified with a type placeholder of
 <code><i><h- data-h=id>character-type</h-></i></code>,
@@ -2053,115 +2060,99 @@ in lieu of <code><i><h- data-h=id>character-type</h-></i></code>.
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>base</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>10</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Preconditions</i>:
-    <code><h- data-h=id>base</h-></code> has a value between 2 and 36 (inclusive).
+<p><i>Preconditions</i>:
+<code><h- data-h=id>base</h-></code> has a value between 2 and 36 (inclusive).
 </p>
 <p>
-    <i>Returns</i>:
-    <code-block class=borderless>   <h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>min</h-><h- data-h=sym_par>(</h-><h- data-h=id>base</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>10</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+<i>Returns</i>:
+<code-block class=borderless>   <h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>min</h-><h- data-h=sym_par>(</h-><h- data-h=id>base</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>10</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
 <h- data-h=sym_op>||</h-> <h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>max</h-><h- data-h=sym_par>(</h-><h- data-h=id>base</h-> <h- data-h=sym_op>-</h-> <h- data-h=num>10</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
 <h- data-h=sym_op>||</h-> <h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>max</h-><h- data-h=sym_par>(</h-><h- data-h=id>base</h-> <h- data-h=sym_op>-</h-> <h- data-h=num>10</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
 </p>
-<p>
-    <i>Remarks</i>:
-    A function call expression that violates the precondition
-    in the <i>Preconditions</i>: element
-    is not a core constant expression.
-</p>
-</div></p>
+
+<p><i>Remarks</i>:
+A function call expression that violates the precondition
+in the <i>Preconditions</i>: element
+is not a core constant expression.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_bit</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_octal_digit</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>8</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>8</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_hex_digit</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>16</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>16</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_lower</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>z</h-><h- data-h=str_dlim>'</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>z</h-><h- data-h=str_dlim>'</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_upper</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>Z</h-><h- data-h=str_dlim>'</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>Z</h-><h- data-h=str_dlim>'</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_alpha</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_lower</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_lower</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_alphanumeric</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_alpha</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_alpha</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_punctuation</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>u32string_view</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=esc>\</h-><h- data-h=esc>"</h-><h- data-h=str>#$%&amp;'()*+,-./:;&lt;=&gt;?@[</h-><h- data-h=esc>\</h-><h- data-h=esc>\</h-><h- data-h=str>]^_`{|}~</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code>.
-    
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>u32string_view</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=esc>\</h-><h- data-h=esc>"</h-><h- data-h=str>#</h-><h- data-h=str>$</h-><h- data-h=str>%</h-><h- data-h=str>&amp;'()*+,-./:;&lt;=&gt;?@[</h-><h- data-h=esc>\</h-><h- data-h=esc>\</h-><h- data-h=str>]^_`{|}~</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_graphical</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_alphanumeric</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_punctuation</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_alphanumeric</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_ascii_punctuation</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_printable</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_graphical</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_graphical</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_horizontal_whitespace</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>t</h-><h- data-h=str_dlim>'</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>t</h-><h- data-h=str_dlim>'</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_whitespace</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>u32string_view</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=esc>\</h-><h- data-h=esc>f</h-><h- data-h=esc>\</h-><h- data-h=esc>n</h-><h- data-h=esc>\</h-><h- data-h=esc>r</h-><h- data-h=esc>\</h-><h- data-h=esc>t</h-><h- data-h=esc>\</h-><h- data-h=esc>v</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>u32string_view</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=esc>\</h-><h- data-h=esc>f</h-><h- data-h=esc>\</h-><h- data-h=esc>n</h-><h- data-h=esc>\</h-><h- data-h=esc>r</h-><h- data-h=esc>\</h-><h- data-h=esc>t</h-><h- data-h=esc>\</h-><h- data-h=esc>v</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>is_ascii_control</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>1F</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>N{DELETE}</h-><h- data-h=str_dlim>'</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>1F</h-> <h- data-h=sym_op>||</h-> <i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=esc>\</h-><h- data-h=esc>N{DELETE}</h-><h- data-h=str_dlim>'</h-></code>.
+</p></div></p>
 
 <h3 id=ascii-character-transformation><a class=para href=#ascii-character-transformation></a>ASCII character transformation <span class=stable-ref>[ascii.chars.transform]</span></h3>
 
@@ -2178,35 +2169,31 @@ for <code><h- data-h=id>x</h-></code> &le; <code><h- data-h=num_deco>0x</h-><h- 
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <i><h- data-h=id>character-type</h-></i> <h- data-h=id>to_ascii_lower</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <i><h- data-h=id>CHAR-ENCODE</h-></i><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>character-type</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>c</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <i><h- data-h=id>CHAR-ENCODE</h-></i><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>character-type</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>c</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <i><h- data-h=id>character-type</h-></i> <h- data-h=id>to_ascii_upper</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>is_ascii_lower</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <i><h- data-h=id>CHAR-ENCODE</h-></i><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>character-type</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>c</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>is_ascii_lower</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <i><h- data-h=id>CHAR-ENCODE</h-></i><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>character-type</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>TO-CHAR32</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>c</h-></code>.
+</p></div></p>
 
 <h3 id=ascii-case-insensitive-character-comparison><a class=para href=#ascii-case-insensitive-character-comparison></a>ASCII case-insensitive character comparison <span class=stable-ref>[ascii.chars.case.compare]</span></h3>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>strong_ordering</h-> <h- data-h=id>ascii_case_insensitive_compare</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>a</h-><h- data-h=sym_punc>,</h->
                                                               <i><h- data-h=id>character-type</h-></i> <h- data-h=id>b</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 <code-block class=borderless><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ascii_case_insensitive_equals</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>character-type</h-></i> <h- data-h=id>a</h-><h- data-h=sym_punc>,</h->
                                              <i><h- data-h=id>character-type</h-></i> <h- data-h=id>b</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p>
-    <i>Returns</i>: <code><h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-></code>.
-</p>
-</div></p>
+<p><i>Returns</i>:
+<code><h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>ascii_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-></code>.
+</p></div></p>
 
 </ins-block>
 
