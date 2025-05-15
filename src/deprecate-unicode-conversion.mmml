@@ -1,0 +1,354 @@
+\def[\cppblock{...}]{\codeblock[cpp]{\put}}
+\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
+\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
+\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
+\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
+\def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
+
+\comment{
+    These macros make our wording very similar to C++ draft TeX,
+    making the job of the editors much more convenient.
+}
+\def[\tcode{...}]{\code[cpp]{\put}}
+\def[\grammarterm{...}]{\gterm{\put}}
+\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
+\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
+\def[\expects]{\i{Preconditions}:}
+\def[\remarks]{\i{Remarks}:}
+\def[\returns]{\i{Returns}:}
+\def[\recommended]{\i{Recommended practice}:}
+
+\wg21-head[
+    title = Deprecate implicit conversions
+            between \tt{char8_t}\, \tt{char16_t}\, and \tt{char32_t}
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3695R0}}
+    \dt{Date:}            \dd{\tt{2025-05-15}}
+    \dt{Audience:}        \dd{EWG, SG16}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \comment{\dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3695R0/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/deprecate-unicode-conversion.mmml]}
+}
+\hr
+}
+
+\abstract{
+Implicit conversions between \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}
+are bug-prone and thus harmful to the language.
+I propose to deprecate them.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+Implicit conversions between \tcode{char8_t} and \tcode{char32_t} invite bugs:
+
+\bug{
+There exists no warning in a major compiler that would detect the following "bad comparison":
+\cppblock{
+constexpr bool contains_oe(std::u8string_view str) {
+    for (char8_t c : str)
+        if (c == U'ö')
+            return true;
+    return false;
+}
+static_assert(contains_oe(u8"ö")); // fails?!
+}
+\tcode{c == U'ö'} always fails if \tcode{c} is a UTF-8 code unit
+because it is equivalent to \tcode{c == char32_t(0xf6)},
+and a UTF-8 code unit cannot have this value.
+}
+
+\bug{
+An even more evil variation is a search which yields false positives:
+\cppblock{
+constexpr bool contains_nbsp(std::u8string_view str) {
+    for (char8_t c : str)
+        if (c == U'\\N{NO-BREAK SPACE}')
+            return true;
+    return false;
+}
+static_assert(contains_nbsp(u8"\\N{CYRILLIC CAPITAL LETTER EL WITH MIDDLE HOOK}")); // OK?!
+}
+The assertion succeeds because Ԡ (U+0520) is UTF-8 encoded as \tcode{0xd4}, \tcode{0xa0},
+and NBSP is U+00A0,
+so the \tcode{char32_t(0xa0)} value matches the second UTF-8 code unit of U+0520.
+}
+
+\bug{
+Such bad comparisons often doesn't occur directly, but within \header{algorithm}:
+\cppblock{
+constexpr bool is_umlaut(char32_t c) {
+    return c == U'ä' || c == U'ö' || c == U'ü';
+}
+// ...
+constexpr std::u8string_view umlauts = u8"äöü";
+static_assert(std::ranges::find_if(umlauts, is_umlaut) != umlauts.end()); // fails?!
+}
+Note that the "bad comparison" occurs between two \tcode{char32_t} in \tcode{is_umlaut},
+which demonstrates that implicit conversions in general are bug-prone, not just comparisons.
+We obviously don't want to deprecate \tcode{char32_t == char32_t}.
+}
+
+Conversions "the other way" (e.g. \tcode{char32_t} \c{rightarrow} \tcode{char8_t})
+are obviously bug-prone too because information is lost,
+but such bugs can already be caught by all compiler warnings,
+and they are problematic for the same reason as \tcode{int} \c{rightarrow} \tcode{short},
+not because of anything specific to character types.
+The listed bugs are interesting \em{precisely because} no information is lost.
+
+\h3{It's not hypothetical. This really happens.}
+
+These kinds of bugs are not far-fetched hypotheticals either;
+I have written such bugs myself,
+and have had them contributed
+to my syntax highlighter \ref[µlight],
+which makes extensive use of \tcode{char8_t} and \tcode{char32_t}.
+Very early in development, I have realized how dangerous these implicit conversions are,
+so most functions in the style of \tcode{is_umlaut} have a deleted overload:
+\cppblock{
+constexpr bool is_umlaut(char8_t) = delete;
+constexpr bool is_umlaut(char32_t c) {
+    return c == U'ä' || c == U'ö' || c == U'ü';
+}
+}
+
+\note{
+Compilers do have warnings which detect comparisons which are always \tcode{false},
+but technically, \tcode{char8_t} can have the values \tcode{0xf6} and \tcode{0xa0},
+so it is undetectable.
+}
+
+\h3{The underlying problem}
+
+The underlying problem is that \tcode{char8_t == char32_t} is \tcode{Car == Banana}.
+In general, it is meaningless to compare code units with different encodings.
+
+To be fair, Unicode character types aren't strictly required to store Unicode code units.
+However, that is their primary purpose, and the assumption holds true for any Unicode
+\grammarterm{character-literal} and \grammarterm{string-literal}.
+
+\h2{Scope}
+
+I propose to deprecate implicit conversions between
+\tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}.
+As demonstrated above, these are extremely bug-prone.
+
+\h3[id=safe-comparisons]{What about "safe" comparisons?}
+
+In comparisons between code units,
+certain ranges of code points yield the expected result.
+For example, \tcode{u8'x' == U'x'} is \tcode{true}
+because all Unicode encodings are ASCII-compatible,
+so the numeric value of anything in the basic latin block (\c{le} U+007F)
+will have the same single-code-unit value in UTF-8, UTF-16, and UTF-32.
+
+However, even those should be deprecated because:
+\ul{
+\item{
+    Keeping these valid would essentially leak implementation details of Unicode encodings
+    into the C++ core language,
+    which seems like unclean design.
+}
+\item{
+    To rely on this "feature", the developer needs to memorize which code points are "safe to use".
+    It is not obvious whether \tcode{c == U'€'} or \tcode{c == U'\U{24}'} are always safe
+    (hint: the latter one is),
+    and it's quite likely that someone uses this "feature" accidentally.
+}
+\item{
+    It would make this "feature" (or lack thereof) harder to teach than it needs to be.
+    The rule can be very simple: different \tcode{charN_t} cannot be converted to one another.
+    Simple rules are easy to teach.
+}
+}
+
+\h3[id=char-and-wchar_t]{What about \tcode{char} and \tcode{wchar_t}?}
+
+\tcode{char} and \tcode{wchar_t} have existed for too long to make any deprecation
+of their behavior realistic at this point.
+There are approximately ten trillion lines of C++ code using \tcode{char}\sup{[\i{citation needed}]}.
+
+It would still be plausible to deprecate say, conversions between \tcode{char} and \tcode{charN_t}.
+However, there's a good chance that these are valid
+because UTF-8 text is often stored in \tcode{char[]},
+and UTF-16 or UTF-32 text is often stored in \tcode{wchar_t[]}.
+On the contrary, \tcode{char8_t} and \tcode{char32_t} almost certainly use different encodings.
+
+\h3[id=integer-comparisons]{What about conversions with integers?}
+
+It is quite common to compare character types to integer types.
+For example, we may write \tcode{c <= 0x7f}
+to check whether a character falls into the basic latin block.
+There is nothing exceptionally bug-prone about comparing with say,
+\tcode{0x00A0} instead of \tcode{U'\\u00A0'},
+so we are not interested in deprecating character/integer conversions.
+
+\h3[id=after-deprecation]{What comes after deprecation?}
+
+The goal is to eventually remove these conversions entirely.
+Since the behavior is
+easily detected (\ref[#implementation-experience]) and
+easily replaced (\ref[#replacement]),
+removal should be feasible within one or two revisions of the language.
+
+Furthermore, I don't believe that having "tombstone behavior" would be necessary.
+That is, allowing the conversion to happen but making the program ill-formed if it happens.
+The reason is that \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}
+rarely appear in overload sets that include types that are not characters.
+\example{
+Without "tombstone behavior",
+the following code would eventually change its meaning:
+\cppblock{
+void f(std::any);
+void f(char32_t);
+
+int main() {
+    // Currently selects f(char32_t), would select f(std::any) in the future.
+    f(u8'a'); 
+}
+}
+}
+
+\h2{Impact on existing code}
+
+It is not trivial to estimate how much code would be affected by a deprecation like this.
+However, that is ultimately not what makes or breaks this proposal.
+The goal is not to deprecate a rarely used feature to give it new meaning,
+like \tcode{array[0,1]} prior to \ref[P1161R3].
+
+\b{The goal is to deprecate a bug-prone and harmful feature to make the language safer.}
+
+The longer we wait, the more mistakes will be made using \tcode{char8_t} and other types.
+C++ will undoubtedly get improved support for the Unicode character types over time,
+making them used more frequently,
+so we better deal with this problem now than never.
+
+\h3[id=replacement]{Replacement for deprecated behavior}
+
+If the new deprecation warnings spot a bug like in \ref[#introduction],
+some work will be required to fix it,
+but the deprecation will have done its job.
+
+If the comparison is obviously safe, such as \tcode{c == U'0'} with \tcode{char8_t c},
+the resolution is usually trivial, like \tcode{c == u8'0'}.
+This could even be done automatically with tools like clang-tidy.
+
+
+\h2{Implementation experience}
+
+Corentin Jabot has implemented a \tt{-Wimplicit-unicode-conversion}
+warning in Clang (\ref[ClangWarning]), which is intended to be enabled by default.
+However the warning is more conservative than the proposed deprecation;
+it does not warn on "safe comparisons" (\ref[#safe-comparisons]).
+
+\h2{Wording}
+
+\style{
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+}
+
+The following changes are relative to \ref[N5008].
+
+Change \eelis{basic.fundamental#9} as follows:
+\diff{
+\ins{The types \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}
+are collectively called \i{Unicode character types}.}
+Type \tcode{char8_t} denotes a distinct type
+whose underlying type is \tcode{unsigned char}.
+Types \tcode{char16_t} and \tcode{char32_t} denote distinct types
+whose underlying types are \tcode{uint_least16_t} and \tcode{uint_least32_t},
+respectively, in \tt{<cstdint>}.
+}
+
+Change \eelis{conv.integral#1} as follows:
+
+\diff{
+A prvalue \ins{\i{s}} of an integer type \ins{\tcode{S}}
+can be converted to a prvalue of another integer type \ins{\tcode{D}}.
+\ins{
+The conversion is deprecated ([depr.conv.unicode])
+if \tcode{D} is a Unicode character type (\eelis{basic.fundamental}), and
+}
+\ul{
+\item{\ins{
+\tcode{S} is a Unicode character type other than \tcode{D} or
+}}
+\item{\ins{
+\i{s} the result of an integral promotion (\eelis{conv.prom})
+applied to a Unicode character type other than \tcode{D}.
+}}
+}
+\del{A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.}
+}
+
+Insert a new paragraph immediately following \eelis{conv.integral#1}:
+
+\insblock{
+A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.
+}
+
+Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{depr.capture.this}.
+
+\insblock{
+\h3[listed=no]{Unicode character conversions \stable-ref{depr.conv.unicode}}
+
+Integral conversions (\eelis{conv.integral})
+where the source and destination type are
+different Unicode character types (\eelis{basic.fundamental}) are deprecated.
+
+\wg21-example{
+\codeblock[cpp,borders=no]{
+bool is_oe(char8_t c) {
+    return c == U'ö'; // \serif{deprecated} 
+}
+void f() {
+    is_umlaut(U'ö'); // \serif{deprecated}
+}
+}
+}
+}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = µlight,
+    title = ascii_chars.hpp utilities in µlight,
+    author = Jan Schultke,
+    link = https://github.com/Eisenwave/ulight
+]
+\bib[
+    id = ClangWarning,
+    title = [Clang] Add warnings when mixing different charN_t types,
+    author = Corentin Jabot,
+    link = https://github.com/llvm/llvm-project/pull/138708
+]
+\bib[
+    id = P1161R3,
+    title = Deprecate uses of the comma operator in subscripting expressions,
+    author = Corentin Jabot,
+    link = https://wg21.link/P1161R3,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1161r3.html
+]
+
+\make-bib
