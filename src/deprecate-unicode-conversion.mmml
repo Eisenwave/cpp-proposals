@@ -24,7 +24,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3695R0}}
-    \dt{Date:}            \dd{\tt{2025-05-15}}
+    \dt{Date:}            \dd{\tt{2025-05-16}}
     \dt{Audience:}        \dd{EWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -50,7 +50,7 @@ I propose to deprecate them.
 Implicit conversions between \tcode{char8_t} and \tcode{char32_t} invite bugs:
 
 \bug{
-There exists no warning in a major compiler that would detect the following "bad comparison":
+Until \em{very} recently, no major compiler would detect the following "bad comparison":
 \cppblock{
 constexpr bool contains_oe(std::u8string_view str) {
     for (char8_t c : str)
@@ -98,7 +98,7 @@ We obviously don't want to deprecate \tcode{char32_t == char32_t}.
 
 Conversions "the other way" (e.g. \tcode{char32_t} \c{rightarrow} \tcode{char8_t})
 are obviously bug-prone too because information is lost,
-but such bugs can already be caught by all compiler warnings,
+but such bugs can already be caught by all major compilers' warnings,
 and they are problematic for the same reason as \tcode{int} \c{rightarrow} \tcode{short},
 not because of anything specific to character types.
 The listed bugs are interesting \em{precisely because} no information is lost.
@@ -243,8 +243,10 @@ This could even be done automatically with tools like clang-tidy.
 
 \h2{Implementation experience}
 
-Corentin Jabot has implemented a \tt{-Wimplicit-unicode-conversion}
-warning in Clang (\ref[ClangWarning]), which is intended to be enabled by default.
+Corentin Jabot has recently implemented a \tt{-Wcharacter-conversion}
+warning in Clang (\ref[ClangWarning]), which is enabled by default.
+You can test this at \ref[CompilerExplorer].
+
 However the warning is more conservative than the proposed deprecation;
 it does not warn on "safe comparisons" (\ref[#safe-comparisons]).
 
@@ -276,19 +278,16 @@ respectively, in \tt{<cstdint>}.
 Change \eelis{conv.integral#1} as follows:
 
 \diff{
-A prvalue \ins{\i{s}} of an integer type \ins{\tcode{S}}
+A prvalue of an integer type \ins{\tcode{S}}
 can be converted to a prvalue of another integer type \ins{\tcode{D}}.
-\ins{
-The conversion is deprecated ([depr.conv.unicode])
-if \tcode{D} is a Unicode character type (\eelis{basic.fundamental}), and
-}
+\ins{The conversion is deprecated ([depr.conv.unicode]) if}
 \ul{
 \item{\ins{
-\tcode{S} is a Unicode character type other than \tcode{D} or
+\tcode{S} and \tcode{D} are two different
+Unicode character types (\eelis{basic.fundamental}) and
 }}
 \item{\ins{
-\i{s} the result of an integral promotion (\eelis{conv.prom})
-applied to a Unicode character type other than \tcode{D}.
+the conversion is not necessitated by a \tcode{static_cast} (\eelis{expr.static.cast}).
 }}
 }
 \ins{\wg21-note{
@@ -321,7 +320,7 @@ for the remainder of this section.
 \item{
 Otherwise, each operand is converted to a common type \tcode{C}.
 \ins{The conversion is deprecated if the operands
-are of different Unicode character types ([depr.conv.unicode]).}
+are of two different Unicode character types ([depr.conv.unicode]).}
 The integral promotion rules (\eelis{conv.prom}) are used
 to determine a type \tcode{T1} and type \tcode{T2} for each operand.
 Then the following rules are applied to determine C:
@@ -332,25 +331,38 @@ Then the following rules are applied to determine C:
 }
 }
 
-Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{depr.capture.this}.
+Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{depr.capture.this},
+containing a single paragraph:
 
 \insblock{
 \h3[listed=no]{Unicode character conversions \stable-ref{depr.conv.unicode}}
 
+The following conversions are deprecated:
+\ul{
+\item{
 Integral conversions (\eelis{conv.integral})
-where the source and destination type are
-different Unicode character types (\eelis{basic.fundamental}),
-and usual arithmetic conversions (\eelis{expr.arith.conv})
-with two different Unicode character types,
-are deprecated.
-
+not necessitated by a \tcode{static_cast},
+where the source type and destination type are
+two different Unicode character types (\eelis{basic.fundamental}).
+}
+\item{
+Usual arithmetic conversions (\eelis{expr.arith.conv})
+where the operands
+after lvalue-to-rvalue conversion (\eelis{conv.lval})
+are two different Unicode character types.
+}
+}
 \wg21-example{
 \codeblock[cpp,borders=no]{
 bool is_oe(char8_t c) {
-    return c == U'ö';   // \serif{deprecated}
+    return c == U'ö';                     // \serif{deprecated}
 }
 void f() {
-    is_oe(U'ö');        // \serif{deprecated}
+    char32_t c = u8'x';                   // \serif{deprecated}
+    char32_t c = 'x';                     // \serif{OK, }\tcode{char}\serif{ is not a Unicode character type}
+    is_oe(U'ö');                          // \serif{deprecated}
+    is_oe(static_cast<char8_t>(U'ö'));    // \serif{OK, integral conversion necessitated by a }\tcode{static_cast}
+    is_oe((char8_t)U'ö');                 // \serif{OK, explicit conversion performed by a }\tcode{static_cast}
 }
 }
 }
@@ -377,6 +389,11 @@ void f() {
     title = [Clang] Add warnings when mixing different charN_t types,
     author = Corentin Jabot,
     link = https://github.com/llvm/llvm-project/pull/138708
+]
+\bib[
+    id = CompilerExplorer,
+    title = Demonstration of -Wcharacter-conversion,
+    link = https://compiler-explorer.com/z/8j9qqe8MY
 ]
 \bib[
     id = P1161R3,

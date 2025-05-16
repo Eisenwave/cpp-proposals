@@ -1466,7 +1466,7 @@ if (theme !== null) {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3695R0>P3695R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-05-15</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-05-16</tt-></dd>
     <dt>Audience:</dt>        <dd>EWG, SG16</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Author:</dt>          <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1492,7 +1492,7 @@ I propose to deprecate them.
 <p>Implicit conversions between <code><h- data-h=kw_type>char8_t</h-></code> and <code><h- data-h=kw_type>char32_t</h-></code> invite bugs:
 </p>
 <bug-block><p><intro-></intro-> 
-There exists no warning in a major compiler that would detect the following "bad comparison":
+Until <em>very</em> recently, no major compiler would detect the following "bad comparison":
 </p><code-block><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>contains_oe</h-><h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>u8string_view</h-> <h- data-h=id>str</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_ctrl>for</h-> <h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-> <h- data-h=id>c</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>str</h-><h- data-h=sym_par>)</h->
         <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=id>c</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
@@ -1534,7 +1534,7 @@ We obviously don't want to deprecate <code><h- data-h=kw_type>char32_t</h-> <h- 
 
 <p>Conversions "the other way" (e.g. <code><h- data-h=kw_type>char32_t</h-></code> &rightarrow; <code><h- data-h=kw_type>char8_t</h-></code>)
 are obviously bug-prone too because information is lost,
-but such bugs can already be caught by all compiler warnings,
+but such bugs can already be caught by all major compilers' warnings,
 and they are problematic for the same reason as <code><h- data-h=kw_type>int</h-></code> &rightarrow; <code><h- data-h=kw_type>short</h-></code>,
 not because of anything specific to character types.
 The listed bugs are interesting <em>precisely because</em> no information is lost.
@@ -1675,9 +1675,11 @@ This could even be done automatically with tools like clang-tidy.
 
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>4. Implementation experience</h2>
 
-<p>Corentin Jabot has implemented a <tt->-Wimplicit-unicode-conversion</tt->
-warning in Clang (<a href="https://github%2ecom/llvm/llvm-project/pull/138708">[ClangWarning]</a>), which is intended to be enabled by default.
-However the warning is more conservative than the proposed deprecation;
+<p>Corentin Jabot has recently implemented a <tt->-Wcharacter-conversion</tt->
+warning in Clang (<a href="https://github%2ecom/llvm/llvm-project/pull/138708">[ClangWarning]</a>), which is enabled by default.
+You can test this at <a href="https://compiler-explorer%2ecom/z/8j9qqe8MY">[CompilerExplorer]</a>.
+</p>
+<p>However the warning is more conservative than the proposed deprecation;
 it does not warn on "safe comparisons" (<a href=#safe-comparisons>§2.1. What about "safe" comparisons?</a>).
 </p>
 <h2 id=wording><a class=para href=#wording></a>5. Wording</h2>
@@ -1708,19 +1710,16 @@ respectively, in <tt->&lt;cstdint&gt;</tt->.
 <p>Change <a href=https://eel%2eis/c++draft/conv%2eintegral#1>[conv.integral] paragraph 1</a> as follows:
 </p>
 <diff-block>
-<p>A prvalue <ins><i>s</i></ins> of an integer type <ins><code><h- data-h=id>S</h-></code></ins>
+<p>A prvalue of an integer type <ins><code><h- data-h=id>S</h-></code></ins>
 can be converted to a prvalue of another integer type <ins><code><h- data-h=id>D</h-></code></ins>.
-<ins>
-The conversion is deprecated ([depr.conv.unicode])
-if <code><h- data-h=id>D</h-></code> is a Unicode character type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>), and
-</ins>
+<ins>The conversion is deprecated ([depr.conv.unicode]) if</ins>
 </p><ul>
 <li><ins>
-<code><h- data-h=id>S</h-></code> is a Unicode character type other than <code><h- data-h=id>D</h-></code> or
+<code><h- data-h=id>S</h-></code> and <code><h- data-h=id>D</h-></code> are two different
+Unicode character types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>) and
 </ins></li>
 <li><ins>
-<i>s</i> the result of an integral promotion (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>)
-applied to a Unicode character type other than <code><h- data-h=id>D</h-></code>.
+the conversion is not necessitated by a <code><h- data-h=kw>static_cast</h-></code> (<a href=https://eel%2eis/c++draft/expr%2estatic%2ecast>[expr.static.cast]</a>).
 </ins></li>
 </ul>
 <p><ins><wg21-block>[<i>Note</i>: 
@@ -1753,7 +1752,7 @@ for the remainder of this section.
 <li>
 Otherwise, each operand is converted to a common type <code><h- data-h=id>C</h-></code>.
 <ins>The conversion is deprecated if the operands
-are of different Unicode character types ([depr.conv.unicode]).</ins>
+are of two different Unicode character types ([depr.conv.unicode]).</ins>
 The integral promotion rules (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>) are used
 to determine a type <code><h- data-h=id>T1</h-></code> and type <code><h- data-h=id>T2</h-></code> for each operand.
 Then the following rules are applied to determine C:
@@ -1764,29 +1763,43 @@ Then the following rules are applied to determine C:
 </ul>
 </diff-block>
 
-<p>Insert a new subclause in <a href=https://eel%2eis/c++draft/depr>[depr]</a> between <a href=https://eel%2eis/c++draft/depr%2elocal>[depr.local]</a> and <a href=https://eel%2eis/c++draft/depr%2ecapture%2ethis>[depr.capture.this]</a>.
+<p>Insert a new subclause in <a href=https://eel%2eis/c++draft/depr>[depr]</a> between <a href=https://eel%2eis/c++draft/depr%2elocal>[depr.local]</a> and <a href=https://eel%2eis/c++draft/depr%2ecapture%2ethis>[depr.capture.this]</a>,
+containing a single paragraph:
 </p>
 <ins-block>
 <h3 id=unicode-character-conversions><a class=para href=#unicode-character-conversions></a>Unicode character conversions <span class=stable-ref>[depr.conv.unicode]</span></h3>
 
-<p>Integral conversions (<a href=https://eel%2eis/c++draft/conv%2eintegral>[conv.integral]</a>)
-where the source and destination type are
-different Unicode character types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>),
-and usual arithmetic conversions (<a href=https://eel%2eis/c++draft/expr%2earith%2econv>[expr.arith.conv]</a>)
-with two different Unicode character types,
-are deprecated.
-</p>
+<p>The following conversions are deprecated:
+</p><ul>
+<li>
+Integral conversions (<a href=https://eel%2eis/c++draft/conv%2eintegral>[conv.integral]</a>)
+not necessitated by a <code><h- data-h=kw>static_cast</h-></code>,
+where the source type and destination type are
+two different Unicode character types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).
+</li>
+<li>
+Usual arithmetic conversions (<a href=https://eel%2eis/c++draft/expr%2earith%2econv>[expr.arith.conv]</a>)
+where the operands
+after lvalue-to-rvalue conversion (<a href=https://eel%2eis/c++draft/conv%2elval>[conv.lval]</a>)
+are two different Unicode character types.
+</li>
+</ul>
 <p><wg21-block>[<i>Example</i>: 
 <code-block class=borderless><h- data-h=kw_type>bool</h-> <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
 <h- data-h=sym_brac>}</h->
 <h- data-h=kw_type>void</h-> <h- data-h=id>f</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+    <h- data-h=kw_type>char32_t</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>=</h-> <h- data-h=str_deco>u8</h-><h- data-h=str_dlim>'</h-><h- data-h=str>x</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->                   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+    <h- data-h=kw_type>char32_t</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>x</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK, </h-></f-serif><code><h- data-h=kw_type>char</h-></code><f-serif><h- data-h=cmt> is not a Unicode character type</h-></f-serif>
+    <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->                          <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+    <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>char8_t</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK, integral conversion necessitated by a </h-></f-serif><code><h- data-h=kw>static_cast</h-></code>
+    <h- data-h=id>is_oe</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char8_t</h-><h- data-h=sym_par>)</h-><h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str>ö</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->                 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK, explicit conversion performed by a </h-></f-serif><code><h- data-h=kw>static_cast</h-></code>
 <h- data-h=sym_brac>}</h-></code-block>
  — <i>end example</i>]</wg21-block>
 </p></ins-block>
 
 <h2 id=references><a class=para href=#references></a>6. References</h2>
+
 
 
 
@@ -1807,6 +1820,9 @@ are deprecated.
 <span class=bib-author>Corentin Jabot.</span>
 <span class=bib-title>[Clang] Add warnings when mixing different charN_t types</span>
 <a href="https://github%2ecom/llvm/llvm-project/pull/138708" class=bib-link>https://github.com/llvm/llvm-project/pull/138708</a></div><div class=bib-item>
+<a href="https://compiler-explorer%2ecom/z/8j9qqe8MY">[CompilerExplorer]</a>
+<span class=bib-title>Demonstration of -Wcharacter-conversion</span>
+<a href="https://compiler-explorer%2ecom/z/8j9qqe8MY" class=bib-link>https://compiler-explorer.com/z/8j9qqe8MY</a></div><div class=bib-item>
 <a href="https://wg21%2elink/P1161R3">[P1161R3]</a>
 <span class=bib-author>Corentin Jabot.</span>
 <span class=bib-title>Deprecate uses of the comma operator in subscripting expressions</span>
