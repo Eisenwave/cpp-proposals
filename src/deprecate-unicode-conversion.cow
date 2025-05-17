@@ -30,7 +30,7 @@
     \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \comment{\dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3695R0/github]}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/deprecate-unicode-conversion.mmml]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/deprecate-unicode-conversion.cow]}
 }
 \hr
 }

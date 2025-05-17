@@ -34,7 +34,7 @@
     \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.mmml]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
 }
 \hr
 }
