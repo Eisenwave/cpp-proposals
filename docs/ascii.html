@@ -1483,7 +1483,7 @@ We propose lightweight, locale-independent alternatives.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href="#can%27t-you-implement-this-trivially-yourself?"><h3>Can't you implement this trivially yourself?</h3></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#why-no-function-objects><h3>Why no function objects?</h3></a><div class=toc-num data-level=3>2.6</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.6.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.6.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.6.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding><h4>Treat the input as ASCII, regardless of the literal encoding</h4></a><div class=toc-num data-level=3>2.7</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.8</div><a href=#why-not-integers><h3>Why not accept any integer type?</h3></a><div class=toc-num data-level=3>2.9</div><a href=#ascii-case-insensitive-views-and-algorithms><h3>ASCII case-insensitive views and algorithms</h3></a><div class=toc-num data-level=3>2.10</div><a href=#why-just-ascii><h3>Why just ASCII?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href="#can%27t-you-implement-this-trivially-yourself?"><h3>Can't you implement this trivially yourself?</h3></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#list-of-proposed-functions><h3>List of proposed functions</h3></a><div class=toc-num data-level=3>2.2</div><a href=#base-parameter><h3><code><h- data-h=id>base</h-></code> parameter in <code><h- data-h=id>is_ascii_digit</h-></code></h3></a><div class=toc-num data-level=3>2.3</div><a href=#binary-and-octal-is-digit><h3><code><h- data-h=id>is_ascii_bit</h-></code> and <code><h- data-h=id>is_ascii_octal_digit</h-></code></h3></a><div class=toc-num data-level=3>2.4</div><a href=#case-insensitive-comparison><h3>Case-insensitive comparison functions</h3></a><div class=toc-num data-level=3>2.5</div><a href=#why-no-function-objects><h3>Why no function objects?</h3></a><div class=toc-num data-level=3>2.6</div><a href=#encoding><h3>What to do for ASCII-incompatible <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code></h3></a><div class=toc-num data-level=4>2.6.1</div><a href=#conditionally-supported--overloads><h4>Conditionally supported <code><h- data-h=kw_type>char</h-></code> overloads</h4></a><div class=toc-num data-level=4>2.6.2</div><a href=#transcode--to-ascii><h4>Transcode <code><h- data-h=kw_type>char</h-></code> to ASCII</h4></a><div class=toc-num data-level=4>2.6.3</div><a href=#treat-the-input-as-ascii,-regardless-of-the-literal-encoding><h4>Treat the input as ASCII, regardless of the literal encoding</h4></a><div class=toc-num data-level=3>2.7</div><a href=#what-if-the-input-is-a-non-ascii-code-unit?><h3>What if the input is a non-ASCII code unit?</h3></a><div class=toc-num data-level=3>2.8</div><a href=#why-not-integers><h3>Why not accept any integer type?</h3></a><div class=toc-num data-level=3>2.9</div><a href=#ascii-case-insensitive-views-and-case-transformation-algorithms><h3>ASCII case-insensitive views and case transformation algorithms</h3></a><div class=toc-num data-level=3>2.10</div><a href=#why-just-ascii><h3>Why just ASCII?</h3></a><div class=toc-num data-level=2>3</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1952,11 +1952,11 @@ Let's keep it that way!
 <p>Lastly, even proponents of passing integer types would not want
 <code><h- data-h=id>is_ascii_digit</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-></code> to be valid.
 </p>
-<h3 id=ascii-case-insensitive-views-and-algorithms><a class=para href=#ascii-case-insensitive-views-and-algorithms></a>2.9. ASCII case-insensitive views and algorithms</h3>
+<h3 id=ascii-case-insensitive-views-and-case-transformation-algorithms><a class=para href=#ascii-case-insensitive-views-and-case-transformation-algorithms></a>2.9. ASCII case-insensitive views and case transformation algorithms</h3>
 
-<p>Ignoring ASCII case in algorithms is a fairly common problem.
-Therefore, it may be useful to provide views such as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-></code>
-and even algorithms like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>equal_ascii_case_insensitive</h-></code>.
+<p>Ignoring or transforming ASCII case in algorithms is a fairly common problem.
+Therefore, it may be useful to provide views such as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>views</h-><h- data-h=sym_op>::</h-><h- data-h=id>ascii_lower</h-></code>,
+algorithms like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>equal_ascii_case_insensitive</h-></code>, etc.
 </p>
 <example-block><p><intro-></intro-> 
 HTML tag names are case-insensitive and comprised of ASCII characters,
@@ -1969,8 +1969,15 @@ To identify a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- d
 <h- data-h=id>tag_name</h-><h- data-h=sym_op>.</h-><h- data-h=id>ascii_case_insensitive_equals</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 </example-block>
 
-<p>We intend to propose such utilities in a future paper.
-This proposal is focused exclusively on operations involving character types.
+<p>While case transformations can be implemented naively using <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>transform</h-></code>,
+dedicated functions would allow an efficient vectorized implementation for contiguous ranges,
+which can be many times faster (<a href="https://lemire%2eme/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/">[AvoidCharByChar]</a>, <a href="https://lemire%2eme/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/">[AVX-512CaseConv]</a>)
+Similarly, a case-insensitive comparison function can be vectorized.
+In fact, POSIX's <code><h- data-h=id>strncasecmp</h-></code> has been heavily optimized in glibc (<a href="https://sourceware%2eorg/pipermail/libc-alpha/2022-March/137272%2ehtml">[AVX2strncasecmp]</a>),
+and providing range-based interfaces would allow delegating to these heavily optimized functions.
+</p>
+<p><b>We intend to propose such utilities in a future paper or revision of this paper.</b>
+Currently, this proposal is focused exclusively on operations involving character types.
 </p>
 <h3 id=why-just-ascii><a class=para href=#why-just-ascii></a>2.10. Why just ASCII?</h3>
 
@@ -2235,6 +2242,9 @@ implicit conversions between <code><h- data-h=kw_type>char8_t</h-></code> and <c
 
 
 
+
+
+
 <div class=bib><div class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
 <span class=bib-author>Thomas Köppe.</span>
@@ -2253,6 +2263,21 @@ implicit conversions between <code><h- data-h=kw_type>char8_t</h-></code> and <c
 <a href="https://github%2ecom/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars%2ehpp">[µlight]</a>
 <span class=bib-author>Jan Schultke.</span>
 <span class=bib-title>ascii_chars.hpp utilities in µlight</span>
-<a href="https://github%2ecom/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars%2ehpp" class=bib-link>https://github.com/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars.hpp</a></div></div>
+<a href="https://github%2ecom/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars%2ehpp" class=bib-link>https://github.com/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars.hpp</a></div><div class=bib-item>
+<a href="https://sourceware%2eorg/pipermail/libc-alpha/2022-March/137272%2ehtml">[AVX2strncasecmp]</a>
+<span class=bib-author>Noah Goldstein.</span>
+<span class=bib-title>glibc [PATCH v1 21/23] x86: Add AVX2 optimized str{n}casecmp</span>
+<span class=bib-date>2022-03-23</span>
+<a href="https://sourceware%2eorg/pipermail/libc-alpha/2022-March/137272%2ehtml" class=bib-link>https://sourceware.org/pipermail/libc-alpha/2022-March/137272.html</a></div><div class=bib-item>
+<a href="https://lemire%2eme/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/">[AvoidCharByChar]</a>
+<span class=bib-author>Daniel Lemire.</span>
+<span class=bib-title>Avoid character-by-character processing when performance matters</span>
+<span class=bib-date>2020-07-21</span>
+<a href="https://lemire%2eme/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/" class=bib-link>https://lemire.me/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/</a></div><div class=bib-item>
+<a href="https://lemire%2eme/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/">[AVX-512CaseConv]</a>
+<span class=bib-author>Daniel Lemire.</span>
+<span class=bib-title>Converting ASCII strings to lower case at crazy speeds with AVX-512</span>
+<span class=bib-date>2024-08-03</span>
+<a href="https://lemire%2eme/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/" class=bib-link>https://lemire.me/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/</a></div></div>
 </main></body>
 </html>

@@ -530,11 +530,11 @@ Let's keep it that way!
 Lastly, even proponents of passing integer types would not want
 \tcode{is_ascii_digit(true)} to be valid.
 
-\h3{ASCII case-insensitive views and algorithms}
+\h3{ASCII case-insensitive views and case transformation algorithms}
 
-Ignoring ASCII case in algorithms is a fairly common problem.
-Therefore, it may be useful to provide views such as \tcode{std::views::ascii_lower}
-and even algorithms like \tcode{std::ranges::equal_ascii_case_insensitive}.
+Ignoring or transforming ASCII case in algorithms is a fairly common problem.
+Therefore, it may be useful to provide views such as \tcode{std::views::ascii_lower},
+algorithms like \tcode{std::ranges::equal_ascii_case_insensitive}, etc.
 
 \example{
 HTML tag names are case-insensitive and comprised of ASCII characters,
@@ -549,8 +549,15 @@ tag_name.ascii_case_insensitive_equals("div");
 }
 }
 
-We intend to propose such utilities in a future paper.
-This proposal is focused exclusively on operations involving character types.
+While case transformations can be implemented naively using \tcode{std::transform},
+dedicated functions would allow an efficient vectorized implementation for contiguous ranges,
+which can be many times faster (\ref[AvoidCharByChar], \ref[AVX-512CaseConv])
+Similarly, a case-insensitive comparison function can be vectorized.
+In fact, POSIX's \tcode{strncasecmp} has been heavily optimized in glibc (\ref[AVX2strncasecmp]),
+and providing range-based interfaces would allow delegating to these heavily optimized functions.
+
+\b{We intend to propose such utilities in a future paper or revision of this paper.}
+Currently, this proposal is focused exclusively on operations involving character types.
 
 \h3[id=why-just-ascii]{Why just ASCII?}
 
@@ -878,6 +885,27 @@ implicit conversions between \tcode{char8_t} and \tcode{char32_t}.
     title = ascii_chars.hpp utilities in µlight,
     author = Jan Schultke,
     link = https://github.com/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars.hpp
+]
+\bib[
+    id = AVX2strncasecmp,
+    title = glibc [PATCH v1 21/23] x86: Add AVX2 optimized str{n}casecmp,
+    date = 2022-03-23,
+    author = Noah Goldstein,
+    link = https://sourceware.org/pipermail/libc-alpha/2022-March/137272.html
+]
+\bib[
+    id = AvoidCharByChar,
+    title = Avoid character-by-character processing when performance matters,
+    date = 2020-07-21,
+    author = Daniel Lemire,
+    link = https://lemire.me/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/
+]
+\bib[
+    id = AVX-512CaseConv,
+    title = Converting ASCII strings to lower case at crazy speeds with AVX-512,
+    date = 2024-08-03,
+    author = Daniel Lemire,
+    link = https://lemire.me/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/
 ]
 
 \make-bib
