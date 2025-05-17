@@ -1462,7 +1462,7 @@ if (theme !== null) {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3688R0>P3688R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-05-15</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-05-18</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG, SG16</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Author:</dt>          <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -2223,19 +2223,21 @@ is not a core constant expression.
 
 </ins-block>
 
-<note-block><p><intro-></intro-> 
-Some uses of <code><h- data-h=kw>static_cast</h-></code> are unnecessary to describe semantics.
+<details>
+<summary>See editorial rationale</summary>
+
+<p>Some uses of <code><h- data-h=kw>static_cast</h-></code> are unnecessary to describe semantics.
 For example, <code><h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>char32_t</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>
 is equivalent to <code><h- data-h=id>c</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_deco>U</h-><h- data-h=str_dlim>'</h-><h- data-h=str> </h-><h- data-h=str_dlim>'</h-></code>.
 </p>
 <p>However, these uses of <code><h- data-h=kw>static_cast</h-></code> may improve readability and avoid
-the use of behavior which we intend to deprecate.
-For example, we will soon publish a paper which seeks to deprecate
-implicit conversions between <code><h- data-h=kw_type>char8_t</h-></code> and <code><h- data-h=kw_type>char32_t</h-></code>.
-</p></note-block>
+the use of behavior which is proposed to be deprecated in <a href="https://wg21%2elink/p3695r0">[P3695R0]</a>.
+</p>
+</details>
 
 
 <h2 id=references><a class=para href=#references></a>5. References</h2>
+
 
 
 
@@ -2256,6 +2258,11 @@ implicit conversions between <code><h- data-h=kw_type>char8_t</h-></code> and <c
 <span class=bib-title>Overload Set Types</span>
 <span class=bib-date>2025-04-16</span>
 <a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3312r1%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf</a></div><div class=bib-item>
+<a href="https://wg21%2elink/p3695r0">[P3695R0]</a>
+<span class=bib-author>Jan Schultke.</span>
+<span class=bib-title>Deprecate implicit conversions between char8_t, char16_t, and char32_t</span>
+<span class=bib-date>2025-05-18</span>
+<a href="https://isocpp%2eorg/files/papers/P3695R0%2ehtml" class=bib-link>https://isocpp.org/files/papers/P3695R0.html</a></div><div class=bib-item>
 <a href="https://godbolt%2eorg/z/5nvWzdf8G">[CompilerExplorer]</a>
 <span class=bib-author>Jan Schultke, Corentin Jabot.</span>
 <span class=bib-title>Partial implementation of character utilities</span>
