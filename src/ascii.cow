@@ -807,7 +807,7 @@ constexpr bool is_ascii_control(\ctype c) noexcept;
 \h3[listed=no]{ASCII character transformation \stable-ref{ascii.chars.transform}}
 
 \itemdecl{
-constexpr \ctype to_ascii_lower(\ctype c) noexcept;
+constexpr \ctype ascii_to_lower(\ctype c) noexcept;
 }
 \itemdescr{
 \returns
@@ -815,7 +815,7 @@ constexpr \ctype to_ascii_lower(\ctype c) noexcept;
 }
 
 \itemdecl{
-constexpr \ctype to_ascii_upper(\ctype c) noexcept;
+constexpr \ctype ascii_to_upper(\ctype c) noexcept;
 }
 \itemdescr{
 \returns
