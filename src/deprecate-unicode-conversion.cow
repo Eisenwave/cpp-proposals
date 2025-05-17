@@ -24,7 +24,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3695R0}}
-    \dt{Date:}            \dd{\tt{2025-05-16}}
+    \dt{Date:}            \dd{\tt{2025-05-18}}
     \dt{Audience:}        \dd{EWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
