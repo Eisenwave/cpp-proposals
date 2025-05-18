@@ -1457,14 +1457,17 @@ if (theme !== null) {
 
 
 
-<p><div class=wg21-head><h1>A concept for signed or unsigned integers</h1>
+
+
+
+<p><div class=wg21-head><h1>Concepts for integer types, not integral types</h1>
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3701R0>P3701R0</a></dd>
     <dt>Date:</dt>            <dd><tt->2025-05-18</tt-></dd>
-    <dt>Audience:</dt>        <dd>LEWG</dd>
+    <dt>Audience:</dt>        <dd>CWG, LEWG</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
-    <dt>Author:</dt>          <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
+    <dt>Reply-To:</dt>          <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
     <dt>GitHub Issue:</dt>    <dd><a href=https://wg21%2elink/P3701R0/github class=sans>wg21.link/P3701R0/github</a></dd>
     <dt>Source:</dt>          <dd><a href=https://github%2ecom/Eisenwave/cpp-proposals/blob/master/src/signed-or-unsigned%2ecow class=sans>github.com/Eisenwave/cpp-proposals/blob/master/src/signed-or-unsigned.cow</a></dd>
 </dl>
@@ -1475,13 +1478,13 @@ if (theme !== null) {
 The <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code> concept includes
 cv-qualified types, character types, and <code><h- data-h=kw_type>bool</h-></code>,
 which is overly broad for many uses cases.
-The C++ standard uses the "signed or unsigned integer type" wording idiom;
-I propose to formalize this as a concept.
+More restrictive concepts are introduced,
+and editorial changes are made so "integral" and "integer" are distinct terms.
 </p></abstract-block>
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#naming><h3>Naming</h3></a><div class=toc-num data-level=3>2.2</div><a href=#is-this-obsoleted-by-p3003?><h3>Is this obsoleted by P3003?</h3></a><div class=toc-num data-level=3>2.3</div><a href="#replacing-%22signed-or-unsigned-integer%22-in-wording"><h3>Replacing "signed or unsigned integer" in wording</h3></a><div class=toc-num data-level=2>3</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>4</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#is-this-obsoleted-by-p3003?><h3>Is this obsoleted by P3003?</h3></a><div class=toc-num data-level=2>3</div><a href=#impact-on-the-standard><h2>Impact on the standard</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=3>4.1</div><a href=#core-wording><h3>Core wording</h3></a><div class=toc-num data-level=3>4.2</div><a href=#library-wording><h3>Library wording</h3></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1497,11 +1500,10 @@ most likely don't match the intent of the author.
 </p><code-block><h- data-h=kw>template</h-> <h- data-h=sym_op>&lt;</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
 <h- data-h=id>T</h-> <h- data-h=id>add_integers</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> ...</h->
-<h- data-h=id>add_integers</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_punc>,</h-> <h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->      <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK</h->
-<h- data-h=id>add_integers</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK</h->
-<h- data-h=id>add_integers</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK</h-></code-block>
+<h- data-h=id>add_integers</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_punc>,</h-> <h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->      <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h->
+<h- data-h=id>add_integers</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h->
+<h- data-h=id>add_integers</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h-></code-block>
 </bug-block>
-
 
 <p>The C++ standard uses "signed or unsigned integer type" as a more appropriate constraint
 in <a href=https://eel%2eis/c++draft/numeric%2esat%2efunc>[numeric.sat.func]</a>, <a href=https://eel%2eis/c++draft/mdspan%2eextents%2eoverview>[mdspan.extents.overview]</a>, and various other subclauses.
@@ -1513,15 +1515,60 @@ which provides more appropriate constraints in user code.
 </p>
 <h2 id=design><a class=para href=#design></a>2. Design</h2>
 
-<h3 id=naming><a class=para href=#naming></a>2.1. Naming</h3>
-
-<p>Despite the obvious potential for confusion with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code>,
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> is a good candidate.
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> is meant to be the intuitive first choice
-for templates that are "meant to do integer math stuff",
-so we need a concise name that feels correct to C++ developers at first glance.
+<p>The C++ standard currently uses "integer" and "integral" in a surprising way.
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integral</h-></code> includes types that are not signed integers,
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integral</h-></code> includes types that are not unsigned integers,
+but "integer type" is a synonym for "integral type"
+(<a href=https://eel%2eis/c++draft/basic%2efundamental#def:integer_type>[basic.fundamental] definition of "integer type"</a>).
 </p>
-<p>Some alternatives were considered:
+<p>The really confusing part is that "integral" is only sometimes, but not always,
+a broader term than "integer".
+This can be improved with the following strategy:
+</p>
+<table>
+<tr>
+    <th>Defined term (if any)</th>
+    <th><code><h- data-h=kw>concept</h-></code></th>
+    <th>Meaning</th>
+</tr>
+<tr>
+    <td>integral type</td>
+    <td><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code></td>
+    <td>Lots of stuff: <code><h- data-h=kw_type>int</h-></code>, <code><h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw>const</h-> <h- data-h=kw_type>bool</h-></code>, ...</td>
+</tr>
+<tr>
+    <td>N/A</td>
+    <td><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integral</h-></code></td>
+    <td>integral types which satisfy <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_signed_v</h-></code></td>
+</tr>
+<tr>
+    <td>N/A</td>
+    <td><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integral</h-></code></td>
+    <td>integral types which do not satisfy <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_signed_v</h-></code></td>
+</tr>
+<tr>
+    <td><del>integer type</del></td>
+    <td><del><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code></del></td>
+    <td><del>synonym for integral type</del></td>
+</tr>
+<tr>
+    <td><ins>integer type</ins></td>
+    <td><ins><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code></ins></td>
+    <td><ins>signed or unsigned integer types</ins></td>
+</tr>
+<tr>
+    <td>signed integer type</td>
+    <td><ins><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integer</h-></code></ins></td>
+    <td><code><h- data-h=kw_type>signed</h-> <h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw_type>signed</h-> <h- data-h=kw_type>short</h-></code>, <code><h- data-h=kw_type>signed</h-> <h- data-h=kw_type>int</h-></code>, etc.<br/>(also extended signed integers)</td>
+</tr>
+<tr>
+    <td>unsigned integer type</td>
+    <td><ins><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integer</h-></code></ins></td>
+    <td><code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>short</h-></code>, <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-></code>, etc.<br/>(also extended unsigned integers)</td>
+</tr>
+</table>
+
+<p>Some alternatives concepts instead of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> were considered:
 </p><ul>
 <li>
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_or_unsigned</h-></code> would be inappropriate
@@ -1537,7 +1584,7 @@ aren't any less confusing than <code><h- data-h=id>std</h-><h- data-h=sym_op>::<
 </li>
 </ul>
 
-<h3 id=is-this-obsoleted-by-p3003?><a class=para href=#is-this-obsoleted-by-p3003?></a>2.2. Is this obsoleted by P3003?</h3>
+<h3 id=is-this-obsoleted-by-p3003?><a class=para href=#is-this-obsoleted-by-p3003?></a>2.1. Is this obsoleted by P3003?</h3>
 
 <p><a href="https://wg21%2elink/P3003">[P3003]</a> goes into a different direction:
 creating a whole library of numeric concepts,
@@ -1559,13 +1606,23 @@ likely makes some assumptions about <code><h- data-h=id>T</h-></code>, like
 <p><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> is a quick way to constrain a function while documenting these assumptions,
 which is needed in practice.
 </p>
-<h3 id="replacing-&quot;signed-or-unsigned-integer&quot;-in-wording"><a class=para href="#replacing-%22signed-or-unsigned-integer%22-in-wording"></a>2.3. Replacing "signed or unsigned integer" in wording</h3>
+<h2 id=impact-on-the-standard><a class=para href=#impact-on-the-standard></a>3. Impact on the standard</h2>
 
-<p>It is custom to use a type trait or concept in library wording if one exists
-which describes the constraint directly.
-Therefore, some existing <i>Constraints</i>: and <i>Mandates</i>: specifications are updated.
+<p>Firstly, the three new concepts <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code>,
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integer</h-></code>, and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integer</h-></code> are added.
 </p>
-<h2 id=wording><a class=para href=#wording></a>3. Wording</h2>
+<p>Secondly, we make editorial changes
+so that "integer" is consistently a narrower term,
+and "integral" is a broader term.
+See <a href=#design>§2. Design</a>.
+</p>
+<p>While the changes are all very simple,
+the wording impact is quite immense because "integer" and "integral"
+have been used interchangeably throughout wording.
+Any existing uses of "integer" are replaced with "integral",
+and the "signed or unsigned integer" pattern can be simplified to just "integer".
+</p>
+<h2 id=wording><a class=para href=#wording></a>4. Wording</h2>
 
 <style>
 ins-block .para::before {
@@ -1579,6 +1636,273 @@ ins-block .para::before {
 
 <p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
+<h3 id=core-wording><a class=para href=#core-wording></a>4.1. Core wording</h3>
+
+<p>Change <a href=https://eel%2eis/c++draft/basic%2efundamental#5>[basic.fundamental] paragraph 5</a> as follows:
+</p>
+<diff-block>
+<p>Each value <math display=inline><mi>x</mi></math> of an unsigned integer type with width <math display=inline><mi>N</mi></math> has
+a unique representation <math display=inline><mrow>
+    <mi>x</mi>
+    <mo>=</mo>
+    <msub><mi>x</mi><mn>0</mn></msub>
+    <msup><mn>2</mn><mn>0</mn></msup>
+    <mo>+</mo>
+    <msub><mi>x</mi><mn>1</mn></msub>
+    <msup><mn>2</mn><mn>1</mn></msup>
+    <mo>+</mo>
+    <mo>&mldr;</mo>
+    <mo>+</mo>
+    <msub><mi>x</mi><mrow><mi>N</mi><mo>-</mo><mn>1</mn></mrow></msub>
+    <msup><mn>2</mn><mrow><mi>N</mi><mo>-</mo><mn>1</mn></mrow></msup>
+</mrow></math>,
+where each coefficient <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> is either 0 or 1;
+this is called the <i>base-2 representation</i> of <math display=inline><mi>x</mi></math>.
+The base-2 representation of a value of signed integer type is
+the base-2 representation of the congruent value
+of the corresponding unsigned integer type.
+The standard signed integer types and standard unsigned integer types
+are collectively called the <i>standard integer types</i>, and the extended
+signed integer types and extended
+unsigned integer types are collectively called the
+<i>extended integer types</i>.
+<ins>The standard integer types and extended integer types
+are collectively called <i>integer types</i>.
+<br/><wg21-block>[<i>Note</i>: 
+The set of integer types is equal to
+the set of signed and unsigned integer types.
+ — <i>end note</i>]</wg21-block></ins>
+</p></diff-block>
+
+<note-block><p><intro-></intro-> 
+If you cannot see the mathematical symbols in the paragraph above,
+you are viewing this document in an old browser with no MathML support.
+</p></note-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/basic%2efundamental#6>[basic.fundamental] paragraph 6</a> as follows:
+</p>
+<diff-block>
+<p>A fundamental type specified to have
+<del>a signed or unsigned</del> <ins>an</ins> integer type as its <i>underlying type</i> has
+the same object representation,
+value representation,
+alignment requirements (<a href=https://eel%2eis/c++draft/basic%2ealign>[basic.align]</a>), and
+range of representable values as the underlying type.
+Further, each value has the same representation in both types.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/basic%2efundamental#8>[basic.fundamental] paragraph 8</a> as follows:
+</p>
+<diff-block>
+<p>Type <code><h- data-h=kw_type>wchar_t</h-></code> is a distinct type that has
+an implementation-defined
+<del>signed or unsigned</del> integer type as its underlying type.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/basic%2efundamental#11>[basic.fundamental] paragraph 11</a> as follows:
+</p>
+<diff-block>
+<p>The types <code><h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw_type>wchar_t</h-></code>, <code><h- data-h=kw_type>char8_t</h-></code>, <code><h- data-h=kw_type>char16_t</h-></code>, and <code><h- data-h=kw_type>char32_t</h-></code>
+are collectively called <i>character types</i>.
+The character types,
+<ins>integer types</ins>,
+<code><h- data-h=kw_type>bool</h-></code>,
+<del>the signed and unsigned integer types</del>,
+and cv-qualified versions (<a href=https://eel%2eis/c++draft/basic%2etype%2equalifier>[basic.type.qualifier]</a>) thereof,
+are collectively <del>termed</del> <ins>called</ins> <i>integral types</i>.
+<del>A synonym for integral type is <i>integer type</i>.</del>
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2erank#1>[conv.rank] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>Every <del>integer type</del> <ins>integral type</ins>
+has an <i><del>integer</del> <ins>integral</ins> conversion rank</i> defined as follows:
+</p><ul>
+<li>[&mldr;]</li>
+<li>
+The rank of any extended signed integer type
+relative to another extended signed integer type
+with the same width is implementation-defined,
+but still subject to the other rules
+for determining the <del>integer</del> <ins>integral</ins> conversion rank.
+</li>
+<li>
+For all <del>integer</del> <ins>integral</ins> types <code><h- data-h=id>T1</h-></code>, <code><h- data-h=id>T2</h-></code>, and <code><h- data-h=id>T3</h-></code>,
+if <code><h- data-h=id>T1</h-></code> has greater rank than <code><h- data-h=id>T2</h-></code><ins>,</ins>
+and <code><h- data-h=id>T2</h-></code> has greater rank than <code><h- data-h=id>T3</h-></code>,
+then <code><h- data-h=id>T1</h-></code> has greater rank than <code><h- data-h=id>T3</h-></code>.
+</li>
+</ul>
+<p><wg21-block>[<i>Note</i>: 
+The <del>integer</del> <ins>integral</ins> conversion rank is used
+in the definition of the integral promotion (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>)
+and the usual arithmetic conversions (<a href=https://eel%2eis/c++draft/expr%2earith%2econv>[expr.arith.conv]</a>).
+ — <i>end note</i>]</wg21-block>
+</p></diff-block>
+
+<note-block><p><intro-></intro-> 
+Notice that a comma is inserted within the last bullet.
+</p></note-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2elval#3%2e5>[conv.lval] paragraph 3, bullet 5</a> as follows:
+</p>
+<diff-block>
+<p>Otherwise, the object indicated by the glvalue is read (<a href=https://eel%2eis/c++draft/defns%2eaccess>[defns.access]</a>).
+Let <code><h- data-h=id>V</h-></code> be the value contained in the object.
+If <code><h- data-h=id>T</h-></code> is an <del>integer</del> <ins>integral</ins> type,
+the prvalue result is
+the value of type <code><h- data-h=id>T</h-></code> congruent (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>) to <code><h- data-h=id>V</h-></code>, and
+<code><h- data-h=id>V</h-></code> otherwise.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2eprom#2>[conv.prom] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<p>A prvalue that is not a converted bit-field and has an <del>integer</del> <ins>integral</ins> type other than
+<code><h- data-h=kw_type>bool</h-></code>, <code><h- data-h=kw_type>char8_t</h-></code>, <code><h- data-h=kw_type>char16_t</h-></code>,
+<code><h- data-h=kw_type>char32_t</h-></code>, or <code><h- data-h=kw_type>wchar_t</h-></code> whose <del>integer</del> <ins>integral</ins> conversion
+rank (<a href=https://eel%2eis/c++draft/conv%2erank>[conv.rank]</a>) is less than the rank of <code><h- data-h=kw_type>int</h-></code> can be
+converted to a prvalue of type <code><h- data-h=kw_type>int</h-></code> if <code><h- data-h=kw_type>int</h-></code> can represent
+all the values of the source type; otherwise, the source prvalue can be
+converted to a prvalue of type <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2eprom#3>[conv.prom] paragraph 3</a> as follows:
+</p>
+<diff-block>
+<p>A prvalue of an unscoped enumeration type whose underlying type is not
+fixed can be converted to a prvalue of the first of the following
+types that can represent all the values of the enumeration (<a href=https://eel%2eis/c++draft/dcl%2eenum>[dcl.enum]</a>):
+<code><h- data-h=kw_type>int</h-></code>, <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-></code>, <code><h- data-h=kw_type>long</h-> <h- data-h=kw_type>int</h-></code>, <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>int</h-></code>,
+<code><h- data-h=kw_type>long</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>int</h-></code>, or <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>int</h-></code>.
+If none of the types in that
+list can represent all the values of the enumeration, a prvalue of an unscoped
+enumeration type can be converted to a prvalue of the extended integer type with lowest
+<del>integer</del> <ins>integral</ins> conversion rank (<a href=https://eel%2eis/c++draft/conv%2erank>[conv.rank]</a>)
+greater than the rank of <code><h- data-h=kw_type>long</h-> <h- data-h=kw_type>long</h-></code>
+in which all the values of the enumeration can be represented.
+If there are two such extended types,
+the signed one is chosen.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2eintegral#1>[conv.integral] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>A prvalue of an <del>integer</del> <ins>integral</ins> type
+can be converted to a prvalue of another <del>integer</del> <ins>integral</ins> type.
+A prvalue of an unscoped enumeration type
+can be converted to a prvalue of an <del>integer</del> <ins>integral</ins> type.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2efpint#1>[conv.fpint] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>A prvalue of a floating-point type can be converted to a prvalue of an
+<del>integer</del> <ins>integral</ins> type.
+The conversion truncates;
+that is, the fractional part is discarded.
+The behavior is undefined if the truncated value cannot be represented
+in the destination type.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/conv%2efpint#2>[conv.fpint] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<p>A prvalue of an <del>integer</del> <ins>integral</ins> type
+or of an unscoped enumeration type
+can be converted to
+a prvalue of a floating-point type.
+[&mldr;]
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/expr%2ereinterpret%2ecast#5>[expr.reinterpret.cast] paragraph 5</a> as follows:
+</p>
+<diff-block>
+<p>A value of integral type or enumeration type
+can be explicitly converted to a pointer.
+A pointer converted to an <del>integer</del> <ins>integral type</ins> of sufficient size
+(if any such exists on the implementation)
+and back to the same pointer type
+will have its original value (<a href=https://eel%2eis/c++draft/basic%2ecompound>[basic.compound]</a>);
+mappings between pointers and <del>integers</del> <ins>integral types</ins> are otherwise
+implementation-defined.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/expr%2eassign#2>[expr.assign] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<p>In simple assignment (<code><h- data-h=sym_op>=</h-></code>),
+let <code><h- data-h=id>V</h-></code> be the result of the right operand;
+the object referred to by the left operand is
+modified (<a href=https://eel%2eis/c++draft/defns%2eaccess>[defns.access]</a>) by replacing its value
+with <code><h- data-h=id>V</h-></code> or,
+if the object is of <del>integer</del> <ins>integral</ins> type,
+with the value congruent (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>) to <code><h- data-h=id>V</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/dcl%2einit%2elist#7>[dcl.init.list] paragraph 7</a> as follows:
+</p>
+<diff-block>
+<p>A <i>narrowing conversion</i> is an implicit conversion
+</p><ul>
+<li>from a floating-point type to an <del>integer</del> <ins>integral</ins> type, or</li>
+<li>[&mldr;]</li>
+<li>
+from an <del>integer</del> <ins>integral</ins> type or unscoped enumeration type to a floating-point type, except
+where the source is a constant expression and the actual value after conversion will fit
+into the target type and will produce the original value when converted back to the
+original type, or
+</li>
+<li>
+from an <del>integer</del> <ins>integral</ins> type or unscoped enumeration type
+to an <del>integer</del> <ins>integral</ins> type that cannot represent all the
+values of the original type, except where [&mldr;]
+</li>
+<li>
+[&mldr;]
+</li>
+</ul>
+</diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/dcl%2eenum#11>[dcl.enum] paragraph 11</a> as follows:
+</p>
+<diff-block>
+<p>The value of an enumerator or an object of an unscoped enumeration type is
+converted to an <del>integer</del> <ins>integral type</ins> by integral promotion (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>).
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/class%2ebit#4>[class.bit] paragraph 4</a> as follows:
+</p>
+<diff-block>
+<p>If a value of integral type (other than <code><h- data-h=kw_type>bool</h-></code>) is stored
+into a bit-field of width <math display=inline><mi>N</mi></math> and the value would be representable
+in a hypothetical <del>signed or unsigned</del> integer type
+with width <math display=inline><mi>N</mi></math> and the same signedness as the bit-field's type,
+the original value and the value of the bit-field compare equal.
+[&mldr;]
+</p></diff-block>
+
+<h3 id=library-wording><a class=para href=#library-wording></a>4.2. Library wording</h3>
+
+<p>Change <a href=https://eel%2eis/c++draft/bitmask%2etypes#1>[bitmask.types] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>Several types defined in <a href=https://eel%2eis/c++draft/support>[support]</a> through <a href=https://eel%2eis/c++draft/exec>[exec]</a> and <a href=https://eel%2eis/c++draft/depr>[depr]</a> are bitmask types.
+Each bitmask type can be implemented
+as an enumerated type that overloads certain operators, as an <del>integer</del> <ins>integral</ins> type,
+or as a bitset.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/support%2etypes%2elayout>[support.types.layout]</a> as follows:
+</p>
+<diff-block>
+<p><i>Recommended practice</i>:
+An implementation should choose types for <code><h- data-h=id_type>ptrdiff_t</h-></code> and <code><h- data-h=id_type>size_t</h-></code>
+whose <del>integer</del> <ins>integral</ins> conversion ranks (<a href=https://eel%2eis/c++draft/conv%2erank>[conv.rank]</a>) are no greater than that of
+<code><h- data-h=kw_type>signed</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>int</h-></code> unless a larger size is necessary to contain all the possible values.
+</p></diff-block>
+
 <p>Change <a href=https://eel%2eis/c++draft/version%2esyn#2>[version.syn] paragraph 2</a> as follows:
 </p>
 <diff-block>
@@ -1586,35 +1910,127 @@ ins-block .para::before {
   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding, also in </h-><code><h- data-h=str>&lt;concepts&gt;</h-></code><h- data-h=cmt>, </h-><code><h- data-h=str>&lt;compare&gt;</h-></code></f-serif></code-block>
 </diff-block>
 
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2egeneral#4>[numeric.limits.general] paragraph 4</a> as follows:
+</p>
+<diff-block>
+<p>Specializations shall be provided for each
+arithmetic type,
+both floating-point and <del>integer</del> <ins>integral</ins>, including
+<code><h- data-h=kw_type>bool</h-></code>.
+The member
+<code><h- data-h=id>is_specialized</h-></code>
+shall be
+<code><h- data-h=bool>true</h-></code>
+for all such specializations of
+<code><h- data-h=id>numeric_limits</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2emembers#10>[numeric.limits.members] paragraph 10</a> as follows:
+</p>
+<diff-block>
+<p>For <del>integer</del> <ins>integral</ins> types,
+the number of non-sign bits in the representation.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2emembers#18>[numeric.limits.members] paragraph 18</a> as follows:
+</p>
+<diff-block>
+<p><code><h- data-h=bool>true</h-></code> if the type is <del>integer</del> <ins>integral</ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2emembers#20>[numeric.limits.members] paragraph 20</a> as follows:
+</p>
+<diff-block>
+<p><code><h- data-h=bool>true</h-></code> if the type uses an exact representation.
+All <del>integer</del> <ins>integral</ins> types are exact,
+but not all exact types are <del>integer</del> <ins>integral</ins>.
+For example, rational and fixed-exponent representations are exact
+but not <del>integer</del> <ins>integral</ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2emembers#23>[numeric.limits.members] paragraph 23</a> as follows:
+</p>
+<diff-block>
+<p>For <del>integer</del> <ins>integral</ins> types,
+specifies the base of the representation.<sup>167</sup>
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2elimits%2emembers#65>[numeric.limits.members] paragraph 65</a> as follows:
+</p>
+<diff-block>
+<p>Meaningful for all floating-point types.
+Specializations for <del>integer</del> <ins>integral</ins> types shall return
+<code><h- data-h=id>round_toward_zero</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/climits%2esyn#note-1>[climits.syn] note 1</a> as follows:
+</p>
+<diff-block>
+<p><wg21-block>[<i>Note</i>: 
+Except for <code><h- data-h=id>CHAR_BIT</h-></code> and <code><h- data-h=id>MB_LEN_MAX</h-></code>, a macro referring to
+an <del>integer</del> <ins>integral</ins> type <code><h- data-h=id>T</h-></code> defines a constant whose type is the promoted
+type of <code><h- data-h=id>T</h-></code> (<a href=https://eel%2eis/c++draft/conv%2eprom>[conv.prom]</a>).
+ — <i>end note</i>]</wg21-block>
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/cstdint%2esyn#1>[cstdint.syn] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>The header <tt->&lt;cstdint&gt;</tt->
+supplies <del>integer</del> <ins>integral</ins> types having specified widths, and
+macros that specify limits of <del>integer</del> <ins>integral</ins> types.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/cstdint%2esyn#3>[cstdint.syn] paragraph 3</a> as follows:
+</p>
+<diff-block>
+<p>All types that use the placeholder <tt-><i><h- data-h=id>N</h-></i></tt->
+are optional when <tt-><i><h- data-h=id>N</h-></i></tt->
+is not <code><h- data-h=num>8</h-></code>, <code><h- data-h=num>16</h-></code>, <code><h- data-h=num>32</h-></code>, or <code><h- data-h=num>64</h-></code>.
+The exact-width types
+<code><h- data-h=id_type>int</h-><i><h- data-h=id>N</h-></i><h- data-h=id_type>_t</h-></code> and <code><h- data-h=id_type>uint</h-><i><h- data-h=id>N</h-></i><h- data-h=id_type>_t</h-></code>
+for <tt-><i><h- data-h=id>N</h-></i></tt-> = <code><h- data-h=num>8</h-></code>, <code><h- data-h=num>16</h-></code>, <code><h- data-h=num>32</h-></code>, and <code><h- data-h=num>64</h-></code>
+are also optional;
+however, if an implementation defines <del>integer</del> <ins>integral</ins> types
+with the corresponding width and no padding bits,
+it defines the corresponding <g-term>typedef-name</g-term>s.
+Each of the macros listed in this subclause
+is defined if and only if
+the implementation defines the corresponding <g-term>typedef-name</g-term>.
+<br/><wg21-block>[<i>Note</i>: 
+The macros <code><h- data-h=id>INT</h-><tt-><i><h- data-h=id>N</h-></i></tt-><h- data-h=id>_C</h-></code> and <code><h- data-h=id>UINT</h-><tt-><i><h- data-h=id>N</h-></i></tt-><h- data-h=id>_C</h-></code>
+correspond to the <g-term>typedef-name</g-term>s
+<code><h- data-h=id_type>int_least</h-><tt-><i><h- data-h=id>N</h-></i></tt-><h- data-h=id_type>_t</h-></code> and <code><h- data-h=id_type>uint_least</h-><tt-><i><h- data-h=id>N</h-></i></tt-><h- data-h=id_type>_t</h-></code>,
+respectively.
+ — <i>end note</i>]</wg21-block>
+</p></diff-block>
+
 <p>Change <a href=https://eel%2eis/c++draft/concepts%2earithmetic>[concepts.arithmetic]</a> as follows:
 </p>
 <diff-block>
 <code-block class=borderless><ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>Us</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <i><h- data-h=id>one-of</h-></i> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>same_as</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Us</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>exposition only</h-></f-serif>
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>concept</h-> <i><h- data-h=id>is-character</h-></i> <h- data-h=sym_op>=</h-> <i><h- data-h=id>one-of</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>wchar_t</h-><h- data-h=sym_punc>,</h->               <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>exposition only</h-></f-serif>
-                                <h- data-h=kw_type>char8_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char16_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char32_t</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>concept</h-> <i><h- data-h=id>non-integer</h-></i> <h- data-h=sym_op>=</h-> <i><h- data-h=id>one-of</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>bool</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>wchar_t</h-><h- data-h=sym_punc>,</h->          <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>exposition only</h-></f-serif>
+                               <h- data-h=kw_type>char8_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char16_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>char32_t</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <i><h- data-h=id>cv-unqualified</h-></i> <h- data-h=sym_op>=</h-> <h- data-h=sym_op>!</h-><h- data-h=id>is_const_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=id>is_volatile_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>exposition only</h-></f-serif></ins>
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <h- data-h=id>integral</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>is_integral_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-<ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>concept</h-> <h- data-h=id>integer</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>cv-unqualified&lt;T&gt;</h-></i>
-                 <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><i><h- data-h=id>is-character</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=id>same_as</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>bool</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></ins>
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <h- data-h=id>signed_integral</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>is_signed_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <h- data-h=id>unsigned_integral</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=id>signed_integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+<ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>concept</h-> <h- data-h=id>integer</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><i><h- data-h=id>non-integer</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <i><h- data-h=id>cv-unqualified</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>concept</h-> <h- data-h=id>integer</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>signed_integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=id>signed_integral</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>concept</h-> <h- data-h=id>signed_integer</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integer</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>is_signed_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>concept</h-> <h- data-h=id>unsigned_integer</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>integer</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>is_unsigned_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></ins>
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>concept</h-> <h- data-h=id>floating_point</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>is_floating_point_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block>
 <p><div class=indent>
-<p><ins><wg21-block>[<i>Note</i>: 
-<code><h- data-h=id>integer</h-></code> is modeled by signed or unsigned integer types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).
- — <i>end note</i>]</wg21-block></ins></p>
-
 <p><wg21-block>[<i>Note</i>: 
 <code><h- data-h=id>signed_integral</h-></code> can be modeled even by types
 that are not signed integer types;
@@ -1623,11 +2039,56 @@ for example <code><h- data-h=kw_type>char</h-></code>.
 
 <p><wg21-block>[<i>Note</i>: 
 <code><h- data-h=id>unsigned_integral</h-></code> can be modeled even by types
-that are not unsigned integer types <del>([basic.fundamental])</del>; for example, <code><h- data-h=kw_type>bool</h-></code>.
+that are not unsigned integer types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>);
+for example, <code><h- data-h=kw_type>bool</h-></code>.
  — <i>end note</i>]</wg21-block>
 </p></div>
 </p></diff-block>
 
+<p>Change <a href=https://eel%2eis/c++draft/intseq%2eintseq#1>[intseq.intseq] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p><i>Mandates</i>:
+<code><h- data-h=id>T</h-></code> <del>is an integer type</del> <ins>models <code><h- data-h=id>integral</h-></code></ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/utility%2eintcmp#1>[utility.intcmp] paragraph 1</a> and <a href=https://eel%2eis/c++draft/utility%2eintcmp#4>[utility.intcmp] paragraph 4</a>
+as follows:
+</p>
+<diff-block>
+<p><i>Mandates</i>:
+Both <code><h- data-h=id>T</h-></code> and <code><h- data-h=id>U</h-></code>
+<del>are standard integer types or extended integer types ([basic.fundamental])</del>
+<ins>model <code><h- data-h=id>integer</h-></code></ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/utility%2eintcmp#9>[utility.intcmp] paragraph 9</a> as follows:
+</p>
+<diff-block>
+<p><i>Mandates</i>:
+Both <code><h- data-h=id>T</h-></code> and <code><h- data-h=id>R</h-></code>
+<del>are standard integer types or extended integer types ([basic.fundamental])</del>
+<ins>model <code><h- data-h=id>integer</h-></code></ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/forward%2elist%2eops#1>[forward.list.ops] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>In this subclause, arguments for a template parameter
+named <code><h- data-h=id>Predicate</h-></code> or <code><h- data-h=id>BinaryPredicate</h-></code>
+shall meet the corresponding requirements in <a href=https://eel%2eis/c++draft/algorithms%2erequirements>[algorithms.requirements]</a>.
+The semantics of <code><h- data-h=id>i</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>n</h-></code>,
+where <code><h- data-h=id>i</h-></code> is an iterator into the list and <code><h- data-h=id>n</h-></code> is <del>an integer</del> <ins>of integral type</ins>,
+are the same as those of <code><h- data-h=id>next</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>n</h-><h- data-h=sym_par>)</h-></code>.
+The expression <code><h- data-h=id>i</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>n</h-></code>, where <code><h- data-h=id>i</h-></code> is an iterator into the list and <code><h- data-h=id>n</h-></code> is an integer,
+means an iterator <code><h- data-h=id>j</h-></code> such that <code><h- data-h=id>j</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>n</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>i</h-></code> is <code><h- data-h=bool>true</h-></code>.
+For merge and sort, the definitions and requirements in <a href=https://eel%2eis/c++draft/alg%2esorting>[alg.sorting]</a> apply.
+</p></diff-block>
+
+<p>Apply the same replacement of "an integer" with "of integral type"
+in <a href=https://eel%2eis/c++draft/hive%2eoperations>[hive.operations]</a> (missing paragraph number on first paragraph)
+and in <a href=https://eel%2eis/c++draft/list%2eops#1>[list.ops] paragraph 1</a>.
+</p>
 <p>Change <a href=https://eel%2eis/c++draft/mdspan%2eextents%2eoverview#1>[mdspan.extents.overview] paragraph 1</a> as follows:
 </p>
 <diff-block>
@@ -1668,13 +2129,55 @@ as follows:
 <ins>models <code><h- data-h=id>integer</h-></code></ins>.
 </p></diff-block>
 
+<p>Change <a href=https://eel%2eis/c++draft/ranges%2esyn#1>[ranges.syn] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>Within this Clause,
+for an integer-like type <code><h- data-h=id>X</h-></code> (<a href=https://eel%2eis/c++draft/iterator%2econcept%2ewinc>[iterator.concept.winc]</a>),
+<code><i><h- data-h=id>make-unsigned-like-t</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>X</h-><h- data-h=sym_op>&gt;</h-></code> denotes
+<code><h- data-h=id_type>make_unsigned_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>X</h-><h- data-h=sym_op>&gt;</h-></code> if <code><h- data-h=id>X</h-></code> is an <del>integer</del> <ins>integral</ins> type;
+otherwise, it denotes a corresponding unspecified unsigned-integer-like type
+of the same width as <code><h- data-h=id>X</h-></code>.
+For an expression <code><h- data-h=id>x</h-></code> of type <code><h- data-h=id>X</h-></code>,
+<code><i><h- data-h=id>to-unsigned-like</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-></code> is
+<code><h- data-h=id>x</h-></code> explicitly converted to
+<code><i><h- data-h=id>make-unsigned-like-t</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>X</h-><h- data-h=sym_op>&gt;</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/ranges%2esyn#2>[ranges.syn] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<p>Also within this Clause,
+<code><i><h- data-h=id>make-signed-like-t</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>X</h-><h- data-h=sym_op>&gt;</h-></code> for an integer-like type <code><h- data-h=id>X</h-></code>
+denotes <code><h- data-h=id_type>make_signed_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>X</h-><h- data-h=sym_op>&gt;</h-></code> if <code><h- data-h=id>X</h-></code> is an <del>integer</del> <ins>integral</ins> type;
+otherwise, it denotes a corresponding unspecified signed-integer-like type
+of the same width as <code><h- data-h=id>X</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2eops%2egcd#1>[numeric.ops.gcd] paragraph 1</a> and
+<a href=https://eel%2eis/c++draft/numeric%2eops%2elcm#1>[numeric.ops.lcm] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p><i>Mandates</i>:
+<code><h- data-h=id>M</h-></code> and <code><h- data-h=id>N</h-></code> both are <del>integer</del> <ins>integral</ins> types other than <code><h- data-h=kw_type>bool</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/numeric%2eops%2emidpoint#1>[numeric.ops.midpoint] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p><i>Returns</i>:
+Half the sum of <code><h- data-h=id>a</h-></code> and <code><h- data-h=id>b</h-></code>.
+If <code><h- data-h=id>T</h-></code> is an <del>integer</del> <ins>integral</ins> type and the sum is odd,
+the result is rounded towards <code><h- data-h=id>a</h-></code>.
+</p></diff-block>
+
 <p>In <a href=https://eel%2eis/c++draft/numeric%2esat%2efunc>[numeric.sat.func]</a>,
 change paragraphs 2, 4, 6, and 8 as follows:
 </p>
 <diff-block>
 <p><i>Constraints</i>:
 <code><h- data-h=id>T</h-></code>
-<del>is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>)</del>
+<del>is a signed or unsigned integer type ([basic.fundamental])</del>
 <ins>models <code><h- data-h=id>integer</h-></code></ins>.
 </p></diff-block>
 
@@ -1683,9 +2186,29 @@ change paragraphs 2, 4, 6, and 8 as follows:
 <diff-block>
 <p><i>Constraints</i>:
 <code><h- data-h=id>R</h-></code> and <code><h- data-h=id>T</h-></code>
-<del>are signed or unsigned integer types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>)</del>
+<del>are signed or unsigned integer types ([basic.fundamental])</del>
 <ins>model <code><h- data-h=id>integer</h-></code></ins>.
 </p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/charconv%2esyn#1>[charconv.syn] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>When a function is specified
+with a type placeholder of <tt-><i><h- data-h=id>integer-type</h-></i></tt->,
+the implementation provides overloads
+for <code><h- data-h=kw_type>char</h-></code> and all <del>cv-unqualified signed and unsigned integer</del> <ins>integer</ins> types
+in lieu of <tt-><i><h- data-h=id>integer-type</h-></i></tt->.
+When a function is specified
+with a type placeholder of <tt-><i><h- data-h=id>floating-point-type</h-></i></tt->,
+the implementation provides overloads
+for all cv-unqualified floating-point types (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>)
+in lieu of <tt-><i><h- data-h=id>floating-point-type</h-></i></tt->.
+</p></diff-block>
+
+<note-block><p><intro-></intro-> 
+Signed or unsigned integer types are already cv-unqualified;
+this wording used to be redundant.
+</p></note-block>
 
 <p>Change <a href=https://eel%2eis/c++draft/format%2estring%2estd#10>[format.string.std] paragraph 10</a> as follows:
 </p>
@@ -1694,9 +2217,43 @@ change paragraphs 2, 4, 6, and 8 as follows:
 the value of the corresponding formatting argument
 is used as the value of the option.
 The option is valid only if the corresponding formatting argument
-<del>is of signed or unsigned integer type</del>
-<ins>models <code><h- data-h=id>integer</h-></code></ins>.
+is of <del>signed or unsigned</del> integer type.
 If its value is negative, an exception of type <code><h- data-h=id>format_error</h-></code> is thrown.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/cmplx%2eover#2%2e2>[cmplx.over] paragraph 2, bullet 2</a> as follows:
+</p>
+<diff-block>
+<p>Otherwise, if the argument has <del>integer</del> <ins>integral</ins> type,
+then it is effectively cast to <code><h- data-h=kw>complex</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>double</h-><h- data-h=sym_op>&gt;</h-></code>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/cmplx%2eover#3>[cmplx.over] paragraph 3</a> as follows:
+</p>
+<diff-block>
+<p>Function template <code><h- data-h=id>pow</h-></code> has additional constexpr overloads sufficient to ensure,
+for a call with one argument of type <code><h- data-h=kw>complex</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T1</h-><h- data-h=sym_op>&gt;</h-></code> and
+the other argument of type <code><h- data-h=id>T2</h-></code> or <code><h- data-h=kw>complex</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T2</h-><h- data-h=sym_op>&gt;</h-></code>,
+both arguments are effectively cast to <code><h- data-h=kw>complex</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>common_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T1</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T3</h-><h- data-h=sym_op>&gt;&gt;</h-></code>,
+where <code><h- data-h=id>T3</h-></code> is
+<code><h- data-h=kw_type>double</h-></code> if <code><h- data-h=id>T2</h-></code> is an <del>integer</del> <ins>integral</ins> type and <code><h- data-h=id>T2</h-></code> otherwise.
+If <code><h- data-h=id_type>common_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T1</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T3</h-><h- data-h=sym_op>&gt;</h-></code> is not well-formed,
+then the program is ill-formed.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/rand%2eutil%2eseedseq#2>[rand.util.seedseq] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<p><i>Constraints</i>:
+<code><h- data-h=id>T</h-></code> <del>is an integer type</del> <ins>models <code><h- data-h=id>integral</h-></code></ins>.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/rand%2eutil%2eseedseq#4>[rand.util.seedseq] paragraph 4</a> as follows:
+</p>
+<diff-block>
+<p><i>Mandates</i>:
+<code><h- data-h=id>iterator_traits</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>InputIterator</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></code>
+<del>is an integer type</del> <ins>models <code><h- data-h=id>integral</h-></code></ins>.
 </p></diff-block>
 
 <p>Change <a href=https://eel%2eis/c++draft/numerics%2ec%2eckdint#1>[numerics.c.ckdint] paragraph 1</a> as follows:
@@ -1708,12 +2265,42 @@ Each of the types <code><h- data-h=id>type1</h-></code>, <code><h- data-h=id>typ
 <ins>models <code><h- data-h=id>integer</h-></code></ins>.
 </p></diff-block>
 
-<note-block><p><intro-></intro-> 
-Signed or unsigned integer types are already cv-unqualified;
-this wording used to be redundant.
-</p></note-block>
+<p>Change <a href=https://eel%2eis/c++draft/cmath%2esyn#3>[cmath.syn] paragraph 3</a> as follows:
+</p>
+<diff-block>
+<p>For each function
+with at least one parameter of type <tt-><i><h- data-h=id>floating-point-type</h-></i></tt->
+other than <code><h- data-h=id>abs</h-></code>,
+the implementation also provides additional overloads sufficient to ensure that,
+if every argument corresponding to
+a <tt-><i><h- data-h=id>floating-point-type</h-></i></tt-> parameter has arithmetic type,
+then every such argument is effectively cast to the floating-point type
+with the greatest floating-point conversion rank and
+greatest floating-point conversion subrank
+among the types of all such arguments,
+where arguments of <del>integer</del> <ins>integral</ins> type are considered to have
+the same floating-point conversion rank as <code><h- data-h=kw_type>double</h-></code>.
+If no such floating-point type with the greatest rank and subrank exists,
+then overload resolution does not result in
+a usable candidate (<a href=https://eel%2eis/c++draft/over%2ematch%2egeneral>[over.match.general]</a>)
+from the overloads provided by the implementation.
+</p></diff-block>
 
-<h2 id=references><a class=para href=#references></a>4. References</h2>
+<p>Change <a href=https://eel%2eis/c++draft/simd%2ector#7%2e2>[simd.ctor] paragraph 7, bullet 2</a> as follows:
+</p>
+<diff-block>
+<p>both <code><h- data-h=id>U</h-></code> and <code><h- data-h=id>value_type</h-></code> are integral types and the <del>integer</del> <ins>integral</ins>
+conversion rank (<a href=https://eel%2eis/c++draft/conv%2erank>[conv.rank]</a>) of <code><h- data-h=id>U</h-></code> is greater than the <del>integer</del> <ins>integral</ins>
+conversion rank of <code><h- data-h=id>value_type</h-></code>, or
+</p></diff-block>
+
+<p>Change the title of <a href=https://eel%2eis/c++draft/atomics%2etypes%2eint>[atomics.types.int]</a> as follows:
+</p>
+<diff-block>
+<p><b>Specializations for <del>integers</del> <ins>integral types</ins></b>
+</p></diff-block>
+
+<h2 id=references><a class=para href=#references></a>5. References</h2>
 
 
 
