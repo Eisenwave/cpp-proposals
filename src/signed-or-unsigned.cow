@@ -136,7 +136,12 @@ This can be improved with the following strategy:
 }
 }
 
-Some alternatives concepts instead of \integer were considered:
+\note{
+With this new strategy,
+\tcode{char} and \tcode{bool} are not integer types, but integral types.
+}
+
+Some alternative designs instead of \integer were considered:
 \ul{
 \item{
 \tcode{std::signed_or_unsigned} would be inappropriate
@@ -144,6 +149,8 @@ because \tcode{std::is_signed_v<float>} is \tcode{true}.
 }
 \item{
 \tcode{std::signed_or_unsigned_integer} is comically verbose.
+It would also perpetuate the "signed or unsigned integer" workaround in wording;
+we ought to have a simpler name.
 }
 \item{
 \tcode{std::real_integer}, \tcode{std::actual_integer}, \tcode{std::integral2},
@@ -657,9 +664,35 @@ means an iterator \tcode{j} such that \tcode{j + n == i} is \tcode{true}.
 For merge and sort, the definitions and requirements in \eelis{alg.sorting} apply.
 }
 
-Apply the same replacement of "an integer" with "of integral type"
-in \eelis{hive.operations} (missing paragraph number on first paragraph)
-and in \eelis{list.ops#1}.
+Change \eelis{hive.operations#1} as follows:
+
+\diff{
+In this subclause,
+arguments for a template parameter
+named \tcode{Predicate} or \tcode{BinaryPredicate}
+shall meet the corresponding requirements in \eelis{algorithms.requirements}.
+The semantics of \tcode{i + n} and \tcode{i - n},
+where \tcode{i} is an iterator into the \tcode{hive} and \tcode{n} is \del{an integer} \ins{of integral type},
+are the same as those of \tcode{next(i, n)} and \tcode{prev(i, n)}, respectively.
+For \tcode{sort}, the definitions and requirements in \eelis{alg.sorting} apply.
+}
+
+Change \eelis{list.ops#1} as follows:
+
+\diff{
+In this subclause,
+arguments for a template parameter
+named \tcode{Predicate} or \tcode{BinaryPredicate}
+shall meet the corresponding requirements in \eelis{algorithms.requirements}.
+The semantics of \tcode{i + n},
+where \tcode{i} is an iterator into the list and \tcode{n} is \del{an integer} \ins{of integral type},
+are the same as those of \tcode{next(i, n)}.
+The expression \tcode{i - n},
+where \tcode{i} is an iterator into the list and \tcode{n} is an integer,
+means an iterator \tcode{j} such that \tcode{j + n == i} is \tcode{true}.
+For \tcode{merge} and \tcode{sort},
+the definitions and requirements in \eelis{alg.sorting} apply.
+}
 
 Change \eelis{mdspan.extents.overview#1} as follows:
 

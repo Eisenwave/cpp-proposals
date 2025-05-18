@@ -1568,7 +1568,12 @@ This can be improved with the following strategy:
 </tr>
 </table>
 
-<p>Some alternatives concepts instead of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> were considered:
+<note-block><p><intro-></intro-> 
+With this new strategy,
+<code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>bool</h-></code> are not integer types, but integral types.
+</p></note-block>
+
+<p>Some alternative designs instead of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> were considered:
 </p><ul>
 <li>
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_or_unsigned</h-></code> would be inappropriate
@@ -1576,6 +1581,8 @@ because <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_si
 </li>
 <li>
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_or_unsigned_integer</h-></code> is comically verbose.
+It would also perpetuate the "signed or unsigned integer" workaround in wording;
+we ought to have a simpler name.
 </li>
 <li>
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>real_integer</h-></code>, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>actual_integer</h-></code>, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral2</h-></code>,
@@ -2085,10 +2092,36 @@ means an iterator <code><h- data-h=id>j</h-></code> such that <code><h- data-h=i
 For merge and sort, the definitions and requirements in <a href=https://eel%2eis/c++draft/alg%2esorting>[alg.sorting]</a> apply.
 </p></diff-block>
 
-<p>Apply the same replacement of "an integer" with "of integral type"
-in <a href=https://eel%2eis/c++draft/hive%2eoperations>[hive.operations]</a> (missing paragraph number on first paragraph)
-and in <a href=https://eel%2eis/c++draft/list%2eops#1>[list.ops] paragraph 1</a>.
+<p>Change <a href=https://eel%2eis/c++draft/hive%2eoperations#1>[hive.operations] paragraph 1</a> as follows:
 </p>
+<diff-block>
+<p>In this subclause,
+arguments for a template parameter
+named <code><h- data-h=id>Predicate</h-></code> or <code><h- data-h=id>BinaryPredicate</h-></code>
+shall meet the corresponding requirements in <a href=https://eel%2eis/c++draft/algorithms%2erequirements>[algorithms.requirements]</a>.
+The semantics of <code><h- data-h=id>i</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>n</h-></code> and <code><h- data-h=id>i</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>n</h-></code>,
+where <code><h- data-h=id>i</h-></code> is an iterator into the <code><h- data-h=id>hive</h-></code> and <code><h- data-h=id>n</h-></code> is <del>an integer</del> <ins>of integral type</ins>,
+are the same as those of <code><h- data-h=id>next</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>n</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>prev</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>n</h-><h- data-h=sym_par>)</h-></code>, respectively.
+For <code><h- data-h=id>sort</h-></code>, the definitions and requirements in <a href=https://eel%2eis/c++draft/alg%2esorting>[alg.sorting]</a> apply.
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/list%2eops#1>[list.ops] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>In this subclause,
+arguments for a template parameter
+named <code><h- data-h=id>Predicate</h-></code> or <code><h- data-h=id>BinaryPredicate</h-></code>
+shall meet the corresponding requirements in <a href=https://eel%2eis/c++draft/algorithms%2erequirements>[algorithms.requirements]</a>.
+The semantics of <code><h- data-h=id>i</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>n</h-></code>,
+where <code><h- data-h=id>i</h-></code> is an iterator into the list and <code><h- data-h=id>n</h-></code> is <del>an integer</del> <ins>of integral type</ins>,
+are the same as those of <code><h- data-h=id>next</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>n</h-><h- data-h=sym_par>)</h-></code>.
+The expression <code><h- data-h=id>i</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>n</h-></code>,
+where <code><h- data-h=id>i</h-></code> is an iterator into the list and <code><h- data-h=id>n</h-></code> is an integer,
+means an iterator <code><h- data-h=id>j</h-></code> such that <code><h- data-h=id>j</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>n</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>i</h-></code> is <code><h- data-h=bool>true</h-></code>.
+For <code><h- data-h=id>merge</h-></code> and <code><h- data-h=id>sort</h-></code>,
+the definitions and requirements in <a href=https://eel%2eis/c++draft/alg%2esorting>[alg.sorting]</a> apply.
+</p></diff-block>
+
 <p>Change <a href=https://eel%2eis/c++draft/mdspan%2eextents%2eoverview#1>[mdspan.extents.overview] paragraph 1</a> as follows:
 </p>
 <diff-block>
