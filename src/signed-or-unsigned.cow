@@ -275,7 +275,7 @@ are collectively called \i{character types}.
 The character types,
 \ins{integer types},
 \tcode{bool},
-\del{the signed and unsigned integer types},
+\del{the signed and unsigned integer types,}
 and cv-qualified versions (\eelis{basic.type.qualifier}) thereof,
 are collectively \del{termed} \ins{called} \i{integral types}.
 \del{A synonym for integral type is \i{integer type}.}
