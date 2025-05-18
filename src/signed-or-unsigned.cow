@@ -1,0 +1,311 @@
+\def[\cppblock{...}]{\codeblock[cpp]{\put}}
+\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
+\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
+\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
+\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
+\def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
+
+\comment{
+    These macros make our wording very similar to C++ draft TeX,
+    making the job of the editors much more convenient.
+}
+\def[\tcode{...}]{\code[cpp]{\put}}
+\def[\grammarterm{...}]{\gterm{\put}}
+\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
+\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
+\def[\expects]{\i{Preconditions}:}
+\def[\constraints]{\i{Constraints}:}
+\def[\mandates]{\i{Mandates}:}
+\def[\remarks]{\i{Remarks}:}
+\def[\returns]{\i{Returns}:}
+\def[\recommended]{\i{Recommended practice}:}
+
+\def[\integer]{\tcode{std::integer}}
+
+\wg21-head[
+    title = A concept for signed or unsigned integers
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3701R0}}
+    \dt{Date:}            \dd{\tt{2025-05-18}}
+    \dt{Audience:}        \dd{LEWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3701R0/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/signed-or-unsigned.cow]}
+}
+\hr
+}
+
+\abstract{
+The \tcode{std::integral} concept includes
+cv-qualified types, character types, and \tcode{bool},
+which is overly broad for many uses cases.
+The C++ standard uses the "signed or unsigned integer type" wording idiom;
+I propose to formalize this as a concept.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+\tcode{std::integral} is widely used by the C++ community
+as a constraint for numeric code (\ref[GitHubSearch]).
+Many of these uses are questionable because \tcode{std::integral} is satisfied by
+character types such as \tcode{char}, as well as \tcode{bool},
+and cv-qualified versions of all these types.
+
+\bug{
+The constraints on the following template
+most likely don't match the intent of the author.
+\cppblock{
+template <std::integral T>
+T add_integers(T x, T y) { return x + y; }
+// ...
+add_integers(true, true);      // OK
+add_integers('a', 'b');        // OK
+add_integers<const int>(1, 2); // OK
+}
+}
+
+
+The C++ standard uses "signed or unsigned integer type" as a more appropriate constraint
+in \eelis{numeric.sat.func}, \eelis{mdspan.extents.overview}, and various other subclauses.
+
+I propose to formalize this wording idiom in the form of a
+\integer concept (name is tentative, could change).
+The goal is mainly to provide a simple alternative to \tcode{std::integral}
+which provides more appropriate constraints in user code.
+
+\h2{Design}
+
+\h3{Naming}
+
+Despite the obvious potential for confusion with \tcode{std::integral},
+\integer is a good candidate.
+\integer is meant to be the intuitive first choice
+for templates that are "meant to do integer math stuff",
+so we need a concise name that feels correct to C++ developers at first glance.
+
+Some alternatives were considered:
+\ul{
+\item{
+\tcode{std::signed_or_unsigned} would be inappropriate
+because \tcode{std::is_signed_v<float>} is \tcode{true}.
+}
+\item{
+\tcode{std::signed_or_unsigned_integer} is comically verbose.
+}
+\item{
+\tcode{std::real_integer}, \tcode{std::actual_integer}, \tcode{std::integral2},
+and other such "integers but like, for real this time" names
+aren't any less confusing than \integer{}.
+}
+}
+
+\h3{Is this obsoleted by P3003?}
+
+\ref[P3003] goes into a different direction:
+creating a whole library of numeric concepts,
+which would also include user-defined types (via opt-in).
+
+However, a lot of numeric user code would not be robust enough to take \em{any type}
+that behaves like an integer mathematically.
+User code that is currently constrained with \tcode{std::integral<T>}
+likely makes some assumptions about \tcode{T}, like
+\ul{
+\item{expressions of type \tcode{T} can be used in a \tcode{switch}, as an array index, etc.,}
+\item{\tcode{T} is trivially copyable and usually small,}
+\item{\tcode{T} is default-constructible,}
+\item{no operation can throw, terminate, etc.,}
+\item{\tcode{T} can be converted to floating-point types, among other things,}
+\item{...}
+}
+
+\integer is a quick way to constrain a function while documenting these assumptions,
+which is needed in practice.
+
+\h3{Replacing "signed or unsigned integer" in wording}
+
+It is custom to use a type trait or concept in library wording if one exists
+which describes the constraint directly.
+Therefore, some existing \constraints and \mandates specifications are updated.
+
+\h2{Wording}
+
+\style{
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+}
+
+The following changes are relative to \ref[N5008].
+
+Change \eelis{version.syn#2} as follows:
+
+\diff{
+\itemdecl{
+#define __cpp_lib_concepts \del{202207L} \ins{20XXXXL}
+  // \serif{freestanding, also in \header{concepts}, \header{compare}}
+}
+}
+
+Change \eelis{concepts.arithmetic} as follows:
+
+\diff{
+\itemdecl{
+\ins{template<class T, class... Us>
+  concept \exposid{one-of} = (same_as<T, Us> || ...);                     // \serif{exposition only}
+template<class T>
+  concept \exposid{is-character} = \exposid{one-of}<T, char, wchar_t,               // \serif{exposition only}
+                                char8_t, char16_t, char32_t>;
+template<class T>
+  concept \exposid{cv-unqualified} = !is_const_v<T> && !is_volatile_v<T>; // \serif{exposition only}}
+
+template<class T>
+  concept integral = is_integral_v<T>;
+\ins{template<class T>
+  concept integer = integral<T> && \exposid{cv-unqualified<T>}
+                 && !\exposid{is-character}<T> && !same_as<T, bool>;}
+template<class T>
+  concept signed_integral = integral<T> && is_signed_v<T>;
+template<class T>
+  concept unsigned_integral = integral<T> && !signed_integral<T>;
+template<class T>
+  concept integer = signed_integral<T> && !signed_integral<T>;
+template<class T>
+  concept floating_point = is_floating_point_v<T>;
+}
+\itemdescr{
+\ins{\wg21-note{
+\tcode{integer} is modeled by signed or unsigned integer types (\eelis{basic.fundamental}).
+}}
+
+\wg21-note{
+\tcode{signed_integral} can be modeled even by types
+that are not signed integer types;
+for example \tcode{char}.
+}
+
+\wg21-note{
+\tcode{unsigned_integral} can be modeled even by types
+that are not unsigned integer types \del{([basic.fundamental])}; for example, \tcode{bool}.
+}
+}
+}
+
+Change \eelis{mdspan.extents.overview#1} as follows:
+
+\diff{
+\mandates
+\ul{
+\item{\tcode{IndexType} \del{is a signed or unsigned integer type} \ins{models \tcode{integer}}, and}
+\item{
+each element of \tcode{Extents} is either equal to \tcode{dynamic_extent},
+or is representable as a value of type \tcode{IndexType}.
+}
+}
+}
+
+Change \eelis{mdspan.sub.strided.slice#3} as follows:
+
+\diff{
+\mandates
+\ins{Each of the types}
+\tcode{OffsetType}, \tcode{ExtentType}, and \tcode{StrideType}
+\del{are signed or unsigned integer types, or}
+\ins{models \tcode{integer} or}
+\tcode{\exposid{integral-constant-like}}.
+}
+
+\note{
+The "each of the types" part clarifies the wording
+in the same style as more recent wording in \eelis{numerics.c.ckdint}.
+}
+
+Change \eelis{mdspan.sub.helpers#1}
+and \eelis{mdspan.sub.helpers#10}
+as follows:
+
+\diff{
+\mandates
+\tcode{IndexType}
+\del{is a signed or unsigned integer type}
+\ins{models \tcode{integer}}.
+}
+
+In \eelis{numeric.sat.func},
+change paragraphs 2, 4, 6, and 8 as follows:
+
+\diff{
+\constraints
+\tcode{T}
+\del{is a signed or unsigned integer type (\eelis{basic.fundamental})}
+\ins{models \tcode{integer}}.
+}
+
+Change \eelis{numeric.sat.cast#1} as follows:
+
+\diff{
+\constraints
+\tcode{R} and \tcode{T}
+\del{are signed or unsigned integer types (\eelis{basic.fundamental})}
+\ins{model \tcode{integer}}.
+}
+
+Change \eelis{format.string.std#10} as follows:
+
+\diff{
+If \tt{{ \exposid{arg-id}\sub{\serif{opt}} }} is used in a \grammarterm{width or precision} option,
+the value of the corresponding formatting argument
+is used as the value of the option.
+The option is valid only if the corresponding formatting argument
+\del{is of signed or unsigned integer type}
+\ins{models \tcode{integer}}.
+If its value is negative, an exception of type \tcode{format_error} is thrown.
+}
+
+Change \eelis{numerics.c.ckdint#1} as follows:
+
+\diff{
+\mandates
+Each of the types \tcode{type1}, \tcode{type2}, and \tcode{type3}
+\del{is a cv-unqualified signed or unsigned integer type}
+\ins{models \tcode{integer}}.
+}
+
+\note{
+Signed or unsigned integer types are already cv-unqualified;
+this wording used to be redundant.
+}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = GitHubSearch,
+    title = GitHub code search for uses of std::integral,
+    link = https://github.com/search?q=language%3AC%2B%2B+%2Fstd%3A%3Aintegral%5B+%3C%5D%2F&type=code
+]
+\bib[
+    id = P3003,
+    title = The design of a library of number concepts,
+    author = Johel Ernesto Guerrero Pe~na,
+    link = https://wg21.link/P3003,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3003r0.pdf
+]
+
+\make-bib
