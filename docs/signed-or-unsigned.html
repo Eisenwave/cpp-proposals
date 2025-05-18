@@ -1493,6 +1493,7 @@ as a constraint for numeric code (<a href="https://github%2ecom/search?q=languag
 Many of these uses are questionable because <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code> is satisfied by
 character types such as <code><h- data-h=kw_type>char</h-></code>, as well as <code><h- data-h=kw_type>bool</h-></code>,
 and cv-qualified versions of all these types.
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integral</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integral</h-></code> are similarly permissive.
 </p>
 <bug-block><p><intro-></intro-> 
 The constraints on the following template
@@ -1507,11 +1508,16 @@ most likely don't match the intent of the author.
 
 <p>The C++ standard uses "signed or unsigned integer type" as a more appropriate constraint
 in <a href=https://eel%2eis/c++draft/numeric%2esat%2efunc>[numeric.sat.func]</a>, <a href=https://eel%2eis/c++draft/mdspan%2eextents%2eoverview>[mdspan.extents.overview]</a>, and various other subclauses.
+That name is clunky and needs to be used instead of the obvious "integer type"
+because "integer" is already synonymous with "integral", and this proposal cleans that up.
 </p>
-<p>I propose to formalize this wording idiom in the form of a
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code> concept (name is tentative, could change).
-The goal is mainly to provide a simple alternative to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral</h-></code>
-which provides more appropriate constraints in user code.
+<p>For integer types (with new meaning),
+signed integer types,
+and unsigned integer types,
+I propose the corresponding concepts <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integer</h-></code>,
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>signed_integer</h-></code>, and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integer</h-></code>.
+The goal is mainly to provide a simple alternative to the <code><h- data-h=id>integral</h-></code> concepts,
+which provide more appropriate constraints in user code.
 </p>
 <h2 id=design><a class=para href=#design></a>2. Design</h2>
 

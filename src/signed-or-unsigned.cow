@@ -59,6 +59,7 @@ as a constraint for numeric code (\ref[GitHubSearch]).
 Many of these uses are questionable because \tcode{std::integral} is satisfied by
 character types such as \tcode{char}, as well as \tcode{bool},
 and cv-qualified versions of all these types.
+\tcode{std::signed_integral} and \tcode{std::unsigned_integral} are similarly permissive.
 
 \bug{
 The constraints on the following template
@@ -75,11 +76,16 @@ add_integers<const int>(1, 2); // OK?!
 
 The C++ standard uses "signed or unsigned integer type" as a more appropriate constraint
 in \eelis{numeric.sat.func}, \eelis{mdspan.extents.overview}, and various other subclauses.
+That name is clunky and needs to be used instead of the obvious "integer type"
+because "integer" is already synonymous with "integral", and this proposal cleans that up.
 
-I propose to formalize this wording idiom in the form of a
-\integer concept (name is tentative, could change).
-The goal is mainly to provide a simple alternative to \tcode{std::integral}
-which provides more appropriate constraints in user code.
+For integer types (with new meaning),
+signed integer types,
+and unsigned integer types,
+I propose the corresponding concepts \tcode{std::integer},
+\tcode{std::signed_integer}, and \tcode{std::unsigned_integer}.
+The goal is mainly to provide a simple alternative to the \tcode{integral} concepts,
+which provide more appropriate constraints in user code.
 
 \h2{Design}
 
