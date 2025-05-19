@@ -28,10 +28,10 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\ref[https://wg21.link/P3688R0]{P3688R0}}
-    \dt{Date:}            \dd{\tt{2025-05-18}}
+    \dt{Date:}            \dd{\tt{2025-05-19}}
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Author:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
@@ -167,6 +167,8 @@ than say, \tcode{template<class Char>}.
 Equivalent functions could also be added to C, if there is interest.
 This signature also allows the use with types that are convertible to a specific character type.
 
+\h3{List of proposed functions}
+
 \style{
 #fun-table {
     margin-left: auto;
@@ -186,8 +188,6 @@ This signature also allows the use with types that are convertible to a specific
 }
 }
 
-\h3{List of proposed functions}
-
 Find below a list of proposed functions.
 Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 
@@ -196,6 +196,11 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
     \th{\header{cctype}}
     \th{Proposed name}
     \th{Returns (given ASCII \tcode{char c})}
+}
+\tr{
+    \td{N/A}
+    \td{\tcode{is_ascii}}
+    \td{\tcode{c <= 0x7F}}
 }
 \tr{
     \td{\tcode{isdigit}}
@@ -306,6 +311,32 @@ In the default \tcode{"C"} locale,
 Similarly, \tcode{isblank} should perhaps have no new version either.
 This proposal simply has a new version for every \header{cctype} function;
 if need be, they are easy to remove.
+}
+
+\h3[id=is-ascii]{\tcode{is_ascii}}
+
+This additional function is mainly useful for checking if a character "is ASCII",
+i.e. falls into the basic latin block,
+before performing an ASCII-only evaluation.
+
+\example{
+In the following overload set, the \tcode{char32_t} implementation delegates
+to the \tcode{char8_t} implementation to avoid repetition of its logic.
+The \tcode{std::is_ascii(c)} check is needed because
+because an unconditional \tcode{get_hex_digit_value(char8_t(c))}
+may result in treating U+0130 LATIN CAPITAL LETTER I WITH DOT ABOVE as U+0030 DIGIT ZERO.
+\cppblock{
+int get_hex_digit_value(char8_t c) {
+    return c >= u8'0' && c <= u8'9' ? c - u8'0'
+         : c >= u8'A' && c <= u8'F' ? c - u8'A'
+         : c >= u8'a' && c <= u8'f' ? c - u8'a'
+         : -1;
+}
+
+int get_hex_digit_value(char32_t c) {
+    return std::is_ascii(c) ? get_hex_digit_value(char8_t(c)) : -1;
+}
+}
 }
 
 \h3[id=base-parameter]{\tcode{base} parameter in \tcode{is_ascii_digit}}
@@ -638,14 +669,15 @@ is \tcode{true} regardless of ordinary literal encoding.
 
 When a function is specified with a type placeholder of
 \tcode{\ctype},
-the implementation provides overloads for all cv-unqualified 
-character types (\eelis{basic.fundamental})
+the implementation provides overloads for all character types (\eelis{basic.fundamental})
 in lieu of \tcode{\ctype}.
 
 \codeblock[cpp,borders=no]{
 // \serif{all freestanding}
 namespace std {
   // \serif{[ascii.chars.test], ASCII character testing}
+  constexpr bool is_ascii(\ctype c) noexcept;
+
   constexpr bool is_ascii_digit(\ctype c, int base = 10);
   constexpr bool is_ascii_bit(\ctype c) noexcept;
   constexpr bool is_ascii_octal_digit(\ctype c) noexcept;
@@ -678,6 +710,14 @@ namespace std {
 }
 
 \h3[listed=no]{ASCII character testing \stable-ref{ascii.chars.test}}
+
+\itemdecl{
+constexpr bool is_ascii(\ctype c) noexcept;
+}
+\itemdescr{
+\returns
+\tcode{static_cast<char32_t>(c) <= 0x7F}.
+}
 
 \itemdecl{
 constexpr bool is_ascii_digit(\ctype c, int base = 10);
@@ -844,16 +884,13 @@ constexpr bool ascii_case_insensitive_equals(\ctype a,
 
 }
 
-\details{
-\summary{See editorial rationale}
-\paragraphs{
+\note{
 Some uses of \tcode{static_cast} are unnecessary to describe semantics.
 For example, \tcode{static_cast<char32_t>(c) == U' '}
 is equivalent to \tcode{c == U' '}.
 
 However, these uses of \tcode{static_cast} may improve readability and avoid
 the use of behavior which is proposed to be deprecated in \ref[P3695R0].
-}
 }
 
 
