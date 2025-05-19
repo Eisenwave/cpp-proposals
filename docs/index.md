@@ -51,7 +51,7 @@ Author: Jan Schultke
 **Audience**: EWG, LEWG, SG6
 
 - [Latest](bitint-debate.html)
-- [Latest](bitint-debate-p3639r0.html)
+- [P3639](bitint-debate-p3639r0.html)
 
 ### P3641: Rename `std::observable` to `std::observable_checkpoint`, and add a feature-test macro
 
@@ -80,6 +80,7 @@ Author: Jan Schultke
 **Audience**: SG16, LEWG
 
 - [Latest](ascii.html)
+- [P3688R0](ascii-p3688r0.html)
 
 ### P3695: Deprecate implicit conversions between `char8_t`, `char16_t`, and `char32_t`
 
@@ -87,6 +88,15 @@ Author: Jan Schultke
 **Audience**: SG16, EWG
 
 - [Latest](deprecate-unicode-conversion.html)
+- [P3695R0](deprecate-unicode-conversion-p3695r0.html)
+
+### P3701: Concepts for integer types, not integral types
+
+**Status**: Active<br>
+**Audience**: CWG, LEWG
+
+- [Latest](signed-or-unsigned.html)
+- [P3701R0](signed-or-unsigned-p3701r0.html)
 
 ## Inactive
 
