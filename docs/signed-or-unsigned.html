@@ -2070,6 +2070,30 @@ respectively.
  — <i>end note</i>]</wg21-block>
 </p></diff-block>
 
+<p>Change <a href=https://eel%2eis/c++draft/concepts%2esyn>[concepts.syn]</a> as follows:
+</p>
+<diff-block>
+<code-block class=borderless><h- data-h=kw>namespace</h-> <h- data-h=id>std</h-> <h- data-h=sym_brac>{</h->
+  <f-serif>[…]</f-serif>
+  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[concepts.arithmetic], arithmetic concepts</h-></f-serif>
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>integral</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>signed_integral</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>unsigned_integral</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>integer</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>signed_integer</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>unsigned_integer</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h-></ins>
+  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=kw>concept</h-> <h- data-h=id>floating_point</h-> <h- data-h=sym_op>=</h-> <f-serif><i><h- data-h=id>see</h-> <h- data-h=id>below</h-></i></f-serif><h- data-h=sym_punc>;</h->
+  <f-serif>[…]</f-serif>
+<h- data-h=sym_brac>}</h-></code-block>
+</diff-block>
+
 <p>Change <a href=https://eel%2eis/c++draft/concepts%2earithmetic>[concepts.arithmetic]</a> as follows:
 </p>
 <diff-block>

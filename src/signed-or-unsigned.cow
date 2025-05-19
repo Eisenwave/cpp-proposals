@@ -640,6 +640,32 @@ respectively.
 }
 }
 
+Change \eelis{concepts.syn} as follows:
+
+\diff{
+\itemdecl{
+namespace std {
+  \serif{\html{\etc}}
+  // \serif{[concepts.arithmetic], arithmetic concepts}
+  template<class T>
+    concept integral = \serif{\i{see below}};
+  template<class T>
+    concept signed_integral = \serif{\i{see below}};
+  template<class T>
+    concept unsigned_integral = \serif{\i{see below}};
+  \ins{template<class T>
+    concept integer = \serif{\i{see below}};
+  template<class T>
+    concept signed_integer = \serif{\i{see below}};
+  template<class T>
+    concept unsigned_integer = \serif{\i{see below}};}
+  template<class T>
+    concept floating_point = \serif{\i{see below}};
+  \serif{\html{\etc}}
+}
+}
+}
+
 Change \eelis{concepts.arithmetic} as follows:
 
 \diff{
