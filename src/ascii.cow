@@ -801,7 +801,7 @@ constexpr bool is_ascii_punctuation(\ctype c) noexcept;
 }
 \itemdescr{
 \returns
-\tcode{u32string_view(U"!\\"#\U{24}\U{25}&'()*+,-./:;<=>?@[\\\\]^_`{|}~").contains(static_cast<char32_t>(c))}.
+\tcode{u32string_view(U"!\\"#\U{24}\U{25}&'()*+,-./:;<=>?@[\\\\]^_`{|}~")\wbr{}.contains(static_cast<char32_t>(c))}.
 }
 
 \itemdecl{
