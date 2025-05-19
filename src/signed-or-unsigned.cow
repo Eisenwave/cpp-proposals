@@ -6,6 +6,7 @@
 \def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
 \def[\iref{...}]{ (\eelis{\put})}
 \def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
+\def[\etc]{[\c{mldr}]}
 
 \comment{
     These macros make our wording very similar to C++ draft TeX,
@@ -23,17 +24,15 @@
 \def[\result]{\i{Result}:}
 \def[\recommended]{\i{Recommended practice}:}
 
-\def[\integer]{\tcode{std::integer}}
-
 \wg21-head[
     title = Concepts for integer types\, not integral types
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3701R0}}
-    \dt{Date:}            \dd{\tt{2025-05-18}}
+    \dt{Date:}            \dd{\tt{2025-05-19}}
     \dt{Audience:}        \dd{CWG, LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Reply-To:}          \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3701R0/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/signed-or-unsigned.cow]}
 }
@@ -147,7 +146,7 @@ With this new strategy,
 \tcode{char} and \tcode{bool} are not integer types, but integral types.
 }
 
-Some alternative designs instead of \integer were considered:
+Some alternative designs instead of \tcode{std::integer} were considered:
 \ul{
 \item{
 \tcode{std::signed_or_unsigned} would be inappropriate
@@ -161,7 +160,7 @@ we ought to have a simpler name.
 \item{
 \tcode{std::real_integer}, \tcode{std::actual_integer}, \tcode{std::integral2},
 and other such "integers but like, for real this time" names
-aren't any less confusing than \integer{}.
+aren't any less confusing than \tcode{std::integer}.
 }
 }
 
@@ -184,8 +183,64 @@ likely makes some assumptions about \tcode{T}, like
 \item{...}
 }
 
-\integer is a quick way to constrain a function while documenting these assumptions,
+\tcode{std::integer} is a quick way to constrain a function while documenting these assumptions,
 which is needed in practice.
+
+\h3[id=cv-qualifications]{Should \tcode{const int} be an integer type?}
+
+Unlike \tcode{std::floating_point} and \tcode{std::integral},
+\tcode{std::integer} (and "integer type") would not include cv-qualified types.
+Surprisingly, \tcode{const int} is not a standard integer or signed integer type,
+but \tcode{const float} is a standard floating-point type.
+There is an obvious inconsistency here, and we need to decide on a direction.
+
+I argue that \tcode{const int} should not be an integer type.
+While that may be counter-intuitive at first glance,
+this behavior is tremendously more useful:
+\ul{
+\item{
+A substantial amount of wording (\ref[#wording]) can be simplified to just
+"is of integer type" or "models \tcode{integer}".
+This would need to be qualified with "cv-unqualified" otherwise.
+}
+\item{
+When the user constrains a numeric function template so it only accepts integer types,
+they are not interested in supporting \tcode{const int}.
+Neither is the standard library.
+If the template parameter is deduced from a \tcode{T x} function parameter,
+the only way to provide \tcode{T = const int} is explicitly anyway;
+it never happens organically through deduction.
+In the extremely unlikely event they want to support it,
+they should do so explicitly via \tcode{std::remove_cv_t}.
+}
+\item{
+It is \em{extremely} unlikely that the user intended to support \tcode{volatile int}
+in their types and functions, so this should require opt-in, not opt-out.
+\tcode{std::integer<std::remove_volatile_t<T>>} would be opt-in.
+Opt-out would be the natural consequence of including cv-qualified types in "integer type".
+}
+\item{
+Every occurrence of "signed integer type" and "unsigned integer type"
+should not include cv-qualified types.
+For example, it would be insane if the \tcode{size_type} of a container could be \tcode{const}.
+}
+\item{
+The standard needs to say "cv-unqualified floating-point type(s)"
+in a number of places (\ref[N5008]),
+and when it doesn't say "cv-unqualified",
+it's not always obvious whether that is accidental or by intention.
+For example, \eelis{basic.extended.fp} never says "cv-unqualified",
+but we obviously don't want \tcode{using float32_t = const _Float32;}.
+Generally, including cv-qualified types in the definitions by default
+may be more concise in some places,
+but it's making the standard less expressive;
+it leaves intent unexpressed.
+}
+}
+
+In conclusion, \tcode{const int} being considered an integer may feel philosophically right,
+but it's not very useful in wording, and it's not beneficial to \tcode{std::integer} constraints.
+\tcode{const float} being a floating-point type is a bad status quo that we should not perpetuate.
 
 \h2{Impact on the standard}
 
@@ -300,7 +355,7 @@ Change \eelis{conv.rank#1} as follows:
 Every \del{integer type} \ins{integral type}
 has an \i{\del{integer} \ins{integral} conversion rank} defined as follows:
 \ul{
-\item{[\c{mldr}]}
+\item{\etc}
 \item{
 The rank of any extended signed integer type
 relative to another extended signed integer type
@@ -394,7 +449,7 @@ A prvalue of an \del{integer} \ins{integral} type
 or of an unscoped enumeration type
 can be converted to
 a prvalue of a floating-point type.
-[\c{mldr}]
+\etc
 }
 
 Change \eelis{expr.reinterpret.cast#5} as follows:
@@ -428,7 +483,7 @@ Change \eelis{dcl.init.list#7} as follows:
 A \i{narrowing conversion} is an implicit conversion
 \ul{
 \item{from a floating-point type to an \del{integer} \ins{integral} type, or}
-\item{[\c{mldr}]}
+\item{\etc}
 \item{
 from an \del{integer} \ins{integral} type or unscoped enumeration type to a floating-point type, except
 where the source is a constant expression and the actual value after conversion will fit
@@ -438,11 +493,9 @@ original type, or
 \item{
 from an \del{integer} \ins{integral} type or unscoped enumeration type
 to an \del{integer} \ins{integral} type that cannot represent all the
-values of the original type, except where [\c{mldr}]
+values of the original type, except where \etc
 }
-\item{
-[\c{mldr}]
-}
+\item{\etc}
 }
 }
 
@@ -460,8 +513,7 @@ If a value of integral type (other than \tcode{bool}) is stored
 into a bit-field of width \math{\mi{N}} and the value would be representable
 in a hypothetical \del{signed or unsigned} integer type
 with width \math{\mi{N}} and the same signedness as the bit-field's type,
-the original value and the value of the bit-field compare equal.
-[\c{mldr}]
+the original value and the value of the bit-field compare equal. \etc
 }
 
 \h3{Library wording}
@@ -618,14 +670,18 @@ template<class T>
 \itemdescr{
 \wg21-note{
 \tcode{signed_integral} can be modeled even by types
-that are not signed integer types;
+that are not signed integer types\iref{basic.fundamental};
 for example \tcode{char}.
+\ins{\tcode{signed_integer} is modeled exclusively by
+signed integer types.}
 }
 
 \wg21-note{
 \tcode{unsigned_integral} can be modeled even by types
-that are not unsigned integer types (\eelis{basic.fundamental});
+that are not unsigned integer types\iref{basic.fundamental};
 for example, \tcode{bool}.
+\ins{\tcode{unsigned_integer} is modeled exclusively by
+unsigned integer types.}
 }
 }
 }
