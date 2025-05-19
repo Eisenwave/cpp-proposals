@@ -51,6 +51,8 @@ It would be better to formalize the currently unwritten rules.
 
 \h2{Introduction}
 
+\h3{Accessibility and legal concerns}
+
 HTML is an extremely feature-rich file format.
 Among other features, this includes:
 \ul{
@@ -87,12 +89,35 @@ and the user never consented to this,
 this may be in violation of European law (\ref[GdprCookies]).
 }
 
+\h3{Generative AI}
+
+ISO has recently published
+"Guidance on use of artificial intelligence (AI) for ISO committees" (\ref[ISO-AI]).
+Among other principles, there is:
+
+\blockquote{
+\u{Respect ISO’s standards development policies}\br
+\b{Do} ensure you are familiar with, and abide by, the ISO Copyright policy and implementation
+guidelines, ISO/IEC Directives and ISO Privacy notice, which are mandatorily applicable to ISO
+technical work.
+
+\b{Do not} use images or text created by generative AI in any ISO content,
+either internally or externally.
+}
+
+While not all documents may be considered "ISO content",
+we expect them to be written by humans, not ChatGPT.
+This applies universally to meeting announcements, editor's reports, proposals, etc.
+
 \h3{Goals}
 
-The purpose of this proposal is to come up with a set of rules that would
+The purpose of this proposal is to come up with a set of rules that would:
 \ul{
 \item{
 Ban the use of any legally problematic features, like cookies or local storage.
+}
+\item{
+Ban the use AI-generated content, in line with \ref[ISO-AI].
 }
 \item{
 Require that some accessibility requirements are met.
@@ -105,6 +130,12 @@ Limit the extent to which proposals can be interactive,
 Require that submitted documents are "self-contained".
 That is, they should not become unreadable due to "link rot",
 and internal references should \em{actually} be internal (\code[html]{<a href=#id>}).
+}
+\item{
+Modernize the document encoding requirements (UTF-8 everywhere).
+}
+\item{
+Generally clean up \ref[SD-7] and make it more organized through the use of headings.
 }
 }
 
@@ -142,7 +173,7 @@ Change \ref[SD-7] as follows:
 
 \note{
 Note blocks like this one within the changes are editor's notes,
-note part of the change itself.
+not part of the change itself.
 }
 
 \diff{
@@ -442,6 +473,12 @@ All papers must be received by the vice-chair by
     id = ISO-Coc,
     title = ISO Code of Ethics and Conduct,
     link = https://www.iso.org/files/live/sites/isoorg/files/store/en/PUB100011.pdf
+]
+\bib[
+    id = ISO-AI,
+    title = Guidance on use of artificial intelligence (AI) for ISO committees,
+    date = 2025-03,
+    link = https://www.iso.org/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use of AI.pdf
 ]
 
 \make-bib

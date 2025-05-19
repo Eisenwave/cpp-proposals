@@ -1481,9 +1481,11 @@ It would be better to formalize the currently unwritten rules.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href=#goals><h3>Goals</h3></a><div class=toc-num data-level=3>1.2</div><a href=#non-goals><h3>Non-goals</h3></a><div class=toc-num data-level=2>2</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>3</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href=#accessibility-and-legal-concerns><h3>Accessibility and legal concerns</h3></a><div class=toc-num data-level=3>1.2</div><a href=#generative-ai><h3>Generative AI</h3></a><div class=toc-num data-level=3>1.3</div><a href=#goals><h3>Goals</h3></a><div class=toc-num data-level=3>1.4</div><a href=#non-goals><h3>Non-goals</h3></a><div class=toc-num data-level=2>2</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>3</div><a href=#references><h2>References</h2></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
+
+<h3 id=accessibility-and-legal-concerns><a class=para href=#accessibility-and-legal-concerns></a>1.1. Accessibility and legal concerns</h3>
 
 <p>HTML is an extremely feature-rich file format.
 Among other features, this includes:
@@ -1521,12 +1523,35 @@ and the user never consented to this,
 this may be in violation of European law (<a href="https://gdpr%2eeu/cookies/">[GdprCookies]</a>).
 </p></important-block>
 
-<h3 id=goals><a class=para href=#goals></a>1.1. Goals</h3>
+<h3 id=generative-ai><a class=para href=#generative-ai></a>1.2. Generative AI</h3>
 
-<p>The purpose of this proposal is to come up with a set of rules that would
+<p>ISO has recently published
+"Guidance on use of artificial intelligence (AI) for ISO committees" (<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use%20of%20AI%2epdf">[ISO-AI]</a>).
+Among other principles, there is:
+</p>
+<blockquote>
+<p><u>Respect ISO’s standards development policies</u><br/>
+<b>Do</b> ensure you are familiar with, and abide by, the ISO Copyright policy and implementation
+guidelines, ISO/IEC Directives and ISO Privacy notice, which are mandatorily applicable to ISO
+technical work.
+</p>
+<p><b>Do not</b> use images or text created by generative AI in any ISO content,
+either internally or externally.
+</p></blockquote>
+
+<p>While not all documents may be considered "ISO content",
+we expect them to be written by humans, not ChatGPT.
+This applies universally to meeting announcements, editor's reports, proposals, etc.
+</p>
+<h3 id=goals><a class=para href=#goals></a>1.3. Goals</h3>
+
+<p>The purpose of this proposal is to come up with a set of rules that would:
 </p><ul>
 <li>
 Ban the use of any legally problematic features, like cookies or local storage.
+</li>
+<li>
+Ban the use AI-generated content, in line with <a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use%20of%20AI%2epdf">[ISO-AI]</a>.
 </li>
 <li>
 Require that some accessibility requirements are met.
@@ -1540,9 +1565,15 @@ Require that submitted documents are "self-contained".
 That is, they should not become unreadable due to "link rot",
 and internal references should <em>actually</em> be internal (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-> <h- data-h=mk_attr>href</h-><h- data-h=sym_punc>=</h-><h- data-h=str>#id</h-><h- data-h=sym_punc>&gt;</h-></code>).
 </li>
+<li>
+Modernize the document encoding requirements (UTF-8 everywhere).
+</li>
+<li>
+Generally clean up <a href="https://wg21%2elink/SD-7">[SD-7]</a> and make it more organized through the use of headings.
+</li>
 </ul>
 
-<h3 id=non-goals><a class=para href=#non-goals></a>1.2. Non-goals</h3>
+<h3 id=non-goals><a class=para href=#non-goals></a>1.4. Non-goals</h3>
 
 <p>The goal is <em>not</em> to put a blanket-ban any technologies outside of "simple HTML" and CSS.
 There are many valid uses for more advanced parts.
@@ -1576,7 +1607,7 @@ just a bit uglier.
 </p>
 <note-block><p><intro-></intro-> 
 Note blocks like this one within the changes are editor's notes,
-note part of the change itself.
+not part of the change itself.
 </p></note-block>
 
 <diff-block>
@@ -1859,6 +1890,7 @@ The document should follow the <a href=http://commonmark%2eorg/>Commonmark speci
 
 
 
+
 <div class=bib><div class=bib-item>
 <a href="https://wg21%2elink/SD-7">[SD-7]</a>
 <span class=bib-author>Nevin Liber.</span>
@@ -1873,6 +1905,10 @@ The document should follow the <a href=http://commonmark%2eorg/>Commonmark speci
 <a href="https://www%2ew3%2eorg/WAI/WCAG22/quickref/" class=bib-link>https://www.w3.org/WAI/WCAG22/quickref/</a></div><div class=bib-item>
 <a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf">[ISO-Coc]</a>
 <span class=bib-title>ISO Code of Ethics and Conduct</span>
-<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf" class=bib-link>https://www.iso.org/files/live/sites/isoorg/files/store/en/PUB100011.pdf</a></div></div>
+<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf" class=bib-link>https://www.iso.org/files/live/sites/isoorg/files/store/en/PUB100011.pdf</a></div><div class=bib-item>
+<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use%20of%20AI%2epdf">[ISO-AI]</a>
+<span class=bib-title>Guidance on use of artificial intelligence (AI) for ISO committees</span>
+<span class=bib-date>2025-03</span>
+<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use%20of%20AI%2epdf" class=bib-link>https://www.iso.org/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use of AI.pdf</a></div></div>
 </main></body>
 </html>
