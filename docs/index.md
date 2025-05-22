@@ -98,6 +98,14 @@ Author: Jan Schultke
 - [Latest](signed-or-unsigned.html)
 - [P3701R0](signed-or-unsigned-p3701r0.html)
 
+### P3702: Stricter requirements for document submissions (SD-7)
+
+**Status**: Active<br>
+**Audience**: CWG, LEWG
+
+- [Latest](sd7-updates.html)
+- [P3702R0](sd7-updates-p3702r0.html)
+
 ## Inactive
 
 ### P3087: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
