@@ -1,0 +1,41 @@
+\macro[\cppblock{...}]{\codeblock[cpp]{\put}}
+\macro[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
+\macro[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
+\macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
+
+\macro[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
+\macro[\tcode]{\code[cpp]{\put}}
+\macro[\grammarterm]{\gterm{\put}}
+\macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
+\macro[\itemdescr]{\indent{\paragraphs{\put}}}
+
+\macro[\Fundesc]{\i{\put}:}
+\macro[\recommended]{\Fundesc{Recommended practice}}
+\macro[\required]{\Fundesc{Required behavior}}
+\macro[\constraints]{\Fundesc{Constraints}}
+\macro[\mandates]{\Fundesc{Mandates}}
+\macro[\expects]{\Fundesc{Preconditions}}
+\macro[\hardexpects]{\Fundesc{Hardened preconditions}}
+\macro[\effects]{\Fundesc{Effects}}
+\macro[\ensures]{\Fundesc{Postconditions}}
+\macro[\returns]{\Fundesc{Returns}}
+\macro[\throws]{\Fundesc{Throws}}
+\macro[\default]{\Fundesc{Default behavior}}
+\macro[\complexity]{\Fundesc{Complexity}}
+\macro[\remarks]{\Fundesc{Remarks}}
+\macro[\errors]{\Fundesc{Error conditions}}
+\macro[\sync]{\Fundesc{Synchronization}}
+\macro[\implimits]{\Fundesc{Implementation limits}}
+\macro[\result]{\Fundesc{Result}}
+\macro[\returntype]{\Fundesc{Return type}}
+\macro[\ctype]{\Fundesc{Type}}
+
+\style{
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+}
