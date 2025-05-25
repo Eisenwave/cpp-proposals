@@ -1992,9 +1992,9 @@ The result object is initialized so that
 math[display=block] {
     margin-left: auto;
     margin-right: auto;
+    font-size: 125%;
 }
 </style>
-<span class=stable-ref>[FORMULA ?.?]</span>
 <math display=block>
 <mrow>
     <msub>
@@ -2026,7 +2026,7 @@ math[display=block] {
             <mtd>
                 <mrow>
                     <mspace width=1em></mspace>
-                    <mtext>, if</mtext>
+                    <mtext>for</mtext>
                     <mspace width=0.5em></mspace>
                     <mn>0</mn>
                     <mo>≤</mo>
@@ -2041,8 +2041,8 @@ math[display=block] {
                 <mrow>
                     <munderover>
                         <mo>⨁</mo>
-                        <mrow><mi>j</mi><mo>=</mo><mn>i</mn><mo>−</mo><mi>n</mi><mo>+</mo><mn>1</mn></mrow>
-                        <mrow><mi>w</mi><mo>−</mo><mi>2</mi></mrow>
+                        <mrow><mi>j</mi><mo>=</mo><mn>i</mn><mo>−</mo><mi>w</mi><mo>+</mo><mn>1</mn></mrow>
+                        <mrow><mi>w</mi><mo>−</mo><mi>1</mi></mrow>
                     </munderover>
                     <msub><mi>x</mi><mi>j</mi></msub>
                     <msub>
@@ -2056,7 +2056,7 @@ math[display=block] {
             <mtd>
                 <mrow>
                     <mspace width=1em></mspace>
-                    <mtext>, if</mtext>
+                    <mtext>for</mtext>
                     <mspace width=0.5em></mspace>
                     <mn>w</mn>
                     <mo>≤</mo>
@@ -2064,8 +2064,6 @@ math[display=block] {
                     <mo>&lt;</mo>
                     <mn>2</mn>
                     <mi>w</mi>
-                    <mo>−</mo>
-                    <mn>1</mn>
                 </mrow>
             </mtd>
         </mtr>
@@ -2083,8 +2081,15 @@ Please open the document in a recent version of Firefox or Chrome.
 
 <note-block><p><intro-></intro-> 
 The formula is taken from <a href="https://www%2eintel%2ecom/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20%2epdf">[IntelClmul]</a>, with different variable names.
+The proposed formula also uses the upper bound
+<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>w</mi></mrow></math>
+instead of
+<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>w</mi><mo>−</mo><mn>1</mn></mrow></math>
+so that each bit of <math display=inline><mi>c</mi></math> has a defined value,
+where the value for <math display=inline><msub><mi>c</mi><mrow><mn>2</mn><mi>w</mi><mo>−</mo><mn>1</mn></mrow></msub></math>
+is the neutral element of the ⊕ operation, <math display=inline><mn>0</mn></math>.
 </p>
-<p>See <a href=https://eel%2eis/c++draft/sf%2ecmath%2ebeta>[sf.cmath.beta]</a> for precedent on wording which includes formulae.
+<p>See <a href=https://eel%2eis/c++draft/sf%2ecmath%2eriemann%2ezeta>[sf.cmath.riemann.zeta]</a> for precedent on wording which includes formulae.
 </p></note-block>
 
 <p>In subclause <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
