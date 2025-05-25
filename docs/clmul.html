@@ -2092,6 +2092,16 @@ is the neutral element of the ⊕ operation, <math display=inline><mn>0</mn></ma
 <p>See <a href=https://eel%2eis/c++draft/sf%2ecmath%2eriemann%2ezeta>[sf.cmath.riemann.zeta]</a> for precedent on wording which includes formulae.
 </p></note-block>
 
+<note-block><p><intro-></intro-> 
+The formula above in TeX notation is:
+</p><code-block>c_{i} = <h- data-h=mk_tag>\begin</h-><h- data-h=sym_brac>{</h->cases<h- data-h=sym_brac>}</h->
+    <h- data-h=mk_tag>\quad</h-> <h- data-h=mk_tag>\displaystyle</h-> <h- data-h=mk_tag>\bigoplus_</h-><h- data-h=sym_brac>{</h->j = 0<h- data-h=sym_brac>}</h->^{i}  <h- data-h=mk_tag>\quad</h-> x_{j} y_{i - j}
+    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ 0 <h- data-h=mk_tag>\leq</h-> i &lt; w <h- data-h=esc>\\</h->
+         <h- data-h=mk_tag>\displaystyle</h-> <h- data-h=mk_tag>\bigoplus_</h-><h- data-h=sym_brac>{</h->j = i - w + 1<h- data-h=sym_brac>}</h->^{w - 1} x_{j} y_{i - j}
+    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ w <h- data-h=mk_tag>\leq</h-> i &lt; 2 w
+<h- data-h=mk_tag>\end</h-><h- data-h=sym_brac>{</h->cases<h- data-h=sym_brac>}</h-></code-block>
+</note-block>
+
 <p>In subclause <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
 append a subclause immediately following <a href=https://eel%2eis/c++draft/numeric%2eoverflow>[numeric.overflow]</a>
 (known as <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a> at the time of writing):

@@ -607,6 +607,18 @@ is the neutral element of the \N{CIRCLED PLUS} operation, \math{\mn{0}}.
 See \eelis{sf.cmath.riemann.zeta} for precedent on wording which includes formulae.
 }
 
+\note{
+The formula above in TeX notation is:
+\codeblock[cowel]{\literally{
+c_{i} = \begin{cases}
+    \quad \displaystyle \bigoplus_{j = 0}^{i}  \quad x_{j} y_{i - j}
+    & \text{for}\ 0 \leq i < w \\
+         \displaystyle \bigoplus_{j = i - w + 1}^{w - 1} x_{j} y_{i - j}
+    & \text{for}\ w \leq i < 2 w
+\end{cases}
+}}
+}
+
 In subclause \eelis{numeric.ops},
 append a subclause immediately following \eelis{numeric.overflow}
 (known as \eelis{numeric.sat} at the time of writing):
