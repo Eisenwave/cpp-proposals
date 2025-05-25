@@ -1,0 +1,711 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = Carry-less product: \tt{std::clmul}
+]{
+\dl{
+    \dt{Document number:} \dd{\ref[https://wg21.link/P3642R1]{P3642R1}}
+    \dt{Date:}            \dd{\tt{2025-05-25}}
+    \dt{Audience:}        \dd{LEWGI, SG6}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3642/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul.cow]}
+}
+\hr
+}
+
+\abstract{
+Add widening and non-widening carry-less multiplication functions.
+}
+
+\h2[listed=no]{Revision history}
+
+\h3[listed=no]{Changes since R0}
+
+\ul{
+\item{Generate the proposal using COWEL instead of bikeshed}
+\item{Make slight editorial wording adjustments}
+\item{Rebase on \ref[N5008] and \ref[P3161R4]}
+\item{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
+\item{Mention \ref[SimdJsonClmul] in \ref[#motivation]}
+\item{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+\ref[https://en.wikipedia.org/wiki/Carry-less_product]{Carry-less multiplication}
+is a simple numerical operation on unsigned integers.
+It can be a seen as a regular multiplication where
+\tcode{xor} is being used as a reduction instead of \tcode{+}.
+
+It is also known as "XOR multiplication" and "polynomial multiplication".
+The latter name is used because mathematically, it is equivalent to performing a multiplication of
+two polynomials in GF(2), where each bit is a coefficient.
+
+I propose a \tcode{std::clmul} function to perform this operation:
+\cppblock{
+template<class T>
+constexpr T clmul(T x, T y) noexcept;
+}
+
+I also propose a widening operation in the style of \ref[P3161R4], as follows:
+\cppblock{
+template<class T>
+struct mul_wide_result {
+    T low_bits;
+    T high_bits;
+};
+
+template<class T>
+constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
+}
+
+\h2{Motivation}
+
+Carry-less multiplication is an important operation in a number of use cases:
+
+\ul{
+\item{
+    \b{CRC Computation:} While cyclic redundancy checks can theoretically be performed with a finite
+    field of any length, in practice,
+    \ref[https://en.wikipedia.org/wiki/GF(2)]{GF(2)[X]},
+    the \i{polynomial ring} over the \i{Galois field} with two elements is used.
+    Polynomial addition in this ring can be implemented via \tcode{xor},
+    and multiplication via \tcode{clmul},
+    which makes cyclic redundancy checks considerably faster.
+}
+\item{
+    \b{Cryptography:} \tcode{clmul} may be used to implement AES-GCM.
+    \ref[IntelClmul] describes this process in great detail and motivates hardware support for
+    carry-less multiplication via the \tcode{pclmulqdq} instruction.
+}
+\item{
+    \b{Bit manipulation:} \tcode{clmul} performs a large amount
+    of \tcode{<<} and \tcode{xor} operations in parallel.
+    This is utilized in the reference implementation \ref[BitPermutations]
+    of \tcode{std::bit_compressr},
+    proposed in \ref[P3104R3].
+    For example, the form \word{\tcode{clmul(x, -1u)}} computes the bitwise inclusive parity
+    for each bit of \tcode{x} and the bits to its right.
+}
+}
+
+Carry-less multiplication is of such great utility that there is widespread hardware support,
+some dating back more than a decade.
+See below for motivating examples.
+
+\h3{Parity computation and JSON parsing}
+
+The \dfn{parity} of an integer \tcode{x} is \tcode{0} if the number of one-bits is even,
+and \tcode{1} if it is odd.
+The parity can also be computed with \tcode{popcount(x) & 1}.
+
+\example{
+The special form \tcode{clmul(x, -1)} computes the parity of each bit in \tcode{x}
+and the bits to its right.
+The most significant bit holds the parity of \tcode{x} as a whole.
+\cppblock{
+bool parity(std::uint32_t x) {
+    return std::clmul(x, -1u) >> 31;
+}
+}
+}
+
+While the parity of \em{all} bits can be obtained with \tcode{clmul},
+it computes the inclusive cumulative parity,
+which can be used to accelerate parsing JSON and other file formats (\ref[SimdJsonClmul]).
+This can be done by mapping each \tcode{"} character onto a \tcode{1}-bit,
+and any other character onto \tcode{0}.
+\tcode{clmul(x, -1)} would then produce masks where string characters
+corresponds to a \tcode{1}-bit.
+
+\example{
+\pre{
+abc xxx \code[cpp,nested=yes]{"foobar"} zzz \code[cpp,nested=yes]{"a"} \code[cpp,nested=yes]{// input string}
+00000000\hl[string-delim]{1}000000\hl[string-delim]{1}00000\hl[string-delim]{1}0\hl[string-delim]{1} \code[cpp,nested=yes]{// quote_mask}
+00000000\hl[string-delim]{.}\hl[string]{111111}\hl[string-delim]{.}00000\hl[string-delim]{.}\hl[string]{1}\hl[string-delim]{.} \code[cpp,nested=yes]{// clmul(quote_mask, -1), ignoring 1-bits of quote_mask}
+}
+}
+
+\h3{Fast space-filling curves}
+
+The special form \tcode{clmul(x, -1)} can be used to accelerate the computation of Hilbert curves.
+To properly understand this example, I will explain the basic notion of space-filling curves.
+
+We can fill space using a 2D curve by mapping the index \tcode{i} on the curve
+onto Cartesian coordinates \tcode{x} and \tcode{y}.
+A naive curve that fills a 4x4 square can be computed as follows:
+\cppblock{
+struct pos { uint32_t x, y; };
+
+pos naive_curve(uint32_t i) { return { i \N{PERCENT SIGN} 4, i / 4 }; }
+}
+When mapping the index \tcode{i = 0, 1, ..., 0xf} onto the returned 2D coordinates,
+we obtain the following pattern:
+\pre{
+0 1 2 3
+4 5 6 7
+8 9 a b
+c d e f
+}
+The problem with such a naive curve is that adjacent indices can be positioned very far apart
+(the distance increases with row length).
+For image processing, if we store pixels in this pattern, cache locality is bad;
+two adjacent pixels can be very far apart in memory.
+
+A \ref[https://en.wikipedia.org/wiki/Hilbert_curve]{Hilbert curve}
+is a family of space-filling curves where the distance between two adjacent
+elements is \tcode{1}:
+\pre{
+0 1 e f
+3 2 d c
+4 7 8 b
+5 6 9 a
+}
+De-interleaving bits of \tcode{i} into \tcode{x} and \tcode{y}
+yields a \ref[https://en.wikipedia.org/wiki/Z-order_curve]{Z-order curve},
+and performing further transformations yields a
+\ref[https://en.wikipedia.org/wiki/Hilbert_curve]{Hilbert curve}.
+
+\example{
+\tcode{clmul} can be used to compute the bitwise parity for each bit and the bits to its right,
+which is helpful for computing Hilbert curves.
+Note that the following example uses the \tcode{std::bit_compress} function from \ref[P3104R3],
+which may also be accelerated using \tcode{clmul}.
+
+\cppblock{
+pos hilbert_to_xy(uint32_t i)
+{
+    // De-interleave the bits of i.
+    uint32_t i0 = std::bit_compress(i, 0x55555555u); // abcdefgh \N{RIGHTWARDS ARROW} bdfh
+    uint32_t i1 = std::bit_compress(i, 0xaaaaaaaau); // abcdefgh \N{RIGHTWARDS ARROW} aceg
+    
+    // Undo the permutation that Hilbert curves apply on top of Z-order curves.
+    uint32_t A = i0 & i1;
+    uint32_t B = i0 ^ i1 ^ 0xffffu;
+    uint32_t C = std::clmul(A, -1u) >> 16;
+    uint32_t D = std::clmul(B, -1u) >> 16;
+    
+    uint32_t a = C ^ (i0 & D);
+    return { .x = a ^ i1, .y = a ^ i0 ^ i1 };
+}
+}
+This specific example is taken from \ref[FastHilbertCurves].
+\ref[HackersDelight] explains the basis behind this computation
+of Hilbert curves using bitwise operations.
+}
+
+When working with space-filling curves, the inverse operation is also common:
+mapping the Cartesian coordinates onto an index on the curve.
+In the case of Z-order curves aka. Morton curves,
+this can be done by simply interleaving the bits of \tcode{x} and \tcode{y}.
+A Z-order curve is laid out as follows:
+\pre{
+0 1 4 5
+2 3 6 7
+8 9 c d
+a b e f
+}
+
+\example{
+\tcode{clmul} can be used to implement bit-interleaving in order to generate a
+\ref[https://en.wikipedia.org/wiki/Z-order_curve]{Z-order curves}.
+\cppblock{
+uint32_t xy_to_morton(uint32_t x, uint32_t y)
+{
+    uint32_t lo = std::clmul(x, x) << 0; // abcd -> 0a0b0c0d
+    uint32_t hi = std::clmul(y, y) << 1; // abcd -> a0b0c0d0
+    return hi | lo;
+}
+}
+}
+
+\note{
+In the example above, \tcode{std::clmul(x, x)} is equivalent to
+\ref[P3104R3]'s \tcode{std::bit_expand(x, 0x55555555u)}.
+}
+
+\h2{Possible implementation}
+
+A naive and unconstrained implementation looks as follows:
+\cppblock{
+template<class T>
+constexpr T clmul(const T x, const T y) noexcept
+{
+    T result = 0;
+    for (int i = 0; i < numeric_limits<T>::digits; ++i) {
+        result ^= (x << i) * ((y >> i) & 1);
+    }
+    return result;
+}
+}
+
+\h3{Hardware support}
+
+The implementation difficulty lies mostly in utilizing available hardware instructions,
+not in the naive fallback implementation.
+
+In the following table, let \tt{uN} denote \tt{N}-bit unsigned integer operands,
+and \tt{\N{MULTIPLICATION SIGN}N} denote the amount of operands that are processed in parallel.
+
+\style{
+#optable {
+    margin-left: auto;
+    margin-right: auto;
+}
+}
+
+\table[id=optable]{
+\tr{
+    \th{Operation}\th{x86_64}\th{ARM}\th{RV64}
+}
+
+\tr{
+    \td{\tt{clmul u64\N{MULTIPLICATION SIGN}4 \N{RIGHTWARDS ARROW} u128\N{MULTIPLICATION SIGN}4}}
+    \td{\tt{vpclmulqdq}\sup{VPCLMULQDQ}}
+    \td{}
+    \td{}
+}
+
+\tr{
+    \td{\tt{clmul u64\N{MULTIPLICATION SIGN}2 \N{RIGHTWARDS ARROW} u128\N{MULTIPLICATION SIGN}2}}
+    \td{\tt{vpclmulqdq}\sup{VPCLMULQDQ}}
+    \td{}
+    \td{}
+}
+
+\tr{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u128}}
+    \td{\tt{pclmulqdq}\sup{PCLMULQDQ}}
+    \td{\tt{pmull}+\tt{pmull2}\sup{Neon}}
+    \td{\tt{clmul}+\tt{clmulh}\sup{Zbc, Zbkc}}
+}
+
+\tr{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u128}}
+    \td{\tt{pclmulqdq}\sup{PCLMULQDQ}}
+    \td{\tt{pmull}+\tt{pmull2}\sup{Neon}}
+    \td{\tt{clmul}+\tt{clmulh}\sup{Zbc, Zbkc}}
+}
+
+\tr{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u64}}
+    \td{}
+    \td{\tt{pmull}\sup{Neon}}
+    \td{\tt{clmul}\sup{Zbc, Zbkc}}
+}
+
+\tr{
+    \td{\tt{clmul u8\N{MULTIPLICATION SIGN}8 \N{RIGHTWARDS ARROW} u16\N{MULTIPLICATION SIGN}8}}
+    \td{}
+    \td{\tt{pmull}\sup{Neon}}
+    \td{}
+}
+\tr{
+    \td{\tt{clmul u8\N{MULTIPLICATION SIGN}8 \N{RIGHTWARDS ARROW} u8\N{MULTIPLICATION SIGN}8}}
+    \td{}
+    \td{\tt{pmul}\sup{Neon}}
+    \td{}
+}
+
+}
+
+\example{
+A limited x86_64 implementation of \tcode{clmul_wide} may look as follows:
+
+\cppblock{
+#include <immintrin.h>
+#include <cstdint>
+
+mul_wide_result<uint64_t> clmul_wide(uint64_t x, uint64_t y) noexcept
+{
+    __m128i x_128 = _mm_set_epi64x(0, x);
+    __m128i y_128 = _mm_set_epi64x(0, y);
+    __m128i result_128 = _mm_clmulepi64_si128(x_128, y_128, 0);
+    return {
+        .low_bits  = uint64_t(_mm_extract_epi64(result_128, 0)),
+        .high_bits = uint64_t(_mm_extract_epi64(result_128, 1))
+    };
+}
+}
+}
+
+
+There also exists an LLVM pull request (\ref[LLVMClmul])
+which would add an \tt{@llvm.clmul} intrinsic function.
+
+
+\h2{Design considerations}
+
+Multiple design choices lean on \ref[P0543R3] and \ref[P3161R4].
+Specifically,
+
+\ul{
+\item{the choice of header \header{numeric},}
+\item{the choice to have a widening operation,}
+\item{the \tcode{_wide} naming scheme,}
+\item{the \tcode{mul_wide_result} template, and}
+\item{the decision to have a \tcode{(T, T)} parameter list.}
+}
+
+\h3{Naming}
+
+Carry-less multiplication is also commonly called "Galois Field Multiplication" or "Polynomial Multiplication".
+
+The name \tcode{clmul} was chosen because it carries no domain-specific connotation,
+and because it is widespread:
+
+\ul{
+\item{
+Intel refers to \tcode{PCLMULQDQ} As "Carry-Less Multiplication Quadword" in its manual;
+see \ref[IntelManual].
+}
+\item{
+RISC-V refers to \tcode{clmul} as carry-less multiplication,
+and this is obvious from the mnemonic.
+}
+\item{
+The Wikipedia article (\ref[WikipediaClmul]) for this operation is titled "Carry-less product".
+}
+\item{
+The (proposed) LLVM intrinsic function (\ref[LLVMClmul]) is tentatively named \tt{@llvm.clmul}.
+}
+}
+
+\h3{SIMD support}
+
+The proposal is currently limited to the scalar version of \tcode{clmul}.
+However, \header{simd} support may be useful to add,
+and would be backed by hardware support to an extent.
+
+\decision{
+If LEWG approves, should decide whether \header{simd} support should be added in \em{this} paper,
+or in a separate paper, if at all.
+}
+
+\h2{Proposed wording}
+
+The proposed changes are relative to the working draft of the standard as of \ref[N5008],
+with the changes in \ref[P3161R4] applied.
+
+Update subclause \eelis{version.syn#2} as follows:
+
+\diff{
+\itemdecl{
+#define __cpp_lib_clamp                             201603L // also in <algorithm>
+\ins{#define __cpp_lib_clmul                             20????L // also in <numeric>}
+\serif{\html{[...]}}
+#define __cpp_lib_overflow_arithmetic               \del{20????L} \ins{20????L} // also in <numeric>
+}
+}
+
+Update the synopsis in \eelis{numeric.ops.overview} as follows:
+
+\diff{
+\itemdecl{
+template<class T, class U>
+  constexpr T saturate_cast(U x) noexcept;              // freestanding
+
+template<class T>
+struct add_carry_result {                               // freestanding
+  T low_bits;
+  bool overflow;
+};
+
+template<class T>
+using sub_borrow_result = add_carry_result;             // freestanding
+
+template<class T>
+struct mul_wide_result {                                // freestanding
+  T low_bits;
+  T high_bits;
+};
+
+template<class T>
+struct div_result {                                     // freestanding
+  T quotient;
+  T remainder;
+};
+
+template<class T>
+  constexpr add_carry_result<T>
+    add_carry(T x, T y, bool carry) noexcept;           // freestanding
+template<class T>
+  constexpr sub_borrow_result<T>
+    sub_borrow(T left, T right, bool borrow) noexcept;  // freestanding
+template<class T>
+  constexpr mul_wide_result<T>
+    mul_wide(T x, T y) noexcept;                        // freestanding
+\ins{template<class T>
+  constexpr mul_wide_result<T>
+    clmul_wide(T x, T y) noexcept;                      // freestanding}
+template<class T>
+  constexpr div_result<T>
+    div_wide(T dividend_high, T dividend_low,           // freestanding
+             T divisor ) noexcept;
+
+template<class T>
+  constexpr bool
+    is_div_defined(T dividend, T divisor) noexcept      // freestanding
+template<class T>
+  constexpr bool
+    is_div_wide_defined(T dividend_high,                // freestanding
+                        T dividend_low,
+                        T divisor) noexcept;
+
+\ins{
+// [numeric.clmul], carry-less product
+template<class T>
+  constexpr T clmul(T x, U y) noexcept;                 // freestanding
+}
+}
+}
+
+In subclause
+\eelis{numeric.overflow}
+(known as \eelis{numeric.sat} at the time of writing),
+insert the following item,
+immediately following the description of \tcode{mul_wide}:
+
+\insblock{
+\itemdecl{
+template<class T>
+   constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
+}
+\itemdescr{
+\macro[\alpha]{\N{GREEK SMALL LETTER ALPHA}}
+\macro[\mathvar]{\math{\mi{\put}}}
+Let \N{CIRCLED PLUS} denote the exclusive bitwise OR operation (\eelis{expr.xor}).
+Given an integer \mathvar{\alpha},
+let \math{\msub{\mi{\alpha}\mi{i}}}
+denote the \math{\msup{\mi{i}\mi{th}}} least significant bit
+in the base-2 representation of \mathvar{\alpha}.
+
+\constraints
+\tcode{T} is an unsigned integer type (\eelis{basic.fundamental}).
+
+\returns
+An object storing the bits of an integer \mathvar{c},
+where the value of \math{\msub{\mi{c}\mi{i}}}
+is given by Formula \tt{?.?},
+\mathvar{x} is \tcode{x},
+\mathvar{y} is \tcode{y},
+and \mathvar{w} is the width of \tcode{T}.
+The result object is initialized so that
+\ul{
+\item{\tcode{low_bits} stores the \mathvar{w} least significant bits of \mathvar{c}, and}
+\item{\tcode{high_bits} stores the subsequent bits of \mathvar{c}.}
+}
+
+\style{
+math[display=block] {
+    margin-left: auto;
+    margin-right: auto;
+}
+}
+\stable-ref{FORMULA ?.?}
+\mathblock{
+\mrow{
+    \msub{
+        \mi{c}
+        \mi{i}
+    }
+    \mo{=}
+    \mo{\N{LEFT CURLY BRACKET}}
+    \html{<mtable columnalign=left displaystyle=true>}
+        \mtr{
+            \mtd{
+                \mrow{
+                    \html-mspace[width=0.75em]
+                    \munderover{
+                        \mo{\N{N-ARY CIRCLED PLUS OPERATOR}}
+                        \mrow{\mi{j}\mo{=}\mn{0}}
+                        \mi{i}
+                    }
+                    \html-mspace[width=0.75em]
+                    \msub{\mi{x}\mi{j}}
+                    \msub{
+                        \mi{y}
+                        \mrow{
+                            \mi{i}\mo{\N{MINUS SIGN}}\mi{j}
+                        }
+                    }
+                }
+            }
+            \mtd{
+                \mrow{
+                    \html-mspace[width=1em]
+                    \mtext{, if}
+                    \html-mspace[width=0.5em]
+                    \mn{0}
+                    \mo{\N{LESS THAN OR EQUAL TO}}
+                    \mi{i}
+                    \mo{<}
+                    \mi{w}
+                }
+            }
+        }
+        \mtr{
+            \mtd{
+                \mrow{
+                    \munderover{
+                        \mo{\N{N-ARY CIRCLED PLUS OPERATOR}}
+                        \mrow{\mi{j}\mo{=}\mn{i}\mo{\N{MINUS SIGN}}\mi{n}\mo{+}\mn{1}}
+                        \mrow{\mi{w}\mo{\N{MINUS SIGN}}\mi{2}}
+                    }
+                    \msub{\mi{x}\mi{j}}
+                    \msub{
+                        \mi{y}
+                        \mrow{
+                            \mi{i}\mo{\N{MINUS SIGN}}\mi{j}
+                        }
+                    }
+                }
+            }
+            \mtd{
+                \mrow{
+                    \html-mspace[width=1em]
+                    \mtext{, if}
+                    \html-mspace[width=0.5em]
+                    \mn{w}
+                    \mo{\N{LESS THAN OR EQUAL TO}}
+                    \mi{i}
+                    \mo{<}
+                    \mn{2}
+                    \mi{w}
+                    \mo{\N{MINUS SIGN}}
+                    \mn{1}
+                }
+            }
+        }
+    \html{</mtable>}
+}
+} \comment{mathblock}
+} \comment{itemdescr}
+} \comment{insblock}
+
+\warning{
+If the mathematical notation in the block above does not render for you,
+you are using an old browser with no MathML support.
+Please open the document in a recent version of Firefox or Chrome.
+}
+
+\note{
+The formula is taken from \ref[IntelClmul], with different variable names.
+
+See \eelis{sf.cmath.beta} for precedent on wording which includes formulae.
+}
+
+In subclause \eelis{numeric.ops},
+append a subclause immediately following \eelis{numeric.overflow}
+(known as \eelis{numeric.sat} at the time of writing):
+
+\insblock{
+\html-h3{Carry-less product \stable-ref{numeric.clmul}}
+
+\itemdecl{
+template<class T>
+   constexpr T clmul(T x, T y) noexcept;
+}
+\itemdescr{
+\constraints
+\tcode{T} is an unsigned integer type (\eelis{basic.fundamental}).
+
+\returns
+\tcode{clmul_wide(x, y).low_bits} (\eelis{numeric.overflow}).
+}
+}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/N5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = P0543R3,
+    title = Saturation arithmetic,
+    date = 2023-07-19,
+    author = Jens Maurer,
+    link = https://wg21.link/p0543r3,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0543r3.html
+]
+\bib[
+    id = P3104R3,
+    title = Bit permutations,
+    date = 2025-02-11,
+    author = Jan Schultke,
+    link = https://wg21.link/p3104r3,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3104r3.html
+]
+\bib[
+    id = P3161R4,
+    title = Unified integer overflow arithmetic,
+    date = 2025-03-26,
+    author = Tiago Freire,
+    link = https://wg21.link/p3161r4,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf
+]
+\bib[
+    id = BitPermutations,
+    title = C++26 Bit permutations reference implementation,
+    author = Jan Schultke,
+    link = https://github.com/Eisenwave/cxx26-bit-permutations
+]
+\bib[
+    id = SimdJsonClmul,
+    author = Geoff Langdale,
+    title = Code Fragment: Finding quote pairs with carry-less multiply (PCLMULQD),
+    date = 2019-03-06,
+    link = https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/
+]
+\bib[
+    id = IntelClmul,
+    author = Shay Gueron\, Michael E. Kounavis,
+    title = Intel® Carry-Less Multiplication Instruction and its Usage for Computing the GCM Mode,
+    link = https://www.intel.com/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20.pdf,
+    publisher = Intel Corporation
+]
+\bib[
+    id = IntelManual,
+    author = Intel Corporation,
+    title = Intel® 64 and IA-32 Architectures Software Developer's Manual,
+    link = https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4,
+    publisher = Intel Corporation
+]
+\bib[
+    id = HackersDelight,
+    author = Henry S. Warren, Jr,
+    title = Hacker's Delight\, Second Edition,
+    link = https://doc.lagout.org/security/Hackers'Delight.pdf
+]
+\bib[
+    id = FastHilbertCurves,
+    author = rawrunprotected,
+    title = 2D Hilbert curves in O(1),
+    link = "http://threadlocalmutex.com/?p=188
+]
+\bib[
+    id = WikipediaClmul,
+    author = Wikipedia community,
+    title = Carry-less product,
+    link = https://en.wikipedia.org/wiki/Carry-less_product,
+    publisher = Wikimedia Foundation
+]
+\bib[
+    id = LLVMClmul,
+    author = Oscar Smith,
+    title = [IR] Add llvm clmul intrinsic,
+    link = https://github.com/llvm/llvm-project/pull/140301
+]
+
+\make-bib
