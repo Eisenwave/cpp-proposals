@@ -484,7 +484,7 @@ template<class T>
 Let \N{CIRCLED PLUS} denote the exclusive bitwise OR operation (\eelis{expr.xor}).
 Given an integer \mathvar{\alpha},
 let \math{\msub{\mi{\alpha}\mi{i}}}
-denote the \math{\msup{\mi{i}\mi{th}}} least significant bit
+denote the \math{\msup{\mi{i}\mtext{th}}} least significant bit
 in the base-2 representation of \mathvar{\alpha}.
 
 \constraints
