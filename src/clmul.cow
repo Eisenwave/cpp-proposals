@@ -25,11 +25,12 @@ Add widening and non-widening carry-less multiplication functions.
 
 \ul{
 \item{Generate the proposal using COWEL instead of bikeshed}
+\item{Fix incorrect formula in \ref[#proposed-wording] for bits \c{ge} the integer width}
+\item{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
+\item{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
 \item{Make slight editorial wording adjustments}
 \item{Rebase on \ref[N5008] and \ref[P3161R4]}
-\item{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
 \item{Mention \ref[SimdJsonClmul] in \ref[#motivation]}
-\item{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
 }
 
 \h2[listed=no]{Contents}
