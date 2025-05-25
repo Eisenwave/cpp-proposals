@@ -500,7 +500,7 @@ and \mathvar{w} is the width of \tcode{T}.
 The result object is initialized so that
 \ul{
 \item{\tcode{low_bits} stores the \mathvar{w} least significant bits of \mathvar{c}, and}
-\item{\tcode{high_bits} stores the subsequent bits of \mathvar{c}.}
+\item{\tcode{high_bits} stores the subsequent \mathvar{w} bits of \mathvar{c}.}
 }
 
 \style{
@@ -518,17 +518,17 @@ math[display=block] {
     }
     \mo{=}
     \mo{\N{LEFT CURLY BRACKET}}
-    \html{<mtable columnalign=left displaystyle=true>}
+    \mtable[columnalign=left, displaystyle=true]{
         \mtr{
             \mtd{
                 \mrow{
-                    \html-mspace[width=0.75em]
+                    \mspace[width=0.75em]
                     \munderover{
                         \mo{\N{N-ARY CIRCLED PLUS OPERATOR}}
                         \mrow{\mi{j}\mo{=}\mn{0}}
                         \mi{i}
                     }
-                    \html-mspace[width=0.75em]
+                    \mspace[width=0.75em]
                     \msub{\mi{x}\mi{j}}
                     \msub{
                         \mi{y}
@@ -540,7 +540,7 @@ math[display=block] {
             }
             \mtd{
                 \mrow{
-                    \html-mspace[width=1em]
+                    \mspace[width=1em]
                     \mtext{for}
                     \html-mspace[width=0.5em]
                     \mn{0}
@@ -570,9 +570,9 @@ math[display=block] {
             }
             \mtd{
                 \mrow{
-                    \html-mspace[width=1em]
+                    \mspace[width=1em]
                     \mtext{for}
-                    \html-mspace[width=0.5em]
+                    \mspace[width=0.5em]
                     \mn{w}
                     \mo{\N{LESS THAN OR EQUAL TO}}
                     \mi{i}
@@ -582,7 +582,7 @@ math[display=block] {
                 }
             }
         }
-    \html{</mtable>}
+    }
 }
 } \comment{mathblock}
 } \comment{itemdescr}
