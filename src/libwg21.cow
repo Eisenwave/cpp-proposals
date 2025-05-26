@@ -1,12 +1,17 @@
 \macro[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
+
 \macro[\cppblock{...}]{\codeblock[cpp]{\put}}
 \macro[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-\macro[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
-\macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
 
-\macro[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
+\macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
+\macro[\iref{...}]{ (\eelis{\put})}
+
+\macro[\exposid{...}]{\i{\hl[id]{\put}}}
+\macro[\placeholder{...}]{\tt{\exposid{\put}}}
 \macro[\tcode]{\code[cpp]{\put}}
 \macro[\grammarterm]{\gterm{\put}}
+\macro[\header{...}]{\code[cpp]{\hl[string]{<\put>}}}
+
 \macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
 \macro[\itemdescr]{\indent{\paragraphs{\put}}}
 
