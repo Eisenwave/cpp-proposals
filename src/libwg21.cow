@@ -28,7 +28,6 @@
 \macro[\implimits]{\Fundesc{Implementation limits}}
 \macro[\result]{\Fundesc{Result}}
 \macro[\returntype]{\Fundesc{Return type}}
-\macro[\ctype]{\Fundesc{Type}}
 
 \style{
 ins-block .para::before {
