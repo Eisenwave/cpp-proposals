@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset=UTF-8 /><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
+  <meta charset=UTF-8 /><meta name=viewport content="width=device-width, initial-scale=1"/><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
   <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
   <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
   <style>
@@ -429,7 +429,6 @@ math[display=block],
 note-block,
 p,
 pre,
-samp,
 tip-block,
 todo-block,
 ul,
@@ -569,6 +568,7 @@ warning-block::before {
 code,
 code-block,
 pre,
+samp,
 tt,
 tt-,
 .mono {
@@ -577,7 +577,8 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block:not(.borderless) {
+code-block:not(.borderless),
+pre {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -587,15 +588,13 @@ code-block:not(.borderless) {
 }
 
 code-block,
-pre,
-samp {
+pre {
     font-size: 95%;
     width: 100%;
 }
 
 code-block,
-pre,
-samp {
+pre {
     white-space: pre;
     overflow-x: auto;
 }
@@ -698,6 +697,14 @@ g-term {
 .grammar dt {
     font-weight: normal;
     font-style: normal;
+}
+
+.oblique {
+    font-style: oblique;
+}
+
+.word {
+    white-space: nowrap;
 }
 
 .wg21-head {
@@ -1399,7 +1406,7 @@ if (theme !== null) {
     document.documentElement.className = theme;
 }
   </script>
-</head>
+<title>Stricter requirements for document submissions (SD-7)</title></head>
 <body>
 <div id=settings tabindex=0>
     <div id=theme-icon></div>
@@ -1457,6 +1464,30 @@ if (theme !== null) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+<style>
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+</style>
+
+
+
+
 <p><div class=wg21-head><h1>Stricter requirements for document submissions (SD-7)</h1>
 
 <dl>
@@ -1481,7 +1512,21 @@ It would be better to formalize the currently unwritten rules.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href=#accessibility-and-legal-concerns><h3>Accessibility and legal concerns</h3></a><div class=toc-num data-level=3>1.2</div><a href=#generative-ai><h3>Generative AI</h3></a><div class=toc-num data-level=3>1.3</div><a href=#goals><h3>Goals</h3></a><div class=toc-num data-level=3>1.4</div><a href=#non-goals><h3>Non-goals</h3></a><div class=toc-num data-level=2>2</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>3</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div>
+<a href=#introduction><h2>Introduction</h2></a>
+<div class=toc-num data-level=3>1.1</div>
+<a href=#accessibility-and-legal-concerns><h3>Accessibility and legal concerns</h3></a>
+<div class=toc-num data-level=3>1.2</div>
+<a href=#generative-ai><h3>Generative AI</h3></a>
+<div class=toc-num data-level=3>1.3</div>
+<a href=#goals><h3>Goals</h3></a>
+<div class=toc-num data-level=3>1.4</div>
+<a href=#non-goals><h3>Non-goals</h3></a>
+<div class=toc-num data-level=2>2</div>
+<a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=2>3</div>
+<a href=#references><h2>References</h2></a>
+</div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1665,8 +1710,6 @@ and issue lists excerpts for reference by straw polls.
 
 <p>The following information should be included in the document header:
 </p>
-
-
 <ul>
 <li><del>Document Number</del> <ins><b>Document Number</b></ins>: Nxxxx or PxxxxRy</li>
 <li><del>Date</del> <ins><b>Date</b></ins>: yyyy-mm-dd</li>
@@ -1891,21 +1934,21 @@ The document should follow the <a href=http://commonmark%2eorg/>Commonmark speci
 
 
 
-<div class=bib><div class=bib-item>
+<div class=bib><div id=bib-item-SD-7 class=bib-item>
 <a href="https://wg21%2elink/SD-7">[SD-7]</a>
 <span class=bib-author>Nevin Liber.</span>
 <span class=bib-title>SD-7: Mailing Procedures and How to Write Papers</span>
 <span class=bib-date>2025-02-18</span>
-<a href="https://isocpp%2eorg/std/standing-documents/sd-7-mailing-procedures-and-how-to-write-papers" class=bib-link>https://isocpp.org/std/standing-documents/sd-7-mailing-procedures-and-how-to-write-papers</a></div><div class=bib-item>
+<a href="https://isocpp%2eorg/std/standing-documents/sd-7-mailing-procedures-and-how-to-write-papers" class=bib-link>https://isocpp.org/std/standing-documents/sd-7-mailing-procedures-and-how-to-write-papers</a></div><div id=bib-item-GdprCookies class=bib-item>
 <a href="https://gdpr%2eeu/cookies/">[GdprCookies]</a>
 <span class=bib-title>Cookies, the GDPR, and the ePrivacy Directive</span>
-<a href="https://gdpr%2eeu/cookies/" class=bib-link>https://gdpr.eu/cookies/</a></div><div class=bib-item>
+<a href="https://gdpr%2eeu/cookies/" class=bib-link>https://gdpr.eu/cookies/</a></div><div id=bib-item-WCAG class=bib-item>
 <a href="https://www%2ew3%2eorg/WAI/WCAG22/quickref/">[WCAG]</a>
 <span class=bib-title>How to Meet Web Content Accessibility Guidelines (Quick Reference)</span>
-<a href="https://www%2ew3%2eorg/WAI/WCAG22/quickref/" class=bib-link>https://www.w3.org/WAI/WCAG22/quickref/</a></div><div class=bib-item>
+<a href="https://www%2ew3%2eorg/WAI/WCAG22/quickref/" class=bib-link>https://www.w3.org/WAI/WCAG22/quickref/</a></div><div id=bib-item-ISO-Coc class=bib-item>
 <a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf">[ISO-Coc]</a>
 <span class=bib-title>ISO Code of Ethics and Conduct</span>
-<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf" class=bib-link>https://www.iso.org/files/live/sites/isoorg/files/store/en/PUB100011.pdf</a></div><div class=bib-item>
+<a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/store/en/PUB100011%2epdf" class=bib-link>https://www.iso.org/files/live/sites/isoorg/files/store/en/PUB100011.pdf</a></div><div id=bib-item-ISO-AI class=bib-item>
 <a href="https://www%2eiso%2eorg/files/live/sites/isoorg/files/developing_standards/who_develops_standards/docs/use%20of%20AI%2epdf">[ISO-AI]</a>
 <span class=bib-title>Guidance on use of artificial intelligence (AI) for ISO committees</span>
 <span class=bib-date>2025-03</span>

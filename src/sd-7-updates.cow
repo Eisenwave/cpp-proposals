@@ -1,26 +1,6 @@
-\def[\cppblock{...}]{\codeblock[cpp]{\put}}
-\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
-\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
-\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
-\def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
+\import{libwg21.cow}
 
-\comment{
-    These macros make our wording very similar to C++ draft TeX,
-    making the job of the editors much more convenient.
-}
-\def[\tcode{...}]{\code[cpp]{\put}}
-\def[\grammarterm{...}]{\gterm{\put}}
-\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
-\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
-\def[\expects]{\i{Preconditions}:}
-\def[\constraints]{\i{Constraints}:}
-\def[\mandates]{\i{Mandates}:}
-\def[\remarks]{\i{Remarks}:}
-\def[\returns]{\i{Returns}:}
-\def[\recommended]{\i{Recommended practice}:}
-
-\def[\integer]{\tcode{std::integer}}
+\macro[\bolden{...}]{\del{\put} \ins{\b{\put}}}
 
 \wg21-head[
     title = Stricter requirements for document submissions (SD-7)
@@ -230,8 +210,6 @@ and issue lists excerpts for reference by straw polls.
 \html-h2{\ins{Document headers and metadata}}
 
 The following information should be included in the document header:
-
-\def[\bolden{...}]{\del{\put} \ins{\b{\put}}}
 
 \ul{
 \item{\bolden{Document Number}: Nxxxx or PxxxxRy}
