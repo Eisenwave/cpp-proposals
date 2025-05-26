@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset=UTF-8 /><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
+  <meta charset=UTF-8 /><meta name=viewport content="width=device-width, initial-scale=1"/><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
   <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
   <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
   <style>
@@ -429,7 +429,6 @@ math[display=block],
 note-block,
 p,
 pre,
-samp,
 tip-block,
 todo-block,
 ul,
@@ -569,6 +568,7 @@ warning-block::before {
 code,
 code-block,
 pre,
+samp,
 tt,
 tt-,
 .mono {
@@ -577,7 +577,8 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block:not(.borderless) {
+code-block:not(.borderless),
+pre {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -587,15 +588,13 @@ code-block:not(.borderless) {
 }
 
 code-block,
-pre,
-samp {
+pre {
     font-size: 95%;
     width: 100%;
 }
 
 code-block,
-pre,
-samp {
+pre {
     white-space: pre;
     overflow-x: auto;
 }
@@ -698,6 +697,14 @@ g-term {
 .grammar dt {
     font-weight: normal;
     font-style: normal;
+}
+
+.oblique {
+    font-style: oblique;
+}
+
+.word {
+    white-space: nowrap;
 }
 
 .wg21-head {
@@ -1399,7 +1406,7 @@ if (theme !== null) {
     document.documentElement.className = theme;
 }
   </script>
-</head>
+<title>Concepts for integer types, not integral types</title></head>
 <body>
 <div id=settings tabindex=0>
     <div id=theme-icon></div>
@@ -1459,6 +1466,33 @@ if (theme !== null) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+</style>
+
+
+
+
 <p><div class=wg21-head><h1>Concepts for integer types, not integral types</h1>
 
 <dl>
@@ -1483,7 +1517,25 @@ and editorial changes are made so "integral" and "integer" are distinct terms.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#design><h2>Design</h2></a><div class=toc-num data-level=3>2.1</div><a href=#is-this-obsoleted-by-p3003?><h3>Is this obsoleted by P3003?</h3></a><div class=toc-num data-level=3>2.2</div><a href=#cv-qualifications><h3>Should <code><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-></code> be an integer type?</h3></a><div class=toc-num data-level=2>3</div><a href=#impact-on-the-standard><h2>Impact on the standard</h2></a><div class=toc-num data-level=2>4</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=3>4.1</div><a href=#core-wording><h3>Core wording</h3></a><div class=toc-num data-level=3>4.2</div><a href=#library-wording><h3>Library wording</h3></a><div class=toc-num data-level=2>5</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div>
+<a href=#introduction><h2>Introduction</h2></a>
+<div class=toc-num data-level=2>2</div>
+<a href=#design><h2>Design</h2></a>
+<div class=toc-num data-level=3>2.1</div>
+<a href=#is-this-obsoleted-by-p3003?><h3>Is this obsoleted by P3003?</h3></a>
+<div class=toc-num data-level=3>2.2</div>
+<a href=#cv-qualifications><h3>Should <code><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-></code> be an integer type?</h3></a>
+<div class=toc-num data-level=2>3</div>
+<a href=#impact-on-the-standard><h2>Impact on the standard</h2></a>
+<div class=toc-num data-level=2>4</div>
+<a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=3>4.1</div>
+<a href=#core-wording><h3>Core wording</h3></a>
+<div class=toc-num data-level=3>4.2</div>
+<a href=#library-wording><h3>Library wording</h3></a>
+<div class=toc-num data-level=2>5</div>
+<a href=#references><h2>References</h2></a>
+</div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -2425,15 +2477,15 @@ conversion rank of <code><h- data-h=id>value_type</h-></code>, or
 
 
 
-<div class=bib><div class=bib-item>
+<div class=bib><div id=bib-item-N5008 class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
 <span class=bib-author>Thomas Köppe.</span>
 <span class=bib-title>Working Draft, Programming Languages — C++</span>
 <span class=bib-date>2025-03-15</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div><div class=bib-item>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div><div id=bib-item-GitHubSearch class=bib-item>
 <a href="https://github%2ecom/search?q=language%253AC%252B%252B+%252Fstd%253A%253Aintegral%255B+%253C%255D%252F&type=code">[GitHubSearch]</a>
 <span class=bib-title>GitHub code search for uses of std::integral</span>
-<a href="https://github%2ecom/search?q=language%253AC%252B%252B+%252Fstd%253A%253Aintegral%255B+%253C%255D%252F&type=code" class=bib-link>https://github.com/search?q=language%3AC%2B%2B+%2Fstd%3A%3Aintegral%5B+%3C%5D%2F&amp;type=code</a></div><div class=bib-item>
+<a href="https://github%2ecom/search?q=language%253AC%252B%252B+%252Fstd%253A%253Aintegral%255B+%253C%255D%252F&type=code" class=bib-link>https://github.com/search?q=language%3AC%2B%2B+%2Fstd%3A%3Aintegral%5B+%3C%5D%2F&amp;type=code</a></div><div id=bib-item-P3003 class=bib-item>
 <a href="https://wg21%2elink/P3003">[P3003]</a>
 <span class=bib-author>Johel Ernesto Guerrero Pe~na.</span>
 <span class=bib-title>The design of a library of number concepts</span>

@@ -1,28 +1,6 @@
-\def[\cppblock{...}]{\codeblock[cpp]{\put}}
-\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
-\def[\placeholder{...}]{\tt{\exposid{\put}}}
-\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
-\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
-\def[\iref{...}]{ (\eelis{\put})}
-\def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
-\def[\etc]{[\c{mldr}]}
+\import{libwg21.cow}
 
-\comment{
-    These macros make our wording very similar to C++ draft TeX,
-    making the job of the editors much more convenient.
-}
-\def[\tcode{...}]{\code[cpp]{\put}}
-\def[\grammarterm{...}]{\gterm{\put}}
-\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
-\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
-\def[\expects]{\i{Preconditions}:}
-\def[\constraints]{\i{Constraints}:}
-\def[\mandates]{\i{Mandates}:}
-\def[\remarks]{\i{Remarks}:}
-\def[\returns]{\i{Returns}:}
-\def[\result]{\i{Result}:}
-\def[\recommended]{\i{Recommended practice}:}
+\macro[\etc]{[\c{mldr}]}
 
 \wg21-head[
     title = Concepts for integer types\, not integral types
