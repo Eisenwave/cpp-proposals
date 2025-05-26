@@ -1,22 +1,4 @@
-\def[\cppblock{...}]{\codeblock[cpp]{\put}}
-\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
-\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
-\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
-\def[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
-
-\comment{
-    These macros make our wording very similar to C++ draft TeX,
-    making the job of the editors much more convenient.
-}
-\def[\tcode{...}]{\code[cpp]{\put}}
-\def[\grammarterm{...}]{\gterm{\put}}
-\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
-\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
-\def[\expects]{\i{Preconditions}:}
-\def[\remarks]{\i{Remarks}:}
-\def[\returns]{\i{Returns}:}
-\def[\recommended]{\i{Recommended practice}:}
+\import{libwg21.cow}
 
 \wg21-head[
     title = Deprecate implicit conversions

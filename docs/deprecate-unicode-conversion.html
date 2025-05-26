@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset=UTF-8 /><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
+  <meta charset=UTF-8 /><meta name=viewport content="width=device-width, initial-scale=1"/><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
   <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
   <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
   <style>
@@ -429,7 +429,6 @@ math[display=block],
 note-block,
 p,
 pre,
-samp,
 tip-block,
 todo-block,
 ul,
@@ -569,6 +568,7 @@ warning-block::before {
 code,
 code-block,
 pre,
+samp,
 tt,
 tt-,
 .mono {
@@ -577,7 +577,8 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block:not(.borderless) {
+code-block:not(.borderless),
+pre {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -587,15 +588,13 @@ code-block:not(.borderless) {
 }
 
 code-block,
-pre,
-samp {
+pre {
     font-size: 95%;
     width: 100%;
 }
 
 code-block,
-pre,
-samp {
+pre {
     white-space: pre;
     overflow-x: auto;
 }
@@ -698,6 +697,14 @@ g-term {
 .grammar dt {
     font-weight: normal;
     font-style: normal;
+}
+
+.oblique {
+    font-style: oblique;
+}
+
+.word {
+    white-space: nowrap;
 }
 
 .wg21-head {
@@ -1399,7 +1406,8 @@ if (theme !== null) {
     document.documentElement.className = theme;
 }
   </script>
-</head>
+<title>Deprecate implicit conversions
+            between char8_t, char16_t, and char32_t</title></head>
 <body>
 <div id=settings tabindex=0>
     <div id=theme-icon></div>
@@ -1453,6 +1461,32 @@ if (theme !== null) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+ins-block .para::before {
+    display: none;
+}
+
+.stable-ref {
+    float: right;
+}
+</style>
+
+
 <p><div class=wg21-head><h1>Deprecate implicit conversions
             between <tt->char8_t</tt->, <tt->char16_t</tt->, and <tt->char32_t</tt-></h1>
 
@@ -1477,7 +1511,33 @@ I propose to deprecate them.
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=3>1.1</div><a href="#it%27s-not-hypothetical%2e-this-really-happens%2e"><h3>It's not hypothetical. This really happens.</h3></a><div class=toc-num data-level=3>1.2</div><a href=#the-underlying-problem><h3>The underlying problem</h3></a><div class=toc-num data-level=2>2</div><a href=#scope><h2>Scope</h2></a><div class=toc-num data-level=3>2.1</div><a href=#safe-comparisons><h3>What about "safe" comparisons?</h3></a><div class=toc-num data-level=3>2.2</div><a href=#char-and-wchar_t><h3>What about <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code>?</h3></a><div class=toc-num data-level=3>2.3</div><a href=#integer-comparisons><h3>What about conversions with integers?</h3></a><div class=toc-num data-level=3>2.4</div><a href=#after-deprecation><h3>What comes after deprecation?</h3></a><div class=toc-num data-level=2>3</div><a href=#impact-on-existing-code><h2>Impact on existing code</h2></a><div class=toc-num data-level=3>3.1</div><a href=#replacement><h3>Replacement for deprecated behavior</h3></a><div class=toc-num data-level=2>4</div><a href=#implementation-experience><h2>Implementation experience</h2></a><div class=toc-num data-level=2>5</div><a href=#wording><h2>Wording</h2></a><div class=toc-num data-level=2>6</div><a href=#references><h2>References</h2></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div>
+<a href=#introduction><h2>Introduction</h2></a>
+<div class=toc-num data-level=3>1.1</div>
+<a href="#it%27s-not-hypothetical%2e-this-really-happens%2e"><h3>It's not hypothetical. This really happens.</h3></a>
+<div class=toc-num data-level=3>1.2</div>
+<a href=#the-underlying-problem><h3>The underlying problem</h3></a>
+<div class=toc-num data-level=2>2</div>
+<a href=#scope><h2>Scope</h2></a>
+<div class=toc-num data-level=3>2.1</div>
+<a href=#safe-comparisons><h3>What about "safe" comparisons?</h3></a>
+<div class=toc-num data-level=3>2.2</div>
+<a href=#char-and-wchar_t><h3>What about <code><h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>wchar_t</h-></code>?</h3></a>
+<div class=toc-num data-level=3>2.3</div>
+<a href=#integer-comparisons><h3>What about conversions with integers?</h3></a>
+<div class=toc-num data-level=3>2.4</div>
+<a href=#after-deprecation><h3>What comes after deprecation?</h3></a>
+<div class=toc-num data-level=2>3</div>
+<a href=#impact-on-existing-code><h2>Impact on existing code</h2></a>
+<div class=toc-num data-level=3>3.1</div>
+<a href=#replacement><h3>Replacement for deprecated behavior</h3></a>
+<div class=toc-num data-level=2>4</div>
+<a href=#implementation-experience><h2>Implementation experience</h2></a>
+<div class=toc-num data-level=2>5</div>
+<a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=2>6</div>
+<a href=#references><h2>References</h2></a>
+</div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1798,23 +1858,23 @@ are two different Unicode character types.
 
 
 
-<div class=bib><div class=bib-item>
+<div class=bib><div id=bib-item-N5008 class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
 <span class=bib-author>Thomas Köppe.</span>
 <span class=bib-title>Working Draft, Programming Languages — C++</span>
 <span class=bib-date>2025-03-15</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div><div class=bib-item>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div><div id=bib-item-µlight class=bib-item>
 <a href="https://github%2ecom/Eisenwave/ulight">[µlight]</a>
 <span class=bib-author>Jan Schultke.</span>
 <span class=bib-title>ascii_chars.hpp utilities in µlight</span>
-<a href="https://github%2ecom/Eisenwave/ulight" class=bib-link>https://github.com/Eisenwave/ulight</a></div><div class=bib-item>
+<a href="https://github%2ecom/Eisenwave/ulight" class=bib-link>https://github.com/Eisenwave/ulight</a></div><div id=bib-item-ClangWarning class=bib-item>
 <a href="https://github%2ecom/llvm/llvm-project/pull/138708">[ClangWarning]</a>
 <span class=bib-author>Corentin Jabot.</span>
 <span class=bib-title>[Clang] Add warnings when mixing different charN_t types</span>
-<a href="https://github%2ecom/llvm/llvm-project/pull/138708" class=bib-link>https://github.com/llvm/llvm-project/pull/138708</a></div><div class=bib-item>
+<a href="https://github%2ecom/llvm/llvm-project/pull/138708" class=bib-link>https://github.com/llvm/llvm-project/pull/138708</a></div><div id=bib-item-CompilerExplorer class=bib-item>
 <a href="https://compiler-explorer%2ecom/z/8j9qqe8MY">[CompilerExplorer]</a>
 <span class=bib-title>Demonstration of -Wcharacter-conversion</span>
-<a href="https://compiler-explorer%2ecom/z/8j9qqe8MY" class=bib-link>https://compiler-explorer.com/z/8j9qqe8MY</a></div><div class=bib-item>
+<a href="https://compiler-explorer%2ecom/z/8j9qqe8MY" class=bib-link>https://compiler-explorer.com/z/8j9qqe8MY</a></div><div id=bib-item-P1161R3 class=bib-item>
 <a href="https://wg21%2elink/P1161R3">[P1161R3]</a>
 <span class=bib-author>Corentin Jabot.</span>
 <span class=bib-title>Deprecate uses of the comma operator in subscripting expressions</span>
