@@ -481,7 +481,7 @@ template<class T>
 \itemdescr{
 \macro[\alpha]{\N{GREEK SMALL LETTER ALPHA}}
 \macro[\mathvar]{\math{\mi{\put}}}
-Let \N{CIRCLED PLUS} denote the exclusive bitwise OR operation (\eelis{expr.xor}).
+Let \N{CIRCLED PLUS} denote the exclusive OR operation (\eelis{expr.xor}).
 Given an integer \mathvar{\alpha},
 let \math{\msub{\mi{\alpha}\mi{i}}}
 denote the \math{\msup{\mi{i}\mtext{th}}} least significant bit
