@@ -1,27 +1,7 @@
-\def[\cppblock{...}]{\codeblock[cpp]{\put}}
-\def[\charset{...}]{\html-code{\html-h-[data-h=str]{[\put]}}}
-\def[\exposid{...}]{\i{\html-h-[data-h=id]{\put}}}
-\def[\ctype]{\exposid{character-type}}
-\def[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-\def[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
-\def[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
+\import{libwg21.cow}
 
-\comment{This solely exists to interfere less with TeX highlighting}
-\def[\dollar]{\U{24}}
-\def[\percent]{\U{25}}
-
-\comment{
-    These macros make our wording very similar to C++ draft TeX,
-    making the job of the editors much more convenient.
-}
-\def[\tcode{...}]{\code[cpp]{\put}}
-\def[\grammarterm{...}]{\gterm{\put}}
-\def[\itemdecl{...}]{\codeblock[cpp,borders=no]{\put}}
-\def[\itemdescr{...}]{\indent{\paragraphs{\put}}}
-\def[\expects]{\i{Preconditions}:}
-\def[\remarks]{\i{Remarks}:}
-\def[\returns]{\i{Returns}:}
-\def[\recommended]{\i{Recommended practice}:}
+\macro[\charset{...}]{\html-code{\html-h-[data-h=str]{[\put]}}}
+\macro[\ctype]{\exposid{character-type}}
 
 \wg21-head[
     title = ASCII character utilities
@@ -156,7 +136,7 @@ but \tcode{is_ascii_upper(U'Ä')} to be \tcode{false}.
 \example{
 The counterpart to \tcode{std::isalpha} is declared follows:
 \cppblock{
-constexpr bool is_ascii_alpha(\exposid{character-type} c) noexcept;
+constexpr bool is_ascii_alpha(\ctype c) noexcept;
 }
 }
 
@@ -245,7 +225,7 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 \tr{
     \td{\tcode{ispunct}}
     \td{\tcode{is_ascii_punctuation}}
-    \td{\tcode{true} if \tcode{c} is in \charset{!"#\dollar\percent&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~}, otherwise \tcode{false}}
+    \td{\tcode{true} if \tcode{c} is in \charset{!"#\N{DOLLAR SIGN}\N{PERCENT SIGN}&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~}, otherwise \tcode{false}}
 }
 \tr{
     \td{\tcode{isgraph}}
@@ -801,7 +781,7 @@ constexpr bool is_ascii_punctuation(\ctype c) noexcept;
 }
 \itemdescr{
 \returns
-\tcode{u32string_view(U"!\\"#\U{24}\U{25}&'()*+,-./:;<=>?@[\\\\]^_`{|}~")\wbr{}.contains(static_cast<char32_t>(c))}.
+\tcode{u32string_view(U"!\\"#\N{DOLLAR SIGN}\N{PERCENT SIGN}&'()*+,-./:;<=>?@[\\\\]^_`{|}~")\wbr{}.contains(static_cast<char32_t>(c))}.
 }
 
 \itemdecl{
