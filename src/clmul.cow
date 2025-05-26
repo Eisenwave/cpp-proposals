@@ -496,11 +496,11 @@ where the value of \math{\msub{\mi{c}\mi{i}}}
 is given by Formula \tt{?.?},
 \mathvar{x} is \tcode{x},
 \mathvar{y} is \tcode{y},
-and \mathvar{w} is the width of \tcode{T}.
+and \mathvar{N} is the width of \tcode{T}.
 The result object is initialized so that
 \ul{
-\item{\tcode{low_bits} stores the \mathvar{w} least significant bits of \mathvar{c}, and}
-\item{\tcode{high_bits} stores the subsequent \mathvar{w} bits of \mathvar{c}.}
+\item{\tcode{low_bits} stores the \mathvar{N} least significant bits of \mathvar{c}, and}
+\item{\tcode{high_bits} stores the subsequent \mathvar{N} bits of \mathvar{c}.}
 }
 
 \style{
@@ -547,7 +547,7 @@ math[display=block] {
                     \mo{\N{LESS THAN OR EQUAL TO}}
                     \mi{i}
                     \mo{<}
-                    \mi{w}
+                    \mi{N}
                 }
             }
         }
@@ -556,8 +556,8 @@ math[display=block] {
                 \mrow{
                     \munderover{
                         \mo{\N{N-ARY CIRCLED PLUS OPERATOR}}
-                        \mrow{\mi{j}\mo{=}\mn{i}\mo{\N{MINUS SIGN}}\mi{w}\mo{+}\mn{1}}
-                        \mrow{\mi{w}\mo{\N{MINUS SIGN}}\mi{1}}
+                        \mrow{\mi{j}\mo{=}\mn{i}\mo{\N{MINUS SIGN}}\mi{N}\mo{+}\mn{1}}
+                        \mrow{\mi{N}\mo{\N{MINUS SIGN}}\mi{1}}
                     }
                     \msub{\mi{x}\mi{j}}
                     \msub{
@@ -573,17 +573,17 @@ math[display=block] {
                     \mspace[width=1em]
                     \mtext{for}
                     \mspace[width=0.5em]
-                    \mn{w}
+                    \mn{N}
                     \mo{\N{LESS THAN OR EQUAL TO}}
                     \mi{i}
                     \mo{<}
                     \mn{2}
-                    \mi{w}
+                    \mi{N}
                 }
             }
         }
     }
-}
+} \comment{mrow}
 } \comment{mathblock}
 } \comment{itemdescr}
 } \comment{insblock}
@@ -596,12 +596,15 @@ Please open the document in a recent version of Firefox or Chrome.
 
 \note{
 The formula is taken from \ref[IntelClmul], with different variable names.
+In C++ wording, \mathvar{N} is conventionally used as the width of a type
+(\eelis{iterator.concept.wine}).
+
 The proposed formula also uses the upper bound
-\math{\mrow{\mi{i}\mo{<}\mn{2}\mi{w}}}
+\math{\mrow{\mi{i}\mo{<}\mn{2}\mi{N}}}
 instead of
-\math{\mrow{\mi{i}\mo{<}\mn{2}\mi{w}\mo{\N{MINUS SIGN}}\mn{1}}}
+\math{\mrow{\mi{i}\mo{<}\mn{2}\mi{N}\mo{\N{MINUS SIGN}}\mn{1}}}
 so that each bit of \mathvar{c} has a defined value,
-where the value for \math{\msub{\mi{c}\mrow{\mn{2}\mi{w}\mo{\N{MINUS SIGN}}\mn{1}}}}
+where the value for \math{\msub{\mi{c}\mrow{\mn{2}\mi{N}\mo{\N{MINUS SIGN}}\mn{1}}}}
 is the neutral element of the \N{CIRCLED PLUS} operation, \math{\mn{0}}.
 
 See \eelis{sf.cmath.riemann.zeta} for precedent on wording which includes formulae.
@@ -612,9 +615,9 @@ The formula above in TeX notation is:
 \codeblock[cowel]{\literally{
 c_{i} = \begin{cases}
     \quad \displaystyle \bigoplus_{j = 0}^{i}  \quad x_{j} y_{i - j}
-    & \text{for}\ 0 \leq i < w \\
-         \displaystyle \bigoplus_{j = i - w + 1}^{w - 1} x_{j} y_{i - j}
-    & \text{for}\ w \leq i < 2 w
+    & \text{for}\ 0 \leq i < N \\
+         \displaystyle \bigoplus_{j = i - N + 1}^{N - 1} x_{j} y_{i - j}
+    & \text{for}\ N \leq i < 2 N
 \end{cases}
 }}
 }

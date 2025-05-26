@@ -1981,11 +1981,11 @@ where the value of <math display=inline><msub><mi>c</mi><mi>i</mi></msub></math>
 is given by Formula <tt->?.?</tt->,
 <math display=inline><mi>x</mi></math> is <code><h- data-h=id>x</h-></code>,
 <math display=inline><mi>y</mi></math> is <code><h- data-h=id>y</h-></code>,
-and <math display=inline><mi>w</mi></math> is the width of <code><h- data-h=id>T</h-></code>.
+and <math display=inline><mi>N</mi></math> is the width of <code><h- data-h=id>T</h-></code>.
 The result object is initialized so that
 </p><ul>
-<li><code><h- data-h=id>low_bits</h-></code> stores the <math display=inline><mi>w</mi></math> least significant bits of <math display=inline><mi>c</mi></math>, and</li>
-<li><code><h- data-h=id>high_bits</h-></code> stores the subsequent <math display=inline><mi>w</mi></math> bits of <math display=inline><mi>c</mi></math>.</li>
+<li><code><h- data-h=id>low_bits</h-></code> stores the <math display=inline><mi>N</mi></math> least significant bits of <math display=inline><mi>c</mi></math>, and</li>
+<li><code><h- data-h=id>high_bits</h-></code> stores the subsequent <math display=inline><mi>N</mi></math> bits of <math display=inline><mi>c</mi></math>.</li>
 </ul>
 
 <style>
@@ -2032,7 +2032,7 @@ math[display=block] {
                     <mo>≤</mo>
                     <mi>i</mi>
                     <mo>&lt;</mo>
-                    <mi>w</mi>
+                    <mi>N</mi>
                 </mrow>
             </mtd>
         </mtr>
@@ -2041,8 +2041,8 @@ math[display=block] {
                 <mrow>
                     <munderover>
                         <mo>⨁</mo>
-                        <mrow><mi>j</mi><mo>=</mo><mn>i</mn><mo>−</mo><mi>w</mi><mo>+</mo><mn>1</mn></mrow>
-                        <mrow><mi>w</mi><mo>−</mo><mi>1</mi></mrow>
+                        <mrow><mi>j</mi><mo>=</mo><mn>i</mn><mo>−</mo><mi>N</mi><mo>+</mo><mn>1</mn></mrow>
+                        <mrow><mi>N</mi><mo>−</mo><mi>1</mi></mrow>
                     </munderover>
                     <msub><mi>x</mi><mi>j</mi></msub>
                     <msub>
@@ -2058,17 +2058,17 @@ math[display=block] {
                     <mspace width=1em></mspace>
                     <mtext>for</mtext>
                     <mspace width=0.5em></mspace>
-                    <mn>w</mn>
+                    <mn>N</mn>
                     <mo>≤</mo>
                     <mi>i</mi>
                     <mo>&lt;</mo>
                     <mn>2</mn>
-                    <mi>w</mi>
+                    <mi>N</mi>
                 </mrow>
             </mtd>
         </mtr>
     </mtable>
-</mrow>
+</mrow> 
 </math><p> 
 </p></div> 
 </p></ins-block><p> </p>
@@ -2081,12 +2081,15 @@ Please open the document in a recent version of Firefox or Chrome.
 
 <note-block><p><intro-></intro-> 
 The formula is taken from <a href="https://www%2eintel%2ecom/content/dam/develop/external/us/en/documents/clmul-wp-rev-2-02-2014-04-20%2epdf">[IntelClmul]</a>, with different variable names.
-The proposed formula also uses the upper bound
-<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>w</mi></mrow></math>
+In C++ wording, <math display=inline><mi>N</mi></math> is conventionally used as the width of a type
+(<a href=https://eel%2eis/c++draft/iterator%2econcept%2ewine>[iterator.concept.wine]</a>).
+</p>
+<p>The proposed formula also uses the upper bound
+<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>N</mi></mrow></math>
 instead of
-<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>w</mi><mo>−</mo><mn>1</mn></mrow></math>
+<math display=inline><mrow><mi>i</mi><mo>&lt;</mo><mn>2</mn><mi>N</mi><mo>−</mo><mn>1</mn></mrow></math>
 so that each bit of <math display=inline><mi>c</mi></math> has a defined value,
-where the value for <math display=inline><msub><mi>c</mi><mrow><mn>2</mn><mi>w</mi><mo>−</mo><mn>1</mn></mrow></msub></math>
+where the value for <math display=inline><msub><mi>c</mi><mrow><mn>2</mn><mi>N</mi><mo>−</mo><mn>1</mn></mrow></msub></math>
 is the neutral element of the ⊕ operation, <math display=inline><mn>0</mn></math>.
 </p>
 <p>See <a href=https://eel%2eis/c++draft/sf%2ecmath%2eriemann%2ezeta>[sf.cmath.riemann.zeta]</a> for precedent on wording which includes formulae.
@@ -2096,9 +2099,9 @@ is the neutral element of the ⊕ operation, <math display=inline><mn>0</mn></ma
 The formula above in TeX notation is:
 </p><code-block>c_{i} = <h- data-h=mk_tag>\begin</h-><h- data-h=sym_brac>{</h->cases<h- data-h=sym_brac>}</h->
     <h- data-h=mk_tag>\quad</h-> <h- data-h=mk_tag>\displaystyle</h-> <h- data-h=mk_tag>\bigoplus_</h-><h- data-h=sym_brac>{</h->j = 0<h- data-h=sym_brac>}</h->^{i}  <h- data-h=mk_tag>\quad</h-> x_{j} y_{i - j}
-    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ 0 <h- data-h=mk_tag>\leq</h-> i &lt; w <h- data-h=esc>\\</h->
-         <h- data-h=mk_tag>\displaystyle</h-> <h- data-h=mk_tag>\bigoplus_</h-><h- data-h=sym_brac>{</h->j = i - w + 1<h- data-h=sym_brac>}</h->^{w - 1} x_{j} y_{i - j}
-    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ w <h- data-h=mk_tag>\leq</h-> i &lt; 2 w
+    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ 0 <h- data-h=mk_tag>\leq</h-> i &lt; N <h- data-h=esc>\\</h->
+         <h- data-h=mk_tag>\displaystyle</h-> <h- data-h=mk_tag>\bigoplus_</h-><h- data-h=sym_brac>{</h->j = i - N + 1<h- data-h=sym_brac>}</h->^{N - 1} x_{j} y_{i - j}
+    &amp; <h- data-h=mk_tag>\text</h-><h- data-h=sym_brac>{</h->for<h- data-h=sym_brac>}</h->\ N <h- data-h=mk_tag>\leq</h-> i &lt; 2 N
 <h- data-h=mk_tag>\end</h-><h- data-h=sym_brac>{</h->cases<h- data-h=sym_brac>}</h-></code-block>
 </note-block>
 
