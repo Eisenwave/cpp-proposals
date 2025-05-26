@@ -4,7 +4,7 @@
     title = ASCII character utilities
 ]{
 \dl{
-    \dt{Document number:} \dd{\ref[https://wg21.link/P3688R0]{P3688R0}}
+    \dt{Document number:} \dd{\docnum{P3688R0}}
     \dt{Date:}            \dd{\tt{2025-05-19}}
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
