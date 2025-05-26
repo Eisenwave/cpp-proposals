@@ -552,6 +552,8 @@ math[display=block] {
 } \comment{itemdescr}
 } \comment{insblock}
 
+\comment{Proof for math formula at https://godbolt.org/z/8YsnTGdvz}
+
 \warning{
 If the mathematical notation in the block above does not render for you,
 you are using an old browser with no MathML support.
