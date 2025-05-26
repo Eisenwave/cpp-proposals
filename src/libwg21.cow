@@ -1,3 +1,4 @@
+\macro[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
 \macro[\cppblock{...}]{\codeblock[cpp]{\put}}
 \macro[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
 \macro[\header{...}]{\code[cpp]{\html-h-[data-h=str]{<\put>}}}
