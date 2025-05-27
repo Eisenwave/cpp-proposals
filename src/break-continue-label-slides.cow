@@ -10,7 +10,7 @@ Slides for P3568R1
 \N{EM DASH}
 \tt{break label;} and \tt{continue label;}
 \footsep
-SG22 Telecon 2025-06-06
+SG22 Telecon 2025-06-04
 \footsep
 Slide \Vget[slidenum]
 }
