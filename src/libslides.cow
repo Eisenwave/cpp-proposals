@@ -1,0 +1,89 @@
+\Vset[slidenum]{0}
+\macro[\slidenum]{\Vset[slidenum]{\Cadd[\Vget[slidenum],1]}\Vget[slidenum]}
+
+\macro[\slide]{\html-section[id=slide-\slidenum]{\paragraphs{
+\put
+}
+\html-div[class=slide-foot]{\slidefoot}
+}}
+
+\macro[\slideh]{
+\block{\html-h2[id-slide-h-\Vget[slidenum]]{\put}}
+}
+
+\style{
+html {
+    scrollbar-width: none;
+}
+
+body {
+    --margin-left: 0;
+    --margin-right: 0;
+}
+
+main {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+.wg21-head {
+    width: 60em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#settings {
+    position: absolute;
+}
+
+section {
+    --sw: calc(min(100vw, 16/9*100vh));
+    margin-left: auto;
+    margin-right: auto;
+    font-size: calc(0.025 * var(--sw));
+    --slide-hpad: calc(0.025 * var(--sw));
+
+    width: var(--sw);
+    box-sizing: border-box;
+    aspect-ratio: 16/9;
+    padding: 0.5em var(--slide-hpad) 0 var(--slide-hpad);
+    
+    position: relative;
+
+    margin-bottom: 100vh;
+
+    /* background-color: rgba(50%, 50%, 50%, 5%); */
+
+    border-top: 0.025em var(--border-color) dashed;
+}
+
+section>p {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+
+section>:first-child {
+    margin-top: 0;
+}
+
+section code-block {
+    font-size: 90%;
+}
+
+.slide-foot {
+    width: calc(var(--sw) - 2 * var(--slide-hpad));
+    padding: 0.25em 0 0.25em 0;
+    position: absolute;
+    bottom: 0;
+    
+    font-family: var(--sans-serif-family);
+    font-size: 60%;
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.5;
+
+    border-top: 0.125vh var(--text-color) dashed;
+    border-bottom: 0.125vh var(--text-color) dashed;
+}
+}

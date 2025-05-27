@@ -1,0 +1,229 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\script{\include{slide-navigation.js}}
+
+\wg21-head[
+    title = Slides for P3639R0 \N{EM DASH} The \tt{_BitInt} Debate
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3688R0}}
+    \dt{Date:}            \dd{\tt{2025-05-19}}
+    \dt{Audience:}        \dd{LEWG, SG16}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint-debate-slides.cow]}
+}
+\hr
+}
+
+
+\macro[\slidehfun]{\block{\trim{
+    \slideh{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}
+    \there[summary-bullets]{\html-li{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}}
+}}}
+\macro[\slidehlib]{\block{\trim{
+    \slideh{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL L} \N{EN DASH} \put}
+    \there[summary-bullets]{\html-li{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL L} \N{EN DASH} \put}}
+}}}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides for P3639R0
+\N{EM DASH}
+The _BitInt Debate
+\footsep
+SG22 Telecon 2025-06-06
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.15 * var(--sw)) !important;
+    font-size: 300%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\slide{
+\html-h1{The \tt{_BitInt} Debate \br \html-span[id=docnum]{P3639R0}}
+}
+
+\slide{
+\slideh{Introduction}
+C23 now has \tcode{_BitInt} type for N-bit integers (WG14 N2763, N2775):
+\cppblock{
+// 8-bit unsigned integer initialized with value 255.
+// The literal suffix wb is unnecessary in this case.
+unsigned _BitInt(8) x = 0xFFwb;
+}
+\ul{
+\item{would be very useful in C++ for > 64-bit computation}
+\item{\em{needs} to be in C++ to call C functions portably!}
+\item{efforts to standardize in C++ abandoned (mainly N2763, P1889R1 (TS))}
+\item{implemented by GCC and Clang; max: \tcode{_BitInt(8'388'608)}}
+\item{\b{Big question}: fundamental type or class type in C++?}
+}
+}
+
+\slide{
+\slideh{Possible implementations}
+
+\style{
+#tony-table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    table-layout: fixed;
+}
+#tony-table td {
+    background-color: var(--deep-background-color);
+    width: 50%;
+}
+}
+
+\table[id=tony-table]{
+\tr{
+    \th{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} Fundamental type}
+    \th{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL L} \N{EN DASH} Library type}
+}
+\tr{
+\td{\codeblock[cpp,borders=no]{
+template <size_t N>
+using bit_int_t =
+    _BitInt(N);
+
+
+
+
+template <size_t N>
+using bit_uint_t =
+    unsigned _BitInt(N);
+}}
+\td{\codeblock[cpp,borders=no]{
+template <size_t N>
+class bit_int {
+  private:
+    _BitInt(N) _M_value;
+  public:
+    // ...
+};
+template <size_t N>
+class bit_uint
+  { /* ... */; };
+}}
+}
+}
+}
+
+\slide{
+\slidehfun{Fundamentals can do more}
+
+A fundamental type is needed for full C compatibility:
+\cppblock{
+switch (_BitInt(32) x = 0uwb) { /* ... */ }
+struct S
+  { _BitInt(32) x : 10; /* OK, _BitInt(32) bit-field */ };
+}
+
+A fundamental type could have \em{deduction superpowers}:
+\cppblock{
+template <size_t N> void f(bit_int_t<N>);
+foo(0); // OK, calls foo<32> on most platforms
+}
+This could also be addressed by P2998,
+"Deducing function parameter types using alias template CTAD".
+}
+
+\slide{
+\slidehfun{Problems with a common spelling}
+
+\ul{
+\item{common spelling useful for C/C++-interoperable headers}
+\item{C uses the \tcode{_BitInt(N)} and \tcode{unsigned _BitInt(N)}}
+\item{C++ compatibility macro like \tt{\hl[macro]{_Atomic(...)}} does \em{not} work}
+}
+
+\cppblock{
+#define _BitInt(...) \code[cpp,nested=yes]{std::bit_int<(\hl[macro]{__VA_ARGS__})>}
+unsigned \hl[macro]{_BitInt}(32) x; // error: applying "unsigned" to class type
+}
+
+\N{RIGHTWARDS DOUBLE ARROW} Both C and C++ developers would need a macro
+for unsigned types.
+\cppblock{
+/* C */   #define _BitUint(...) \code[cpp,nested=yes]{unsigned _BitInt(\hl[macro]{__VA_ARGS__})}
+/* C++ */ #define _BitUint(...) \code[cpp,nested=yes]{std::bit_uint<(\hl[macro]{__VA_ARGS__})>}
+}
+}
+
+\slide{
+\slidehlib{Class is easier to implement, teach}
+
+\cppblock{
+template <size_t N> class bit_int {
+    unsigned long long limbs[/* ... */];
+  public:
+    /* constructors, operator overloads, etc. */
+};
+}
+
+\ul{
+\item{P3140 \tcode{std::int_least128_t} got push-back for freestanding}
+\item{MSVC does not even support 128-bit yet; no \tcode{_BitInt} implementation}
+\item{no compiler builtin required, no platform ABI changes}
+\item{many existing implementations (e.g. Boost.Multiprecision)}
+\item{conversion, overload resolution more easily explained}
+}
+}
+
+\slide{
+\slidehlib{Fundamentals have \em{huge} blast radius}
+
+\ul{
+\item{new family of integer types}
+\item{countless uses of "integer" in wording revised}
+\item{integral promotion/conversion rules, template deduction rules}
+\item{library support is tough if bit-precise integers widely supported:
+\ul{
+    \item{N-bit \header{numeric}, \header{bit}, \header{simd}, \header{linalg}}
+    \item{N-bit \header{charconv}, \header{format}}
+    \item{[\N{HORIZONTAL ELLIPSIS}]}
+}
+}
+\item{library types could have more limited/gradual adoption}
+}
+}
+
+\slide{
+\slideh{Summary}
+
+\b{Key arguments} (see \ref[P3639R0] for more):
+\ul{
+\here[summary-bullets]
+}
+
+\b{Author position}: neutral / slightly \N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F}
+}
+
+\bib[
+    id = P3639R0,
+    title = The _BitInt Debate,
+    author = Jan Schultke,
+    link = https://wg21.link/p3639r0
+]
