@@ -3,21 +3,6 @@
 
 \script{\include{slide-navigation.js}}
 
-\wg21-head[
-    title = Slides for P3639R0 \N{EM DASH} The \tt{_BitInt} Debate
-]{
-\dl{
-    \dt{Document number:} \dd{\docnum{P3721}}
-    \dt{Date:}            \dd{\tt{2025-05-27}}
-    \dt{Audience:}        \dd{LEWG, SG16}
-    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint-debate-slides.cow]}
-}
-\hr
-}
-
-
 \macro[\slidehfun]{\block{\trim{
     \slideh{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}
     \there[summary-bullets]{\html-li{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}}
@@ -56,6 +41,38 @@ section>h1 {
 
 li>ul {
     margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P3639R0 \N{EM DASH} The \tt{_BitInt} Debate
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3721}}
+    \dt{Date:}            \dd{\tt{2025-05-27}}
+    \dt{Audience:}        \dd{LEWG, SG16}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint-debate-slides.cow]}
+}
+\hr
+
+\important{
+This document has custom controls\inline{\noscript{ \b{which require JavaScript}}}:
+\ul{
+\item{
+\kbd{\N{RIGHTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{DOWNWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
+go to the next slide
+}
+\item{
+\kbd{\N{LEFTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{UPWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
+go to previous slide
+}
+}
+\noscript{\p{
+\b{Your browser does not have JavaScript enabled,
+but you can view all the slides by simply scrolling down.}
+}}
 }
 }
 
