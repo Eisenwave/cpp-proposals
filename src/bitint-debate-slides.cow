@@ -7,12 +7,11 @@
     title = Slides for P3639R0 \N{EM DASH} The \tt{_BitInt} Debate
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{P3688R0}}
+    \dt{Document number:} \dd{\docnum{P3721}}
     \dt{Date:}            \dd{\tt{2025-05-19}}
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint-debate-slides.cow]}
 }
 \hr
