@@ -8,7 +8,7 @@
 }}
 
 \macro[\slideh]{
-\block{\html-h2[id-slide-h-\Vget[slidenum]]{\put}}
+\block{\html-h2[id=slide-h-\Vget[slidenum]]{\put}}
 }
 
 \style{
@@ -87,3 +87,23 @@ section code-block {
     border-bottom: 0.125vh var(--text-color) dashed;
 }
 }
+
+\macro[\slide-controls]{\important{
+This document has custom controls\inline{\noscript{ \b{which require JavaScript}}}:
+\ul{
+\item{
+\kbd{\N{RIGHTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{DOWNWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
+go to the next slide
+}
+\item{
+\kbd{\N{LEFTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{UPWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
+go to previous slide
+}
+}
+\noscript{\p{
+\b{Your browser does not have JavaScript enabled,
+but you can view all the slides by simply scrolling down.}
+}}
+}}
+
+\script{\include{slide-navigation.js}}

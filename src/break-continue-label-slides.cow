@@ -1,0 +1,239 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides for P3568R1
+\N{EM DASH}
+\tt{break label;} and \tt{continue label;}
+\footsep
+SG22 Telecon 2025-06-06
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.075 * var(--sw)) !important;
+    font-size: 250%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P3568R1 \br \tt{break label;} and \tt{continue label;}
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3722R0}}
+    \dt{Date:}            \dd{\tt{2025-05-27}}
+    \dt{Audience:}        \dd{SG22}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/break-continue-label-slides.cow]}
+}
+\hr
+\slide-controls
+}
+
+\slide{
+\html-h1{\tcode{break label;}\br
+and \br\tcode{continue label;}\br
+\html-span[id=docnum]{P3568R1}}
+}
+
+\style{
+.five-way-poll {
+    table-layout: fixed;
+}
+.five-way-poll td {
+    width: 20%;
+    text-align: center;
+}
+.three-way-poll {
+    table-layout: fixed;
+}
+.three-way-poll td {
+    width: 2em;
+    text-align: center;
+}
+}
+
+\macro[\five-way-poll]{\table[class=five-way-poll]{
+\tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
+\tr{\put}
+}}
+
+\macro[\three-way-poll]{\table[class=three-way-poll]{
+\tr{\th{F}\th{N}\th{A}}
+\tr{\put}
+}}
+
+\slide{
+\slideh{Introduction}
+C2y now supports \tcode{break} and \tcode{continue} with a label (N3355):
+\cppblock{
+outer: for (int i = 0; i < N; ++i)
+    for (int j = 0; j < M; ++j)
+        if (/* ... */)
+          break outer; // OK, break targets "outer"
+}
+
+\ul{
+\item{would be useful in C++, not just in C}
+\item{if C has it, EWG wants it}
+\item{clearly implementable, even in \tcode{constexpr}}
+}
+}
+
+\slide{
+\slideh{Recent history}
+\html-div[id=hagenberg-polls]{
+\block{\html-h3[id=hagenberg]{Hagenberg 2025}}
+
+\style{
+#slide-h-3 {
+    margin-bottom: 0;
+}
+#hagenberg {
+    margin-top: 0;
+}
+#hagenberg-polls {
+    font-size: 80%;
+}
+#hagenberg-conclusion {
+    position: absolute;
+    right: 4em;
+    top: 6em;
+    text-align: center;
+    font-size: 120%;
+}
+}
+EWG likes syntax \tcode{N3355: for (...) { }}
+\five-way-poll{
+    \td{4}\td{16}\td{5}\td{9}\td{5}
+}
+
+EWG likes syntax \tcode{for N3377 (...) { }}
+\five-way-poll{
+    \td{7}\td{13}\td{5}\td{5}\td{8}
+}
+
+If C has it, we are interested in this feature too.
+\five-way-poll{
+    \td{16}\td{21}\td{5}\td{2}\td{3}
+}
+
+\html-div[id=hagenberg-conclusion]{
+\html-h3{Conclusion}
+Let WG14 figure out syntax;\br
+we'll copy the feature into C++.
+}
+}
+}
+
+\slide{
+\slideh{Recent history}
+\html-div[id=graz-polls]{
+\block{\html-h3[id=graz]{Graz 2025}}
+
+\style{
+#slide-h-4 {
+    margin-bottom: 0;
+}
+#graz {
+    margin-top: 0;
+}
+}
+Would WG14 like to see a paper changing\br{}loop name syntax at a future meeting?
+\three-way-poll{
+    \td{6}\td{11}\td{9}
+}
+\ul{
+\item{
+\b{Conclusion}:
+\tcode{N3355: for (...) { }} syntax wins
+\ul{\item{however, \em{major} N3377 concerns unaddressed}}
+}
+\item{
+C++ goes with N3355 syntax
+\ul{\item{also let's try to fix N3377 issues before WG14}}
+}
+}
+
+}
+}
+
+\slide{
+\slideh{Unaddressed N3377 concerns}
+
+Labels must be unique per function \N{RIGHTWARDS DOUBLE ARROW} problematic for macros:
+\cppblock{
+#define MACRO() \\
+    \code[cpp,nested=yes]{outer: for (/* ... */) \hl[macro]{\\}
+        for (/* ...*/) break outer}
+// ...
+\hl[macro]{MACRO}(); // OK
+\hl[macro]{MACRO}(); // error: duplicate "outer"
+}
+
+Also, nested reuse of names impossible:
+\cppblock{
+outer: for (/* ... */) inner: for (/* ... */)
+    outer: for (/* ... */) inner: for (/* ... */) // error
+}
+}
+
+\slide{
+\slideh{P3568R1 strategy}
+
+\ul{
+\item{labels can go \em{anywhere}, even multiple times}
+\item{restrict \tcode{goto}, \tcode{break}, \tcode{continue}, not labels}
+}
+\cppblock{
+label: label: while (true) break label; // OK
+label: for (/* ... */) continue label;  // OK
+
+goto label;               // error: jump to duplicate label
+while (true) break label; // error: break of unrelated loop
+}
+
+\ul{
+\item{\b{Idea}: labels are \em{basically} comments, so why restrict them?}
+\item{\b{Benefit}: very simple, teachable system}
+}
+
+}
+
+\slide{
+\slideh{Summary}
+
+\ul{
+\item{EWG wants \tcode{break label}, and we have a design}
+\item{syntax debate is resolved}
+\item{N3377 concerns can be addressed with \tcode{label:} syntax}
+\item{wording exists, CWG chair looked at it}
+\item{
+implementation non-trivial, but \em{clearly} possible
+\ul{
+\item{GCC patch for N3355 exists (C fronted)}
+\item{Clang implementers convinced that \tcode{break label} is feasible}
+}
+}
+}
+
+}
+
