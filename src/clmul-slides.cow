@@ -1,0 +1,273 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides for P3642R1
+\N{EM DASH}
+Carry-less product: \tt{std::clmul}
+\footsep
+SG22 Telecon 2025-06-04
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.075 * var(--sw)) !important;
+    font-size: 250%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P3642R1 \br Carry-less product: \tcode{std::clmul}
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3647}}
+    \dt{Date:}            \dd{\tt{2025-05-27}}
+    \dt{Audience:}        \dd{SG22}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/clmul-slides.cow]}
+}
+\hr
+\slide-controls
+}
+
+\slide{
+\html-h1{Carry-less product:\br\tcode{std::clmul}\br
+\html-span[id=docnum]{P3642R1}}
+}
+
+\slide{
+\slideh{Introduction}
+
+\style{
+#tony-table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    table-layout: fixed;
+}
+#tony-table td {
+    background-color: var(--deep-background-color);
+    width: 50%;
+}
+#tony-table code-block {
+    margin: 0.25em auto;
+    width: fit-content;
+}
+}
+
+\b{Intuition}: "carry-less" means we use XOR instead of plus.
+
+\table[id=tony-table]{
+\tr{
+    \th{Regular multiplication}
+    \th{Carry-less multiplication}
+}
+\tr{
+\td{\codeblock[cpp,borders=no]{
+\comment{}     x * 0b0110
+== \tt{(x << 3) * 0}
+ + (x << 2) * 1
+ + (x << 1) * 1
+ + (x << 0) * 0
+}}
+\td{\codeblock[cpp,borders=no]{
+clmul(x, 0b0110)
+ == \tt{(x << 3) * 0}
+  ^ (x << 2) * 1
+  ^ (x << 1) * 1
+  ^ (x << 0) * 0
+}}
+}
+}
+\ul{
+\item{useful for CRC, AES-GCM, parsing, bit manipulation, \N{HORIZONTAL ELLIPSIS}}
+\item{widespread hardware support (x86_64, ARM, RISC-V)}
+\item{a.k.a. "polynomial multiplication" and "XOR multiplication"}
+}
+}
+
+\slide{
+\slideh{Motivating example}
+
+\ul{
+\item{\tcode{clmul(x, -1u)} computes \dfn{bitwise parity} (inclusive)}
+\item{i.e. for each bit in \tcode{x}, \tcode{/* \serif{is 1-bit count to right odd?} */ ? 1 : 0}}
+\item{can be used to check if character is inside/outside string in parallel}
+}
+\pre{
+abc xxx \code[cpp,nested=yes]{"foobar"} zzz \code[cpp,nested=yes]{"a"}
+00000000\hl[string-delim]{1}\hl[string]{000000}\hl[string-delim]{1}00000\hl[string-delim]{1}\hl[string]{0}\hl[string-delim]{1} \code[cpp,nested=yes]{// quotes}
+00000000\hl[string-delim]{0}\hl[string]{111111}\hl[string-delim]{1}00000\hl[string-delim]{0}\hl[string]{1}\hl[string-delim]{1} \code[cpp,nested=yes]{// clmul(quotes, -1u)}
+00000000\hl[string-delim]{0}\hl[string]{111111}\hl[string-delim]{0}00000\hl[string-delim]{0}\hl[string]{1}\hl[string-delim]{0} \code[cpp,nested=yes]{// clmul(quotes, -1u) & ~quotes}
+}
+
+This technique is used to accelerate string parsing in \tt{simdjson}.
+}
+
+\slide{
+\slideh{Hardware support}
+
+\style{
+#optable {
+    margin-left: auto;
+    margin-right: auto;
+}
+.marked {
+    background-color: var(--mark-background-color);
+    color: var(--mark-color);
+}
+.center {
+    width: 100%;
+    text-align: center;
+}
+}
+
+\table[id=optable]{
+\tr{
+    \th{Operation}\th{x86_64}\th{ARM}\th{RV64}
+}
+
+\tr{
+    \td{\tt{clmul u64\N{MULTIPLICATION SIGN}4 \N{RIGHTWARDS ARROW} u128\N{MULTIPLICATION SIGN}4}}
+    \td{\tt{vpclmulqdq}}
+    \td{}
+    \td{}
+}
+
+\tr{
+    \td{\tt{clmul u64\N{MULTIPLICATION SIGN}2 \N{RIGHTWARDS ARROW} u128\N{MULTIPLICATION SIGN}2}}
+    \td{\tt{vpclmulqdq}}
+    \td{}
+    \td{}
+}
+
+\tr[class=marked]{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u128}}
+    \td{\tt{pclmulqdq}}
+    \td{\tt{pmull}+\tt{pmull2}}
+    \td{\tt{clmul}+\tt{clmulh}}
+}
+
+\tr[class=marked]{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u128}}
+    \td{\tt{pclmulqdq}}
+    \td{\tt{pmull}+\tt{pmull2}}
+    \td{\tt{clmul}+\tt{clmulh}}
+}
+
+\tr[class=marked]{
+    \td{\tt{clmul u64 \N{RIGHTWARDS ARROW} u64}}
+    \td{}
+    \td{\tt{pmull}}
+    \td{\tt{clmul}}
+}
+
+\tr{
+    \td{\tt{clmul u8\N{MULTIPLICATION SIGN}8 \N{RIGHTWARDS ARROW} u16\N{MULTIPLICATION SIGN}8}}
+    \td{}
+    \td{\tt{pmull}}
+    \td{}
+}
+\tr{
+    \td{\tt{clmul u8\N{MULTIPLICATION SIGN}8 \N{RIGHTWARDS ARROW} u8\N{MULTIPLICATION SIGN}8}}
+    \td{}
+    \td{\tt{pmul}}
+    \td{}
+}
+}
+
+\html-div[class=center]{\mark{Marked} rows are integrated in this proposal.}
+}
+
+\slide{
+\slideh{Proposed design}
+
+\style{
+#design {
+    font-size: 90%;
+}
+}
+
+\block{\html-div[id=design]{
+\cppblock{
+template<\exposid{unsigned-integer} T>
+T clmul(T x, T y) noexcept;
+
+template<class T>
+struct mul_wide_result { // yoinked from P3161R4:
+    T low_bits;          // Unified integer overflow arithmetic
+    T high_bits;
+};
+
+template<\exposid{unsigned-integer} T>
+constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
+}
+\ul{
+\item{\tcode{clmul} names used because it is most common (Intel, LLVM, RV64, etc.)}
+\item{SIMD support could be separate paper}
+}
+}}
+}
+
+\slide{
+\slideh{Implementation and wording}
+
+\style{
+.no-vertical-margin {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+}
+
+\block{\html-h3[class=no-vertical-margin]{Implementation}}
+\ul[class=no-vertical-margin]{
+\item{naive fallback implementation is trivial}
+\item{just need to wrap platform intrinsics when available}
+\item{portable support with \tt{@llvm.clmul}
+\ul{
+\item{could be wrapped in \tt{__builtin_clmul}}
+}}
+}
+
+\block{\html-h3[class=no-vertical-margin]{Wording}}
+\ul{
+\item{based on P3161R4, but easy to change}
+\item{\i{see paper}}
+}
+
+}
+
+\slide{
+
+\style{
+#bye {
+    font-size: 300%;
+    margin-top: 2.25em;
+    display: block;
+    font-weight: 900;
+    text-align: center;
+}
+}
+
+\block{\html-span[id=bye]{\tt{k thx bye}\N{EM SPACE}(„• ֊ •„)}}
+
+}
+
