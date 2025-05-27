@@ -1,8 +1,6 @@
 \import{libwg21.cow}
 \import{libslides.cow}
 
-\script{\include{slide-navigation.js}}
-
 \macro[\slidehfun]{\block{\trim{
     \slideh{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}
     \there[summary-bullets]{\html-li{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} \put}}
@@ -48,32 +46,15 @@ li>ul {
     title = Slides for P3639R0 \N{EM DASH} The \tt{_BitInt} Debate
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{P3721}}
+    \dt{Document number:} \dd{\docnum{P3721R0}}
     \dt{Date:}            \dd{\tt{2025-05-27}}
-    \dt{Audience:}        \dd{LEWG, SG16}
+    \dt{Audience:}        \dd{SG22}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint-debate-slides.cow]}
 }
 \hr
-
-\important{
-This document has custom controls\inline{\noscript{ \b{which require JavaScript}}}:
-\ul{
-\item{
-\kbd{\N{RIGHTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{DOWNWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
-go to the next slide
-}
-\item{
-\kbd{\N{LEFTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{UPWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
-go to previous slide
-}
-}
-\noscript{\p{
-\b{Your browser does not have JavaScript enabled,
-but you can view all the slides by simply scrolling down.}
-}}
-}
+\slide-controls
 }
 
 \slide{
