@@ -1635,7 +1635,7 @@ integer division as follows:
 </p><code-block><h- data-h=id>q</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>1</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h-></code-block>
 <p>The quotient <code><h- data-h=id>q</h-></code> would be <code><h- data-h=num>1</h-></code>, not <code><h- data-h=num>0</h-></code>
 for inputs <code><h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-></code> and <code><h- data-h=id>y</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>2</h-></code>,
-which is obviously wrong.
+which is obviously wrong because it rounds <code><h- data-h=sym_op>-</h-><h- data-h=num>0</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-></code> up to <code><h- data-h=num>1</h-></code>, skipping zero.
 </p>
 <p>To be fair, the answer is correct for positive integers,
 and perhaps the author didn't want to support negative inputs anyway.
@@ -1664,6 +1664,8 @@ which is bad because integer division is one of the most expensive operations on
 </li>
 </ul>
 </bug-block>
+
+<note-block><p><intro-></intro-> See <a href=#implementation>§8. Appendix A — Reference implementation</a> for proper implementations.</p></note-block>
 
 <p>Users sometimes also implement these functions using <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>floor</h-></code> or <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ceil</h-></code>,
 but this can equally yield incorrect results,
@@ -1855,24 +1857,17 @@ sign properties, so it is typically sufficient to compute it using the quotient.
 The implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem</h-></code> functions also
 tends to be asymmetrical.
 </p>
-<code-block><h- data-h=kw_type>int</h-> <h- data-h=id>div_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>bool</h-> <h- data-h=id>quotient_negative</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>^</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>quotient_negative</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h->
-
-<h- data-h=kw_type>int</h-> <h- data-h=id>rem_divisor_sign</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> alternatively std::rem_to_neg_inf</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h->
-
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> std::div_euclid would be weird ...</h->
-
-<h- data-h=kw_type>int</h-> <h- data-h=id>rem_positive</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> alternatively std::rem_euclid</h->
+<example-block><p><intro-></intro-> 
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_positive</h-></code> can be implemented as follows,
+and the approach used here looks nothing like Euclidean division.
+</p>
+<code-block><h- data-h=kw_type>int</h-> <h- data-h=id>rem_positive</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> effectively, this adds abs(y) when rem is negative,</h->
     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> but overflow-safely, and avoiding the UB of abs(INT_MIN)</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>rem</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>rem</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=sym_op>-</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
+</example-block>
 
 <p>In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
 neither of which exist.
@@ -2666,7 +2661,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <i><h- data-h=id>sgn</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <i><h- data-h=id>sgn</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
@@ -2686,11 +2681,19 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Idea: if the there is a mismatch between the divisor being negative and the dividend,</h->
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       the result sign would be wrong, and we need to flip it.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Idea: if the there is a mismatch between the x and y being negative,</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       the result sign would be wrong, and we need to flip it;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       If they match (i.e. if the quotient is positive),</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       we already have the right result.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       If the mismatch is caused by the dividend being negative,</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       the remainder is also negative and we should add the (positive) divisor.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       If the mismatch is caused by the divisor being negative,</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       we should add the (negative) divisor to get a negative remainder.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       In either case, adding the divisor is the right thing to do.</h->
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>rem_divisor_sign</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_type>bool</h-> <h- data-h=id>quotient_negative</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>^</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>rem</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>quotient_negative</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Idea: if the remainder is negative, we add abs(y).</h->
@@ -2705,5 +2708,7 @@ Since integer division occurs unconditionally in these functions,
 they also trivially satisfy the <a href=#wording>§6. Wording</a> requirement that invocations of these functions
 are not constant expressions when the result is not representable.
 </p></note-block>
+
+
 </main></body>
 </html>

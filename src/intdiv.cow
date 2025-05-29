@@ -112,7 +112,7 @@ q = (x % y) ? x / y + 1 : x / y;
 }
 The quotient \tcode{q} would be \tcode{1}, not \tcode{0}
 for inputs \tcode{x = -1} and \tcode{y = 2},
-which is obviously wrong.
+which is obviously wrong because it rounds \tcode{-0.5} up to \tcode{1}, skipping zero.
 
 To be fair, the answer is correct for positive integers,
 and perhaps the author didn't want to support negative inputs anyway.
@@ -143,6 +143,8 @@ which is bad because integer division is one of the most expensive operations on
 }
 }
 }
+
+\note{See \ref[#implementation] for proper implementations.}
 
 Users sometimes also implement these functions using \tcode{std::floor} or \tcode{std::ceil},
 but this can equally yield incorrect results,
@@ -340,24 +342,17 @@ sign properties, so it is typically sufficient to compute it using the quotient.
 The implementation of \tcode{std::div} and \tcode{std::rem} functions also
 tends to be asymmetrical.
 
+\example{
+\tcode{std::rem_positive} can be implemented as follows,
+and the approach used here looks nothing like Euclidean division.
+
 \cppblock{
-int div_to_neg_inf(int x, int y) {
-    bool quotient_negative = (x ^ y) < 0;
-    return (x / y) - int(x % y != 0 && quotient_negative);
-}
-
-int rem_divisor_sign(int x, int y) { // alternatively std::rem_to_neg_inf
-    int rem = x % y;
-    return rem + y * int(x % y != 0 && y >= 0);
-}
-
-// std::div_euclid would be weird ...
-
-int rem_positive(int x, int y) { // alternatively std::rem_euclid
+int rem_positive(int x, int y) {
     int rem = x % y;
     // effectively, this adds abs(y) when rem is negative,
     // but overflow-safely, and avoiding the UB of abs(INT_MIN)
     return int(unsigned(rem) + unsigned(rem < 0) * (y < 0 ? -unsigned(y) : unsigned(y)));
+}
 }
 }
 
@@ -1060,7 +1055,7 @@ constexpr int div_ties_to_odd(int x, int y) {
     int abs_rem = x % y * \sgn2(x);
     int abs_half_y = y / 2 * \sgn2(y);
     int quotient = x / y;
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 == 0);
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 != 0);
     return quotient + int(increment) * quotient_sign;
 }
 
@@ -1080,11 +1075,19 @@ constexpr int rem_dividend_sign(int x, int y) {
     return x % y;
 }
 
-// Idea: if the there is a mismatch between the divisor being negative and the dividend,
-//       the result sign would be wrong, and we need to flip it.
+// Idea: if the there is a mismatch between the x and y being negative,
+//       the result sign would be wrong, and we need to flip it;
+//       If they match (i.e. if the quotient is positive),
+//       we already have the right result.
+//       If the mismatch is caused by the dividend being negative,
+//       the remainder is also negative and we should add the (positive) divisor.
+//       If the mismatch is caused by the divisor being negative,
+//       we should add the (negative) divisor to get a negative remainder.
+//       In either case, adding the divisor is the right thing to do.
 constexpr int rem_divisor_sign(int x, int y) {
+    bool quotient_negative = (x ^ y) < 0;
     int rem = x % y;
-    return rem + y * int(x % y != 0 && y >= 0);
+    return rem + y * int(rem != 0 && quotient_negative);
 }
 
 // Idea: if the remainder is negative, we add abs(y).
@@ -1100,3 +1103,5 @@ Since integer division occurs unconditionally in these functions,
 they also trivially satisfy the \ref[#wording] requirement that invocations of these functions
 are not constant expressions when the result is not representable.
 }
+
+\comment{https://godbolt.org/z/TY5h34jG3}
