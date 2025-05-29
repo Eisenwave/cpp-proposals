@@ -6,6 +6,7 @@
 \macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
 \macro[\iref{...}]{ (\eelis{\put})}
 
+\macro[\term{...}]{\i{\put}}
 \macro[\exposid{...}]{\i{\hl[id]{\put}}}
 \macro[\placeholder{...}]{\tt{\exposid{\put}}}
 \macro[\tcode]{\code[cpp]{\put}}
@@ -15,6 +16,7 @@
 \macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
 \macro[\itemdescr]{\indent{\paragraphs{\put}}}
 
+\macro[\Fundescx]{\i{\put}}
 \macro[\Fundesc]{\i{\put}:}
 \macro[\recommended]{\Fundesc{Recommended practice}}
 \macro[\required]{\Fundesc{Required behavior}}
@@ -44,3 +46,6 @@ ins-block .para::before {
     float: right;
 }
 }
+
+\Vset[pnum]{0}
+\macro[\pnum]{\Vset[pnum]{\Cadd[\Vget[pnum],1]}\Vget[pnum]}
