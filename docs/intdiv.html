@@ -1584,7 +1584,7 @@ which involves a division which rounds towards positive infinity.
 <h- data-h=kw_type>int</h-> <h- data-h=id>elements</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>100</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw_type>int</h-> <h- data-h=id>buckets_required</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>elements</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>bucket_size</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> WRONG, zero</h->
-<h- data-h=kw_type>int</h-> <h- data-h=id>buckets_required</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_pos_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>elements</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>bucket_size</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK, one bucket</h-></code-block>
+<h- data-h=kw_type>int</h-> <h- data-h=id>buckets_required</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>elements</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>bucket_size</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK, one bucket</h-></code-block>
 </example-block>
 
 <example-block><p><intro-></intro-> 

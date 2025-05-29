@@ -56,7 +56,7 @@ const int bucket_size = 1000;
 int elements = 100;
 
 int buckets_required = elements / bucket_size; // WRONG, zero
-int buckets_required = std::div_to_pos_inf(elements, bucket_size); // OK, one bucket
+int buckets_required = std::div_to_inf(elements, bucket_size); // OK, one bucket
 }
 }
 
