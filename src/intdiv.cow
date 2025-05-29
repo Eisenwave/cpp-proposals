@@ -1,0 +1,1102 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = Integer division
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{D3724R0}}
+    \dt{Date:}            \dd{\tt{2025-05-29}}
+    \dt{Audience:}        \dd{LEWG, SG6}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3724/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/intdiv.cow]}
+}
+\hr
+}
+
+\abstract{
+C++ currently only offers truncating integer division in the form of the \tcode{/} operator.
+I propose standard library functions for computing quotients and remainders
+with other rounding modes.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+C++ currently only offers truncating integer division in the form of the \tcode{/} operator.
+However, other rounding modes have various use cases too,
+and implementing these as the user can be surprisingly hard,
+especially when integer overflow needs to be avoided,
+and negative inputs are accepted.
+
+Furthermore, since the \tcode{/} operator is truncating,
+the \tcode{\N{PERCENT SIGN}} (remainder) operator may yield negative results
+(specifically, when the dividend is negative).
+In modular arithmetic, this is typically undesirable.
+
+Therefore, I propose a set of standard library functions
+which implement a variety of rounding modes when computing quotients and remainders.
+Such a feature was previously part of \ref[P0105R1] and the Numerics TS \ref[P1889R1],
+but was eventually abandoned.
+
+\h2{Motivation}
+
+Rounding modes other than truncation (rounding towards zero) are commonly useful.
+
+\example{
+A common problem is to compute how many chunks/buckets/blocks of a fixed size
+are needed to fit a certain amount of elements,
+which involves a division which rounds towards positive infinity.
+\cppblock{
+const int bucket_size = 1000;
+int elements = 100;
+
+int buckets_required = elements / bucket_size; // WRONG, zero
+int buckets_required = std::div_to_pos_inf(elements, bucket_size); // OK, one bucket
+}
+}
+
+\example{
+A common problem is to compute which chunk/bucket/block an element falls into.
+This requires division which rounds towards negative infinity.
+\cppblock{
+const int bucket_size = 1000;
+int a = 10;
+int b = -10;
+
+int a_bucket = a / bucket_size; // OK, zero
+int b_bucket = b / bucket_size; // WRONG, also zero
+
+int a_bucket = std::div_to_neg_inf(a, bucket_size); // OK, zero
+int b_bucket = std::div_to_neg_inf(b, bucket_size); // OK, -1
+}
+Note that with truncating division,
+the zero-bucket would contain all elements in [-999, 999],
+which would make it larger than any other bucket.
+}
+
+While the examples are somewhat abstract,
+they appear in vast amounts of concrete problems.
+For example, we need to know how many blocks of memory must be allocated
+to hold a certain amount of bytes.
+
+\h3[id=trivial-for-user]{Is this not trivial for the user to do?}
+
+At first glance,
+it would seem trivial to change rounding modes by making slight adjustments to \tcode{/}.
+However, doing so with correct output, high performance,
+and without introducing more undefined behavior than \tcode{x / y} already has,
+is surprisingly hard.
+
+There is an \em{ocean} of examples where C++ users have gotten this wrong.
+A few droplets are listed below.
+
+\bug{
+At the time of writing,
+the \em{first} Google search result for "c++ ceiling integer division"
+yields \ref[StackOverflowDivision].
+Almost every answer does not permit signed integers,
+gives wrong results,
+or has undefined behavior for certain inputs
+(not counting division by zero or \tcode{INT_MIN / -1}).
+
+For example, one answer with 67 upvotes (at the time of writing)
+attempts to implement ceiling (rounded towards positive infinity)
+integer division as follows:
+\cppblock{
+q = (x % y) ? x / y + 1 : x / y;
+}
+The quotient \tcode{q} would be \tcode{1}, not \tcode{0}
+for inputs \tcode{x = -1} and \tcode{y = 2},
+which is obviously wrong.
+
+To be fair, the answer is correct for positive integers,
+and perhaps the author didn't want to support negative inputs anyway.
+However, the answer contains no disclaimer that clarifies this.
+}
+
+\bug{
+These division functions taken from \ref[BuggyDivisions] have several problems:
+\cppblock{
+static int div_floor(int a, int b) {
+    return (a ^ b) < 0 && a ? (1 - abs(a)) / abs(b) - 1 : a / b;
+}
+
+static int div_round(int a, int b) {
+    return (a ^ b) < 0 ? (a - b / 2) / b : (a + b / 2) / b;
+}
+
+static int div_ceil(int a, int b) {
+    return (a ^ b) < 0 || !a ? a / b : (abs(a) - 1) / abs(b) + 1;
+}
+}
+\ul{
+\li{\tcode{abs(a)} and \tcode{abs(b)} have undefined behavior given \tcode{INT_MIN} input}
+\li{\tcode{div_round} overflows on large inputs in \tcode{a - b} and \tcode{a + b}}
+\li{
+\tcode{div_round} contains multiple distinct integer divisions,
+which is bad because integer division is one of the most expensive operations on CPUs
+}
+}
+}
+
+Users sometimes also implement these functions using \tcode{std::floor} or \tcode{std::ceil},
+but this can equally yield incorrect results,
+and use of floating-point numbers is unnecessary for this task.
+
+\h2{Design}
+
+The design aims of this proposal are to provide \em{concise},
+\em{simple}, \em{efficient}, \em{robust} functions
+which are useful \em{in practice}.
+You may find a complete list in
+\ref[#try-it-yourself],
+\ref[#wording], and
+\ref[#implementation].
+
+The design somewhat leans on \ref[P0105R1]
+(which first proposed division functions with custom rounding),
+but heavily deviates from it.
+In general, \ref[P0105R1] was a proposal with overly wide scope,
+large amounts of unmotivated features (which the author even points out himself),
+and zero implementation experience (at least none provided in the paper).
+
+To name one of many problems, the proposal suggested to include
+\tcode{fastest}, \tcode{smallest}, and \tcode{unspecified}
+rounding modes.
+However, it provided no concrete examples of how implementations would leverage
+these optimization opportunities,
+or what the measurable performance impact would be.
+In practice, integer division is a fairly expensive operation for the CPU,
+and any rounding mode can be implemented as an adjustment of the resulting quotient
+by at most \tcode{1},
+which is relatively simple (\ref[#implementation]).
+
+\h3{Naming}
+
+All functions which compute a quotient begin with \tcode{div},
+and functions which compute a remainder begin with \tcode{rem}.
+Furthermore, the functions include the name of the rounding mode
+in a format that requires as little prior knowledge as feasible.
+
+Functions which compute a remainder are named after how the remainder obtains its sign.
+
+\h4{Should it be \tcode{std::div_floor} and \tcode{std::div_ceil}?}
+
+While the use of names like \tcode{floor} and \tcode{ceil} is common in various domains,
+including in \header{cmath},
+I do not believe we should perpetuate this design because:
+
+\ul{
+\li{
+The scheme does not nicely extend to division with rounding away from zero;
+there is no established term for that.
+}
+\li{
+A hypothetical \tcode{std::div_round} (for rounding to the nearest integer)
+would be somewhat perplexing because \em{all} proposed functions round,
+just towards different targets.
+}
+\li{
+The scheme is needlessly hostile towards novices
+who are not yet familiar with the fact that \math{\mrow{\mi{floor}\mo{(}\mi{x}\mo{)}}}
+rounds towards negative infinity.
+By comparison, \tcode{std::div_to_neg_inf} is self-documenting.
+}
+}
+
+Regardless whether the functions end up called \tcode{std::div_floor}
+or \tcode{std::div_to_neg_inf}, the names should remain somewhat brief so they take up
+a reasonable amount of space in C++ expressions.
+
+\h4{Should it be \tcode{std::div_to_pos_inf}?}
+
+While it looks nicer on paper if \tcode{std::div_to_pos_inf}
+and \tcode{std::div_to_neg_inf} have symmetrical names,
+this does not have any clear technical benefit to the user.
+\tcode{std::div_to_inf} is sufficiently clear,
+and adding \tcode{pos} would merely make the function name longer.
+
+\h3{Interface}
+
+The functions generally match the style of similar features in \header{numeric},
+like \eelis{numeric.sat} or \eelis{numeric.ops.gcd}.
+
+\example{
+A function which computed the quotient rounded towards zero is declared as follows:
+\cppblock{
+template<class T>
+constexpr T div_to_zero(T x, T y) /* not noexcept */;
+}
+It is constrained to accept only signed or unsigned integer types.
+}
+
+These functions are not \tcode{noexcept} because they could not have a wide contract;
+they naturally have undefined behavior for cases like \tcode{div_to_zero(x, 0)}
+or \tcode{div_to_zero(INT_MIN, -1)}.
+
+However, an invocation of these functions is not a constant expression for such inputs;
+i.e. we don't get undefined behavior during constant evaluation.
+
+\h3{Why no \tcode{std::rounding} parameter?}
+
+As compared to \ref[P0105R1],
+I do not propose that the rounding mode is passed as a runtime parameter.
+
+In virtually every case, the rounding mode for an integer division is a fixed choice.
+This is evidenced by the ten trillion existing uses of the \tcode{/} operator
+which \em{always} truncate.
+Also, the implementation of the proposed functions does not lend itself to a runtime parameter:
+
+\cppblock{
+int div_to_neg_inf(int x, int y) {
+    bool quotient_negative = (x ^ y) < 0;
+    return (x / y) - int(x % y != 0 && quotient_negative);
+}
+
+int div_away_zero(int x, int y) {
+    constexpr auto sgn = [](int z) { return z < 0 ? -1 : 1; };
+    int quotient_sign = sgn(x) * sgn(y);
+    return (x / y) + int(x % y != 0) * quotient_sign;
+}
+}
+Other than the fact that \tcode{x / y} and \tcode{x \N{PERCENT SIGN} y} appear in both functions,
+there is very little implementation overlap.
+
+\note{
+While \tcode{div_to_neg_inf} could \em{theoretically} use the \tcode{quotient_sign} instead,
+it requires more operations to compute this "three-way sign" instead of merely checking
+whether the quotient is negative.
+This would be an unnecessary performance penalty.
+
+In practice, compilers optimize \tcode{sgn(x) * sgn(y) < 0}
+strictly worse than \tcode{(x ^ y) < 0}.
+}
+
+If we now provided a runtime \tcode{std::rounding},
+the obvious implementation would look like:
+
+\cppblock{
+enum struct rounding { to_neg_inf, away_zero, /* ... */ };
+
+int divide(int x, int y, rounding_mode mode) {
+    switch (mode) {
+    case rounding::to_neg_inf: return __div_to_neg_inf(x);
+    case rounding::away_zero:  return __div_away_zero(x);
+    // ...
+    }
+    std::unreachable();
+}
+}
+
+The user can trivially make such an \tcode{enum class} and \tcode{switch} themselves,
+if they actually need to.
+If they don't (which is likely),
+all we accomplish is making the user write
+\tcode{std::divide(std::rounding::to_neg_inf, x, y)} instead of
+\tcode{std::div_to_neg_inf(x, y)}.
+
+\h3{Rounding to even/odd}
+
+Rounding to even/odd integers is mainly useful in part because it is unbiased.
+That is, when dividing a large amount of integers,
+results would not gravitate towards one end due to rounding mode bias towards zero, infinity, etc.
+
+\ref[P0105R1] provides additional motivation and explanation of these rounding modes.
+
+\h3{To-nearest-rounding division and tie breaking}
+
+Saying "round to nearest" is not clear enough in itself
+because ties (where the fractional part of the quotient is exactly \tcode{.5})
+could also be resolved in multiple ways.
+
+Any of the "top-level rounding modes" could plausibly be chosen
+as a "tie-breaking rounding mode" as well,
+which is what this proposal offers.
+
+\h3{Why the asymmetry between \tcode{div} and \tcode{rem}?}
+
+It would also be plausible to use names like
+\tcode{std::rem_to_neg_inf} instead of \tcode{std::rem_divisor_sign},
+which is obviously more symmetrical.
+However, this may be confusing in practice
+because we typically avoid use of \tcode{\N{PERCENT SIGN}} due to its sign being negative.
+
+What the user \em{actually} wants is a function that gives them a positive remainder,
+or a remainder with the sign of the divisor.
+The obvious naming choice is therefore \tcode{std::rem_positive}.
+
+\note{
+An always-positive remainder is the remainder of Euclidean division
+and would have no \tcode{std::div_} counterpart.
+}
+
+Furthermore, most of the \tcode{std::div} functions do not have a remainder with useful
+sign properties, so it is typically sufficient to compute it using the quotient.
+The implementation of \tcode{std::div} and \tcode{std::rem} functions also
+tends to be asymmetrical.
+
+\cppblock{
+int div_to_neg_inf(int x, int y) {
+    bool quotient_negative = (x ^ y) < 0;
+    return (x / y) - int(x % y != 0 && quotient_negative);
+}
+
+int rem_divisor_sign(int x, int y) { // alternatively std::rem_to_neg_inf
+    int rem = x % y;
+    return rem + y * int(x % y != 0 && y >= 0);
+}
+
+// std::div_euclid would be weird ...
+
+int rem_positive(int x, int y) { // alternatively std::rem_euclid
+    int rem = x % y;
+    // effectively, this adds abs(y) when rem is negative,
+    // but overflow-safely, and avoiding the UB of abs(INT_MIN)
+    return int(unsigned(rem) + unsigned(rem < 0) * (y < 0 ? -unsigned(y) : unsigned(y)));
+}
+}
+
+In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
+neither of which exist.
+
+\h2{Implementation experience}
+
+A reference implementation can be found in \ref[#implementation].
+The functions listed there have been tested for correctness.
+At least Clang compiler emits entirely branchless code for all functions,
+and they merely require a single integer division.
+
+Note that the listed functions are not templates;
+they work exclusively with \tcode{int}.
+However, making the functions use \tcode{typename T} instead of \tcode{int} is the easy part.
+The hard part is coming up with a robust, high-performance sequence of operations.
+
+\h2{Try it yourself}
+
+\style{
+.int-input {
+    background: none;
+    border: 1px solid var(--border-color);
+    font-family: var(--monospace-family);
+    text-align: right;
+    width: fit-content;
+    min-width: 2em;
+    color: inherit;
+}
+}
+
+If you have JavaScript enabled,
+you can play around with the following code block.
+\cppblock{
+int x = \html-input[id=x-input,class=int-input,type=number,value=-12];
+int y = \html-input[id=y-input,class=int-input,type=number,value=5];
+
+// input expression             \N{RIGHTWARDS ARROW}  output
+double(x) / double(y)           \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-double]{-2.4}}
+
+std::div_to_zero(x, y)          \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-trunc]{-2}} // x / y
+std::div_away_zero(x, y)        \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-mag]{-3}}
+std::div_to_inf(x, y)           \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ceil]{-2}}
+std::div_to_neg_inf(x, y)       \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-floor]{-3}}
+std::div_to_odd(x, y)           \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-odd]{-3}}
+std::div_to_even(x, y)          \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-even]{-2}}
+
+std::div_ties_to_zero(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-trunc]{-2}}
+std::div_ties_away_zero(x, y)   \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-mag]{-2}}
+std::div_ties_to_inf(x, y)      \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-ceil]{-2}}
+std::div_ties_to_neg_inf(x, y)  \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-floor]{-2}}
+std::div_ties_to_odd(x, y)      \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-odd]{-2}}
+std::div_ties_to_even(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-even]{-2}}
+
+std::rem_dividend_sign(x, y)    \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-trunc]{-2}} // x % y
+std::rem_divisor_sign(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}}
+std::rem_positive(x, y)         \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-euclid]{3}}
+}
+
+\note{
+This demonstration conveniently ignores that \tcode{int} has finite size.
+Under the hood, calculations are performed using JavaScript's \tt{BigInt}.
+}
+
+\script{\include{intdiv.js}}
+
+\h2{Wording}
+
+All changes are relative to \ref[N5008].
+
+In \eelis{structure.specifications#3},
+add a bullet immediately following bullet 3.4:
+
+\macro[\constexpects]{\Fundesc{Constant-checked preconditions}}
+
+\diff{
+\ul{
+\li{
+\expects
+conditions that the function assumes to hold whenever it is called;
+violation of any preconditions results in undefined behavior.
+}
+\li{\hardexpects [\N{HORIZONTAL ELLIPSIS}]}
+\li{\ins{
+\constexpects
+equivalent to a \Fundescx{Preconditions} specification,
+except that a function call expression that violates the assumed condition
+is not a core constant expression\iref{expr.const}.
+}}
+}
+}
+
+Change \eelis{structure.specifications#4} as follows:
+
+\diff{
+Whenever the \Fundescx{Effects} element specifies that the semantics of some function
+\tcode{F} are \term{Equivalent to} some code sequence, then the various elements are
+interpreted as follows.
+If \tcode{F}'s semantics specifies any \Fundescx{Constraints} or \Fundescx{Mandates} elements,
+then those requirements are logically imposed prior to the \term{equivalent-to} semantics.
+Next, the semantics of the code sequence are determined by the
+\Fundescx{Constraints},
+\Fundescx{Mandates},
+\Fundescx{Preconditions},
+\Fundescx{Hardened preconditions},
+\ins{\Fundescx{Constant-checked preconditions},}
+\Fundescx{Effects},
+\Fundescx{Synchronization},
+\Fundescx{Postconditions},
+\Fundescx{Returns},
+\Fundescx{Throws},
+\Fundescx{Complexity},
+\Fundescx{Remarks}, and
+\Fundescx{Error conditions}
+specified for the function invocations contained in the code sequence.
+The value returned from \tcode{F} is specified by \tcode{F}'s \Fundescx{Returns} element,
+or if \tcode{F} has no \Fundescx{Returns} element,
+a non-\tcode{void} return from \tcode{F} is specified by the
+\tcode{return} statements\iref{stmt.return} in the code sequence.
+If \tcode{F}'s semantics contains a \Fundescx{Throws},
+\Fundescx{Postconditions}, or \Fundescx{Complexity} element,
+then that supersedes any occurrences of that element in the code sequence.
+}
+
+Change the synopsis in \eelis{version.syn} as follows:
+
+\diff{
+\itemdecl{
+#define __cpp_lib_integer_comparison_functions      202002L // \serif{also in }<utility>
+\ins{#define __cpp_lib_integer_division                  20XXXXL // \serif{freestanding, also in }<numeric>}
+#define __cpp_lib_integer_sequence                  201304L // \serif{freestanding, also in }<utility>
+}
+}
+
+Change \eelis{bit.pow.two#5} as follows:
+
+\diff{
+\del{\expects} \ins{\constexpects}
+\math{\mi{N}} is representable as a value of type \tcode{T}.
+}
+
+Delete \eelis{bit.pow.two#8}:
+
+\delblock{
+\remarks
+A function call expression that violates the precondition in the \expects element
+is not a core constant expression\iref{expr.const}.
+}
+
+Change the synopsis in \eelis{numeric.ops.overview} as follows:
+
+\diff{
+\itemdecl{
+namespace std {
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+
+  // \serif{[numeric.sat], saturation arithmetic}
+  template<class T>
+    constexpr T add_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T sub_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T mul_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T div_sat(T x, T y) noexcept;
+  template<class T, class U>
+    constexpr T saturate_cast(U x) noexcept;
+
+\ins{  // \serif{[numeric.int.div], integer division quotients}
+  template<class T>
+    constexpr T div_to_zero(T x, T y);
+  template<class T>
+    constexpr T div_away_zero(T x, T y);
+  template<class T>
+    constexpr T div_to_inf(T x, T y);
+  template<class T>
+    constexpr T div_to_neg_inf(T x, T y);
+  template<class T>
+    constexpr T div_to_odd(T x, T y);
+  template<class T>
+    constexpr T div_to_even(T x, T y);
+  template<class T>
+    constexpr T div_ties_to_zero(T x, T y);
+  template<class T>
+    constexpr T div_ties_away_zero(T x, T y);
+  template<class T>
+    constexpr T div_ties_to_inf(T x, T y);
+  template<class T>
+    constexpr T div_ties_to_neg_inf(T x, T y);
+  template<class T>
+    constexpr T div_ties_to_odd(T x, T y);
+  template<class T>
+    constexpr T div_ties_to_even(T x, T y);
+
+  // \serif{[numeric.int.rem], integer division remainders}
+  template<class T>
+    constexpr T rem_dividend_sign(T x, T y);
+  template<class T>
+    constexpr T rem_divisor_sign(T x, T y);
+  template<class T>
+    constexpr T rem_positive(T x, T y);}
+}
+}
+}
+
+Change \eelis{numeric.sat.func#9} as follows:
+
+\diff{
+\del{\expects} \ins{\constexpects}
+\tcode{y != 0} is \tcode{true}.
+}
+
+Delete \eelis{numeric.sat.func#11}:
+
+\delblock{
+\remarks
+A function call expression that violates the precondition in the \expects element
+is not a core constant expression\iref{expr.const}.   
+}
+
+Append a new subclause to \eelis{numeric.ops},
+following \eelis{numeric.sat}:
+
+\insblock{
+\html-h3{Integer division \stable-ref{numeric.int}}
+
+\html-h4{Integer division quotients \stable-ref{numeric.int.div}}
+\Vset[pnum]{0}
+
+\macro[\div-returns{rounding}]{\returns \math{\mfrac{\mi{x}\mi{y}}}, rounded \put{}.}
+\macro[\div-returns-nearest{rounding}]{
+\returns \math{\mfrac{\mi{x}\mi{y}}}, rounded towards the nearest integer.
+If two integers are equidistant, the result is \put{}.
+}
+\macro[\div-constraints]{\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.}
+
+\itemdecl{
+template<class T>
+  constexpr T div_to_zero(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{toward zero}\br
+\wg21-note{
+The result is equivalent to \tcode{x / y}.
+}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_away_zero(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{away from zero}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_to_inf(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{towards positive infinity}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_neg_inf(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{towards negative infinity}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_to_odd(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{towards the nearest odd integer}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_to_even(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns{towards the nearest even integer}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_to_zero(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the integer with lower magnitude}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_away_zero(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the integer with greater magnitude}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_to_inf(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the greater integer}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_to_neg_inf(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the lower integer}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_to_odd(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the odd integer}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T div_ties_to_even(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x / y} is well-defined.
+
+\pnum
+\div-returns-nearest{the even integer}
+}
+
+\html-h4{Integer division remainders \stable-ref{numeric.int.rem}}
+\Vset[pnum]{0}
+
+\itemdecl{
+template<class T>
+  constexpr T rem_dividend_sign(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x \N{PERCENT SIGN} y} is well-defined.
+
+\pnum
+\returns
+The remainder of the division
+\math{\mfrac{\mi{x}\mi{y}}} rounded towards zero.\br
+\wg21-note{
+The result is equivalent to \tcode{x \N{PERCENT SIGN} y}.
+The result is negative if and only if \tcode{x} is negative.
+}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T rem_divisor_sign(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x \N{PERCENT SIGN} y} is well-defined.
+
+\pnum
+\returns
+The remainder of the division
+\math{\mfrac{\mi{x}\mi{y}}} rounded towards negative infinity.\br
+\wg21-note{
+The result is negative if and only if \tcode{y} is negative.
+}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T rem_positive(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\div-constraints
+
+\pnum
+\constexpects
+\tcode{x \N{PERCENT SIGN} y} is well-defined.
+
+\pnum
+\returns
+\math{\mrow{
+    \mi{x} \mo{\N{MINUS SIGN}}
+    \mo[rspace=0]{|} \mi{y} \mo[lspace=0]{|}
+    \mo{\N{LEFT FLOOR}}
+    \mfrac{
+        \mi{x}
+        \mrow{\mo{|} \mi{y} \mo{|}}
+    }
+    \mo{\N{RIGHT FLOOR}}
+}}.
+\br
+\wg21-note{
+The result is the remainder of the Euclidean division \math{\mfrac{\mi{x}\mi{y}}}.
+The result is always positive.
+}
+}
+
+}
+
+\warning{
+If the mathematical notation in the block above does not render for you,
+you are using an old browser with no MathML support.
+Please open the document in a recent version of Firefox or Chrome.
+}
+
+Change \eelis{simd.bit#4} as follows:
+
+\diff{
+\del{\expects} \ins{\constexpects}
+For every \math{\mi{i}} [\N{HORIZONTAL ELLIPSIS}].
+}
+
+Delete \eelis{simd.bit#6}:
+
+\delblock{
+\remarks
+A function call expression that violates the precondition in the \expects element
+is not a core constant expression\iref{expr.const}.   
+}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = P0105R1,
+    title = Rounding and Overflow in C++,
+    date = 2017-02-05,
+    author = Lawrence Crowl,
+    link = https://wg21.link/p0105r1,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0105r1.html
+]
+\bib[
+    id = P1889R1,
+    title = C++ Numerics Work In Progress,
+    date = 2019-12-27,
+    author = Alexander Zaitsev,
+    link = https://wg21.link/p1889r1,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1.pdf
+]
+\bib[
+    id = StackOverflowDivision,
+    title = Fast ceiling of an integer division in C / C++,
+    link = https://stackoverflow.com/q/2745074/5740428
+]
+\bib[
+    id = BuggyDivisions,
+    author = njohnny84,
+    title = Rounding Modes For Integer Division,
+    link = https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/
+]
+
+\make-bib
+
+\h2[id=implementation]{Appendix A \N{EM DASH} Reference implementation}
+
+\macro[\sgn2]{\exposid{sgn}}
+
+\cppblock{
+// Exposition-only helper.
+// Equivalent to: (x >> (INT_WIDTH - 1)) | 1
+constexpr int \sgn2(int x) {
+    return x < 0 ? -1 : 1;
+}
+
+// Idea: trivial implementation.
+constexpr int div_to_zero(int x, int y) {
+    return x / y;
+}
+
+// Idea: since '/' truncates,
+//       we need to increase the quotient magnitude
+//       in all cases except when the remainder is zero.
+constexpr int div_away_zero(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    return x / y + int(x % y != 0) * quotient_sign;
+}
+
+// Idea: since '/' truncates,
+//       the result is one greater than what we want
+//       for negative quotients, unless the remainder is zero.
+constexpr int div_to_inf(int x, int y) {
+    int quotient_negative = (x ^ y) < 0;
+    return x / y + (x % y != 0 && !quotient_negative); 
+}
+
+// Idea: since '/' truncates,
+//       the result is one lower than what we want
+//       for positive quotients, unless the remainder is zero.
+constexpr int div_to_neg_inf(int x, int y) {
+    int quotient_negative = (x ^ y) < 0;
+    return x / y - (x % y != 0 && quotient_negative); 
+}
+
+// Idea: same as div_away_zero,
+//       but we only magnify when this gets us away
+//       from an even integer.
+constexpr int div_to_odd(int x, int y) {
+    int quotient = x / y;
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    return quotient + int(x % y != 0 && quotient % 2 == 0) * quotient_sign;
+}
+
+// Idea: same as div_away_zero,
+//       but we only magnify when this gets us away
+//       from an odd integer.
+constexpr int div_to_even(int x, int y) {
+    int quotient = x / y;
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    return quotient + int(x % y != 0 && quotient % 2 != 0) * quotient_sign;
+}
+
+// Idea: same as div_away_zero,
+//       but we only magnify when the remainder
+//       is greater than abs(y / 2).
+constexpr int div_ties_to_zero(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    bool increment = abs_rem > abs_half_y;
+    return x / y + int(increment) * quotient_sign;
+}
+
+// Idea: same as div_away_zero, but we only magnify when the remainder
+//       is greater or equal to abs(y / 2).
+//       This is actually somewhat tricky because abs(y / 2) drops one bit of precision,
+//       i.e. the bit indicating .5 or .0 in the number,
+//       and (abs(2 * x % y) >= abs(y)) may overflow, so we cannot use that instead.
+//       However, we can get back that one bit of precision using (y % 2 != 0),
+//       which optimizes to (y & 1).
+//       When y is even, that bit is zero and we didn't drop any precision anyway.
+//       When y is odd, there are no exact ties, and we increase the right hand side
+//       of the comparison to bias more towards truncation instead of magnification.
+constexpr int div_ties_away_zero(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0);
+    return x / y + int(increment) * quotient_sign;
+}
+
+// Idea: same as div_ties_away_zero,
+//       but we only magnify on ties when the quotient is positive.
+constexpr int div_ties_to_inf(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient_sign < 0);
+    return x / y + int(increment) * quotient_sign;
+}
+
+// Idea: same as div_ties_away_zero,
+//       but we only magnify on ties when the quotient is negative.
+constexpr int div_ties_to_neg_inf(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient_sign > 0);
+    return x / y + int(increment) * quotient_sign;
+}
+
+// Idea: same as div_ties_away_zero,
+//       but we only magnify on ties when the quotient is even.
+constexpr int div_ties_to_odd(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    int quotient = x / y;
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 == 0);
+    return quotient + int(increment) * quotient_sign;
+}
+
+// Idea: same as div_ties_away_zero,
+//       but we only magnify on ties when the quotient is odd.
+constexpr int div_ties_to_even(int x, int y) {
+    int quotient_sign = \sgn2(x) * \sgn2(y);
+    int abs_rem = x % y * \sgn2(x);
+    int abs_half_y = y / 2 * \sgn2(y);
+    int quotient = x / y;
+    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 != 0);
+    return quotient + int(increment) * quotient_sign;
+}
+
+// Idea: trivial implementation.
+constexpr int rem_dividend_sign(int x, int y) {
+    return x % y;
+}
+
+// Idea: if the there is a mismatch between the divisor being negative and the dividend,
+//       the result sign would be wrong, and we need to flip it.
+constexpr int rem_divisor_sign(int x, int y) {
+    int rem = x % y;
+    return rem + y * int(x % y != 0 && y >= 0);
+}
+
+// Idea: if the remainder is negative, we add abs(y).
+//       However, this requires some unsigned hackery because abs(INT_MIN) is undefined.
+constexpr int rem_positive(int x, int y) {
+    int rem = x % y;
+    return int(unsigned(rem) + unsigned(rem < 0) * (y < 0 ? -unsigned(y) : unsigned(y)));
+}
+}
+
+\note{
+Since integer division occurs unconditionally in these functions,
+they also trivially satisfy the \ref[#wording] requirement that invocations of these functions
+are not constant expressions when the result is not representable.
+}
