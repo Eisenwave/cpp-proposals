@@ -82,7 +82,9 @@ which would make it larger than any other bucket.
 While the examples are somewhat abstract,
 they appear in vast amounts of concrete problems.
 For example, we need to know how many blocks of memory must be allocated
-to hold a certain amount of bytes.
+to hold a certain amount of bytes,
+do interval arithmetic,
+fixed-point arithmetic with rounding of choice, etc. etc.
 
 \h3[id=trivial-for-user]{Is this not trivial for the user to do?}
 
@@ -156,28 +158,47 @@ and use of floating-point numbers is unnecessary for this task.
 The design aims of this proposal are to provide \em{concise},
 \em{simple}, \em{efficient}, \em{robust} functions
 which are useful \em{in practice}.
-You may find a complete list in
+
+\important{
+As a rule of thumb, the proposed functionality should be a drop-in replacement
+for the various bad implementations that users have written themselves (\ref[#trivial-for-user]),
+and it should take the underlying implementation (\ref[#implementation]) into consideration.
+This rule of thumb influences \em{every} design choice.
+}
+
+For example:
+\ul{
+\li{Names are prefixed with \tcode{div} because this is common practice (\ref[#naming]).}
+\li{The \tcode{rem} functions are named after their sign properties,
+which is what users are typically interested in (\ref[#div-rem-asymmetry]).}
+\li{There are no functions that compute quotient and remainder at the same time (\ref[#why-no-combined]).}
+\li{[\N{HORIZONTAL ELLIPSIS}]}
+}
+
+\note{
+You may find a complete list of functions in
 \ref[#try-it-yourself],
 \ref[#wording], and
 \ref[#implementation].
+}
+
+\h3{Relation to P0105R1}
 
 The design somewhat leans on \ref[P0105R1]
 (which first proposed division functions with custom rounding),
 but heavily deviates from it.
-In general, \ref[P0105R1] was a proposal with overly wide scope,
-large amounts of unmotivated features (which the author even points out himself),
-and zero implementation experience (at least none provided in the paper).
+In general, \ref[P0105R1] was a proposal with overly broad scope,
+and some questionable design choices, such as:
 
-To name one of many problems, the proposal suggested to include
-\tcode{fastest}, \tcode{smallest}, and \tcode{unspecified}
-rounding modes.
-However, it provided no concrete examples of how implementations would leverage
-these optimization opportunities,
-or what the measurable performance impact would be.
-In practice, integer division is a fairly expensive operation for the CPU,
-and any rounding mode can be implemented as an adjustment of the resulting quotient
-by at most \tcode{1},
-which is relatively simple (\ref[#implementation]).
+\ul{
+\li{Making some of the rounding modes conditionally supported,
+even when providing them isn't particularly difficult.}
+\li{Adding rounding modes which optimize for latency or code size,
+without much motivation or details.
+The \tcode{/} and \tcode{\N{PERCENT SIGN}} operators already match the rounding mode
+of hardware division on mainstream architectures,
+so it's unclear how a library function could be faster.}
+}
 
 \h3{Naming}
 
@@ -370,7 +391,7 @@ Any of the "top-level rounding modes" could plausibly be chosen
 as a "tie-breaking rounding mode" as well,
 which is what this proposal offers.
 
-\h3{Why the asymmetry between \tcode{div} and \tcode{rem}?}
+\h3[id=div-rem-asymmetry]{Why the asymmetry between \tcode{div} and \tcode{rem}?}
 
 It would also be plausible to use names like
 \tcode{std::rem_to_neg_inf} instead of \tcode{std::rem_divisor_sign},
@@ -409,7 +430,7 @@ int rem_positive(int x, int y) {
 In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
 neither of which exist.
 
-\h3{Why no combined remainder and quotient?}
+\h3[id=why-no-combined]{Why no combined remainder and quotient?}
 
 The asymmetry in the previous section largely explains why we don't provide
 functions which compute the remainder and quotient at the same time.
