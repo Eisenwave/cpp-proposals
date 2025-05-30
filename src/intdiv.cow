@@ -4,8 +4,8 @@
     title = Integer division
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{D3724R0}}
-    \dt{Date:}            \dd{\tt{2025-05-29}}
+    \dt{Document number:} \dd{\docnum{P3724R0}}
+    \dt{Date:}            \dd{\tt{2025-05-30}}
     \dt{Audience:}        \dd{LEWG, SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
