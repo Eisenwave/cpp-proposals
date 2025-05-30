@@ -138,8 +138,9 @@ static int div_ceil(int a, int b) {
 \li{\tcode{abs(a)} and \tcode{abs(b)} have undefined behavior given \tcode{INT_MIN} input}
 \li{\tcode{div_round} overflows on large inputs in \tcode{a - b} and \tcode{a + b}}
 \li{
-\tcode{div_round} contains multiple distinct integer divisions,
-which is bad because integer division is one of the most expensive operations on CPUs
+all functions branch depending on whether the quotient is negative,
+and at least for a standard library (which has to cover a wide variety of use cases),
+such a branch could be \em{highly} unpredictable
 }
 }
 }
@@ -186,6 +187,19 @@ Furthermore, the functions include the name of the rounding mode
 in a format that requires as little prior knowledge as feasible.
 
 Functions which compute a remainder are named after how the remainder obtains its sign.
+
+\h4{Isn't \tcode{std::div_*} inconsistent with the existing \tcode{std::div}?}
+
+It is worth pointing out that there already exist \tcode{std::div}
+functions in the standard library, returning \tcode{std::div_t},
+which contains the quotient and remainder.
+The proposal does not aim for consistency because the facilities are an unnecessary
+and rarely-used C relic for the most part.
+
+On the contrary, when investigating existing practice in \ref[#trivial-for-user],
+I found that almost every use definition for these differently-rounded division functions
+uses \tcode{div_*} names.
+This naming scheme is \em{well-established} and \em{intuitive} for users.
 
 \h4{Should it be \tcode{std::div_floor} and \tcode{std::div_ceil}?}
 
@@ -244,7 +258,7 @@ or \tcode{div_to_zero(INT_MIN, -1)}.
 However, an invocation of these functions is not a constant expression for such inputs;
 i.e. we don't get undefined behavior during constant evaluation.
 
-\h3{Why no \tcode{std::rounding} parameter?}
+\h4{Why no \tcode{std::rounding} parameter?}
 
 As compared to \ref[P0105R1],
 I do not propose that the rounding mode is passed as a runtime parameter.
@@ -255,6 +269,10 @@ which \em{always} truncate.
 Also, the implementation of the proposed functions does not lend itself to a runtime parameter:
 
 \cppblock{
+int div_to_zero(int x, int y) {
+    return x / y;
+}
+
 int div_to_neg_inf(int x, int y) {
     bool quotient_negative = (x ^ y) < 0;
     return (x / y) - int(x % y != 0 && quotient_negative);
@@ -266,12 +284,11 @@ int div_away_zero(int x, int y) {
     return (x / y) + int(x % y != 0) * quotient_sign;
 }
 }
-Other than the fact that \tcode{x / y} and \tcode{x \N{PERCENT SIGN} y} appear in both functions,
-there is very little implementation overlap.
+As can be seen, these implementations are substantially different.
 
 \note{
 While \tcode{div_to_neg_inf} could \em{theoretically} use the \tcode{quotient_sign} instead,
-it requires more operations to compute this "three-way sign" instead of merely checking
+it requires more operations to compute this positive/negative sign instead of merely checking
 whether the quotient is negative.
 This would be an unnecessary performance penalty.
 
@@ -283,10 +300,11 @@ If we now provided a runtime \tcode{std::rounding},
 the obvious implementation would look like:
 
 \cppblock{
-enum struct rounding { to_neg_inf, away_zero, /* ... */ };
+enum struct rounding { to_zero, to_neg_inf, away_zero, /* ... */ };
 
 int divide(int x, int y, rounding_mode mode) {
     switch (mode) {
+    case rounding::to_zero: return __div_to_zero(x);
     case rounding::to_neg_inf: return __div_to_neg_inf(x);
     case rounding::away_zero:  return __div_away_zero(x);
     // ...
@@ -302,20 +320,52 @@ all we accomplish is making the user write
 \tcode{std::divide(std::rounding::to_neg_inf, x, y)} instead of
 \tcode{std::div_to_neg_inf(x, y)}.
 
-\h3{Rounding to even/odd}
+\h3{Supported rounding modes}
 
-Rounding to even/odd integers is mainly useful in part because it is unbiased.
+It is apparent that the proposals contains quite a lot of rounding modes
+\N{EN DASH} more than just the traditional \tcode{ceil}, \tcode{floor}, \tcode{round}.
+It is therefore valid to ask:
+
+\blockquote{Do we really need all these rounding modes?}
+
+All proposed "top-level rounding modes" have practical applications.
+For consistency, the same set of "tie-breaking rounding modes" is provided.
+In any case, the implementation of these modes is all fairly similar,
+and there is neither any significant implementation cost (\ref[#implementation])
+nor wording cost (\ref[#wording])
+to having a few extra functions.
+This would be a much different discussion for floating-point numbers.
+
+I suspect that cherry-picking the "useful" rounding modes out of the proposed ones
+would devolve into endless discussion,
+and the design would have an inconsistent feel to it if say,
+division away from zero was provided,
+but no division to the nearest integer with tie breaks away from zero.
+
+\h4{Rounding to zero}
+
+The "trivial" functions \tcode{std::div_to_zero}
+and \tcode{std::rem_dividend_sign} exist solely for consistency and enhanced expressiveness.
+Note that not every has a truncating integer division like C++.
+For example, the \tt{\hl[sym-op]{//}} operator in Python rounds towards negative infinity.
+A team of developers with primarily Python experience/habits
+may thus benefit from always expressing
+rounding mode explicitly with \tcode{std::div_to_zero} to avoid confusion.
+
+\h4{Rounding to even/odd}
+
+Rounding to even/odd integers is mainly useful because it is unbiased.
 That is, when dividing a large amount of integers,
 results would not gravitate towards one end due to rounding mode bias towards zero, infinity, etc.
+This may be important when operating on fixed-point numbers.
 
 \ref[P0105R1] provides additional motivation and explanation of these rounding modes.
 
-\h3{To-nearest-rounding division and tie breaking}
+\h4{To-nearest-rounding division and tie breaking}
 
 Saying "round to nearest" is not clear enough in itself
 because ties (where the fractional part of the quotient is exactly \tcode{.5})
 could also be resolved in multiple ways.
-
 Any of the "top-level rounding modes" could plausibly be chosen
 as a "tie-breaking rounding mode" as well,
 which is what this proposal offers.
@@ -358,6 +408,55 @@ int rem_positive(int x, int y) {
 
 In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
 neither of which exist.
+
+\h3{Why no combined remainder and quotient?}
+
+The asymmetry in the previous section largely explains why we don't provide
+functions which compute the remainder and quotient at the same time.
+In practice, the remainder is only commonly needed for certain rounding modes,
+not for all proposed ones.
+
+In practice, separate invocations of \tcode{std::div_to_neg_inf} and \tcode{std::rem_divisor_sign}
+optimize the same as a dedicated function
+which computes the quotient and remainder simultaneously.
+
+\example{
+In the following code, \tcode{remquo_to_neg_inf_1} and \tcode{remquo_to_neg_inf_2}
+produce bit-identical assembly output (\ref[CompilerExplorerRemQuo]).
+\cppblock{
+struct div_t {
+    int quotient, remainder;
+};
+
+// The user can obviously write this themselves \N{HORIZONTAL ELLIPSIS}
+div_t remquo_to_neg_inf_1(int x, int y) {
+    // see \ref[#implementation] for definitions of these
+    return { div_to_neg_inf(x, y), rem_divisor_sign(x, y) };
+};
+
+// \N{HORIZONTAL ELLIPSIS} so we don't need to provide this:
+div_t remquo_to_neg_inf_2(int x, int y) {
+    int quotient_negative = (x ^ y) < 0;
+    bool adjust = x % y != 0 && quotient_negative;
+    return {
+        .quotient  = x / y - int(adjust),
+        .remainder = x % y + int(adjust) * y,
+    };
+};
+}
+}
+
+For a lot of the other functions in \ref[#implementation],
+the adjustments made to the initial result of \tcode{/} are so complex
+that it would not be beneficial to adjust the remainder simultaneously.
+In any case, the remainder can be computed using \tcode{x - quotient * y},
+which has relatively low cost compared performing the integer division in the first place.
+That low cost is why some architectures (e.g. ARM) do not have a dedicated instruction
+for computing the remainder (and the remainder is not a side product of division).
+
+In conclusion, functions for computing the quotient and remainder simultaneously
+are of unclear utility for many of the rounding modes,
+and are driven by a micro-optimization which is insignificant for modern CPUs and architectures.
 
 \h2{Implementation experience}
 
@@ -938,6 +1037,11 @@ is not a core constant expression\iref{expr.const}.
     title = Rounding Modes For Integer Division,
     link = https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/
 ]
+\bib[
+    id = CompilerExplorerRemQuo,
+    author = Jan Schultke,
+    link = https://godbolt.org/z/vTPq9eGP6
+]
 
 \make-bib
 
@@ -945,158 +1049,7 @@ is not a core constant expression\iref{expr.const}.
 
 \macro[\sgn2]{\exposid{sgn}}
 
-\cppblock{
-// Exposition-only helper.
-// Equivalent to: (x >> (INT_WIDTH - 1)) | 1
-constexpr int \sgn2(int x) {
-    return x < 0 ? -1 : 1;
-}
-
-// Idea: trivial implementation.
-constexpr int div_to_zero(int x, int y) {
-    return x / y;
-}
-
-// Idea: since '/' truncates,
-//       we need to increase the quotient magnitude
-//       in all cases except when the remainder is zero.
-constexpr int div_away_zero(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    return x / y + int(x % y != 0) * quotient_sign;
-}
-
-// Idea: since '/' truncates,
-//       the result is one greater than what we want
-//       for negative quotients, unless the remainder is zero.
-constexpr int div_to_inf(int x, int y) {
-    int quotient_negative = (x ^ y) < 0;
-    return x / y + (x % y != 0 && !quotient_negative); 
-}
-
-// Idea: since '/' truncates,
-//       the result is one lower than what we want
-//       for positive quotients, unless the remainder is zero.
-constexpr int div_to_neg_inf(int x, int y) {
-    int quotient_negative = (x ^ y) < 0;
-    return x / y - (x % y != 0 && quotient_negative); 
-}
-
-// Idea: same as div_away_zero,
-//       but we only magnify when this gets us away
-//       from an even integer.
-constexpr int div_to_odd(int x, int y) {
-    int quotient = x / y;
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    return quotient + int(x % y != 0 && quotient % 2 == 0) * quotient_sign;
-}
-
-// Idea: same as div_away_zero,
-//       but we only magnify when this gets us away
-//       from an odd integer.
-constexpr int div_to_even(int x, int y) {
-    int quotient = x / y;
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    return quotient + int(x % y != 0 && quotient % 2 != 0) * quotient_sign;
-}
-
-// Idea: same as div_away_zero,
-//       but we only magnify when the remainder
-//       is greater than abs(y / 2).
-constexpr int div_ties_to_zero(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    bool increment = abs_rem > abs_half_y;
-    return x / y + int(increment) * quotient_sign;
-}
-
-// Idea: same as div_away_zero, but we only magnify when the remainder
-//       is greater or equal to abs(y / 2).
-//       This is actually somewhat tricky because abs(y / 2) drops one bit of precision,
-//       i.e. the bit indicating .5 or .0 in the number,
-//       and (abs(2 * x % y) >= abs(y)) may overflow, so we cannot use that instead.
-//       However, we can get back that one bit of precision using (y % 2 != 0),
-//       which optimizes to (y & 1).
-//       When y is even, that bit is zero and we didn't drop any precision anyway.
-//       When y is odd, there are no exact ties, and we increase the right hand side
-//       of the comparison to bias more towards truncation instead of magnification.
-constexpr int div_ties_away_zero(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0);
-    return x / y + int(increment) * quotient_sign;
-}
-
-// Idea: same as div_ties_away_zero,
-//       but we only magnify on ties when the quotient is positive.
-constexpr int div_ties_to_inf(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient_sign < 0);
-    return x / y + int(increment) * quotient_sign;
-}
-
-// Idea: same as div_ties_away_zero,
-//       but we only magnify on ties when the quotient is negative.
-constexpr int div_ties_to_neg_inf(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient_sign > 0);
-    return x / y + int(increment) * quotient_sign;
-}
-
-// Idea: same as div_ties_away_zero,
-//       but we only magnify on ties when the quotient is even.
-constexpr int div_ties_to_odd(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    int quotient = x / y;
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 != 0);
-    return quotient + int(increment) * quotient_sign;
-}
-
-// Idea: same as div_ties_away_zero,
-//       but we only magnify on ties when the quotient is odd.
-constexpr int div_ties_to_even(int x, int y) {
-    int quotient_sign = \sgn2(x) * \sgn2(y);
-    int abs_rem = x % y * \sgn2(x);
-    int abs_half_y = y / 2 * \sgn2(y);
-    int quotient = x / y;
-    bool increment = abs_rem >= abs_half_y + int(y % 2 != 0 || quotient % 2 != 0);
-    return quotient + int(increment) * quotient_sign;
-}
-
-// Idea: trivial implementation.
-constexpr int rem_dividend_sign(int x, int y) {
-    return x % y;
-}
-
-// Idea: if the there is a mismatch between the x and y being negative,
-//       the result sign would be wrong, and we need to flip it;
-//       If they match (i.e. if the quotient is positive),
-//       we already have the right result.
-//       If the mismatch is caused by the dividend being negative,
-//       the remainder is also negative and we should add the (positive) divisor.
-//       If the mismatch is caused by the divisor being negative,
-//       we should add the (negative) divisor to get a negative remainder.
-//       In either case, adding the divisor is the right thing to do.
-constexpr int rem_divisor_sign(int x, int y) {
-    bool quotient_negative = (x ^ y) < 0;
-    int rem = x % y;
-    return rem + y * int(rem != 0 && quotient_negative);
-}
-
-// Idea: if the remainder is negative, we add abs(y).
-//       However, this requires some unsigned hackery because abs(INT_MIN) is undefined.
-constexpr int rem_positive(int x, int y) {
-    int rem = x % y;
-    return int(unsigned(rem) + unsigned(rem < 0) * (y < 0 ? -unsigned(y) : unsigned(y)));
-}
-}
+\cppblock{\include{intdiv.cpp}}
 
 \note{
 Since integer division occurs unconditionally in these functions,
