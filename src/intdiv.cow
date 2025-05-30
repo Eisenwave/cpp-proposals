@@ -677,9 +677,9 @@ Append a new subclause to \eelis{numeric.ops},
 following \eelis{numeric.sat}:
 
 \insblock{
-\html-h3{Integer division \stable-ref{numeric.int}}
+\html-h2[style = margin-bottom:0]{Integer division \stable-ref{numeric.int}}
 
-\html-h4{Integer division quotients \stable-ref{numeric.int.div}}
+\html-h3[style = margin-top:0.5em]{Integer division quotients \stable-ref{numeric.int.div}}
 \Vset[pnum]{0}
 
 \macro[\div-returns{rounding}]{\returns \math{\mfrac{\mi{x}\mi{y}}}, rounded \put{}.}
@@ -897,7 +897,7 @@ template<class T>
 \div-returns-nearest{the even integer}
 }
 
-\html-h4{Integer division remainders \stable-ref{numeric.int.rem}}
+\html-h3{Integer division remainders \stable-ref{numeric.int.rem}}
 \Vset[pnum]{0}
 
 \itemdecl{
@@ -907,19 +907,11 @@ template<class T>
 
 \itemdescr{
 \pnum
-\div-constraints
-
-\pnum
-\constexpects
-\tcode{x \N{PERCENT SIGN} y} is well-defined.
-
-\pnum
-\returns
-The remainder of the division
-\math{\mfrac{\mi{x}\mi{y}}} rounded towards zero.\br
-\wg21-note{
-The result is equivalent to \tcode{x \N{PERCENT SIGN} y}.
-The result is negative if and only if \tcode{x} is negative.
+\effects
+Equivalent to \tcode{x - y * div_to_zero(x, y)}.
+\br\wg21-note{
+The result is equal to \tcode{x \N{PERCENT SIGN} y},
+and is negative if and only if \tcode{x} is negative.
 }
 }
 
@@ -930,17 +922,9 @@ template<class T>
 
 \itemdescr{
 \pnum
-\div-constraints
-
-\pnum
-\constexpects
-\tcode{x \N{PERCENT SIGN} y} is well-defined.
-
-\pnum
-\returns
-The remainder of the division
-\math{\mfrac{\mi{x}\mi{y}}} rounded towards negative infinity.\br
-\wg21-note{
+\effects
+Equivalent to \tcode{x - y * div_to_neg_inf(x, y)}.
+\br\wg21-note{
 The result is negative if and only if \tcode{y} is negative.
 }
 }
@@ -959,17 +943,14 @@ template<class T>
 \tcode{x \N{PERCENT SIGN} y} is well-defined.
 
 \pnum
-\returns
-\math{\mrow{
-    \mi{x} \mo{\N{MINUS SIGN}}
-    \mo[rspace=0]{|} \mi{y} \mo[lspace=0]{|}
-    \mo{\N{LEFT FLOOR}}
-    \mfrac{
-        \mi{x}
-        \mrow{\mo{|} \mi{y} \mo{|}}
-    }
-    \mo{\N{RIGHT FLOOR}}
-}}.
+\effects
+Equivalent to:
+\indent{\itemdecl{
+T r = x % y;
+return r >= 0 ? r
+     : y >= 0 ? r + y
+              : r - y;
+}}
 \br
 \wg21-note{
 The result is the remainder of the Euclidean division \math{\mfrac{\mi{x}\mi{y}}}.

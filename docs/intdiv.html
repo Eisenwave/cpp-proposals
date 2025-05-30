@@ -2299,9 +2299,9 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
 </p>
 <ins-block>
-<h3>Integer division <span class=stable-ref>[numeric.int]</span></h3>
+<h2 style=margin-bottom:0>Integer division <span class=stable-ref>[numeric.int]</span></h2>
 
-<h4>Integer division quotients <span class=stable-ref>[numeric.int.div]</span></h4>
+<h3 style=margin-top:0.5em>Integer division quotients <span class=stable-ref>[numeric.int.div]</span></h3>
 
 
 
@@ -2521,7 +2521,7 @@ If two integers are equidistant, the result is the even integer.
 
 </p></div></p>
 
-<h4>Integer division remainders <span class=stable-ref>[numeric.int.rem]</span></h4>
+<h3>Integer division remainders <span class=stable-ref>[numeric.int.rem]</span></h3>
 
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
@@ -2529,20 +2529,11 @@ If two integers are equidistant, the result is the even integer.
 
 <p><div class=indent>
 <p>1
-<i>Constraints</i>:
-<code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
-
-<p>2
-<i>Constant-checked preconditions</i>:
-<code><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-></code> is well-defined.
-</p>
-<p>3
-<i>Returns</i>:
-The remainder of the division
-<math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math> rounded towards zero.<br/>
-<wg21-block>[<i>Note</i>: 
-The result is equivalent to <code><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-></code>.
-The result is negative if and only if <code><h- data-h=id>x</h-></code> is negative.
+<i>Effects</i>:
+Equivalent to <code><h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-></code>.
+<br/><wg21-block>[<i>Note</i>: 
+The result is equal to <code><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-></code>,
+and is negative if and only if <code><h- data-h=id>x</h-></code> is negative.
  — <i>end note</i>]</wg21-block>
 </p></div></p>
 
@@ -2550,19 +2541,10 @@ The result is negative if and only if <code><h- data-h=id>x</h-></code> is negat
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>rem_divisor_sign</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p><div class=indent>
-<p>4
-<i>Constraints</i>:
-<code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
-
-<p>5
-<i>Constant-checked preconditions</i>:
-<code><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-></code> is well-defined.
-</p>
-<p>6
-<i>Returns</i>:
-The remainder of the division
-<math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math> rounded towards negative infinity.<br/>
-<wg21-block>[<i>Note</i>: 
+<p>2
+<i>Effects</i>:
+Equivalent to <code><h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>div_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-></code>.
+<br/><wg21-block>[<i>Note</i>: 
 The result is negative if and only if <code><h- data-h=id>y</h-></code> is negative.
  — <i>end note</i>]</wg21-block>
 </p></div></p>
@@ -2571,26 +2553,21 @@ The result is negative if and only if <code><h- data-h=id>y</h-></code> is negat
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>rem_positive</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p><div class=indent>
-<p>7
+<p>3
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
 
-<p>8
+<p>4
 <i>Constant-checked preconditions</i>:
 <code><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-></code> is well-defined.
 </p>
-<p>9
-<i>Returns</i>:
-<math display=inline><mrow>
-    <mi>x</mi> <mo>−</mo>
-    <mo rspace=0>|</mo> <mi>y</mi> <mo lspace=0>|</mo>
-    <mo>⌊</mo>
-    <mfrac>
-        <mi>x</mi>
-        <mrow><mo>|</mo> <mi>y</mi> <mo>|</mo></mrow>
-    </mfrac>
-    <mo>⌋</mo>
-</mrow></math>.
+<p>5
+<i>Effects</i>:
+Equivalent to:
+<div class=indent><code-block class=borderless><h- data-h=id>T</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw_ctrl>return</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>r</h->
+     <h- data-h=sym_punc>:</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h->
+              <h- data-h=sym_punc>:</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h-></code-block></div>
 <br/>
 <wg21-block>[<i>Note</i>: 
 The result is the remainder of the Euclidean division <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>.
