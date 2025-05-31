@@ -91,11 +91,11 @@ section code-block {
 \macro[\slide-controls]{\important{
 This document has custom controls\inline{\noscript{ \b{which require JavaScript}}}:
 \ul{
-\item{
+\li{
 \kbd{\N{RIGHTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{DOWNWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
 go to the next slide
 }
-\item{
+\li{
 \kbd{\N{LEFTWARDS ARROW}}, \kbd{\N{FOUR-PER-EM SPACE}\N{UPWARDS ARROW}\N{FOUR-PER-EM SPACE}}:
 go to previous slide
 }
