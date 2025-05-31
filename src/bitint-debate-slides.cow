@@ -47,7 +47,7 @@ li>ul {
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3721R0}}
-    \dt{Date:}            \dd{\tt{2025-05-27}}
+    \dt{Date:}            \dd{\tt{2025-05-31}}
     \dt{Audience:}        \dd{SG22}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -63,18 +63,18 @@ li>ul {
 
 \slide{
 \slideh{Introduction}
-C23 now has \tcode{_BitInt} type for N-bit integers (WG14 N2763, N2775):
+C23 now has \tcode{_BitInt} type for N-bit integers (WG14 \ref[N2763], \ref[N2775]):
 \cppblock{
 // 8-bit unsigned integer initialized with value 255.
 // The literal suffix wb is unnecessary in this case.
 unsigned _BitInt(8) x = 0xFFwb;
 }
 \ul{
-\item{would be very useful in C++ for > 64-bit computation}
-\item{\em{needs} to be in C++ to call C functions portably!}
-\item{efforts to standardize in C++ abandoned (mainly N2763, P1889R1 (TS))}
-\item{implemented by GCC and Clang; max: \tcode{_BitInt(8'388'608)}}
-\item{\b{Big question}: fundamental type or class type in C++?}
+\li{would be very useful in C++ for > 64-bit computation}
+\li{\em{needs} to be in C++ to call C functions portably!}
+\li{efforts to standardize in C++ abandoned (mainly \ref[N1744], \ref[P1889R1] (TS))}
+\li{implemented by GCC and Clang; max: \tcode{_BitInt(8'388'608)}}
+\li{\b{Big question}: fundamental type or class type in C++?}
 }
 }
 
@@ -151,9 +151,9 @@ This could also be addressed by P2998,
 \slidehfun{Problems with a common spelling}
 
 \ul{
-\item{common spelling useful for C/C++-interoperable headers}
-\item{C uses the \tcode{_BitInt(N)} and \tcode{unsigned _BitInt(N)}}
-\item{C++ compatibility macro like \tt{\hl[macro]{_Atomic(...)}} does \em{not} work}
+\li{common spelling useful for C/C++-interoperable headers}
+\li{C uses the \tcode{_BitInt(N)} and \tcode{unsigned _BitInt(N)}}
+\li{C++ compatibility macro like \tt{\hl[macro]{_Atomic(...)}} does \em{not} work}
 }
 
 \cppblock{
@@ -181,11 +181,11 @@ template <size_t N> class bit_int {
 }
 
 \ul{
-\item{P3140 \tcode{std::int_least128_t} got push-back for freestanding}
-\item{MSVC does not even support 128-bit yet; no \tcode{_BitInt} implementation}
-\item{no compiler builtin required, no platform ABI changes}
-\item{many existing implementations (e.g. Boost.Multiprecision)}
-\item{conversion, overload resolution more easily explained}
+\li{P3140 \tcode{std::int_least128_t} got push-back for freestanding}
+\li{MSVC does not even support 128-bit yet; no \tcode{_BitInt} implementation}
+\li{no compiler builtin required, no platform ABI changes}
+\li{many existing implementations (e.g. Boost.Multiprecision)}
+\li{conversion, overload resolution more easily explained}
 }
 }
 
@@ -193,17 +193,17 @@ template <size_t N> class bit_int {
 \slidehlib{Fundamentals have \em{huge} blast radius}
 
 \ul{
-\item{new family of integer types}
-\item{countless uses of "integer" in wording revised}
-\item{integral promotion/conversion rules, template deduction rules}
-\item{library support is tough if bit-precise integers widely supported:
+\li{new family of integer types}
+\li{countless uses of "integer" in wording revised}
+\li{integral promotion/conversion rules, template deduction rules}
+\li{library support is tough if bit-precise integers widely supported:
 \ul{
-    \item{N-bit \header{numeric}, \header{bit}, \header{simd}, \header{linalg}}
-    \item{N-bit \header{charconv}, \header{format}}
-    \item{[\N{HORIZONTAL ELLIPSIS}]}
+    \li{N-bit \header{numeric}, \header{bit}, \header{simd}, \header{linalg}}
+    \li{N-bit \header{charconv}, \header{format}}
+    \li{[\N{HORIZONTAL ELLIPSIS}]}
 }
 }
-\item{library types could have more limited/gradual adoption}
+\li{library types could have more limited/gradual adoption}
 }
 }
 
@@ -218,9 +218,45 @@ template <size_t N> class bit_int {
 \b{Author position}: neutral / slightly \N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F}
 }
 
+\html-h2{References}
+
+\make-bib
+
 \bib[
     id = P3639R0,
     title = The _BitInt Debate,
+    date = 2025-02-20,
     author = Jan Schultke,
-    link = https://wg21.link/p3639r0
+    link = https://wg21.link/p3639r0,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3639r0.html
+]
+\bib[
+    id = N1744,
+    title = Big Integer Library Proposal for C++0x,
+    date = 2005-01-13,
+    author = Michiel Salters,
+    link = https://wg21.link/n1744,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1744.pdf
+]
+\bib[
+    id = P1889R1,
+    title = C++ Numerics Work In Progress,
+    date = 2019-12-27,
+    author = Alexander Zaitsev et al.,
+    link = https://wg21.link/p1889r1,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1%2epdf
+]
+\bib[
+    id = N2763,
+    title = Adding a Fundamental Type for N-bit integers,
+    date = 2021-06-21,
+    author = Aaron Ballman et al.,
+    link = https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf
+]
+\bib[
+    id = N2775,
+    title = Literal suffixes for bit-precise integers,
+    date = 2021-07-13,
+    author = Aaron Ballman\, Melanie Blower,
+    link = https://open-std.org/JTC1/SC22/WG14/www/docs/n2775.pdf
 ]

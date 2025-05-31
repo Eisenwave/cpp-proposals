@@ -1480,6 +1480,8 @@ if (theme !== null) {
 
 
 
+
+
 <style>
 ins-block .para::before {
     display: none;
@@ -1489,6 +1491,9 @@ ins-block .para::before {
     float: right;
 }
 </style>
+
+
+
 
 
 
@@ -1572,6 +1577,10 @@ section code-block {
     border-top: 0.125vh var(--text-color) dashed;
     border-bottom: 0.125vh var(--text-color) dashed;
 }
+
+a:visited {
+    color: var(--a-color);
+}
 </style>
 
 
@@ -1631,7 +1640,7 @@ li>ul {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3721R0>P3721R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-05-27</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-05-31</tt-></dd>
     <dt>Audience:</dt>        <dd>SG22</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-To:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1680,14 +1689,14 @@ Slide 1
 
 <h2 id=slide-h-2>Introduction</h2>
 
-<p>C23 now has <code><h- data-h=kw_type>_BitInt</h-></code> type for N-bit integers (WG14 N2763, N2775):
+<p>C23 now has <code><h- data-h=kw_type>_BitInt</h-></code> type for N-bit integers (WG14 <a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2763%2epdf">[N2763]</a>, <a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2775%2epdf">[N2775]</a>):
 </p><code-block><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> 8-bit unsigned integer initialized with value 255.</h->
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> The literal suffix wb is unnecessary in this case.</h->
 <h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>_BitInt</h-><h- data-h=sym_par>(</h-><h- data-h=num>8</h-><h- data-h=sym_par>)</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>FF</h-><h- data-h=num_deco>wb</h-><h- data-h=sym_punc>;</h-></code-block>
 <ul>
 <li>would be very useful in C++ for &gt; 64-bit computation</li>
 <li><em>needs</em> to be in C++ to call C functions portably!</li>
-<li>efforts to standardize in C++ abandoned (mainly N2763, P1889R1 (TS))</li>
+<li>efforts to standardize in C++ abandoned (mainly <a href="https://wg21%2elink/n1744">[N1744]</a>, <a href="https://wg21%2elink/p1889r1">[P1889R1]</a> (TS))</li>
 <li>implemented by GCC and Clang; max: <code><h- data-h=kw_type>_BitInt</h-><h- data-h=sym_par>(</h-><h- data-h=num>8</h-><h- data-h=num_dlim>'</h-><h- data-h=num>388</h-><h- data-h=num_dlim>'</h-><h- data-h=num>608</h-><h- data-h=sym_par>)</h-></code></li>
 <li><b>Big question</b>: fundamental type or class type in C++?</li>
 </ul>
@@ -1931,6 +1940,39 @@ SG22 Telecon 2025-06-04
 Slide 8
 </div>
 </section>
+
+<h2>References</h2>
+
+<div class=bib><div id=bib-item-P3639R0 class=bib-item>
+<a href="https://wg21%2elink/p3639r0">[P3639R0]</a>
+<span class=bib-author>Jan Schultke.</span>
+<span class=bib-title>The _BitInt Debate</span>
+<span class=bib-date>2025-02-20</span>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3639r0%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3639r0.html</a></div><div id=bib-item-N1744 class=bib-item>
+<a href="https://wg21%2elink/n1744">[N1744]</a>
+<span class=bib-author>Michiel Salters.</span>
+<span class=bib-title>Big Integer Library Proposal for C++0x</span>
+<span class=bib-date>2005-01-13</span>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2005/n1744%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1744.pdf</a></div><div id=bib-item-P1889R1 class=bib-item>
+<a href="https://wg21%2elink/p1889r1">[P1889R1]</a>
+<span class=bib-author>Alexander Zaitsev et al..</span>
+<span class=bib-title>C++ Numerics Work In Progress</span>
+<span class=bib-date>2019-12-27</span>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2020/p1889r1%252epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1%2epdf</a></div><div id=bib-item-N2763 class=bib-item>
+<a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2763%2epdf">[N2763]</a>
+<span class=bib-author>Aaron Ballman et al..</span>
+<span class=bib-title>Adding a Fundamental Type for N-bit integers</span>
+<span class=bib-date>2021-06-21</span>
+<a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2763%2epdf" class=bib-link>https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf</a></div><div id=bib-item-N2775 class=bib-item>
+<a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2775%2epdf">[N2775]</a>
+<span class=bib-author>Aaron Ballman, Melanie Blower.</span>
+<span class=bib-title>Literal suffixes for bit-precise integers</span>
+<span class=bib-date>2021-07-13</span>
+<a href="https://open-std%2eorg/JTC1/SC22/WG14/www/docs/n2775%2epdf" class=bib-link>https://open-std.org/JTC1/SC22/WG14/www/docs/n2775.pdf</a></div></div>
+
+
+
+
 
 
 </main></body>

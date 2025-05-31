@@ -86,6 +86,10 @@ section code-block {
     border-top: 0.125vh var(--text-color) dashed;
     border-bottom: 0.125vh var(--text-color) dashed;
 }
+
+a:visited {
+    color: var(--a-color);
+}
 }
 
 \macro[\slide-controls]{\important{
