@@ -11,20 +11,25 @@ constexpr int __sgn2(int x) {
 }
 
 constexpr div_result<int> __div_rem_impl(
-    // dividend
+    // Dividend.
     int x,
-    // divisor
+    // Divisor.
     int y,
-    // if true, truncating division gives us the wrong result,
-    // and increasing the magnitude of the quotient by one would be correct
+    // If true, truncating division gives us the wrong result,
+    // and increasing the magnitude of the quotient by one would be correct.
     bool increment,
-    // the quotient sign (1 or -1)
+    // The quotient sign (1 or -1).
     int quotient_sign
 ) {
+    int quotient_change = int(increment) * quotient_change;
     return {
-        .quotient = x / y + int(increment) * quotient_sign,
-        .remainder = quotient_sign < 0 ? x % y + int(increment) * y
-                                       : x % y - int(increment) * y
+        .quotient = x / y + quotient_change,
+        // This is (x % y - quotient_change * y),
+        // except that we use unsigned int to avoid overflow when y is INT_MIN.
+        // Due to modular arithmetic rules, when we multiply y with -1,
+        // the remainder is congruent to (x % y + y),
+        // so simply doing it all with unsigned integers fixes our overflow problems.
+        .remainder = int(unsigned(x % y) - unsigned(quotient_change) * unsigned(y))
     };
 }
 

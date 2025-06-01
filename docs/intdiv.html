@@ -3108,20 +3108,25 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> dividend</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Dividend.</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> divisor</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Divisor.</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> if true, truncating division gives us the wrong result,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> and increasing the magnitude of the quotient by one would be correct</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> If true, truncating division gives us the wrong result,</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> and increasing the magnitude of the quotient by one would be correct.</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> the quotient sign (1 or -1)</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> The quotient sign (1 or -1).</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_sign</h->
 <h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_change</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_change</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_punc>,</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h->
-                                       <h- data-h=sym_punc>:</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>-</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h->
+        <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>quotient_change</h-><h- data-h=sym_punc>,</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> This is (x % y - quotient_change * y),</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> except that we use unsigned int to avoid overflow when y is INT_MIN.</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Due to modular arithmetic rules, when we multiply y with -1,</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> the remainder is congruent to (x % y + y),</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> so simply doing it all with unsigned integers fixes our overflow problems.</h->
+        <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>quotient_change</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
     <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
