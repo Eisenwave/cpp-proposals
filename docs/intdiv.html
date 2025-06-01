@@ -1539,7 +1539,7 @@ with other rounding modes.
 <div class=toc-num data-level=3>1.1</div>
 <a href=#existing-practice><h3>Existing practice</h3></a>
 <div class=toc-num data-level=4>1.1.1</div>
-<a href=#language-support-for-integer-division><h4>Language support for integer division</h4></a>
+<a href=#language-support><h4>Language support for integer division</h4></a>
 <div class=toc-num data-level=4>1.1.2</div>
 <a href=#hardware-support-for-integer-division><h4>Hardware support for integer division</h4></a>
 <div class=toc-num data-level=2>2</div>
@@ -1582,6 +1582,20 @@ with other rounding modes.
 <a href=#try-it-yourself><h2>Try it yourself</h2></a>
 <div class=toc-num data-level=2>6</div>
 <a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=3>6.1</div>
+<a href=#[structure%2especifications]><h3>[structure.specifications]</h3></a>
+<div class=toc-num data-level=3>6.2</div>
+<a href=#[version%2esyn]><h3>[version.syn]</h3></a>
+<div class=toc-num data-level=3>6.3</div>
+<a href=#[bit%2epow%2etwo]><h3>[bit.pow.two]</h3></a>
+<div class=toc-num data-level=3>6.4</div>
+<a href=#[numeric%2eops%2eoverview]><h3>[numeric.ops.overview]</h3></a>
+<div class=toc-num data-level=3>6.5</div>
+<a href=#[numeric%2esat%2efunc]><h3>[numeric.sat.func]</h3></a>
+<div class=toc-num data-level=3>6.6</div>
+<a href=#new-subclause><h3>[numeric.int.div]</h3></a>
+<div class=toc-num data-level=3>6.7</div>
+<a href=#[simd%2ebit]><h3>[simd.bit]</h3></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#references><h2>References</h2></a>
 <div class=toc-num data-level=2>8</div>
@@ -1596,22 +1610,27 @@ and implementing these as the user can be surprisingly hard,
 especially when integer overflow needs to be avoided,
 and negative inputs are accepted.
 </p>
-<p>Furthermore, since the <code><h- data-h=sym_op>/</h-></code> operator is truncating,
+<p>Furthermore, since the <code><h- data-h=sym_op>/</h-></code> operator rounds towards zero,
 the <code><h- data-h=sym_op>%</h-></code> (remainder) operator may yield negative results
 (specifically, when the dividend is negative).
-In modular arithmetic, this is typically undesirable.
+In modular arithmetic and various other use cases,
+this is undesirable,
+and a negative remainder may be surprising in general.
 </p>
 <p>Therefore, I propose a set of standard library functions
 which implement a variety of rounding modes when computing quotients and remainders.
 Such a feature was previously part of <a href="https://wg21%2elink/p0105r1">[P0105R1]</a> and the Numerics TS <a href="https://wg21%2elink/p1889r1">[P1889R1]</a>,
-but was eventually abandoned.
+but was eventually abandoned by the author,
+in part due to design disagreements.
 </p>
 <note-block><p><intro-></intro-> 
-Terminology refresher for division with some rounding function <math display=inline><mi>round</mi></math>:
+Terminology refresher for division, where
+<math display=inline><mi style=font-style:italic>round</mi></math>
+is some rounding function:
 </p><math display=block><mrow>
     <mi>quotient</mi>
     <mo>=</mo>
-    <mi>round</mi>
+    <mi style=font-style:italic>round</mi>
     <mo>(</mo>
     <mfrac><mi>dividend</mi><mi>divisor</mi></mfrac>
     <mo>)</mo>
@@ -1660,7 +1679,7 @@ td ul, td ul>li {
 
 
 
-<h4 id=language-support-for-integer-division><a class=para href=#language-support-for-integer-division></a>1.1.1. Language support for integer division</h4>
+<h4 id=language-support><a class=para href=#language-support></a>1.1.1. Language support for integer division</h4>
 
 <table id=lang-comparison class="center striped">
 <tr>
@@ -1926,7 +1945,11 @@ and it is no coincidence that every architecture implements it.
 
 <h2 id=motivation><a class=para href=#motivation></a>2. Motivation</h2>
 
-<p>Rounding modes other than truncation (rounding towards zero) are commonly useful.
+<p>Rounding modes other than rounding towards zero are commonly useful.
+An extremely common alternative is rounding towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math>,
+which is the rounding mode of the division operator in some other languages
+(<a href=#language-support>§1.1.1. Language support for integer division</a>).
+See below for some motivating examples.
 </p>
 <example-block><p><intro-></intro-> 
 A common problem is to compute how many chunks/buckets/blocks of a fixed size
@@ -2030,7 +2053,8 @@ and use of floating-point numbers is unnecessary for this task.
 
 <p>There exist various use cases (modular arithmetic, integer-to-string conversion, etc.)
 where we need both the quotient and remainder at the same time.
-The naive approach for an integer division function <tt-><i><h- data-h=id>divide</h-></i></tt-> looks something like:
+The naive approach to computing the remainder
+using an integer division function <tt-><i><h- data-h=id>divide</h-></i></tt-> looks something like:
 </p>
 <code-block><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <i><h- data-h=id>divide</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
@@ -2040,7 +2064,8 @@ The naive approach for an integer division function <tt-><i><h- data-h=id>divide
 i.e. when rounding towards zero.
 </p>
 <bug-block><p><intro-></intro-> 
-The following function which yields the quotient rounded to <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math> and remainder
+The following function, which yields the quotient rounded towards <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math>,
+as well as the remainder,
 is not safe for large inputs:
 </p><code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>div_t</h-> <h- data-h=id>div_rem_ceil</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>quotient_positive</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
@@ -2065,7 +2090,7 @@ we cannot use the naive formula to obtain a remainder.
 <p>In conclusion,
 the proposal should also include a way to obtain a remainder in tandem with the quotient.
 Any other design would simply invite bugs where users foolishly assume that
-the <code><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient</h-></code> method works for all rounding modes.
+the <code><h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h-></code> method works for all rounding modes.
 </p>
 <h2 id=design><a class=para href=#design></a>3. Design</h2>
 
@@ -2251,7 +2276,7 @@ all we accomplish is making the user write
 </p>
 <h3 id=supported-rounding-modes><a class=para href=#supported-rounding-modes></a>3.4. Supported rounding modes</h3>
 
-<p>It is apparent that the proposals contains quite a lot of rounding modes
+<p>It is apparent that the proposal contains quite a lot of rounding modes
 – more than just the traditional <code><h- data-h=id>ceil</h-></code>, <code><h- data-h=id>floor</h-></code>, <code><h- data-h=id>round</h-></code>.
 It is therefore valid to ask:
 </p>
@@ -2551,6 +2576,8 @@ compute_outputs();
 
 <p>All changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
+<h3 id=[structure.specifications]><a class=para href=#[structure%2especifications]></a>6.1. [structure.specifications]</h3>
+
 <p>In <a href=https://eel%2eis/c++draft/structure%2especifications#3>[structure.specifications] paragraph 3</a>,
 add a bullet immediately following bullet 3.4:
 </p>
@@ -2605,6 +2632,8 @@ If <code><h- data-h=id>F</h-></code>'s semantics contains a <i>Throws</i>,
 then that supersedes any occurrences of that element in the code sequence.
 </p></diff-block>
 
+<h3 id=[version.syn]><a class=para href=#[version%2esyn]></a>6.2. [version.syn]</h3>
+
 <p>Change the synopsis in <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a> as follows:
 </p>
 <diff-block>
@@ -2612,6 +2641,8 @@ then that supersedes any occurrences of that element in the code sequence.
 <ins><h- data-h=mac>#define __cpp_lib_integer_division                  20XXXXL </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding, also in </h-></f-serif><h- data-h=cmt>&lt;numeric&gt;</h-></ins>
 <h- data-h=mac>#define __cpp_lib_integer_sequence                  201304L </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding, also in </h-></f-serif><h- data-h=cmt>&lt;utility&gt;</h-></code-block>
 </diff-block>
+
+<h3 id=[bit.pow.two]><a class=para href=#[bit%2epow%2etwo]></a>6.3. [bit.pow.two]</h3>
 
 <p>Change <a href=https://eel%2eis/c++draft/bit%2epow%2etwo#5>[bit.pow.two] paragraph 5</a> as follows:
 </p>
@@ -2627,6 +2658,8 @@ then that supersedes any occurrences of that element in the code sequence.
 A function call expression that violates the precondition in the <i>Preconditions</i>: element
 is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econst>[expr.const]</a>).
 </p></del-block>
+
+<h3 id=[numeric.ops.overview]><a class=para href=#[numeric%2eops%2eoverview]></a>6.4. [numeric.ops.overview]</h3>
 
 <p>Change the synopsis in <a href=https://eel%2eis/c++draft/numeric%2eops%2eoverview>[numeric.ops.overview]</a> as follows:
 </p>
@@ -2678,6 +2711,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
     <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
     <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
@@ -2703,11 +2737,12 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
     <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_ties_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 
-  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[numeric.int.mod], integer modulo</h-></f-serif>
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
     <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></ins>
 <h- data-h=sym_brac>}</h-></code-block>
 </diff-block>
+
+<h3 id=[numeric.sat.func]><a class=para href=#[numeric%2esat%2efunc]></a>6.5. [numeric.sat.func]</h3>
 
 <p>Change <a href=https://eel%2eis/c++draft/numeric%2esat%2efunc#9>[numeric.sat.func] paragraph 9</a> as follows:
 </p>
@@ -2724,11 +2759,13 @@ A function call expression that violates the precondition in the <i>Precondition
 is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econst>[expr.const]</a>).   
 </p></del-block>
 
-<p>Append two new subclauses to <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
+<h3 id=new-subclause><a class=para href=#new-subclause></a>6.6. [numeric.int.div]</h3>
+
+<p>Append a new subclause to <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
 following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
 </p>
 <ins-block>
-<h3 style=margin-top:0.5em>Integer division <span class=stable-ref>[numeric.int.div]</span></h3>
+<h2>Integer division <span class=stable-ref>[numeric.int.div]</span></h2>
 
 
 
@@ -2748,9 +2785,9 @@ following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
 <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-></code> is well-defined.
 </p>
 <p>3
-<i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded toward zero.<br/>
+<i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards zero.<br/>
 <wg21-block>[<i>Note</i>: 
-The result is equivalent to <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-></code>.
+The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-></code>.
  — <i>end note</i>]</wg21-block>
 </p></div></p>
 
@@ -2977,18 +3014,15 @@ It is possible for <code><h- data-h=id>div_</h-><i><h- data-h=id>rounding</h-></
 Assume that <code><h- data-h=mac>INT_MAX</h-></code> equals <code><h- data-h=num>2</h-><h- data-h=num_dlim>'</h-><h- data-h=num>147</h-><h- data-h=num_dlim>'</h-><h- data-h=num>483</h-><h- data-h=num_dlim>'</h-><h- data-h=num>647</h-></code>.
 <code-block class=borderless><h- data-h=kw>const</h-> <h- data-h=kw>auto</h-> <h- data-h=id>q_to_zero</h-> <h- data-h=sym_op>=</h-> <h- data-h=mac>INT_MAX</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><code><h- data-h=id>q_to_zero</h-></code><h- data-h=cmt> is </h-><code><h- data-h=num>1</h-><h- data-h=num_dlim>'</h-><h- data-h=num>073</h-><h- data-h=num_dlim>'</h-><h- data-h=num>741</h-><h- data-h=num_dlim>'</h-><h- data-h=num>823</h-></code><h- data-h=cmt>.</h-></f-serif>
 <h- data-h=kw>const</h-> <h- data-h=kw>auto</h-> <h- data-h=sym_sqr>[</h-><h- data-h=id>q</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>r</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>div_rem_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=mac>INT_MAX</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><code><h- data-h=id>q</h-></code><h- data-h=cmt> is </h-><code><h- data-h=num>1</h-><h- data-h=num_dlim>'</h-><h- data-h=num>073</h-><h- data-h=num_dlim>'</h-><h- data-h=num>741</h-><h- data-h=num_dlim>'</h-><h- data-h=num>824</h-></code><h- data-h=cmt> and </h-><code><h- data-h=id>r</h-></code><h- data-h=cmt> is </h-><code><h- data-h=sym_op>-</h-><h- data-h=num>1</h-></code><h- data-h=cmt>.</h-></f-serif>
-<h- data-h=kw_type>int</h-> <h- data-h=id>r2</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>q</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->                              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Multiplication has undefined behavior.</h-></f-serif></code-block>
+<h- data-h=kw_type>int</h-> <h- data-h=id>r2</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>q</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->                              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>This multiplication has undefined behavior.</h-></f-serif></code-block>
  — <i>end example</i>]</wg21-block> — <i>end note</i>]</wg21-block>
 </p></div></p>
-
-<h3>Integer modulo <span class=stable-ref>[numeric.int.mod]</span></h3>
-
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p><div class=indent>
-<p>1
+<p>40
 <i>Effects</i>:
 Equivalent to <code><h- data-h=id>div_rem_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-></code>.
 <br/><wg21-block>[<i>Note</i>: 
@@ -3003,6 +3037,8 @@ If the mathematical notation in the block above does not render for you,
 you are using an old browser with no MathML support.
 Please open the document in a recent version of Firefox or Chrome.
 </p></warning-block>
+
+<h3 id=[simd.bit]><a class=para href=#[simd%2ebit]></a>6.7. [simd.bit]</h3>
 
 <p>Change <a href=https://eel%2eis/c++draft/simd%2ebit#4>[simd.bit] paragraph 4</a> as follows:
 </p>

@@ -33,22 +33,27 @@ and implementing these as the user can be surprisingly hard,
 especially when integer overflow needs to be avoided,
 and negative inputs are accepted.
 
-Furthermore, since the \tcode{/} operator is truncating,
+Furthermore, since the \tcode{/} operator rounds towards zero,
 the \tcode{\N{PERCENT SIGN}} (remainder) operator may yield negative results
 (specifically, when the dividend is negative).
-In modular arithmetic, this is typically undesirable.
+In modular arithmetic and various other use cases,
+this is undesirable,
+and a negative remainder may be surprising in general.
 
 Therefore, I propose a set of standard library functions
 which implement a variety of rounding modes when computing quotients and remainders.
 Such a feature was previously part of \ref[P0105R1] and the Numerics TS \ref[P1889R1],
-but was eventually abandoned.
+but was eventually abandoned by the author,
+in part due to design disagreements.
 
 \note{
-Terminology refresher for division with some rounding function \math{\mi{round}}:
+Terminology refresher for division, where
+\math{\mi[style=font-style:italic]{round}}
+is some rounding function:
 \mathblock{\mrow{
     \mi{quotient}
     \mo{=}
-    \mi{round}
+    \mi[style=font-style:italic]{round}
     \mo{(}
     \mfrac{\mi{dividend}\mi{divisor}}
     \mo{)}
@@ -97,7 +102,7 @@ td ul, td ul>li {
 \macro[\neg-inf]{\math{\mrow{\mo{\N{MINUS SIGN}}\mi{\N{INFINITY}}}}}
 \macro[\pos-inf]{\math{\mrow{\mo{+}\mi{\N{INFINITY}}}}}
 
-\h4{Language support for integer division}
+\h4[id=language-support]{Language support for integer division}
 
 \table[id=lang-comparison, class = center striped]{
 \tr{
@@ -363,7 +368,11 @@ and it is no coincidence that every architecture implements it.
 
 \h2{Motivation}
 
-Rounding modes other than truncation (rounding towards zero) are commonly useful.
+Rounding modes other than rounding towards zero are commonly useful.
+An extremely common alternative is rounding towards \neg-inf,
+which is the rounding mode of the division operator in some other languages
+(\ref[#language-support]).
+See below for some motivating examples.
 
 \example{
 A common problem is to compute how many chunks/buckets/blocks of a fixed size
@@ -475,7 +484,8 @@ and use of floating-point numbers is unnecessary for this task.
 
 There exist various use cases (modular arithmetic, integer-to-string conversion, etc.)
 where we need both the quotient and remainder at the same time.
-The naive approach for an integer division function \placeholder{divide} looks something like:
+The naive approach to computing the remainder
+using an integer division function \placeholder{divide} looks something like:
 
 \cppblock{
 int x = /* ... */, y = /* ... */;
@@ -487,7 +497,8 @@ This approach is only safe when \tcode{\exposid{divide}(x,y)} is \tcode{x/y},
 i.e. when rounding towards zero.
 
 \bug{
-The following function which yields the quotient rounded to \pos-inf and remainder
+The following function, which yields the quotient rounded towards \pos-inf,
+as well as the remainder,
 is not safe for large inputs:
 \cppblock{
 std::div_t div_rem_ceil(int x, int y) {
@@ -514,7 +525,7 @@ we cannot use the naive formula to obtain a remainder.
 In conclusion,
 the proposal should also include a way to obtain a remainder in tandem with the quotient.
 Any other design would simply invite bugs where users foolishly assume that
-the \tcode{remainder = x - y * quotient} method works for all rounding modes.
+the \tcode{x - quotient * y} method works for all rounding modes.
 
 \h2{Design}
 
@@ -706,7 +717,7 @@ all we accomplish is making the user write
 
 \h3{Supported rounding modes}
 
-It is apparent that the proposals contains quite a lot of rounding modes
+It is apparent that the proposal contains quite a lot of rounding modes
 \N{EN DASH} more than just the traditional \tcode{ceil}, \tcode{floor}, \tcode{round}.
 It is therefore valid to ask:
 
@@ -906,6 +917,8 @@ Under the hood, calculations are performed using JavaScript's \tt{BigInt}.
 
 All changes are relative to \ref[N5008].
 
+\h3{[structure.specifications]}
+
 In \eelis{structure.specifications#3},
 add a bullet immediately following bullet 3.4:
 
@@ -960,6 +973,8 @@ If \tcode{F}'s semantics contains a \Fundescx{Throws},
 then that supersedes any occurrences of that element in the code sequence.
 }
 
+\h3{[version.syn]}
+
 Change the synopsis in \eelis{version.syn} as follows:
 
 \diff{
@@ -969,6 +984,8 @@ Change the synopsis in \eelis{version.syn} as follows:
 #define __cpp_lib_integer_sequence                  201304L // \serif{freestanding, also in }<utility>
 }
 }
+
+\h3{[bit.pow.two]}
 
 Change \eelis{bit.pow.two#5} as follows:
 
@@ -984,6 +1001,8 @@ Delete \eelis{bit.pow.two#8}:
 A function call expression that violates the precondition in the \expects element
 is not a core constant expression\iref{expr.const}.
 }
+
+\h3{[numeric.ops.overview]}
 
 Change the synopsis in \eelis{numeric.ops.overview} as follows:
 
@@ -1036,6 +1055,7 @@ namespace std {
     constexpr T div_ties_to_odd(T x, T y);
   template<class T>
     constexpr T div_ties_to_even(T x, T y);
+
   template<class T>
     constexpr div_result<T> div_rem_to_zero(T x, T y);
   template<class T>
@@ -1061,12 +1081,13 @@ namespace std {
   template<class T>
     constexpr div_result<T> div_rem_ties_to_even(T x, T y);
 
-  // \serif{[numeric.int.mod], integer modulo}
   template<class T>
     constexpr T mod(T x, T y);}
 }
 }
 }
+
+\h3{[numeric.sat.func]}
 
 Change \eelis{numeric.sat.func#9} as follows:
 
@@ -1083,11 +1104,13 @@ A function call expression that violates the precondition in the \expects elemen
 is not a core constant expression\iref{expr.const}.   
 }
 
-Append two new subclauses to \eelis{numeric.ops},
+\h3[id=new-subclause]{[numeric.int.div]}
+
+Append a new subclause to \eelis{numeric.ops},
 following \eelis{numeric.sat}:
 
 \insblock{
-\html-h3[style = margin-top:0.5em]{Integer division \stable-ref{numeric.int.div}}
+\html-h2{Integer division \stable-ref{numeric.int.div}}
 \Vset[pnum]{0}
 
 \macro[\div-returns{rounding}]{\returns \math{\mfrac{\mi{x}\mi{y}}}, rounded \put{}.}
@@ -1112,9 +1135,9 @@ template<class T>
 \tcode{x / y} is well-defined.
 
 \pnum
-\div-returns{toward zero}\br
+\div-returns{towards zero}\br
 \wg21-note{
-The result is equivalent to \tcode{x / y}.
+The result equals \tcode{x / y}.
 }
 }
 
@@ -1336,13 +1359,10 @@ Assume that \tcode{\hl[macro]{INT_MAX}} equals \tcode{2'147'483'647}.
 \itemdecl{
 const auto q_to_zero = \hl[macro]{INT_MAX} / 2;              // \serif{\tcode{q_to_zero} is \tcode{1'073'741'823}.}
 const auto [q, r] = div_rem_to_inf(\hl[macro]{INT_MAX}, 2);  // \serif{\tcode{q} is \tcode{1'073'741'824} and \tcode{r} is \tcode{-1}.}
-int r2 = x - q * 2;                              // \serif{Multiplication has undefined behavior.}
+int r2 = x - q * 2;                              // \serif{This multiplication has undefined behavior.}
 }
 }}
 }
-
-\html-h3{Integer modulo \stable-ref{numeric.int.mod}}
-\Vset[pnum]{0}
 
 \itemdecl{
 template<class T>
@@ -1365,6 +1385,8 @@ If the mathematical notation in the block above does not render for you,
 you are using an old browser with no MathML support.
 Please open the document in a recent version of Firefox or Chrome.
 }
+
+\h3{[simd.bit]}
 
 Change \eelis{simd.bit#4} as follows:
 
