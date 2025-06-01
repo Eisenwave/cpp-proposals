@@ -17,12 +17,11 @@ const quo_ties_odd = document.getElementById("quo-ties-odd");
 const quo_ties_even = document.getElementById("quo-ties-even");
 const rem_trunc = document.getElementById("rem-trunc");
 const rem_floor = document.getElementById("rem-floor");
-const rem_euclid = document.getElementById("rem-euclid");
 
 const outputs = [
     quo_trunc, quo_mag, quo_floor, quo_ceil, quo_odd, quo_even,
     quo_ties_trunc, quo_ties_mag, quo_ties_floor, quo_ties_ceil, quo_ties_odd, quo_ties_even,
-    rem_trunc, rem_floor, rem_euclid
+    rem_trunc, rem_floor
 ];
 
 for (const input of inputs) {
@@ -79,11 +78,9 @@ function compute_outputs() {
 
         const r_trunc = x % y;
         const r_floor = x - floor * y;
-        const r_euclid = r_trunc < 0n ? abs_y + r_trunc : r_trunc;
 
         rem_trunc.innerText = String(r_trunc);
         rem_floor.innerText = String(r_floor);
-        rem_euclid.innerText = String(r_euclid);
     } catch (e) {
         on_error("SYNTAX ERROR");
     }

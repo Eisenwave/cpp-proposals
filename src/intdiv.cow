@@ -43,6 +43,324 @@ which implement a variety of rounding modes when computing quotients and remaind
 Such a feature was previously part of \ref[P0105R1] and the Numerics TS \ref[P1889R1],
 but was eventually abandoned.
 
+\note{
+Terminology refresher for division with some rounding function \math{\mi{round}}:
+\mathblock{\mrow{
+    \mi{quotient}
+    \mo{=}
+    \mi{round}
+    \mo{(}
+    \mfrac{\mi{dividend}\mi{divisor}}
+    \mo{)}
+    \mo{+}
+    \mi{remainder}
+}}
+Your browser requires MathML support to view the equation above.
+}
+
+\h3{Existing practice}
+
+To better put this proposal into context,
+it is relevant to know what rounding modes are usually supported by programming languages
+and hardware.
+
+\style{
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+td ul, td ul>li {
+    margin: 0;
+}
+
+#lang-comparison td:nth-child(2),
+#lang-comparison td:nth-child(3) {
+    text-align: center;
+}
+
+#hw-comparison td:nth-child(2),
+#hw-comparison td:nth-child(3),
+#hw-comparison td:nth-child(4) {
+    text-align: center;
+}
+
+#lang-comparison, #hw-comparison {
+    min-width: 75%;
+}
+
+.striped tr:nth-child(even) td {
+    background-color: var(--deep-background-color);
+}
+}
+
+\macro[\neg-inf]{\math{\mrow{\mo{\N{MINUS SIGN}}\mi{\N{INFINITY}}}}}
+\macro[\pos-inf]{\math{\mrow{\mo{+}\mi{\N{INFINITY}}}}}
+
+\h4{Language support for integer division}
+
+\table[id=lang-comparison, class = center striped]{
+\tr{
+    \th{Language} \th{Quotient} \th{Remainder} \th{Rounding}
+}
+\tr{
+    \td{C and C++}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{D}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{C#}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Java}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Kotlin}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Rust}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Go}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Swift}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{Scala}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{OCaml}
+    \td{\tt{/}}
+    \td{\tt{mod}}
+    \td{to zero}
+}
+\tr{
+    \td{Perl}
+    \td{\tt{int($a/$b)}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{JavaScript}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero (for \tt{BigInt} operands)}
+}
+\tr{
+    \td{Python}
+    \td{\tt{//}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to \neg-inf}
+}
+\tr{
+    \td{Lua}
+    \td{\tt{//}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to \neg-inf}
+}
+\tr{
+    \td{R}
+    \td{\tt{\N{PERCENT SIGN}/\N{PERCENT SIGN}}}
+    \td{\tt{\N{PERCENT SIGN}\N{PERCENT SIGN}}}
+    \td{to \neg-inf}
+}
+\tr{
+    \td{Dart}
+    \td{\tt{~/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to \neg-inf}
+}
+\tr{
+    \td{Haskell}
+    \td{\tt{quot}, \tt{div}}
+    \td{\tt{rem}, \tt{mod}}
+    \td{\ul{
+        \li{\tt{quot} and \tt{rem} to zero}
+        \li{\tt{div} and \tt{mod} to \neg-inf}
+    }}
+}
+\tr{
+    \td{Ada}
+    \td{\tt{/}}
+    \td{\tt{rem}, \tt{mod}}
+    \td{\ul{
+        \li{\tt{/} and \tt{rem} to zero}
+        \li{\tt{mod} to \neg-inf}
+    }}
+}
+\tr{
+    \td{Fortran}
+    \td{\tt{/}}
+    \td{\tt{mod}, \tt{modulo}}
+    \td{\ul{
+        \li{\tt{/} and \tt{mod} to zero}
+        \li{\tt{modulo} to \neg-inf}
+    }}
+}
+\tr{
+    \td{Julia}
+    \td{\tt{div(x,y,r)}}
+    \td{\tt{rem(x,y,r)}}
+    \td{
+        depending on \tt{RoundingMode} \tt{r}:\ul{
+            \li{to zero (default),}
+            \li{away from zero,}
+            \li{to \pos-inf or \neg-inf, or}
+            \li{to nearest (ties to even)}
+        }
+    }
+}
+}
+
+\note{
+When a division rounds towards zero,
+the remainder has the dividend (left operand) sign.
+When a division rounds towards \neg-inf,
+the remainder has the divisor (right operand) sign.
+}
+
+\h4{Hardware support for integer division}
+
+\table[id=hw-comparison, class = center striped]{
+\tr{
+    \th{Architecture} \th{Type} \th{Quotient} \th{Remainder} \th{Rounding}
+}
+\tr{
+    \td{x86 and x86_64}
+    \td{CPU}
+    \td{\tt{idiv}, \tt{div}}
+    \td{\tt{idiv}, \tt{div}}
+    \td{to zero}
+}
+\tr{
+    \td{ARM}
+    \td{CPU}
+    \td{\tt{sdiv}, \tt{udiv}}
+    \td{N/A}
+    \td{to zero}
+}
+\tr{
+    \td{RISC-V}
+    \td{CPU}
+    \td{\tt{div}, \tt{divu}}
+    \td{\tt{rem}, \tt{remu}}
+    \td{to zero}
+}
+\tr{
+    \td{PowerPC}
+    \td{CPU}
+    \td{\tt{divw}, \tt{divwu}}
+    \td{N/A}
+    \td{to zero}
+}
+\tr{
+    \td{MIPS}
+    \td{CPU}
+    \td{\tt{div}, \tt{divu}}
+    \td{\tt{div}, \tt{divu},\br\tt{rem}, \tt{remu}}
+    \td{to zero}
+}
+\tr{
+    \td{AVR (8-bit)}
+    \td{CPU}
+    \td{N/A}
+    \td{N/A}
+    \td{N/A}
+}
+\tr{
+    \td{WebAssembly}
+    \td{VM}
+    \td{\tt{div_s}, \tt{div_u}}
+    \td{\tt{rem_s}, \tt{rem_u}}
+    \td{to zero}
+}
+\tr{
+    \td{LLVM IR}
+    \td{VM}
+    \td{\tt{sdiv}, \tt{udiv}}
+    \td{\tt{srem}, \tt{urem}}
+    \td{to zero}
+}
+\tr{
+    \td{Java Bytecode}
+    \td{VM}
+    \td{\tt{idiv}}
+    \td{\tt{irem}}
+    \td{to zero}
+}
+}
+
+\note{
+For unsigned division like \tt{div} on x86,
+there is no distinction between rounding to zero and rounding to \neg-inf{},
+which is why everything is listed as "to zero" for simplicity.
+}
+
+While every architecture rounds to zero,
+there there are major differences in how the remainder is obtained:
+\ul{
+    \li{On x86_64 and MIPS, the quotient and remainder are computed simultaneously,
+    although MIPS also supports separate computation of the remainder.}
+    \li{On other architectures, even if there is support for computing the remainder separately,
+    if both the quotient and remainder are needed,
+    it is faster to compute the remainder using the quotient of the division.}
+    \li{In some cases, the remainder can \em{only} be computed using the quotient.}
+}
+
+\note{
+Given two integers \math{\mi{x}} and \math{\mi{y}},
+the quotient \math{\mrow{
+    \mi{q}
+    \mo{=}
+    \mo{\N{LEFT FLOOR}}
+    \mfrac{\mi{x}\mi{y}}
+    \mo{\N{RIGHT FLOOR}}
+}} (or rounded otherwise to an integer),
+the remainder of the division is equal to
+\math{\mrow{
+    \mi{x}
+    \mo{\N{MINUS SIGN}}
+    \mi{y}
+    \mo{\N{MULTIPLICATION SIGN}}
+    \mi{q}
+}}\N{ZERO-WIDTH NO-BREAK SPACE}.
+
+\em{Only} if the division rounds towards zero can this also be translated literally
+into a multiplication and subtraction,
+without the possibility of overflow.
+This makes rounding towards zero \em{by far} the most useful rounding mode in computing,
+and it is no coincidence that every architecture implements it.
+}
+
 \h2{Motivation}
 
 Rounding modes other than truncation (rounding towards zero) are commonly useful.
@@ -104,7 +422,7 @@ yields \ref[StackOverflowDivision].
 Almost every answer does not permit signed integers,
 gives wrong results,
 or has undefined behavior for certain inputs
-(not counting division by zero or \tcode{INT_MIN / -1}).
+(not counting division by zero or \tcode{\hl[macro]{INT_MIN} / -1}).
 
 For example, one answer with 67 upvotes (at the time of writing)
 attempts to implement ceiling (rounded towards positive infinity)
@@ -137,7 +455,7 @@ static int div_ceil(int a, int b) {
 }
 }
 \ul{
-\li{\tcode{abs(a)} and \tcode{abs(b)} have undefined behavior given \tcode{INT_MIN} input}
+\li{\tcode{abs(a)} and \tcode{abs(b)} have undefined behavior given \tcode{\hl[macro]{INT_MIN}} input}
 \li{\tcode{div_round} overflows on large inputs in \tcode{a - b} and \tcode{a + b}}
 \li{
 all functions branch depending on whether the quotient is negative,
@@ -152,6 +470,51 @@ such a branch could be \em{highly} unpredictable
 Users sometimes also implement these functions using \tcode{std::floor} or \tcode{std::ceil},
 but this can equally yield incorrect results,
 and use of floating-point numbers is unnecessary for this task.
+
+\h3[id=computing-remainders-is-hard]{Computing remainders is hard, actually}
+
+There exist various use cases (modular arithmetic, integer-to-string conversion, etc.)
+where we need both the quotient and remainder at the same time.
+The naive approach for an integer division function \placeholder{divide} looks something like:
+
+\cppblock{
+int x = /* ... */, y = /* ... */;
+int quotient = \exposid{divide}(x, y);
+int remainder = x - quotient * y;
+}
+
+This approach is only safe when \tcode{\exposid{divide}(x,y)} is \tcode{x/y},
+i.e. when rounding towards zero.
+
+\bug{
+The following function which yields the quotient rounded to \pos-inf and remainder
+is not safe for large inputs:
+\cppblock{
+std::div_t div_rem_ceil(int x, int y) {
+    bool quotient_positive = (x < 0) == (y < 0);
+    bool has_remainder = x \N{PERCENT SIGN} y != 0;
+    int quotient = x / y + int(quotient_positive && has_remainder);
+    int remainder = x - y * quotient;
+    return { quotient, remainder };
+}
+}
+If we now call \tcode{div_rem_ceil(\hl[macro]{INT_MAX}, 2)},
+where \tcode{\hl[macro]{INT_MAX}} is \tcode{2'147'483'647},
+then \tcode{quotient} is \tcode{1'073'741'824}.
+The multiplication \tcode{y * quotient} has undefined behavior
+because it results in \tcode{2'147'483'648}, which cannot be represented as \tcode{int}.
+
+Crucially, it does not mean that \tcode{div_rem_ceil} cannot be defined for these inputs.
+The correct quotient is \tcode{1'073'741'824},
+and the correct remainder is \tcode{-1}.
+It just means that for any rounding mode except towards zero,
+we cannot use the naive formula to obtain a remainder.
+}
+
+In conclusion,
+the proposal should also include a way to obtain a remainder in tandem with the quotient.
+Any other design would simply invite bugs where users foolishly assume that
+the \tcode{remainder = x - y * quotient} method works for all rounding modes.
 
 \h2{Design}
 
@@ -274,7 +637,7 @@ It is constrained to accept only signed or unsigned integer types.
 
 These functions are not \tcode{noexcept} because they could not have a wide contract;
 they naturally have undefined behavior for cases like \tcode{div_to_zero(x, 0)}
-or \tcode{div_to_zero(INT_MIN, -1)}.
+or \tcode{div_to_zero(\hl[macro]{INT_MIN}, -1)}.
 
 However, an invocation of these functions is not a constant expression for such inputs;
 i.e. we don't get undefined behavior during constant evaluation.
@@ -437,12 +800,12 @@ functions which compute the remainder and quotient at the same time.
 In practice, the remainder is only commonly needed for certain rounding modes,
 not for all proposed ones.
 
-In practice, separate invocations of \tcode{std::div_to_neg_inf} and \tcode{std::rem_divisor_sign}
+In practice, separate invocations of \tcode{std::div_to_neg_inf} and \tcode{std::mod}
 optimize the same as a dedicated function
 which computes the quotient and remainder simultaneously.
 
 \example{
-In the following code, \tcode{remquo_to_neg_inf_1} and \tcode{remquo_to_neg_inf_2}
+In the following code, \tcode{div_rem_to_neg_inf_1} and \tcode{div_rem_to_neg_inf_2}
 produce bit-identical assembly output (\ref[CompilerExplorerRemQuo]).
 \cppblock{
 struct div_t {
@@ -450,20 +813,20 @@ struct div_t {
 };
 
 // The user can obviously write this themselves \N{HORIZONTAL ELLIPSIS}
-div_t remquo_to_neg_inf_1(int x, int y) {
+div_t div_rem_to_neg_inf_1(int x, int y) {
     // see \ref[#implementation] for definitions of these
-    return { div_to_neg_inf(x, y), rem_divisor_sign(x, y) };
-};
+    return { div_to_neg_inf(x, y), mod(x, y) };
+}
 
 // \N{HORIZONTAL ELLIPSIS} so we don't need to provide this:
-div_t remquo_to_neg_inf_2(int x, int y) {
+div_t div_rem_to_neg_inf_2(int x, int y) {
     int quotient_negative = (x ^ y) < 0;
     bool adjust = x % y != 0 && quotient_negative;
     return {
         .quotient  = x / y - int(adjust),
         .remainder = x % y + int(adjust) * y,
     };
-};
+}
 }
 }
 
@@ -528,9 +891,8 @@ std::div_ties_to_neg_inf(x, y)  \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-t
 std::div_ties_to_odd(x, y)      \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-odd]{-2}}
 std::div_ties_to_even(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-even]{-2}}
 
-std::rem_dividend_sign(x, y)    \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-trunc]{-2}} // x % y
-std::rem_divisor_sign(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}}
-std::rem_positive(x, y)         \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-euclid]{3}}
+x \N{PERCENT SIGN} y              \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-trunc]{-2}}
+std::mod(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}}
 }
 
 \note{
@@ -642,7 +1004,14 @@ namespace std {
   template<class T, class U>
     constexpr T saturate_cast(U x) noexcept;
 
-\ins{  // \serif{[numeric.int.div], integer division quotients}
+\ins{  // \serif{[numeric.int.div], integer division}
+  template<class T>
+  struct div_result {
+    T quotient;
+    T remainder;
+    friend bool operator==(const div_result&, const div_result&) = default;
+  };
+
   template<class T>
     constexpr T div_to_zero(T x, T y);
   template<class T>
@@ -667,14 +1036,34 @@ namespace std {
     constexpr T div_ties_to_odd(T x, T y);
   template<class T>
     constexpr T div_ties_to_even(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_to_zero(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_away_zero(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_to_inf(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_to_neg_inf(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_to_odd(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_to_even(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_to_zero(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_away_zero(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_to_inf(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_to_neg_inf(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_to_odd(T x, T y);
+  template<class T>
+    constexpr div_result<T> div_rem_ties_to_even(T x, T y);
 
-  // \serif{[numeric.int.rem], integer division remainders}
+  // \serif{[numeric.int.mod], integer modulo}
   template<class T>
-    constexpr T rem_dividend_sign(T x, T y);
-  template<class T>
-    constexpr T rem_divisor_sign(T x, T y);
-  template<class T>
-    constexpr T rem_positive(T x, T y);}
+    constexpr T mod(T x, T y);}
 }
 }
 }
@@ -694,13 +1083,11 @@ A function call expression that violates the precondition in the \expects elemen
 is not a core constant expression\iref{expr.const}.   
 }
 
-Append a new subclause to \eelis{numeric.ops},
+Append two new subclauses to \eelis{numeric.ops},
 following \eelis{numeric.sat}:
 
 \insblock{
-\html-h2[style = margin-bottom:0]{Integer division \stable-ref{numeric.int}}
-
-\html-h3[style = margin-top:0.5em]{Integer division quotients \stable-ref{numeric.int.div}}
+\html-h3[style = margin-top:0.5em]{Integer division \stable-ref{numeric.int.div}}
 \Vset[pnum]{0}
 
 \macro[\div-returns{rounding}]{\returns \math{\mfrac{\mi{x}\mi{y}}}, rounded \put{}.}
@@ -918,41 +1305,9 @@ template<class T>
 \div-returns-nearest{the even integer}
 }
 
-\html-h3{Integer division remainders \stable-ref{numeric.int.rem}}
-\Vset[pnum]{0}
-
 \itemdecl{
 template<class T>
-  constexpr T rem_dividend_sign(T x, T y);
-}
-
-\itemdescr{
-\pnum
-\effects
-Equivalent to \tcode{x - y * div_to_zero(x, y)}.
-\br\wg21-note{
-The result is equal to \tcode{x \N{PERCENT SIGN} y},
-and is negative if and only if \tcode{x} is negative.
-}
-}
-
-\itemdecl{
-template<class T>
-  constexpr T rem_divisor_sign(T x, T y);
-}
-
-\itemdescr{
-\pnum
-\effects
-Equivalent to \tcode{x - y * div_to_neg_inf(x, y)}.
-\br\wg21-note{
-The result is negative if and only if \tcode{y} is negative.
-}
-}
-
-\itemdecl{
-template<class T>
-  constexpr T rem_positive(T x, T y);
+  constexpr div_result<T> div_rem_\exposid{rounding}(T x, T y);
 }
 
 \itemdescr{
@@ -961,21 +1316,45 @@ template<class T>
 
 \pnum
 \constexpects
-\tcode{x \N{PERCENT SIGN} y} is well-defined.
+\tcode{x / y} is well-defined.
 
 \pnum
-\effects
-Equivalent to:
-\indent{\itemdecl{
-T r = x % y;
-return r >= 0 ? r
-     : y >= 0 ? r + y
-              : r - y;
-}}
-\br
+\returns
+A result object where
+\ul[style=margin:0]{
+\li{\tcode{quotient} is the quotient \math{\mi{q}} returned by \tcode{div_\exposid{rounding}(x, y)} and}
+\li{
+\tcode{remainder} is an integer \math{\mi{r}},
+so that \math{\mrow{\mi{r}\mo{=}\mi{x}\mo{\N{MINUS SIGN}}\mi{q}\mi{y}}}.
+}
+}
 \wg21-note{
-The result is the remainder of the Euclidean division \math{\mfrac{\mi{x}\mi{y}}}.
-The result is always positive.
+It is possible for \tcode{div_\exposid{rounding}(x, y)} to have well-defined behavior even when
+\tcode{x - quotient * y} has undefined behavior.
+\br\wg21-example{
+Assume that \tcode{\hl[macro]{INT_MAX}} equals \tcode{2'147'483'647}.
+\itemdecl{
+const auto q_to_zero = \hl[macro]{INT_MAX} / 2;              // \serif{\tcode{q_to_zero} is \tcode{1'073'741'823}.}
+const auto [q, r] = div_rem_to_inf(\hl[macro]{INT_MAX}, 2);  // \serif{\tcode{q} is \tcode{1'073'741'824} and \tcode{r} is \tcode{-1}.}
+int r2 = x - q * 2;                              // \serif{Multiplication has undefined behavior.}
+}
+}}
+}
+
+\html-h3{Integer modulo \stable-ref{numeric.int.mod}}
+\Vset[pnum]{0}
+
+\itemdecl{
+template<class T>
+  constexpr T mod(T x, T y);
+}
+
+\itemdescr{
+\pnum
+\effects
+Equivalent to \tcode{div_rem_to_neg_inf(x, y).remainder}.
+\br\wg21-note{
+The result is negative if and only if \tcode{y} is negative and \tcode{x} is nonzero.
 }
 }
 
@@ -1059,4 +1438,4 @@ they also trivially satisfy the \ref[#wording] requirement that invocations of t
 are not constant expressions when the result is not representable.
 }
 
-\comment{https://godbolt.org/z/TY5h34jG3}
+\comment{https://godbolt.org/z/71sffK8ob}
