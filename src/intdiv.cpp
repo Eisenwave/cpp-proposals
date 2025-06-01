@@ -2,7 +2,7 @@ template<class T>
 struct div_result {
     T quotient;
     T remainder;
-    friend bool operator==(const div_result&, const div_result&) = default;
+    friend bool operator<=>(const div_result&, const div_result&) = default;
 };
 
 constexpr int __sgn2(int x) {
