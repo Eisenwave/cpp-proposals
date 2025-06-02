@@ -121,6 +121,12 @@ td ul, td ul>li {
     \td{to zero}
 }
 \tr{
+    \td{Objective-C}
+    \td{\tt{/}}
+    \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
     \td{C#}
     \td{\tt{/}}
     \td{\tt{\N{PERCENT SIGN}}}
@@ -128,12 +134,6 @@ td ul, td ul>li {
 }
 \tr{
     \td{Java}
-    \td{\tt{/}}
-    \td{\tt{\N{PERCENT SIGN}}}
-    \td{to zero}
-}
-\tr{
-    \td{Kotlin}
     \td{\tt{/}}
     \td{\tt{\N{PERCENT SIGN}}}
     \td{to zero}
@@ -172,6 +172,12 @@ td ul, td ul>li {
     \td{Perl}
     \td{\tt{int($a/$b)}}
     \td{\tt{\N{PERCENT SIGN}}}
+    \td{to zero}
+}
+\tr{
+    \td{GLSL}
+    \td{\tt{/}}
+    \td{N/A}
     \td{to zero}
 }
 \tr{
@@ -229,6 +235,24 @@ td ul, td ul>li {
     \td{\ul{
         \li{\tt{/} and \tt{mod} to zero}
         \li{\tt{modulo} to \neg-inf}
+    }}
+}
+\tr{
+    \td{CSS}
+    \td{N/A}
+    \td{\tt{rem()}, \tt{mod()}}
+    \td{\ul{
+        \li{\tt{rem()} to zero}
+        \li{\tt{mod()} to \neg-inf}
+    }}
+}
+\tr{
+    \td{Kotlin}
+    \td{\tt{/}, \tt{rem()}}
+    \td{\tt{\N{PERCENT SIGN}}, \tt{mod()}}
+    \td{\ul{
+        \li{\tt{/} and \tt{rem()} to zero}
+        \li{\tt{mod()} to \neg-inf}
     }}
 }
 \tr{
@@ -540,15 +564,6 @@ and it should take the underlying implementation (\ref[#implementation]) into co
 This rule of thumb influences \em{every} design choice.
 }
 
-For example:
-\ul{
-\li{Names are prefixed with \tcode{div} because this is common practice (\ref[#naming]).}
-\li{The \tcode{rem} functions are named after their sign properties,
-which is what users are typically interested in (\ref[#div-rem-asymmetry]).}
-\li{There are no functions that compute quotient and remainder at the same time (\ref[#why-no-combined]).}
-\li{[\N{HORIZONTAL ELLIPSIS}]}
-}
-
 \note{
 You may find a complete list of functions in
 \ref[#try-it-yourself],
@@ -569,19 +584,17 @@ and some questionable design choices, such as:
 even when providing them isn't particularly difficult.}
 \li{Adding rounding modes which optimize for latency or code size,
 without much motivation or details.
-The \tcode{/} and \tcode{\N{PERCENT SIGN}} operators already match the rounding mode
-of hardware division on mainstream architectures,
-so it's unclear how a library function could be faster.}
+The proposal provided no concrete example of how this implementation freedom could be utilized,
+and I suspect that any implementation would default to rounding to zero,
+matching the \tcode{/} operator anyway.}
 }
 
 \h3{Naming}
 
 All functions which compute a quotient begin with \tcode{div},
-and functions which compute a remainder begin with \tcode{rem}.
+and functions which also compute a remainder begin with \tcode{div_rem}.
 Furthermore, the functions include the name of the rounding mode
 in a format that requires as little prior knowledge as feasible.
-
-Functions which compute a remainder are named after how the remainder obtains its sign.
 
 \h4{Isn't \tcode{std::div_*} inconsistent with the existing \tcode{std::div}?}
 
@@ -592,7 +605,7 @@ The proposal does not aim for consistency because the facilities are an unnecess
 and rarely-used C relic for the most part.
 
 On the contrary, when investigating existing practice in \ref[#trivial-for-user],
-I found that almost every use definition for these differently-rounded division functions
+I found that almost every definition of these differently-rounded division functions
 uses \tcode{div_*} names.
 This naming scheme is \em{well-established} and \em{intuitive} for users.
 
@@ -632,26 +645,75 @@ this does not have any clear technical benefit to the user.
 \tcode{std::div_to_inf} is sufficiently clear,
 and adding \tcode{pos} would merely make the function name longer.
 
+\h4[id=naming-mod]{Why is it \tcode{std::mod}?}
+
+\note{
+See \ref[#mod].
+}
+
+Despite the fact that \tt{mod} is somewhat of a misnomer
+("remainder" and "modulo" are synonyms),
+and despite that it is inconsistent with \tcode{std::div_rem},
+it is arguably the best name because:
+
+\ul{
+\li{
+It follows the conventions of Haskell, Ada, CSS, and many more languages,
+where \tt{mod} rounds towards \neg-inf (unlike \tt{\N{PERCENT SIGN}}, \tt{rem}, etc.).
+See \ref[#language-support].
+}
+\li{
+It matches the notation of the modulo operator in mathematical literature.
+That is,
+\math{\mrow{
+    \mo{\N{MINUS SIGN}}
+    \mn{2}
+    \mo{mod}
+    \mn{5}
+    \mo{=}
+    \mn{3}
+}}\N{ZERO-WIDTH NO-BREAK SPACE}.
+}
+}
+
 \h3{Interface}
 
 The functions generally match the style of similar features in \header{numeric},
 like \eelis{numeric.sat} or \eelis{numeric.ops.gcd}.
+The design also follows \ref[P3161R4].
 
 \example{
-A function which computed the quotient rounded towards zero is declared as follows:
+For rounding to zero, the following functions exist:
 \cppblock{
 template<class T>
-constexpr T div_to_zero(T x, T y) /* not noexcept */;
+struct div_result {
+    T quotient;
+    T remainder;
+    friend bool operator<=>(const div_result&, const div_result&) = default;
+};
+
+template<class T>
+  constexpr div_result<T> div_rem_to_zero(T x, T y) /* not noexcept */;
+template<class T>
+  constexpr T div_to_zero(T x, T y) /* not noexcept */;
 }
 It is constrained to accept only signed or unsigned integer types.
 }
 
+\h4[id=error-handling-noexcept]{Error handling and \tcode{noexcept}}
+
 These functions are not \tcode{noexcept} because they could not have a wide contract;
 they naturally have undefined behavior for cases like \tcode{div_to_zero(x, 0)}
 or \tcode{div_to_zero(\hl[macro]{INT_MIN}, -1)}.
+Looking at \ref[#implementation],
+it would require additional effort to perform error handling such as throwing exceptions,
+so it seems best to leave these functions undefined if and only if division is undefined too.
 
 However, an invocation of these functions is not a constant expression for such inputs;
 i.e. we don't get undefined behavior during constant evaluation.
+This can even be implemented without a single additional line of code:
+since we always perform a division in these functions,
+they naturally get disqualified from being core constant expressions when division is undefiend.
 
 \h4{Why no \tcode{std::rounding} parameter?}
 
@@ -715,6 +777,50 @@ all we accomplish is making the user write
 \tcode{std::divide(std::rounding::to_neg_inf, x, y)} instead of
 \tcode{std::div_to_neg_inf(x, y)}.
 
+\h4[id=div-result]{\tcode{std::div_result<T>}}
+
+As seen in in \ref[#interface],
+we define an additional class template \tcode{std::div_result}:
+
+\cppblock{
+template<class T>
+struct div_result {
+    T quotient;
+    T remainder;
+    friend bool operator<=>(const div_result&, const div_result&) = default;
+};
+}
+
+This generally matches standard library style,
+including the active proposal \ref[P3161R4],
+and including the "legacy types" \tcode{std::div_t},
+\tcode{std::ldiv_t}.
+That is, we should not use reference output parameters,
+but return a value.
+
+However, we should also not reuse those legacy types
+because it is not possible to deduce their "member type" from the class,
+which would make them clunky in generic code.
+There also exist no such classes for extended integer types and bit-precise integer types.
+
+\tcode{operator<=>} exists because the user may want to compare
+the quotient and remainder to an existing pair of values in one go,
+or store results of \tcode{std::div_rem} functions in a \tcode{std::set}, etc.
+It would seem arbitrarily limiting to make \tcode{std::div_result} incomparable.
+
+\h4[id=div-rem-combined]{Do we really need the \tcode{std::div_rem_*} functions?}
+
+Yes, because it is non-trivial to compute the remainder without overflow
+for rounding modes other than towards zero.
+See \ref[#computing-remainders-is-hard].
+
+Furthermore,
+it is relatively cheap to obtain the remainder as a side product of any division function
+(see \ref[#implementation]).
+On extremely feature-starved hardware with no instructions for division and multiplication,
+computing the remainder via multiplication may be more expensive
+than producing it "directly" during division (implemented in software).
+
 \h3{Supported rounding modes}
 
 It is apparent that the proposal contains quite a lot of rounding modes
@@ -765,105 +871,30 @@ Any of the "top-level rounding modes" could plausibly be chosen
 as a "tie-breaking rounding mode" as well,
 which is what this proposal offers.
 
-\h3[id=div-rem-asymmetry]{Why the asymmetry between \tcode{div} and \tcode{rem}?}
+\h3[id=mod]{\tcode{std::mod}}
 
-It would also be plausible to use names like
-\tcode{std::rem_to_neg_inf} instead of \tcode{std::rem_divisor_sign},
-which is obviously more symmetrical.
-However, this may be confusing in practice
-because we typically avoid use of \tcode{\N{PERCENT SIGN}} due to its sign being negative.
+In addition to the quotient (\tcode{std::div_*})
+and quotient/remainder functions (\tcode{std::div_rem_*}),
+we also define a single function \tcode{std::mod}
+which specifically computes the remainder of the division rounding towards \neg-inf{}.
 
-What the user \em{actually} wants is a function that gives them a positive remainder,
-or a remainder with the sign of the divisor.
-The obvious naming choice is therefore \tcode{std::rem_positive}.
+Unlike the other rounding modes,
+the remainder of division rounding to \neg-inf is uniquely useful for modular arithmetic
+because the sign of the remainder is the sign of the divisor.
+In other words, if we divide by a positive number, the remainder is always positive.
+This is why it has a dedicated function.
 
-\note{
-An always-positive remainder is the remainder of Euclidean division
-and would have no \tcode{std::div_} counterpart.
-}
+Division rounding to zero, where the sign of the remainder is that of the divisor,
+already has \tcode{\N{PERCENT SIGN}}, so no dedicated function is required.
+The other rounding modes have more chaotic remainder signs,
+and thus it is rarely useful to compute the remainder in isolation,
+not in conjunction with the quotient.
 
-Furthermore, most of the \tcode{std::div} functions do not have a remainder with useful
-sign properties, so it is typically sufficient to compute it using the quotient.
-The implementation of \tcode{std::div} and \tcode{std::rem} functions also
-tends to be asymmetrical.
-
-\example{
-\tcode{std::rem_positive} can be implemented as follows,
-and the approach used here looks nothing like Euclidean division.
-
-\cppblock{
-int rem_positive(int x, int y) {
-    int rem = x % y;
-    // effectively, this adds abs(y) when rem is negative,
-    // but overflow-safely, and avoiding the UB of abs(INT_MIN)
-    return int(unsigned(rem) + unsigned(rem < 0) * (y < 0 ? -unsigned(y) : unsigned(y)));
-}
-}
-}
-
-In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
-neither of which exist.
-
-\h3[id=why-no-combined]{Why no combined remainder and quotient?}
-
-The asymmetry in the previous section largely explains why we don't provide
-functions which compute the remainder and quotient at the same time.
-In practice, the remainder is only commonly needed for certain rounding modes,
-not for all proposed ones.
-
-In practice, separate invocations of \tcode{std::div_to_neg_inf} and \tcode{std::mod}
-optimize the same as a dedicated function
-which computes the quotient and remainder simultaneously.
-
-\example{
-In the following code, \tcode{div_rem_to_neg_inf_1} and \tcode{div_rem_to_neg_inf_2}
-produce bit-identical assembly output (\ref[CompilerExplorerRemQuo]).
-\cppblock{
-struct div_t {
-    int quotient, remainder;
-};
-
-// The user can obviously write this themselves \N{HORIZONTAL ELLIPSIS}
-div_t div_rem_to_neg_inf_1(int x, int y) {
-    // see \ref[#implementation] for definitions of these
-    return { div_to_neg_inf(x, y), mod(x, y) };
-}
-
-// \N{HORIZONTAL ELLIPSIS} so we don't need to provide this:
-div_t div_rem_to_neg_inf_2(int x, int y) {
-    int quotient_negative = (x ^ y) < 0;
-    bool adjust = x % y != 0 && quotient_negative;
-    return {
-        .quotient  = x / y - int(adjust),
-        .remainder = x % y + int(adjust) * y,
-    };
-}
-}
-}
-
-For a lot of the other functions in \ref[#implementation],
-the adjustments made to the initial result of \tcode{/} are so complex
-that it would not be beneficial to adjust the remainder simultaneously.
-In any case, the remainder can be computed using \tcode{x - quotient * y},
-which has relatively low cost compared performing the integer division in the first place.
-That low cost is why some architectures (e.g. ARM) do not have a dedicated instruction
-for computing the remainder (and the remainder is not a side product of division).
-
-In conclusion, functions for computing the quotient and remainder simultaneously
-are of unclear utility for many of the rounding modes,
-and are driven by a micro-optimization which is insignificant for modern CPUs and architectures.
+\note{See \ref[#naming-mod].}
 
 \h2{Implementation experience}
 
 A reference implementation can be found in \ref[#implementation].
-The functions listed there have been tested for correctness.
-At least Clang compiler emits entirely branchless code for all functions,
-and they merely require a single integer division.
-
-Note that the listed functions are not templates;
-they work exclusively with \tcode{int}.
-However, making the functions use \tcode{typename T} instead of \tcode{int} is the easy part.
-The hard part is coming up with a robust, high-performance sequence of operations.
 
 \h2{Try it yourself}
 
@@ -902,8 +933,8 @@ std::div_ties_to_neg_inf(x, y)  \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-t
 std::div_ties_to_odd(x, y)      \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-odd]{-2}}
 std::div_ties_to_even(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=quo-ties-even]{-2}}
 
-x \N{PERCENT SIGN} y              \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-trunc]{-2}}
-std::mod(x, y)     \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}}
+x \N{PERCENT SIGN} y                           \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-trunc]{-2}} // sign matches x
+std::mod(x, y)                  \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}} // sign matches y
 }
 
 \note{
@@ -1347,8 +1378,11 @@ A result object where
 \ul[style=margin:0]{
 \li{\tcode{quotient} is the quotient \math{\mi{q}} returned by \tcode{div_\exposid{rounding}(x, y)} and}
 \li{
-\tcode{remainder} is an integer \math{\mi{r}},
-so that \math{\mrow{\mi{r}\mo{=}\mi{x}\mo{\N{MINUS SIGN}}\mi{q}\mi{y}}}.
+\tcode{remainder} is \math{\mrow{\mi{x}\mo{\N{MINUS SIGN}}\mi{q}\mi{y}}}
+if \tcode{T} is signed, otherwise
+the integer congruent to \math{\mrow{\mi{x}\mo{\N{MINUS SIGN}}\mi{q}\mi{y}}}
+modulo \math{\msup{\mn{2}\mi{N}}}
+where \math{\mi{N}} is the width of \tcode{T}.
 }
 }
 \wg21-note{
@@ -1430,6 +1464,14 @@ is not a core constant expression\iref{expr.const}.
     long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1.pdf
 ]
 \bib[
+    id = P3161R4,
+    title = Unified integer overflow arithmetic,
+    date = 2025-03-26,
+    author = Tiago Freire,
+    link = https://wg21.link/p3161r4,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf
+]
+\bib[
     id = StackOverflowDivision,
     title = Fast ceiling of an integer division in C / C++,
     link = https://stackoverflow.com/q/2745074/5740428
@@ -1440,17 +1482,16 @@ is not a core constant expression\iref{expr.const}.
     title = Rounding Modes For Integer Division,
     link = https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/
 ]
-\bib[
-    id = CompilerExplorerRemQuo,
-    author = Jan Schultke,
-    link = https://godbolt.org/z/vTPq9eGP6
-]
 
 \make-bib
 
 \h2[id=implementation]{Appendix A \N{EM DASH} Reference implementation}
 
-\macro[\sgn2]{\exposid{sgn}}
+See below a partial reference implementation of the proposed functions.
+It is partial because the listed functions are not templates;
+they work exclusively with \tcode{int}.
+However, making the functions use \tcode{typename T} instead of \tcode{int} is the easy part.
+The hard part is coming up with a robust, high-performance sequence of operations.
 
 \cppblock{\include{intdiv.cpp}}
 

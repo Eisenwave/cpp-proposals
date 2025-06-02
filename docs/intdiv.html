@@ -411,6 +411,10 @@ main {
     margin-right: auto;
 }
 
+p {
+    text-align: justify;
+}
+
 abstract-block,
 blockquote,
 bug-block,
@@ -1560,10 +1564,18 @@ with other rounding modes.
 <a href=#should-it-be--and-?><h4>Should it be <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_floor</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_ceil</h-></code>?</h4></a>
 <div class=toc-num data-level=4>3.2.3</div>
 <a href=#should-it-be-?><h4>Should it be <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_pos_inf</h-></code>?</h4></a>
+<div class=toc-num data-level=4>3.2.4</div>
+<a href=#naming-mod><h4>Why is it <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code>?</h4></a>
 <div class=toc-num data-level=3>3.3</div>
 <a href=#interface><h3>Interface</h3></a>
 <div class=toc-num data-level=4>3.3.1</div>
+<a href=#error-handling-noexcept><h4>Error handling and <code><h- data-h=kw>noexcept</h-></code></h4></a>
+<div class=toc-num data-level=4>3.3.2</div>
 <a href=#why-no--parameter?><h4>Why no <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rounding</h-></code> parameter?</h4></a>
+<div class=toc-num data-level=4>3.3.3</div>
+<a href=#div-result><h4><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-></code></h4></a>
+<div class=toc-num data-level=4>3.3.4</div>
+<a href=#div-rem-combined><h4>Do we really need the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_rem_</h-><h- data-h=sym_op>*</h-></code> functions?</h4></a>
 <div class=toc-num data-level=3>3.4</div>
 <a href=#supported-rounding-modes><h3>Supported rounding modes</h3></a>
 <div class=toc-num data-level=4>3.4.1</div>
@@ -1573,9 +1585,7 @@ with other rounding modes.
 <div class=toc-num data-level=4>3.4.3</div>
 <a href=#to-nearest-rounding-division-and-tie-breaking><h4>To-nearest-rounding division and tie breaking</h4></a>
 <div class=toc-num data-level=3>3.5</div>
-<a href=#div-rem-asymmetry><h3>Why the asymmetry between <code><h- data-h=id>div</h-></code> and <code><h- data-h=id>rem</h-></code>?</h3></a>
-<div class=toc-num data-level=3>3.6</div>
-<a href=#why-no-combined><h3>Why no combined remainder and quotient?</h3></a>
+<a href=#mod><h3><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code></h3></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#implementation-experience><h2>Implementation experience</h2></a>
 <div class=toc-num data-level=2>5</div>
@@ -1698,6 +1708,12 @@ td ul, td ul>li {
     <td>to zero</td>
 </tr>
 <tr>
+    <td>Objective-C</td>
+    <td><tt->/</tt-></td>
+    <td><tt->%</tt-></td>
+    <td>to zero</td>
+</tr>
+<tr>
     <td>C#</td>
     <td><tt->/</tt-></td>
     <td><tt->%</tt-></td>
@@ -1705,12 +1721,6 @@ td ul, td ul>li {
 </tr>
 <tr>
     <td>Java</td>
-    <td><tt->/</tt-></td>
-    <td><tt->%</tt-></td>
-    <td>to zero</td>
-</tr>
-<tr>
-    <td>Kotlin</td>
     <td><tt->/</tt-></td>
     <td><tt->%</tt-></td>
     <td>to zero</td>
@@ -1749,6 +1759,12 @@ td ul, td ul>li {
     <td>Perl</td>
     <td><tt->int($a/$b)</tt-></td>
     <td><tt->%</tt-></td>
+    <td>to zero</td>
+</tr>
+<tr>
+    <td>GLSL</td>
+    <td><tt->/</tt-></td>
+    <td>N/A</td>
     <td>to zero</td>
 </tr>
 <tr>
@@ -1806,6 +1822,24 @@ td ul, td ul>li {
     <td><ul>
         <li><tt->/</tt-> and <tt->mod</tt-> to zero</li>
         <li><tt->modulo</tt-> to <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math></li>
+    </ul></td>
+</tr>
+<tr>
+    <td>CSS</td>
+    <td>N/A</td>
+    <td><tt->rem()</tt->, <tt->mod()</tt-></td>
+    <td><ul>
+        <li><tt->rem()</tt-> to zero</li>
+        <li><tt->mod()</tt-> to <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math></li>
+    </ul></td>
+</tr>
+<tr>
+    <td>Kotlin</td>
+    <td><tt->/</tt->, <tt->rem()</tt-></td>
+    <td><tt->%</tt->, <tt->mod()</tt-></td>
+    <td><ul>
+        <li><tt->/</tt-> and <tt->rem()</tt-> to zero</li>
+        <li><tt->mod()</tt-> to <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math></li>
     </ul></td>
 </tr>
 <tr>
@@ -2105,15 +2139,6 @@ and it should take the underlying implementation (<a href=#implementation>§8. A
 This rule of thumb influences <em>every</em> design choice.
 </p></important-block>
 
-<p>For example:
-</p><ul>
-<li>Names are prefixed with <code><h- data-h=id>div</h-></code> because this is common practice (<a href=#naming>§3.2. Naming</a>).</li>
-<li>The <code><h- data-h=id>rem</h-></code> functions are named after their sign properties,
-which is what users are typically interested in (<a href=#div-rem-asymmetry>§3.5. Why the asymmetry between <code><h- data-h=id>div</h-></code> and <code><h- data-h=id>rem</h-></code>?</a>).</li>
-<li>There are no functions that compute quotient and remainder at the same time (<a href=#why-no-combined>§3.6. Why no combined remainder and quotient?</a>).</li>
-<li>[…]</li>
-</ul>
-
 <note-block><p><intro-></intro-> 
 You may find a complete list of functions in
 <a href=#try-it-yourself>§5. Try it yourself</a>,
@@ -2134,19 +2159,17 @@ and some questionable design choices, such as:
 even when providing them isn't particularly difficult.</li>
 <li>Adding rounding modes which optimize for latency or code size,
 without much motivation or details.
-The <code><h- data-h=sym_op>/</h-></code> and <code><h- data-h=sym_op>%</h-></code> operators already match the rounding mode
-of hardware division on mainstream architectures,
-so it's unclear how a library function could be faster.</li>
+The proposal provided no concrete example of how this implementation freedom could be utilized,
+and I suspect that any implementation would default to rounding to zero,
+matching the <code><h- data-h=sym_op>/</h-></code> operator anyway.</li>
 </ul>
 
 <h3 id=naming><a class=para href=#naming></a>3.2. Naming</h3>
 
 <p>All functions which compute a quotient begin with <code><h- data-h=id>div</h-></code>,
-and functions which compute a remainder begin with <code><h- data-h=id>rem</h-></code>.
+and functions which also compute a remainder begin with <code><h- data-h=id>div_rem</h-></code>.
 Furthermore, the functions include the name of the rounding mode
 in a format that requires as little prior knowledge as feasible.
-</p>
-<p>Functions which compute a remainder are named after how the remainder obtains its sign.
 </p>
 <h4 id="isn&apos;t--inconsistent-with-the-existing-?"><a class=para href="#isn%27t--inconsistent-with-the-existing-?"></a>3.2.1. Isn't <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_</h-><h- data-h=sym_op>*</h-></code> inconsistent with the existing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div</h-></code>?</h4>
 
@@ -2157,7 +2180,7 @@ The proposal does not aim for consistency because the facilities are an unnecess
 and rarely-used C relic for the most part.
 </p>
 <p>On the contrary, when investigating existing practice in <a href=#trivial-for-user>§2.1. Is this not trivial for the user to do?</a>,
-I found that almost every use definition for these differently-rounded division functions
+I found that almost every definition of these differently-rounded division functions
 uses <code><h- data-h=id>div_</h-><h- data-h=sym_op>*</h-></code> names.
 This naming scheme is <em>well-established</em> and <em>intuitive</em> for users.
 </p>
@@ -2197,26 +2220,75 @@ this does not have any clear technical benefit to the user.
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_inf</h-></code> is sufficiently clear,
 and adding <code><h- data-h=id>pos</h-></code> would merely make the function name longer.
 </p>
+<h4 id=naming-mod><a class=para href=#naming-mod></a>3.2.4. Why is it <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code>?</h4>
+
+<note-block><p><intro-></intro-> 
+See <a href=#mod>§3.5. <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code></a>.
+</p></note-block>
+
+<p>Despite the fact that <tt->mod</tt-> is somewhat of a misnomer
+("remainder" and "modulo" are synonyms),
+and despite that it is inconsistent with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_rem</h-></code>,
+it is arguably the best name because:
+</p>
+<ul>
+<li>
+It follows the conventions of Haskell, Ada, CSS, and many more languages,
+where <tt->mod</tt-> rounds towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math> (unlike <tt->%</tt->, <tt->rem</tt->, etc.).
+See <a href=#language-support>§1.1.1. Language support for integer division</a>.
+</li>
+<li>
+It matches the notation of the modulo operator in mathematical literature.
+That is,
+<math display=inline><mrow>
+    <mo>−</mo>
+    <mn>2</mn>
+    <mo>mod</mo>
+    <mn>5</mn>
+    <mo>=</mo>
+    <mn>3</mn>
+</mrow></math>﻿.
+</li>
+</ul>
+
 <h3 id=interface><a class=para href=#interface></a>3.3. Interface</h3>
 
 <p>The functions generally match the style of similar features in <code><h- data-h=str>&lt;numeric&gt;</h-></code>,
 like <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a> or <a href=https://eel%2eis/c++draft/numeric%2eops%2egcd>[numeric.ops.gcd]</a>.
+The design also follows <a href="https://wg21%2elink/p3161r4">[P3161R4]</a>.
 </p>
 <example-block><p><intro-></intro-> 
-A function which computed the quotient rounded towards zero is declared as follows:
+For rounding to zero, the following functions exist:
 </p><code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> not noexcept </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h-></code-block>
+<h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> not noexcept </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> not noexcept </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h-></code-block>
 <p>It is constrained to accept only signed or unsigned integer types.
 </p></example-block>
+
+<h4 id=error-handling-noexcept><a class=para href=#error-handling-noexcept></a>3.3.1. Error handling and <code><h- data-h=kw>noexcept</h-></code></h4>
 
 <p>These functions are not <code><h- data-h=kw>noexcept</h-></code> because they could not have a wide contract;
 they naturally have undefined behavior for cases like <code><h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-></code>
 or <code><h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=mac>INT_MIN</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>.
+Looking at <a href=#implementation>§8. Appendix A — Reference implementation</a>,
+it would require additional effort to perform error handling such as throwing exceptions,
+so it seems best to leave these functions undefined if and only if division is undefined too.
 </p>
 <p>However, an invocation of these functions is not a constant expression for such inputs;
 i.e. we don't get undefined behavior during constant evaluation.
+This can even be implemented without a single additional line of code:
+since we always perform a division in these functions,
+they naturally get disqualified from being core constant expressions when division is undefiend.
 </p>
-<h4 id=why-no--parameter?><a class=para href=#why-no--parameter?></a>3.3.1. Why no <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rounding</h-></code> parameter?</h4>
+<h4 id=why-no--parameter?><a class=para href=#why-no--parameter?></a>3.3.2. Why no <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rounding</h-></code> parameter?</h4>
 
 <p>As compared to <a href="https://wg21%2elink/p0105r1">[P0105R1]</a>,
 I do not propose that the rounding mode is passed as a runtime parameter.
@@ -2274,6 +2346,48 @@ all we accomplish is making the user write
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>divide</h-><h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rounding</h-><h- data-h=sym_op>::</h-><h- data-h=id>to_neg_inf</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-></code> instead of
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-></code>.
 </p>
+<h4 id=div-result><a class=para href=#div-result></a>3.3.3. <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-></code></h4>
+
+<p>As seen in in <a href=#interface>§3.3. Interface</a>,
+we define an additional class template <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_result</h-></code>:
+</p>
+<code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>This generally matches standard library style,
+including the active proposal <a href="https://wg21%2elink/p3161r4">[P3161R4]</a>,
+and including the "legacy types" <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>div_t</h-></code>,
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>ldiv_t</h-></code>.
+That is, we should not use reference output parameters,
+but return a value.
+</p>
+<p>However, we should also not reuse those legacy types
+because it is not possible to deduce their "member type" from the class,
+which would make them clunky in generic code.
+There also exist no such classes for extended integer types and bit-precise integer types.
+</p>
+<p><code><h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-></code> exists because the user may want to compare
+the quotient and remainder to an existing pair of values in one go,
+or store results of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_rem</h-></code> functions in a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>set</h-></code>, etc.
+It would seem arbitrarily limiting to make <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_result</h-></code> incomparable.
+</p>
+<h4 id=div-rem-combined><a class=para href=#div-rem-combined></a>3.3.4. Do we really need the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_rem_</h-><h- data-h=sym_op>*</h-></code> functions?</h4>
+
+<p>Yes, because it is non-trivial to compute the remainder without overflow
+for rounding modes other than towards zero.
+See <a href=#computing-remainders-is-hard>§2.2. Computing remainders is hard, actually</a>.
+</p>
+<p>Furthermore,
+it is relatively cheap to obtain the remainder as a side product of any division function
+(see <a href=#implementation>§8. Appendix A — Reference implementation</a>).
+On extremely feature-starved hardware with no instructions for division and multiplication,
+computing the remainder via multiplication may be more expensive
+than producing it "directly" during division (implemented in software).
+</p>
 <h3 id=supported-rounding-modes><a class=para href=#supported-rounding-modes></a>3.4. Supported rounding modes</h3>
 
 <p>It is apparent that the proposal contains quite a lot of rounding modes
@@ -2324,101 +2438,30 @@ Any of the "top-level rounding modes" could plausibly be chosen
 as a "tie-breaking rounding mode" as well,
 which is what this proposal offers.
 </p>
-<h3 id=div-rem-asymmetry><a class=para href=#div-rem-asymmetry></a>3.5. Why the asymmetry between <code><h- data-h=id>div</h-></code> and <code><h- data-h=id>rem</h-></code>?</h3>
+<h3 id=mod><a class=para href=#mod></a>3.5. <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code></h3>
 
-<p>It would also be plausible to use names like
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_to_neg_inf</h-></code> instead of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_divisor_sign</h-></code>,
-which is obviously more symmetrical.
-However, this may be confusing in practice
-because we typically avoid use of <code><h- data-h=sym_op>%</h-></code> due to its sign being negative.
+<p>In addition to the quotient (<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_</h-><h- data-h=sym_op>*</h-></code>)
+and quotient/remainder functions (<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_rem_</h-><h- data-h=sym_op>*</h-></code>),
+we also define a single function <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code>
+which specifically computes the remainder of the division rounding towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math>.
 </p>
-<p>What the user <em>actually</em> wants is a function that gives them a positive remainder,
-or a remainder with the sign of the divisor.
-The obvious naming choice is therefore <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_positive</h-></code>.
+<p>Unlike the other rounding modes,
+the remainder of division rounding to <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math> is uniquely useful for modular arithmetic
+because the sign of the remainder is the sign of the divisor.
+In other words, if we divide by a positive number, the remainder is always positive.
+This is why it has a dedicated function.
 </p>
-<note-block><p><intro-></intro-> 
-An always-positive remainder is the remainder of Euclidean division
-and would have no <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_</h-></code> counterpart.
-</p></note-block>
+<p>Division rounding to zero, where the sign of the remainder is that of the divisor,
+already has <code><h- data-h=sym_op>%</h-></code>, so no dedicated function is required.
+The other rounding modes have more chaotic remainder signs,
+and thus it is rarely useful to compute the remainder in isolation,
+not in conjunction with the quotient.
+</p>
+<note-block><p><intro-></intro-> See <a href=#naming-mod>§3.2.4. Why is it <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code>?</a>.</p></note-block>
 
-<p>Furthermore, most of the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div</h-></code> functions do not have a remainder with useful
-sign properties, so it is typically sufficient to compute it using the quotient.
-The implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem</h-></code> functions also
-tends to be asymmetrical.
-</p>
-<example-block><p><intro-></intro-> 
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_positive</h-></code> can be implemented as follows,
-and the approach used here looks nothing like Euclidean division.
-</p>
-<code-block><h- data-h=kw_type>int</h-> <h- data-h=id>rem_positive</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> effectively, this adds abs(y) when rem is negative,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> but overflow-safely, and avoiding the UB of abs(INT_MIN)</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>rem</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>rem</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=sym_op>-</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-></code-block>
-</example-block>
-
-<p>In summary, symmetrical names would hint at a symmetry in implementation and usefulness,
-neither of which exist.
-</p>
-<h3 id=why-no-combined><a class=para href=#why-no-combined></a>3.6. Why no combined remainder and quotient?</h3>
-
-<p>The asymmetry in the previous section largely explains why we don't provide
-functions which compute the remainder and quotient at the same time.
-In practice, the remainder is only commonly needed for certain rounding modes,
-not for all proposed ones.
-</p>
-<p>In practice, separate invocations of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_neg_inf</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-></code>
-optimize the same as a dedicated function
-which computes the quotient and remainder simultaneously.
-</p>
-<example-block><p><intro-></intro-> 
-In the following code, <code><h- data-h=id>div_rem_to_neg_inf_1</h-></code> and <code><h- data-h=id>div_rem_to_neg_inf_2</h-></code>
-produce bit-identical assembly output (<a href="https://godbolt%2eorg/z/vTPq9eGP6">[CompilerExplorerRemQuo]</a>).
-</p><code-block><h- data-h=kw>struct</h-> <h- data-h=id_type>div_t</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> The user can obviously write this themselves </h-><h- data-h=cmt>…</h->
-<h- data-h=id_type>div_t</h-> <h- data-h=id>div_rem_to_neg_inf_1</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> see </h-><a href=#implementation>§8. Appendix A — Reference implementation</a><h- data-h=cmt> for definitions of these</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>div_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h->
-
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><h- data-h=cmt>…</h-><h- data-h=cmt> so we don't need to provide this:</h->
-<h- data-h=id_type>div_t</h-> <h- data-h=id>div_rem_to_neg_inf_2</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_negative</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>^</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_type>bool</h-> <h- data-h=id>adjust</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>quotient_negative</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h->  <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>-</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>adjust</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>adjust</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-></code-block>
-</example-block>
-
-<p>For a lot of the other functions in <a href=#implementation>§8. Appendix A — Reference implementation</a>,
-the adjustments made to the initial result of <code><h- data-h=sym_op>/</h-></code> are so complex
-that it would not be beneficial to adjust the remainder simultaneously.
-In any case, the remainder can be computed using <code><h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h-></code>,
-which has relatively low cost compared performing the integer division in the first place.
-That low cost is why some architectures (e.g. ARM) do not have a dedicated instruction
-for computing the remainder (and the remainder is not a side product of division).
-</p>
-<p>In conclusion, functions for computing the quotient and remainder simultaneously
-are of unclear utility for many of the rounding modes,
-and are driven by a micro-optimization which is insignificant for modern CPUs and architectures.
-</p>
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>4. Implementation experience</h2>
 
 <p>A reference implementation can be found in <a href=#implementation>§8. Appendix A — Reference implementation</a>.
-The functions listed there have been tested for correctness.
-At least Clang compiler emits entirely branchless code for all functions,
-and they merely require a single integer division.
-</p>
-<p>Note that the listed functions are not templates;
-they work exclusively with <code><h- data-h=kw_type>int</h-></code>.
-However, making the functions use <code><h- data-h=kw>typename</h-> <h- data-h=id>T</h-></code> instead of <code><h- data-h=kw_type>int</h-></code> is the easy part.
-The hard part is coming up with a robust, high-performance sequence of operations.
 </p>
 <h2 id=try-it-yourself><a class=para href=#try-it-yourself></a>5. Try it yourself</h2>
 
@@ -2456,8 +2499,8 @@ you can play around with the following code block.
 <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_ties_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->      →  <h- data-h=num><span id=quo-ties-odd>-2</span></h->
 <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_ties_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->     →  <h- data-h=num><span id=quo-ties-even>-2</span></h->
 
-<h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h->              →  <h- data-h=num><span id=rem-trunc>-2</span></h->
-<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->     →  <h- data-h=num><span id=rem-floor>3</span></h-></code-block>
+<h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h->                           →  <h- data-h=num><span id=rem-trunc>-2</span></h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> sign matches x</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->                  →  <h- data-h=num><span id=rem-floor>3</span></h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> sign matches y</h-></code-block>
 
 <note-block><p><intro-></intro-> 
 This demonstration conveniently ignores that <code><h- data-h=kw_type>int</h-></code> has finite size.
@@ -3003,8 +3046,11 @@ A result object where
 </p><ul style=margin:0>
 <li><code><h- data-h=id>quotient</h-></code> is the quotient <math display=inline><mi>q</mi></math> returned by <code><h- data-h=id>div_</h-><i><h- data-h=id>rounding</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-></code> and</li>
 <li>
-<code><h- data-h=id>remainder</h-></code> is an integer <math display=inline><mi>r</mi></math>,
-so that <math display=inline><mrow><mi>r</mi><mo>=</mo><mi>x</mi><mo>−</mo><mi>q</mi><mi>y</mi></mrow></math>.
+<code><h- data-h=id>remainder</h-></code> is <math display=inline><mrow><mi>x</mi><mo>−</mo><mi>q</mi><mi>y</mi></mrow></math>
+if <code><h- data-h=id>T</h-></code> is signed, otherwise
+the integer congruent to <math display=inline><mrow><mi>x</mi><mo>−</mo><mi>q</mi><mi>y</mi></mrow></math>
+modulo <math display=inline><msup><mn>2</mn><mi>N</mi></msup></math>
+where <math display=inline><mi>N</mi></math> is the width of <code><h- data-h=id>T</h-></code>.
 </li>
 </ul>
 <p><wg21-block>[<i>Note</i>: 
@@ -3079,55 +3125,70 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <span class=bib-author>Alexander Zaitsev.</span>
 <span class=bib-title>C++ Numerics Work In Progress</span>
 <span class=bib-date>2019-12-27</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2020/p1889r1%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1.pdf</a></div><div id=bib-item-StackOverflowDivision class=bib-item>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2020/p1889r1%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1889r1.pdf</a></div><div id=bib-item-P3161R4 class=bib-item>
+<a href="https://wg21%2elink/p3161r4">[P3161R4]</a>
+<span class=bib-author>Tiago Freire.</span>
+<span class=bib-title>Unified integer overflow arithmetic</span>
+<span class=bib-date>2025-03-26</span>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161R4%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf</a></div><div id=bib-item-StackOverflowDivision class=bib-item>
 <a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowDivision]</a>
 <span class=bib-title>Fast ceiling of an integer division in C / C++</span>
 <a href="https://stackoverflow%2ecom/q/2745074/5740428" class=bib-link>https://stackoverflow.com/q/2745074/5740428</a></div><div id=bib-item-BuggyDivisions class=bib-item>
 <a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/">[BuggyDivisions]</a>
 <span class=bib-author>njohnny84.</span>
 <span class=bib-title>Rounding Modes For Integer Division</span>
-<a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/" class=bib-link>https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/</a></div><div id=bib-item-CompilerExplorerRemQuo class=bib-item>
-<a href="https://godbolt%2eorg/z/vTPq9eGP6">[CompilerExplorerRemQuo]</a>
-<span class=bib-author>Jan Schultke.</span>
-<a href="https://godbolt%2eorg/z/vTPq9eGP6" class=bib-link>https://godbolt.org/z/vTPq9eGP6</a></div></div>
+<a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/" class=bib-link>https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/</a></div></div>
 
 <h2 id=implementation><a class=para href=#implementation></a>8. Appendix A — Reference implementation</h2>
 
+<p>See below a partial reference implementation of the proposed functions.
+It is partial because the listed functions are not templates;
+they work exclusively with <code><h- data-h=kw_type>int</h-></code>.
+However, making the functions use <code><h- data-h=kw>typename</h-> <h- data-h=id>T</h-></code> instead of <code><h- data-h=kw_type>int</h-></code> is the easy part.
+The hard part is coming up with a robust, high-performance sequence of operations.
+</p>
+<code-block><h- data-h=mac>#include &lt;type_traits&gt;</h->
 
-
-<code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
 <h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
-<h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Equivalent to: (x &gt;&gt; (INT_WIDTH - 1)) | 1</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-> <h- data-h=sym_punc>:</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=kw>constexpr</h-> <h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_signed_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Equivalent to: (x &gt;&gt; (INT_WIDTH - 1)) | 1</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-> <h- data-h=sym_punc>:</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->    
+    <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>else</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h->
 
-<h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Dividend.</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Divisor.</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> If true, truncating division gives us the wrong result,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> and increasing the magnitude of the quotient by one would be correct.</h->
-    <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h->
-    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> The quotient sign (1 or -1).</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_sign</h->
-<h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_change</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_change</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>quotient_change</h-><h- data-h=sym_punc>,</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> This is (x % y - quotient_change * y),</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> except that we use unsigned int to avoid overflow when y is INT_MIN.</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Due to modular arithmetic rules, when we multiply y with -1,</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> the remainder is congruent to (x % y + y),</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> so simply doing it all with unsigned integers fixes our overflow problems.</h->
-        <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>quotient_change</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
-    <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ Given a dividend x, divisor y, and quotient offset d (-1, 0, or 1),</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ returns (x / y + d) as the quotient,</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ and a remainder of a division between x and y</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ that would have yielded that quotient.</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>d</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=kw>constexpr</h-> <h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_signed_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=kw>using</h-> <h- data-h=id>U</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>make_unsigned_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h->
+            <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>d</h-><h- data-h=sym_punc>,</h->
+            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> This is (x % y - d * y),</h->
+            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> except that we use unsigned int to avoid overflow when y is INT_MIN.</h->
+            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Due to modular arithmetic rules, when we multiply y with -1,</h->
+            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> the remainder is congruent to (x % y + y),</h->
+            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> so simply doing it all with unsigned integers fixes our overflow problems.</h->
+            <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>T</h-><h- data-h=sym_par>(</h-><h- data-h=id>U</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>U</h-><h- data-h=sym_par>(</h-><h- data-h=id>d</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>U</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+        <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>else</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h-> 
+            <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>d</h-><h- data-h=sym_punc>,</h->
+            <h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>d</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>y</h->
+        <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Idea: trivial implementation.</h->
@@ -3145,7 +3206,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_away_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_away_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3156,7 +3217,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       the result is one greater than what we want</h->
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt>       for negative quotients, unless the remainder is zero.</h->
 <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_positive</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>^</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>bool</h-> <h- data-h=id>quotient_positive</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>^</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>adjust</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>quotient_positive</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_brac>{</h->
         <h- data-h=sym_op>.</h-><h- data-h=id>quotient</h->  <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>adjust</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h->
@@ -3190,7 +3251,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3203,7 +3264,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3218,7 +3279,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=id>abs_half_y</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3240,7 +3301,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_away_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3254,7 +3315,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3268,7 +3329,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient_sign</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3283,7 +3344,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
@@ -3298,7 +3359,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
     <h- data-h=kw_type>int</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>int</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>bool</h-> <h- data-h=id>increment</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>abs_rem</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=id>abs_half_y</h-> <h- data-h=sym_op>+</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>quotient</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_impl</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>increment</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>__div_rem_offset_quotient</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>increment</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>quotient_sign</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>div_ties_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
