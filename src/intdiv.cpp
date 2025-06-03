@@ -1,10 +1,11 @@
 #include <type_traits>
+#include <compare>
 
 template<class T>
 struct div_result {
     T quotient;
     T remainder;
-    friend bool operator<=>(const div_result&, const div_result&) = default;
+    friend auto operator<=>(const div_result&, const div_result&) = default;
 };
 
 template<class T>

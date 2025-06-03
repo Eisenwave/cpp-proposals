@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3724R0}}
-    \dt{Date:}            \dd{\tt{2025-06-02}}
+    \dt{Date:}            \dd{\tt{2025-06-03}}
     \dt{Audience:}        \dd{LEWG, SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -15,7 +15,7 @@
 \hr
 }
 
-\abstract{
+\Babstract{
 C++ currently only offers truncating integer division in the form of the \tcode{/} operator.
 I propose standard library functions for computing quotients and remainders
 with other rounding modes.
@@ -46,7 +46,7 @@ Such a feature was previously part of \ref[P0105R1] and the Numerics TS \ref[P18
 but was eventually abandoned by the author,
 in part due to design disagreements.
 
-\note{
+\Bnote{
 Terminology refresher for division, where
 \math{\mi[style=font-style:italic]{round}}
 is some rounding function:
@@ -270,7 +270,7 @@ td ul, td ul>li {
 }
 }
 
-\note{
+\Bnote{
 When a division rounds towards zero,
 the remainder has the dividend (left operand) sign.
 When a division rounds towards \neg-inf,
@@ -348,7 +348,7 @@ the remainder has the divisor (right operand) sign.
 }
 }
 
-\note{
+\Bnote{
 For unsigned division like \tt{div} on x86,
 there is no distinction between rounding to zero and rounding to \neg-inf{},
 which is why everything is listed as "to zero" for simplicity.
@@ -365,7 +365,7 @@ there there are major differences in how the remainder is obtained:
     \li{In some cases, the remainder can \em{only} be computed using the quotient.}
 }
 
-\note{
+\Bnote{
 Given two integers \math{\mi{x}} and \math{\mi{y}},
 the quotient \math{\mrow{
     \mi{q}
@@ -398,7 +398,7 @@ which is the rounding mode of the division operator in some other languages
 (\ref[#language-support]).
 See below for some motivating examples.
 
-\example{
+\Bex{
 A common problem is to compute how many chunks/buckets/blocks of a fixed size
 are needed to fit a certain amount of elements,
 which involves a division which rounds towards positive infinity.
@@ -411,7 +411,7 @@ int buckets_required = std::div_to_inf(elements, bucket_size); // OK, one bucket
 }
 }
 
-\example{
+\Bex{
 A common problem is to compute which chunk/bucket/block an element falls into.
 This requires division which rounds towards negative infinity.
 \cppblock{
@@ -448,7 +448,7 @@ is surprisingly hard.
 There is an \em{ocean} of examples where C++ users have gotten this wrong.
 A few droplets are listed below.
 
-\bug{
+\Bug{
 At the time of writing,
 the \em{first} Google search result for "c++ ceiling integer division"
 yields \ref[StackOverflowDivision].
@@ -472,7 +472,7 @@ and perhaps the author didn't want to support negative inputs anyway.
 However, the answer contains no disclaimer that clarifies this.
 }
 
-\bug{
+\Bug{
 These division functions taken from \ref[BuggyDivisions] have several problems:
 \cppblock{
 static int div_floor(int a, int b) {
@@ -498,7 +498,7 @@ such a branch could be \em{highly} unpredictable
 }
 }
 
-\note{See \ref[#implementation] for proper implementations.}
+\Bnote{See \ref[#implementation] for proper implementations.}
 
 Users sometimes also implement these functions using \tcode{std::floor} or \tcode{std::ceil},
 but this can equally yield incorrect results,
@@ -520,7 +520,7 @@ int remainder = x - quotient * y;
 This approach is only safe when \tcode{\exposid{divide}(x,y)} is \tcode{x/y},
 i.e. when rounding towards zero.
 
-\bug{
+\Bug{
 The following function, which yields the quotient rounded towards \pos-inf,
 as well as the remainder,
 is not safe for large inputs:
@@ -557,14 +557,14 @@ The design aims of this proposal are to provide \em{concise},
 \em{simple}, \em{efficient}, \em{robust} functions
 which are useful \em{in practice}.
 
-\important{
+\Bimp{
 As a rule of thumb, the proposed functionality should be a drop-in replacement
 for the various bad implementations that users have written themselves (\ref[#trivial-for-user]),
 and it should take the underlying implementation (\ref[#implementation]) into consideration.
 This rule of thumb influences \em{every} design choice.
 }
 
-\note{
+\Bnote{
 You may find a complete list of functions in
 \ref[#try-it-yourself],
 \ref[#wording], and
@@ -647,7 +647,7 @@ and adding \tcode{pos} would merely make the function name longer.
 
 \h4[id=naming-mod]{Why is it \tcode{std::mod}?}
 
-\note{
+\Bnote{
 See \ref[#mod].
 }
 
@@ -682,14 +682,14 @@ The functions generally match the style of similar features in \header{numeric},
 like \eelis{numeric.sat} or \eelis{numeric.ops.gcd}.
 The design also follows \ref[P3161R4].
 
-\example{
+\Bex{
 For rounding to zero, the following functions exist:
 \cppblock{
 template<class T>
 struct div_result {
     T quotient;
     T remainder;
-    friend bool operator<=>(const div_result&, const div_result&) = default;
+    friend auto operator<=>(const div_result&, const div_result&) = default;
 };
 
 template<class T>
@@ -743,7 +743,7 @@ int div_away_zero(int x, int y) {
 }
 As can be seen, these implementations are substantially different.
 
-\note{
+\Bnote{
 While \tcode{div_to_neg_inf} could \em{theoretically} use the \tcode{quotient_sign} instead,
 it requires more operations to compute this positive/negative sign instead of merely checking
 whether the quotient is negative.
@@ -787,7 +787,7 @@ template<class T>
 struct div_result {
     T quotient;
     T remainder;
-    friend bool operator<=>(const div_result&, const div_result&) = default;
+    friend auto operator<=>(const div_result&, const div_result&) = default;
 };
 }
 
@@ -890,11 +890,59 @@ The other rounding modes have more chaotic remainder signs,
 and thus it is rarely useful to compute the remainder in isolation,
 not in conjunction with the quotient.
 
-\note{See \ref[#naming-mod].}
+\Bnote{See \ref[#naming-mod].}
 
 \h2{Implementation experience}
 
-A reference implementation can be found in \ref[#implementation].
+A reference implementation can be found on \ref[GitHub].
+A simplified version of that, for educational purposes,
+can be found at \ref[#implementation].
+
+Generally speaking,
+a portable strategy is to implement all divisions by performing a division
+with rounding towards zero (\tcode{/} and \tcode{\N{PERCENT SIGN}}),
+and then adjusting the quotient and remainder to emulate a different rounding mode.
+
+\Bex{
+Just to illustrate the principle,
+consider how one would round towards positive infinity with unsigned operands:
+\cppblock{
+unsigned div_to_zero(unsigned x, unsigned y) { // for reference
+    return x / y;
+}
+unsigned div_to_inf(unsigned x, unsigned y) {
+    return x / y + (x \N{PERCENT SIGN} y != 0); // + 1 if the remainder is nonzero
+}
+}
+On x86_64, Clang compiles this as follows:
+\codeblock[asm]{
+div_to_zero:               ; edi = x, esi = y
+        mov     eax, edi   ; eax = edi
+        xor     edx, edx   ; edx = 0 (clear upper 32 bits of divided)
+        div     esi        ; eax = eax / esi, edx = eax % esi
+        ret                ; return eax
+
+div_to_inf:                ; edi = x, esi = y
+        mov     eax, edi   ; eax = edi
+        xor     edx, edx   ; edx = 0 (clear upper 32 bits of divided)
+        div     esi        ; eax = eax / esi, edx = eax % esi
+        cmp     edx, 1     ; b = edx < 1
+        sbb     eax, -1    ; eax -= -1 + b
+        ret                ; return eax
+}
+Note that even on architectures where the remainder is not computed
+simultaneously with the quotient like for \code[asm]{div},
+only one division is necessary;
+the remainder can be obtained from the quotient.
+}
+
+Consequently, the implementation effort for all of these functions is close to zero.
+None of them require intrinsics or much architecture-specific knowledge;
+if any, rounding towards zero is supported in hardware
+(\ref[#hardware-support-for-integer-division]),
+and even if it isn't,
+\tcode{/} has to exist and the other rounding modes can be implemented in terms of it,
+exactly the same.
 
 \h2{Try it yourself}
 
@@ -937,7 +985,7 @@ x \N{PERCENT SIGN} y                           \N{RIGHTWARDS ARROW}  \hl[number]
 std::mod(x, y)                  \N{RIGHTWARDS ARROW}  \hl[number]{\span[id=rem-floor]{3}} // sign matches y
 }
 
-\note{
+\Bnote{
 This demonstration conveniently ignores that \tcode{int} has finite size.
 Under the hood, calculations are performed using JavaScript's \tt{BigInt}.
 }
@@ -955,7 +1003,7 @@ add a bullet immediately following bullet 3.4:
 
 \macro[\constexpects]{\Fundesc{Constant-checked preconditions}}
 
-\diff{
+\Bdiff{
 \ul{
 \li{
 \expects
@@ -974,7 +1022,7 @@ is not a core constant expression\iref{expr.const}.
 
 Change \eelis{structure.specifications#4} as follows:
 
-\diff{
+\Bdiff{
 Whenever the \Fundescx{Effects} element specifies that the semantics of some function
 \tcode{F} are \term{Equivalent to} some code sequence, then the various elements are
 interpreted as follows.
@@ -1008,7 +1056,7 @@ then that supersedes any occurrences of that element in the code sequence.
 
 Change the synopsis in \eelis{version.syn} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 #define __cpp_lib_integer_comparison_functions      202002L // \serif{also in }<utility>
 \ins{#define __cpp_lib_integer_division                  20XXXXL // \serif{freestanding, also in }<numeric>}
@@ -1020,14 +1068,14 @@ Change the synopsis in \eelis{version.syn} as follows:
 
 Change \eelis{bit.pow.two#5} as follows:
 
-\diff{
+\Bdiff{
 \del{\expects} \ins{\constexpects}
 \math{\mi{N}} is representable as a value of type \tcode{T}.
 }
 
 Delete \eelis{bit.pow.two#8}:
 
-\delblock{
+\Bdel{
 \remarks
 A function call expression that violates the precondition in the \expects element
 is not a core constant expression\iref{expr.const}.
@@ -1037,7 +1085,7 @@ is not a core constant expression\iref{expr.const}.
 
 Change the synopsis in \eelis{numeric.ops.overview} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 namespace std {
   \html{[\N{HORIZONTAL ELLIPSIS}]}
@@ -1059,7 +1107,7 @@ namespace std {
   struct div_result {
     T quotient;
     T remainder;
-    friend bool operator<=>(const div_result&, const div_result&) = default;
+    friend auto operator<=>(const div_result&, const div_result&) = default;
   };
 
   template<class T>
@@ -1122,14 +1170,14 @@ namespace std {
 
 Change \eelis{numeric.sat.func#9} as follows:
 
-\diff{
+\Bdiff{
 \del{\expects} \ins{\constexpects}
 \tcode{y != 0} is \tcode{true}.
 }
 
 Delete \eelis{numeric.sat.func#11}:
 
-\delblock{
+\Bdel{
 \remarks
 A function call expression that violates the precondition in the \expects element
 is not a core constant expression\iref{expr.const}.   
@@ -1140,7 +1188,7 @@ is not a core constant expression\iref{expr.const}.
 Append a new subclause to \eelis{numeric.ops},
 following \eelis{numeric.sat}:
 
-\insblock{
+\Bins{
 \html-h2{Integer division \stable-ref{numeric.int.div}}
 \Vset[pnum]{0}
 
@@ -1414,7 +1462,7 @@ The result is negative if and only if \tcode{y} is negative and \tcode{x} is non
 
 }
 
-\warning{
+\Bwarn{
 If the mathematical notation in the block above does not render for you,
 you are using an old browser with no MathML support.
 Please open the document in a recent version of Firefox or Chrome.
@@ -1424,14 +1472,14 @@ Please open the document in a recent version of Firefox or Chrome.
 
 Change \eelis{simd.bit#4} as follows:
 
-\diff{
+\Bdiff{
 \del{\expects} \ins{\constexpects}
 For every \math{\mi{i}} [\N{HORIZONTAL ELLIPSIS}].
 }
 
 Delete \eelis{simd.bit#6}:
 
-\delblock{
+\Bdel{
 \remarks
 A function call expression that violates the precondition in the \expects element
 is not a core constant expression\iref{expr.const}.   
@@ -1469,7 +1517,7 @@ is not a core constant expression\iref{expr.const}.
     date = 2025-03-26,
     author = Tiago Freire,
     link = https://wg21.link/p3161r4,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html
 ]
 \bib[
     id = StackOverflowDivision,
@@ -1482,20 +1530,24 @@ is not a core constant expression\iref{expr.const}.
     title = Rounding Modes For Integer Division,
     link = https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/
 ]
+\bib[
+    id = GitHub,
+    author = Jan Schultke,
+    title = integer-division GitHub repository,
+    link = https://github.com/Eisenwave/integer-division
+]
 
 \make-bib
 
-\h2[id=implementation]{Appendix A \N{EM DASH} Reference implementation}
+\h2[id=implementation,show-number=no]{Appendix A \N{EM DASH} Reference implementation}
 
-See below a partial reference implementation of the proposed functions.
-It is partial because the listed functions are not templates;
-they work exclusively with \tcode{int}.
-However, making the functions use \tcode{typename T} instead of \tcode{int} is the easy part.
-The hard part is coming up with a robust, high-performance sequence of operations.
+See below a simplified implementation for educational purposes,
+which works exclusively with \tcode{int}.
+See \ref[GitHub] for the full implementation.
 
 \cppblock{\include{intdiv.cpp}}
 
-\note{
+\Bnote{
 Since integer division occurs unconditionally in these functions,
 they also trivially satisfy the \ref[#wording] requirement that invocations of these functions
 are not constant expressions when the result is not representable.

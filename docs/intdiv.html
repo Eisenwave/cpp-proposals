@@ -1520,7 +1520,7 @@ ins-block .para::before {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3724R0>P3724R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-02</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-03</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG, SG6</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-To:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -2077,7 +2077,7 @@ such a branch could be <em>highly</em> unpredictable
 </ul>
 </bug-block>
 
-<note-block><p><intro-></intro-> See <a href=#implementation>§8. Appendix A — Reference implementation</a> for proper implementations.</p></note-block>
+<note-block><p><intro-></intro-> See <a href=#implementation>§ Appendix A — Reference implementation</a> for proper implementations.</p></note-block>
 
 <p>Users sometimes also implement these functions using <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>floor</h-></code> or <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ceil</h-></code>,
 but this can equally yield incorrect results,
@@ -2135,7 +2135,7 @@ which are useful <em>in practice</em>.
 <important-block><p><intro-></intro-> 
 As a rule of thumb, the proposed functionality should be a drop-in replacement
 for the various bad implementations that users have written themselves (<a href=#trivial-for-user>§2.1. Is this not trivial for the user to do?</a>),
-and it should take the underlying implementation (<a href=#implementation>§8. Appendix A — Reference implementation</a>) into consideration.
+and it should take the underlying implementation (<a href=#implementation>§ Appendix A — Reference implementation</a>) into consideration.
 This rule of thumb influences <em>every</em> design choice.
 </p></important-block>
 
@@ -2143,7 +2143,7 @@ This rule of thumb influences <em>every</em> design choice.
 You may find a complete list of functions in
 <a href=#try-it-yourself>§5. Try it yourself</a>,
 <a href=#wording>§6. Wording</a>, and
-<a href=#implementation>§8. Appendix A — Reference implementation</a>.
+<a href=#implementation>§ Appendix A — Reference implementation</a>.
 </p></note-block>
 
 <h3 id=relation-to-p0105r1><a class=para href=#relation-to-p0105r1></a>3.1. Relation to P0105R1</h3>
@@ -2263,7 +2263,7 @@ For rounding to zero, the following functions exist:
 <h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
@@ -2278,7 +2278,7 @@ For rounding to zero, the following functions exist:
 <p>These functions are not <code><h- data-h=kw>noexcept</h-></code> because they could not have a wide contract;
 they naturally have undefined behavior for cases like <code><h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-></code>
 or <code><h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=mac>INT_MIN</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>.
-Looking at <a href=#implementation>§8. Appendix A — Reference implementation</a>,
+Looking at <a href=#implementation>§ Appendix A — Reference implementation</a>,
 it would require additional effort to perform error handling such as throwing exceptions,
 so it seems best to leave these functions undefined if and only if division is undefined too.
 </p>
@@ -2355,7 +2355,7 @@ we define an additional class template <code><h- data-h=id>std</h-><h- data-h=sy
 <h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>This generally matches standard library style,
@@ -2383,7 +2383,7 @@ See <a href=#computing-remainders-is-hard>§2.2. Computing remainders is hard, a
 </p>
 <p>Furthermore,
 it is relatively cheap to obtain the remainder as a side product of any division function
-(see <a href=#implementation>§8. Appendix A — Reference implementation</a>).
+(see <a href=#implementation>§ Appendix A — Reference implementation</a>).
 On extremely feature-starved hardware with no instructions for division and multiplication,
 computing the remainder via multiplication may be more expensive
 than producing it "directly" during division (implemented in software).
@@ -2399,7 +2399,7 @@ It is therefore valid to ask:
 <p>All proposed "top-level rounding modes" have practical applications.
 For consistency, the same set of "tie-breaking rounding modes" is provided.
 In any case, the implementation of these modes is all fairly similar,
-and there is neither any significant implementation cost (<a href=#implementation>§8. Appendix A — Reference implementation</a>)
+and there is neither any significant implementation cost (<a href=#implementation>§ Appendix A — Reference implementation</a>)
 nor wording cost (<a href=#wording>§6. Wording</a>)
 to having a few extra functions.
 This would be a much different discussion for floating-point numbers.
@@ -2461,7 +2461,51 @@ not in conjunction with the quotient.
 
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>4. Implementation experience</h2>
 
-<p>A reference implementation can be found in <a href=#implementation>§8. Appendix A — Reference implementation</a>.
+<p>A reference implementation can be found on <a href="https://github%2ecom/Eisenwave/integer-division">[GitHub]</a>.
+A simplified version of that, for educational purposes,
+can be found at <a href=#implementation>§ Appendix A — Reference implementation</a>.
+</p>
+<p>Generally speaking,
+a portable strategy is to implement all divisions by performing a division
+with rounding towards zero (<code><h- data-h=sym_op>/</h-></code> and <code><h- data-h=sym_op>%</h-></code>),
+and then adjusting the quotient and remainder to emulate a different rounding mode.
+</p>
+<example-block><p><intro-></intro-> 
+Just to illustrate the principle,
+consider how one would round towards positive infinity with unsigned operands:
+</p><code-block><h- data-h=kw_type>unsigned</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>unsigned</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> for reference</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h->
+<h- data-h=kw_type>unsigned</h-> <h- data-h=id>div_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>unsigned</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> + 1 if the remainder is nonzero</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>On x86_64, Clang compiles this as follows:
+</p><code-block><h- data-h=id_labl_decl>div_to_zero:</h->               <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> edi = x, esi = y</h->
+        <h- data-h=asm_ins>mov</h->     <h- data-h=id_var>eax</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_var>edi</h->   <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> eax = edi</h->
+        <h- data-h=asm_ins>xor</h->     <h- data-h=id_var>edx</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_var>edx</h->   <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> edx = 0 (clear upper 32 bits of divided)</h->
+        <h- data-h=asm_ins>div</h->     <h- data-h=id_var>esi</h->        <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> eax = eax / esi, edx = eax % esi</h->
+        <h- data-h=asm_ins>ret</h->                <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> return eax</h->
+
+<h- data-h=id_labl_decl>div_to_inf:</h->                <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> edi = x, esi = y</h->
+        <h- data-h=asm_ins>mov</h->     <h- data-h=id_var>eax</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_var>edi</h->   <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> eax = edi</h->
+        <h- data-h=asm_ins>xor</h->     <h- data-h=id_var>edx</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_var>edx</h->   <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> edx = 0 (clear upper 32 bits of divided)</h->
+        <h- data-h=asm_ins>div</h->     <h- data-h=id_var>esi</h->        <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> eax = eax / esi, edx = eax % esi</h->
+        <h- data-h=asm_ins>cmp</h->     <h- data-h=id_var>edx</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>1</h->     <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> b = edx &lt; 1</h->
+        <h- data-h=asm_ins>sbb</h->     <h- data-h=id_var>eax</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h->    <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> eax -= -1 + b</h->
+        <h- data-h=asm_ins>ret</h->                <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> return eax</h-></code-block>
+<p>Note that even on architectures where the remainder is not computed
+simultaneously with the quotient like for <code><h- data-h=asm_ins>div</h-></code>,
+only one division is necessary;
+the remainder can be obtained from the quotient.
+</p></example-block>
+
+<p>Consequently, the implementation effort for all of these functions is close to zero.
+None of them require intrinsics or much architecture-specific knowledge;
+if any, rounding towards zero is supported in hardware
+(<a href=#hardware-support-for-integer-division>§1.1.2. Hardware support for integer division</a>),
+and even if it isn't,
+<code><h- data-h=sym_op>/</h-></code> has to exist and the other rounding modes can be implemented in terms of it,
+exactly the same.
 </p>
 <h2 id=try-it-yourself><a class=para href=#try-it-yourself></a>5. Try it yourself</h2>
 
@@ -2727,7 +2771,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
   <h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
   <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
@@ -2818,7 +2862,7 @@ following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>1
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2832,12 +2876,12 @@ following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
 <wg21-block>[<i>Note</i>: 
 The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-></code>.
  — <i>end note</i>]</wg21-block>
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_away_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>4
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2848,12 +2892,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 </p>
 <p>6
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded away from zero.
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>7
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2864,12 +2908,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 </p>
 <p>9
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards positive infinity.
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>10
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2880,12 +2924,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 </p>
 <p>12
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards negative infinity.
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>13
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2896,12 +2940,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 </p>
 <p>15
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest odd integer.
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>16
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2912,12 +2956,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 </p>
 <p>18
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest even integer.
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>19
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2931,12 +2975,12 @@ The result equals <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the integer with lower magnitude.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_away_zero</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>22
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2950,12 +2994,12 @@ If two integers are equidistant, the result is the integer with lower magnitude.
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the integer with greater magnitude.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>25
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2969,12 +3013,12 @@ If two integers are equidistant, the result is the integer with greater magnitud
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the greater integer.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>28
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -2988,12 +3032,12 @@ If two integers are equidistant, the result is the greater integer.
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the lower integer.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_odd</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>31
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -3007,12 +3051,12 @@ If two integers are equidistant, the result is the lower integer.
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the odd integer.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>div_ties_to_even</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>34
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -3026,12 +3070,12 @@ If two integers are equidistant, the result is the odd integer.
 <i>Returns</i>: <math display=inline><mfrac><mi>x</mi><mi>y</mi></mfrac></math>, rounded towards the nearest integer.
 If two integers are equidistant, the result is the even integer.
 
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>div_rem_</h-><i><h- data-h=id>rounding</h-></i><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>37
 <i>Constraints</i>:
 <code><h- data-h=id>T</h-></code> is a signed or unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).</p>
@@ -3062,19 +3106,19 @@ Assume that <code><h- data-h=mac>INT_MAX</h-></code> equals <code><h- data-h=num
 <h- data-h=kw>const</h-> <h- data-h=kw>auto</h-> <h- data-h=sym_sqr>[</h-><h- data-h=id>q</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>r</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>div_rem_to_inf</h-><h- data-h=sym_par>(</h-><h- data-h=mac>INT_MAX</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><code><h- data-h=id>q</h-></code><h- data-h=cmt> is </h-><code><h- data-h=num>1</h-><h- data-h=num_dlim>'</h-><h- data-h=num>073</h-><h- data-h=num_dlim>'</h-><h- data-h=num>741</h-><h- data-h=num_dlim>'</h-><h- data-h=num>824</h-></code><h- data-h=cmt> and </h-><code><h- data-h=id>r</h-></code><h- data-h=cmt> is </h-><code><h- data-h=sym_op>-</h-><h- data-h=num>1</h-></code><h- data-h=cmt>.</h-></f-serif>
 <h- data-h=kw_type>int</h-> <h- data-h=id>r2</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>q</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->                              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>This multiplication has undefined behavior.</h-></f-serif></code-block>
  — <i>end example</i>]</wg21-block> — <i>end note</i>]</wg21-block>
-</p></div></p>
+</p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>mod</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p><div class=indent>
+<div class=indent>
 <p>40
 <i>Effects</i>:
 Equivalent to <code><h- data-h=id>div_rem_to_neg_inf</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>remainder</h-></code>.
 <br/><wg21-block>[<i>Note</i>: 
 The result is negative if and only if <code><h- data-h=id>y</h-></code> is negative and <code><h- data-h=id>x</h-></code> is nonzero.
  — <i>end note</i>]</wg21-block>
-</p></div></p>
+</p></div>
 
 </ins-block>
 
@@ -3110,6 +3154,7 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 
 
 
+
 <div class=bib><div id=bib-item-N5008 class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
 <span class=bib-author>Thomas Köppe.</span>
@@ -3130,30 +3175,33 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <span class=bib-author>Tiago Freire.</span>
 <span class=bib-title>Unified integer overflow arithmetic</span>
 <span class=bib-date>2025-03-26</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161R4%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf</a></div><div id=bib-item-StackOverflowDivision class=bib-item>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html</a></div><div id=bib-item-StackOverflowDivision class=bib-item>
 <a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowDivision]</a>
 <span class=bib-title>Fast ceiling of an integer division in C / C++</span>
 <a href="https://stackoverflow%2ecom/q/2745074/5740428" class=bib-link>https://stackoverflow.com/q/2745074/5740428</a></div><div id=bib-item-BuggyDivisions class=bib-item>
 <a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/">[BuggyDivisions]</a>
 <span class=bib-author>njohnny84.</span>
 <span class=bib-title>Rounding Modes For Integer Division</span>
-<a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/" class=bib-link>https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/</a></div></div>
+<a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/" class=bib-link>https://blog.demofox.org/2022/07/21/rounding-modes-for-integer-division/</a></div><div id=bib-item-GitHub class=bib-item>
+<a href="https://github%2ecom/Eisenwave/integer-division">[GitHub]</a>
+<span class=bib-author>Jan Schultke.</span>
+<span class=bib-title>integer-division GitHub repository</span>
+<a href="https://github%2ecom/Eisenwave/integer-division" class=bib-link>https://github.com/Eisenwave/integer-division</a></div></div>
 
-<h2 id=implementation><a class=para href=#implementation></a>8. Appendix A — Reference implementation</h2>
+<h2 id=implementation><a class=para href=#implementation></a>Appendix A — Reference implementation</h2>
 
-<p>See below a partial reference implementation of the proposed functions.
-It is partial because the listed functions are not templates;
-they work exclusively with <code><h- data-h=kw_type>int</h-></code>.
-However, making the functions use <code><h- data-h=kw>typename</h-> <h- data-h=id>T</h-></code> instead of <code><h- data-h=kw_type>int</h-></code> is the easy part.
-The hard part is coming up with a robust, high-performance sequence of operations.
+<p>See below a simplified implementation for educational purposes,
+which works exclusively with <code><h- data-h=kw_type>int</h-></code>.
+See <a href="https://github%2ecom/Eisenwave/integer-division">[GitHub]</a> for the full implementation.
 </p>
 <code-block><h- data-h=mac>#include &lt;type_traits&gt;</h->
+<h- data-h=mac>#include &lt;compare&gt;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
 <h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
