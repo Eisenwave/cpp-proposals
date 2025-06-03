@@ -1,0 +1,365 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = Wording for P3161R4:\br{}Unified integer overflow arithmetic
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3728R0}}
+    \dt{Date:}            \dd{\tt{2025-06-03}}
+    \dt{Audience:}        \dd{LWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Co-author:}       \dd{Tiago Freire <\mail{cpp@kaotic.software}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3728R0/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/wording-for-p3161.cow]}
+}
+\hr
+}
+
+\Babstract{
+This paper provides wording for \ref[P3161R4].
+This is partially motivated by the fact that wording in \ref[P3161R4]
+is formatted entirely in monospace font,
+making it hard for the editors of the working draft to properly convert into LaTeX.
+\ref[P3161R4] also contains some editorial mistakes like missing semicolons
+or unnecessary freestanding comments,
+which are fixed here.
+}
+
+\h2{Wording}
+
+All changes are relative to \ref[N5008].
+
+In subclause \eelis{version.syn},
+change the header synopsis as indicated:
+
+\Bdiff{
+\itemdecl{
+#define __cpp_lib_out_ptr               202311L \hl[id]{// \i{\serif{freestanding, also in \tt{<memory>}}}}
+\ins{#define __cpp_lib_overflow_arithmetic   20XXXXL // \serif{freestanding, also in \tt{<numeric>}}}
+#define __cpp_lib_parallel_algorithm    201603L \hl[id]{// \i{\serif{also in \tt{<algorithm>}, <numeric>}}}
+}
+}
+
+In subclause \eelis{numeric.ops.overview},
+change the synopsis for \tt{<numeric>} as indicated:
+
+\Bdiff{
+\itemdecl{
+namespace std {
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+  \del{// \serif{[numeric.sat], saturation arithmetic}}
+  \ins{// \serif{[numeric.overflow], overflow arithmetic}
+  template<class T>
+    struct add_carry_result {
+      T low_bits;
+      bool overflow;
+    };
+
+  template<class T>
+    using sub_borrow_result = add_carry_result<T>;
+
+  template<class T>
+    struct mul_wide_result {
+      T low_bits;
+      T high_bits;
+    };
+
+  template<class T>
+    struct div_result {
+      T quotient;
+      T remainder;
+    };}
+
+  template<class T>
+    constexpr T add_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T sub_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T mul_sat(T x, T y) noexcept;
+  template<class T>
+    constexpr T div_sat(T x, T y) noexcept;
+  template<class T, class U>
+    constexpr T saturate_cast(U x) noexcept;
+
+  \ins{template<class T>
+    constexpr add_carry_result<T> add_carry(T x, T y, bool carry) noexcept;
+  template<class T>
+    constexpr sub_borrow_result<T> sub_borrow(T x, T y, bool borrow) noexcept;
+  template<class T>
+    constexpr mul_wide_result<T> mul_wide(T x, T y) noexcept;
+  template<class T>
+    constexpr div_result<T> div_wide(T x_high, T x_low, T y) noexcept;
+
+  template<class T>
+    constexpr bool is_div_defined(T x, T y) noexcept;
+  template<class T>
+    constexpr bool is_div_wide_defined(T x_high, T x_low, T y) noexcept;}
+}
+}
+}
+
+Rename subclause \eelis{numeric.sat} as indicated:
+
+\Bdiff{
+\html-h3[style=margin:0]{\del{Saturation arithmetic} \stable-ref{\del{numeric.sat}}}
+\html-h3[style=margin:0]{\ins{Overflow arithmetic} \stable-ref{\ins{numeric.overflow}}}
+}
+
+In subclause \eelis{numeric.overflow} (formerly known as \eelis{numeric.sat}),
+create a new subclause at the start.
+
+\Bins{
+\html-h3{Arithmetic typedefs \stable-ref{numeric.overflow.typedefs}}
+\Vset[pnum]{0}
+
+\itemdecl{
+template<class T>
+  struct add_carry_result {
+    T low_bits;
+    bool overflow;
+  };
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+}
+
+\itemdecl{
+template<class T>
+  struct mul_wide_result {
+    T low_bits;
+    T high_bits;
+  };
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+}
+
+\itemdecl{
+template<class T>
+  struct div_result {
+    T quotient;
+    T remainder;
+  };
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+}
+}
+
+Make changes to subclause \eelis{numeric.sat.func} as indicated:
+
+\Bdiff{
+\html-h3[style=margin:0]{Arithmetic functions \stable-ref{numeric.\del{sat}\ins{overflow}.func}}
+\Vset[pnum]{0}
+
+\pnum
+In the following descriptions, an arithmetic operation
+is performed as a mathematical operation with infinite range\ins{,} and then
+it is determined whether the mathematical result fits into the result type.
+
+\itemdecl{
+template<class T>
+  constexpr T add_sat(T x, T y) noexcept;
+}
+
+[\N{HORIZONTAL ELLIPSIS}]
+}
+
+\Bnote{Notice the inserted comma in paragraph 1.}
+
+Immediately following the existing declarations in \eelis{numeric.overflow.func}
+(formerly known as \eelis{numeric.sat.func}),
+append the following:
+\Vset[pnum]{11}
+
+\Bins{
+\itemdecl{
+template<class T>
+  constexpr add_carry_result<T> add_carry(T x, T y, bool carry) noexcept;
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\p{
+\pnum
+\returns
+An object with the members
+\ul{
+    \li{
+        \tcode{low_bits} set to the result of
+        \tcode{x + y + T(carry)} truncated to the size of \tcode{T} and
+    }
+    \li{
+        \tcode{overflow} set to \tcode{true}
+        if the result is not representable as a value of type \tcode{T},
+        otherwise \tcode{false}.
+    }
+}
+}
+}
+
+\itemdecl{
+template<class T>
+constexpr sub_borrow_result<T> sub_borrow(T x, T y, bool borrow) noexcept;
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\p{
+\pnum
+\returns
+An object with the members
+\ul{
+    \li{
+        \tcode{low_bits} set to the result of
+        \tcode{x - y - T(borrow)} truncated to the size of \tcode{T} and
+    }
+    \li{
+        \tcode{overflow} set to \tcode{true}
+        if the result is not representable as a value of type \tcode{T},
+        otherwise \tcode{false}.
+    }
+}
+}
+}
+
+\itemdecl{
+template<class T>
+constexpr mul_wide_result<T> mul_wide(T x, T y) noexcept;
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\p{
+\pnum
+\returns
+An object with the members
+\ul{
+    \li{
+        \tcode{low_bits} set to the product \tcode{x * y}
+        truncated to the size of \tcode{T} and
+    }
+    \li{
+        \tcode{high_bits} set to the remaining bits of that product.
+    }
+}
+}
+}
+
+\itemdecl{
+template<class T>
+constexpr div_result<T> div_wide(T x_high, T x_low, T y) noexcept;
+}
+\itemdescr{
+\pnum
+Let \tcode{x} be a value of a hypothetical integer type
+twice the width of \tcode{T} and with the same signedness as \tcode{T},
+whose most significant bits are set to \tcode{x_high}
+and less significant bits are set to \tcode{x_low}.
+
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\pnum
+\expects
+\tcode{is_div_wide_defined(x_high, x_low, y)} is \tcode{true}\iref{numeric.overflow.check}.
+
+\p{
+\pnum
+\returns
+An object with the members
+\ul{
+    \li{\tcode{quotient} set to \tcode{x / y} and}
+    \li{\tcode{remainder} set to \tcode{x \N{PERCENT SIGN} y}.}
+}
+}
+
+\pnum
+\remarks
+A function call expression that violates the precondition in the \expects element
+is not a core constant expression\iref{expr.const}.
+}
+}
+
+Immediately following subclause \eelis{numeric.overflow.func}
+(formerly known as \eelis{numeric.sat.func}),
+append a new subclause:
+
+\Bins{
+\html-h3{Arithmetic checks \stable-ref{numeric.overflow.check}}
+\Vset[pnum]{0}
+
+\itemdecl{
+template<class T>
+constexpr bool is_div_defined(T x, T y) noexcept;
+}
+\itemdescr{
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\pnum
+\returns
+\tcode{true} if \tcode{x / y} is well-defined,
+otherwise \tcode{false}.
+}
+
+\itemdecl{
+template<class T>
+constexpr bool is_div_wide_defined(T x_high, T x_low, T y) noexcept;
+}
+\itemdescr{
+\pnum
+Let \tcode{x} be a value of a hypothetical integer type
+twice the width of \tcode{T} and with the same signedness as \tcode{T},
+whose most significant bits are set to \tcode{x_high}
+and less significant bits are set to \tcode{x_low}.
+
+\pnum
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\pnum
+\returns
+\tcode{true} if \tcode{x / y} is well-defined
+and can be represented as a value of type \tcode{T},
+otherwise \tcode{false}.
+}
+}
+
+Rename the stable reference \del{[numeric.sat.cast]} to \ins{[numeric.overflow.cast]}.
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = P3161R4,
+    title = Unified integer overflow arithmetic,
+    date = 2025-03-26,
+    author = Tiago Freire,
+    link = https://wg21.link/p3161r4,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html
+]
+
+\make-bib
