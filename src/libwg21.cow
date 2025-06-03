@@ -14,7 +14,7 @@
 \macro[\header{...}]{\code[cpp]{\hl[string]{<\put>}}}
 
 \macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
-\macro[\itemdescr]{\indent{\paragraphs{\put}}}
+\macro[\itemdescr]{\Bindent{\paragraphs{\put}}}
 
 \macro[\Fundescx]{\i{\put}}
 \macro[\Fundesc]{\i{\put}:}
