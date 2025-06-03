@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\ref[https://wg21.link/P3642R1]{P3642R1}}
-    \dt{Date:}            \dd{\tt{2025-05-26}}
+    \dt{Date:}            \dd{\tt{2025-06-03}}
     \dt{Audience:}        \dd{LEWGI, SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -15,7 +15,7 @@
 \hr
 }
 
-\abstract{
+\Babstract{
 Add widening and non-widening carry-less multiplication functions.
 }
 
@@ -24,13 +24,13 @@ Add widening and non-widening carry-less multiplication functions.
 \h3[listed=no]{Changes since R0}
 
 \ul{
-\item{Generate the proposal using COWEL instead of bikeshed}
-\item{Fix incorrect formula in \ref[#proposed-wording] for bits \c{ge} the integer width}
-\item{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
-\item{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
-\item{Make slight editorial wording adjustments}
-\item{Rebase on \ref[N5008] and \ref[P3161R4]}
-\item{Mention \ref[SimdJsonClmul] in \ref[#motivation]}
+\li{Generate the proposal using COWEL instead of bikeshed}
+\li{Fix incorrect formula in \ref[#proposed-wording] for bits \c{ge} the integer width}
+\li{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
+\li{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
+\li{Make slight editorial wording adjustments}
+\li{Rebase on \ref[N5008] and \ref[P3161R4]}
+\li{Mention \ref[SimdJsonClmul] in \ref[#motivation]}
 }
 
 \h2[listed=no]{Contents}
@@ -71,7 +71,7 @@ constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
 Carry-less multiplication is an important operation in a number of use cases:
 
 \ul{
-\item{
+\li{
     \b{CRC Computation:} While cyclic redundancy checks can theoretically be performed with a finite
     field of any length, in practice,
     \ref[https://en.wikipedia.org/wiki/GF(2)]{GF(2)[X]},
@@ -80,18 +80,18 @@ Carry-less multiplication is an important operation in a number of use cases:
     and multiplication via \tcode{clmul},
     which makes cyclic redundancy checks considerably faster.
 }
-\item{
+\li{
     \b{Cryptography:} \tcode{clmul} may be used to implement AES-GCM.
     \ref[IntelClmul] describes this process in great detail and motivates hardware support for
     carry-less multiplication via the \tcode{pclmulqdq} instruction.
 }
-\item{
+\li{
     \b{Bit manipulation:} \tcode{clmul} performs a large amount
     of \tcode{<<} and \tcode{xor} operations in parallel.
     This is utilized in the reference implementation \ref[BitPermutations]
     of \tcode{std::bit_compressr},
     proposed in \ref[P3104R3].
-    For example, the form \word{\tcode{clmul(x, -1u)}} computes the bitwise inclusive parity
+    For example, the form \nobr{\tcode{clmul(x, -1u)}} computes the bitwise inclusive parity
     for each bit of \tcode{x} and the bits to its right.
 }
 }
@@ -106,7 +106,7 @@ The \dfn{parity} of an integer \tcode{x} is \tcode{0} if the number of one-bits 
 and \tcode{1} if it is odd.
 The parity can also be computed with \tcode{popcount(x) & 1}.
 
-\example{
+\Bex{
 The special form \tcode{clmul(x, -1)} computes the parity of each bit in \tcode{x}
 and the bits to its right.
 The most significant bit holds the parity of \tcode{x} as a whole.
@@ -125,7 +125,7 @@ and any other character onto \tcode{0}.
 \tcode{clmul(x, -1)} would then produce masks where string characters
 corresponds to a \tcode{1}-bit.
 
-\example{
+\Bex{
 \pre{
 abc xxx \code[cpp,nested=yes]{"foobar"} zzz \code[cpp,nested=yes]{"a"} \code[cpp,nested=yes]{// input string}
 00000000\hl[string-delim]{1}000000\hl[string-delim]{1}00000\hl[string-delim]{1}0\hl[string-delim]{1} \code[cpp,nested=yes]{// quote_mask}
@@ -173,7 +173,7 @@ yields a \ref[https://en.wikipedia.org/wiki/Z-order_curve]{Z-order curve},
 and performing further transformations yields a
 \ref[https://en.wikipedia.org/wiki/Hilbert_curve]{Hilbert curve}.
 
-\example{
+\Bex{
 \tcode{clmul} can be used to compute the bitwise parity for each bit and the bits to its right,
 which is helpful for computing Hilbert curves.
 Note that the following example uses the \tcode{std::bit_compress} function from \ref[P3104R3],
@@ -213,7 +213,7 @@ A Z-order curve is laid out as follows:
 a b e f
 }
 
-\example{
+\Bex{
 \tcode{clmul} can be used to implement bit-interleaving in order to generate a
 \ref[https://en.wikipedia.org/wiki/Z-order_curve]{Z-order curves}.
 \cppblock{
@@ -226,7 +226,7 @@ uint32_t xy_to_morton(uint32_t x, uint32_t y)
 }
 }
 
-\note{
+\Bnote{
 In the example above, \tcode{std::clmul(x, x)} is equivalent to
 \ref[P3104R3]'s \tcode{std::bit_expand(x, 0x55555555u)}.
 }
@@ -316,7 +316,7 @@ and \tt{\N{MULTIPLICATION SIGN}N} denote the amount of operands that are process
 
 }
 
-\example{
+\Bex{
 A limited x86_64 implementation of \tcode{clmul_wide} may look as follows:
 
 \cppblock{
@@ -347,11 +347,11 @@ Multiple design choices lean on \ref[P0543R3] and \ref[P3161R4].
 Specifically,
 
 \ul{
-\item{the choice of header \header{numeric},}
-\item{the choice to have a widening operation,}
-\item{the \tcode{_wide} naming scheme,}
-\item{the \tcode{mul_wide_result} template, and}
-\item{the decision to have a \tcode{(T, T)} parameter list.}
+\li{the choice of header \header{numeric},}
+\li{the choice to have a widening operation,}
+\li{the \tcode{_wide} naming scheme,}
+\li{the \tcode{mul_wide_result} template, and}
+\li{the decision to have a \tcode{(T, T)} parameter list.}
 }
 
 \h3{Naming}
@@ -362,18 +362,18 @@ The name \tcode{clmul} was chosen because it carries no domain-specific connotat
 and because it is widespread:
 
 \ul{
-\item{
+\li{
 Intel refers to \tcode{PCLMULQDQ} As "Carry-Less Multiplication Quadword" in its manual;
 see \ref[IntelManual].
 }
-\item{
+\li{
 RISC-V refers to \tcode{clmul} as carry-less multiplication,
 and this is obvious from the mnemonic.
 }
-\item{
+\li{
 The Wikipedia article (\ref[WikipediaClmul]) for this operation is titled "Carry-less product".
 }
-\item{
+\li{
 The (proposed) LLVM intrinsic function (\ref[LLVMClmul]) is tentatively named \tt{@llvm.clmul}.
 }
 }
@@ -384,7 +384,7 @@ The proposal is currently limited to the scalar version of \tcode{clmul}.
 However, \header{simd} support may be useful to add,
 and would be backed by hardware support to an extent.
 
-\decision{
+\Bdecision{
 If LEWG approves, should decide whether \header{simd} support should be added in \em{this} paper,
 or in a separate paper, if at all.
 }
@@ -396,7 +396,7 @@ with the changes in \ref[P3161R4] applied.
 
 Update subclause \eelis{version.syn#2} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 #define __cpp_lib_clamp                             201603L // also in <algorithm>
 \ins{#define __cpp_lib_clmul                             20????L // also in <numeric>}
@@ -407,7 +407,7 @@ Update subclause \eelis{version.syn#2} as follows:
 
 Update the synopsis in \eelis{numeric.ops.overview} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 template<class T, class U>
   constexpr T saturate_cast(U x) noexcept;              // freestanding
@@ -473,7 +473,7 @@ In subclause
 insert the following item,
 immediately following the description of \tcode{mul_wide}:
 
-\insblock{
+\Bins{
 \itemdecl{
 template<class T>
    constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
@@ -499,8 +499,8 @@ is given by Formula \tt{?.?},
 and \mathvar{N} is the width of \tcode{T}.
 The result object is initialized so that
 \ul{
-\item{\tcode{low_bits} stores the \mathvar{N} least significant bits of \mathvar{c}, and}
-\item{\tcode{high_bits} stores the subsequent \mathvar{N} bits of \mathvar{c}.}
+\li{\tcode{low_bits} stores the \mathvar{N} least significant bits of \mathvar{c}, and}
+\li{\tcode{high_bits} stores the subsequent \mathvar{N} bits of \mathvar{c}.}
 }
 
 \style{
@@ -554,13 +554,13 @@ math[display=block] {
 
 \comment{Proof for math formula at https://godbolt.org/z/8YsnTGdvz}
 
-\warning{
+\Bwarn{
 If the mathematical notation in the block above does not render for you,
 you are using an old browser with no MathML support.
 Please open the document in a recent version of Firefox or Chrome.
 }
 
-\note{
+\Bnote{
 The formula is taken from \ref[IntelClmul], with different variable names,
 and with no special case for the upper \mathvar{N} bits;
 we can simply treat the integers as mathematical integers with
@@ -573,7 +573,7 @@ See \eelis{sf.cmath.riemann.zeta}
 for precedent on wording which includes formulae.
 }
 
-\note{
+\Bnote{
 The formula above in TeX notation is:
 \codeblock[tex]{\literally{
 c_i = \bigoplus_{j = 0}^i x_i y_{i - j}
@@ -584,7 +584,7 @@ In subclause \eelis{numeric.ops},
 append a subclause immediately following \eelis{numeric.overflow}
 (known as \eelis{numeric.sat} at the time of writing):
 
-\insblock{
+\Bins{
 \html-h3{Carry-less product \stable-ref{numeric.clmul}}
 
 \itemdecl{
@@ -632,7 +632,7 @@ template<class T>
     date = 2025-03-26,
     author = Tiago Freire,
     link = https://wg21.link/p3161r4,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161R4.pdf
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html
 ]
 \bib[
     id = BitPermutations,
