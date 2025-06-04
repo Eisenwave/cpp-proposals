@@ -1520,7 +1520,7 @@ ins-block .para::before {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3724R0>P3724R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-03</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-04</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG, SG6</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-To:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1607,8 +1607,10 @@ with other rounding modes.
 <div class=toc-num data-level=3>6.7</div>
 <a href=#[simd%2ebit]><h3>[simd.bit]</h3></a>
 <div class=toc-num data-level=2>7</div>
-<a href=#references><h2>References</h2></a>
+<a href=#acknowledgements><h2>Acknowledgements</h2></a>
 <div class=toc-num data-level=2>8</div>
+<a href=#references><h2>References</h2></a>
+<div class=toc-num data-level=2>9</div>
 <a href=#implementation><h2>Appendix A — Reference implementation</h2></a>
 </div>
 
@@ -1630,8 +1632,7 @@ and a negative remainder may be surprising in general.
 <p>Therefore, I propose a set of standard library functions
 which implement a variety of rounding modes when computing quotients and remainders.
 Such a feature was previously part of <a href="https://wg21%2elink/p0105r1">[P0105R1]</a> and the Numerics TS <a href="https://wg21%2elink/p1889r1">[P1889R1]</a>,
-but was eventually abandoned by the author,
-in part due to design disagreements.
+but was eventually abandoned by the author.
 </p>
 <note-block><p><intro-></intro-> 
 Terminology refresher for division, where
@@ -1878,7 +1879,7 @@ the remainder has the divisor (right operand) sign.
     <td>to zero</td>
 </tr>
 <tr>
-    <td>ARM</td>
+    <td>ARMv7-A and newer</td>
     <td>CPU</td>
     <td><tt->sdiv</tt->, <tt->udiv</tt-></td>
     <td>N/A</td>
@@ -1906,7 +1907,7 @@ the remainder has the divisor (right operand) sign.
     <td>to zero</td>
 </tr>
 <tr>
-    <td>AVR (8-bit)</td>
+    <td>AVR (8-bit), PIC16, etc.</td>
     <td>CPU</td>
     <td>N/A</td>
     <td>N/A</td>
@@ -1988,7 +1989,7 @@ See below for some motivating examples.
 <example-block><p><intro-></intro-> 
 A common problem is to compute how many chunks/buckets/blocks of a fixed size
 are needed to fit a certain amount of elements,
-which involves a division which rounds towards positive infinity.
+which involves a division which rounds towards <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math>.
 </p><code-block><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>bucket_size</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>1000</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>elements</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>100</h-><h- data-h=sym_punc>;</h->
 
@@ -1998,7 +1999,7 @@ which involves a division which rounds towards positive infinity.
 
 <example-block><p><intro-></intro-> 
 A common problem is to compute which chunk/bucket/block an element falls into.
-This requires division which rounds towards negative infinity.
+This requires division which rounds towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math>.
 </p><code-block><h- data-h=kw>const</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>bucket_size</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>1000</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>a</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>10</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw_type>int</h-> <h- data-h=id>b</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_op>-</h-><h- data-h=num>10</h-><h- data-h=sym_punc>;</h->
@@ -2028,20 +2029,20 @@ However, doing so with correct output, high performance,
 and without introducing more undefined behavior than <code><h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-></code> already has,
 is surprisingly hard.
 </p>
-<p>There is an <em>ocean</em> of examples where C++ users have gotten this wrong.
+<p>There is an <em>ocean</em> of examples where C and C++ users have gotten this wrong.
 A few droplets are listed below.
 </p>
 <bug-block><p><intro-></intro-> 
 At the time of writing,
 the <em>first</em> Google search result for "c++ ceiling integer division"
-yields <a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowDivision]</a>.
+yields <a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowCeil]</a>.
 Almost every answer does not permit signed integers,
 gives wrong results,
 or has undefined behavior for certain inputs
 (not counting division by zero or <code><h- data-h=mac>INT_MIN</h-> <h- data-h=sym_op>/</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-></code>).
 </p>
 <p>For example, one answer with 67 upvotes (at the time of writing)
-attempts to implement ceiling (rounded towards positive infinity)
+attempts to implement ceiling (rounded towards <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math>)
 integer division as follows:
 </p><code-block><h- data-h=id>q</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>1</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h-></code-block>
 <p>The quotient <code><h- data-h=id>q</h-></code> would be <code><h- data-h=num>1</h-></code>, not <code><h- data-h=num>0</h-></code>
@@ -2051,6 +2052,37 @@ which is obviously wrong because it rounds <code><h- data-h=sym_op>-</h-><h- dat
 <p>To be fair, the answer is correct for positive integers,
 and perhaps the author didn't want to support negative inputs anyway.
 However, the answer contains no disclaimer that clarifies this.
+</p></bug-block>
+
+<bug-block><p><intro-></intro-> 
+In the question "Rounding integer division (instead of truncating)" for C
+(<a href="https://stackoverflow%2ecom/q/2422712/5740428">[StackOverflowRound]</a>),
+OP expresses that they want to divide with rounding to the nearest integer,
+rather than rounding towards zero.
+</p>
+<p>While the top 11 answers are highly decorated with upvotes,
+they all overflow for large inputs,
+use <code><h- data-h=kw_type>float</h-></code> (which has accuracy issues),
+have the wrong rounding mode,
+or are plain incorrect.
+</p>
+<p>The first correct solution can only be found at 5 upvotes, by user A Fog:
+</p><code-block><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>rounded_division</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>n</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>d</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>q</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>n</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>d</h-><h- data-h=sym_punc>;</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> quotient</h->
+    <h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>n</h-> <h- data-h=sym_op>%</h-> <h- data-h=id>d</h-><h- data-h=sym_punc>;</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> remainder</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=id>r</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=id>d</h-><h- data-h=sym_op>&gt;&gt;</h-><h- data-h=num>1</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> fraction &gt; 0.5</h->
+    <h- data-h=sym_op>||</h-> <h- data-h=sym_par>(</h-><h- data-h=id>r</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>d</h-><h- data-h=sym_op>&gt;&gt;</h-><h- data-h=num>1</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_par>(</h-><h- data-h=id>q</h-><h- data-h=sym_op>&amp;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=sym_op>!</h-><h- data-h=sym_par>(</h-><h- data-h=id>d</h-><h- data-h=sym_op>&amp;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> fraction == 0.5 and odd</h->
+        <h- data-h=id>q</h-><h- data-h=sym_op>++</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>q</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>Unfortunately, this solution does not support negative inputs,
+and is somewhat branch-heavy.
+When compiled with Clang,
+a possible path of execution would go through four conditional jumps
+depending on <code><h- data-h=sym_par>(</h-><h- data-h=id>r</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=id>d</h-><h- data-h=sym_op>&gt;&gt;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>, <code><h- data-h=sym_par>(</h-><h- data-h=id>r</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>d</h-><h- data-h=sym_op>&gt;&gt;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>, <code><h- data-h=sym_par>(</h-><h- data-h=id>q</h-><h- data-h=sym_op>&amp;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>, and <code><h- data-h=sym_op>!</h-><h- data-h=sym_par>(</h-><h- data-h=id>d</h-><h- data-h=sym_op>&amp;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code>,
+where all but <code><h- data-h=sym_par>(</h-><h- data-h=id>r</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>d</h-><h- data-h=sym_op>&gt;&gt;</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code> are extremely unpredictable (basically coin flips).
+See <a href=https://godbolt%2eorg/z/ax6hr1r53 class=sans>godbolt.org/z/ax6hr1r53</a>.
 </p></bug-block>
 
 <bug-block><p><intro-></intro-> 
@@ -2071,8 +2103,7 @@ These division functions taken from <a href="https://blog%2edemofox%2eorg/2022/0
 <li><code><h- data-h=id>div_round</h-></code> overflows on large inputs in <code><h- data-h=id>a</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>b</h-></code> and <code><h- data-h=id>a</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>b</h-></code></li>
 <li>
 all functions branch depending on whether the quotient is negative,
-and at least for a standard library (which has to cover a wide variety of use cases),
-such a branch could be <em>highly</em> unpredictable
+which may be highly unpredictable
 </li>
 </ul>
 </bug-block>
@@ -2203,7 +2234,7 @@ just towards different targets.
 <li>
 The scheme is needlessly hostile towards novices
 who are not yet familiar with the fact that <math display=inline><mrow><mi>floor</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math>
-rounds towards negative infinity.
+rounds towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math>.
 By comparison, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_neg_inf</h-></code> is self-documenting.
 </li>
 </ul>
@@ -2415,7 +2446,7 @@ but no division to the nearest integer with tie breaks away from zero.
 <p>The "trivial" functions <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_zero</h-></code>
 and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>rem_dividend_sign</h-></code> exist solely for consistency and enhanced expressiveness.
 Note that not every has a truncating integer division like C++.
-For example, the <tt-><h- data-h=sym_op>//</h-></tt-> operator in Python rounds towards negative infinity.
+For example, the <tt-><h- data-h=sym_op>//</h-></tt-> operator in Python rounds towards <math display=inline><mrow><mo>−</mo><mi>∞</mi></mrow></math>.
 A team of developers with primarily Python experience/habits
 may thus benefit from always expressing
 rounding mode explicitly with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>div_to_zero</h-></code> to avoid confusion.
@@ -2424,7 +2455,7 @@ rounding mode explicitly with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</
 
 <p>Rounding to even/odd integers is mainly useful because it is unbiased.
 That is, when dividing a large amount of integers,
-results would not gravitate towards one end due to rounding mode bias towards zero, infinity, etc.
+results would not gravitate towards one end due to rounding mode bias towards zero, <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math>, etc.
 This may be important when operating on fixed-point numbers.
 </p>
 <p><a href="https://wg21%2elink/p0105r1">[P0105R1]</a> provides additional motivation and explanation of these rounding modes.
@@ -2472,7 +2503,7 @@ and then adjusting the quotient and remainder to emulate a different rounding mo
 </p>
 <example-block><p><intro-></intro-> 
 Just to illustrate the principle,
-consider how one would round towards positive infinity with unsigned operands:
+consider how one would round towards <math display=inline><mrow><mo>+</mo><mi>∞</mi></mrow></math> with unsigned operands:
 </p><code-block><h- data-h=kw_type>unsigned</h-> <h- data-h=id>div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>unsigned</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> for reference</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>/</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
@@ -3145,7 +3176,16 @@ A function call expression that violates the precondition in the <i>Precondition
 is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econst>[expr.const]</a>).   
 </p></del-block>
 
-<h2 id=references><a class=para href=#references></a>7. References</h2>
+<h2 id=acknowledgements><a class=para href=#acknowledgements></a>7. Acknowledgements</h2>
+
+<p>I sincerely thank Lawrence Crowl (the author of the predecessor paper <a href="https://wg21%2elink/p0105r1">[P0105R1]</a>)
+for reviewing this paper in great detail,
+providing detailed feedback.
+The choice to include combined quotient/remainder functions was only made
+after his feedback.
+</p>
+<h2 id=references><a class=para href=#references></a>8. References</h2>
+
 
 
 
@@ -3175,10 +3215,13 @@ is not a core constant expression (<a href=https://eel%2eis/c++draft/expr%2econs
 <span class=bib-author>Tiago Freire.</span>
 <span class=bib-title>Unified integer overflow arithmetic</span>
 <span class=bib-date>2025-03-26</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html</a></div><div id=bib-item-StackOverflowDivision class=bib-item>
-<a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowDivision]</a>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html</a></div><div id=bib-item-StackOverflowCeil class=bib-item>
+<a href="https://stackoverflow%2ecom/q/2745074/5740428">[StackOverflowCeil]</a>
 <span class=bib-title>Fast ceiling of an integer division in C / C++</span>
-<a href="https://stackoverflow%2ecom/q/2745074/5740428" class=bib-link>https://stackoverflow.com/q/2745074/5740428</a></div><div id=bib-item-BuggyDivisions class=bib-item>
+<a href="https://stackoverflow%2ecom/q/2745074/5740428" class=bib-link>https://stackoverflow.com/q/2745074/5740428</a></div><div id=bib-item-StackOverflowRound class=bib-item>
+<a href="https://stackoverflow%2ecom/q/2422712/5740428">[StackOverflowRound]</a>
+<span class=bib-title>Rounding integer division (instead of truncating)</span>
+<a href="https://stackoverflow%2ecom/q/2422712/5740428" class=bib-link>https://stackoverflow.com/q/2422712/5740428</a></div><div id=bib-item-BuggyDivisions class=bib-item>
 <a href="https://blog%2edemofox%2eorg/2022/07/21/rounding-modes-for-integer-division/">[BuggyDivisions]</a>
 <span class=bib-author>njohnny84.</span>
 <span class=bib-title>Rounding Modes For Integer Division</span>
@@ -3207,7 +3250,7 @@ See <a href="https://github%2ecom/Eisenwave/integer-division">[GitHub]</a> for t
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
 <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>__sgn2</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_ctrl>if</h-> <h- data-h=kw>constexpr</h-> <h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>is_signed_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Equivalent to: (x &gt;&gt; (INT_WIDTH - 1)) | 1</h->
+        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Equivalent to: (x &gt;&gt; (width_of_T - 1)) | 1</h->
         <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_op>?</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-> <h- data-h=sym_punc>:</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->    
     <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>else</h-> <h- data-h=sym_brac>{</h->
         <h- data-h=kw_ctrl>return</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->

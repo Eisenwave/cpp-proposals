@@ -11,7 +11,7 @@ struct div_result {
 template<class T>
 constexpr T __sgn2(T x) {
     if constexpr (std::is_signed_v<T>) {
-        // Equivalent to: (x >> (INT_WIDTH - 1)) | 1
+        // Equivalent to: (x >> (width_of_T - 1)) | 1
         return x < 0 ? -1 : 1;    
     } else {
         return 1;

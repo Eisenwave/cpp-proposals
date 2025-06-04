@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3724R0}}
-    \dt{Date:}            \dd{\tt{2025-06-03}}
+    \dt{Date:}            \dd{\tt{2025-06-04}}
     \dt{Audience:}        \dd{LEWG, SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -43,8 +43,7 @@ and a negative remainder may be surprising in general.
 Therefore, I propose a set of standard library functions
 which implement a variety of rounding modes when computing quotients and remainders.
 Such a feature was previously part of \ref[P0105R1] and the Numerics TS \ref[P1889R1],
-but was eventually abandoned by the author,
-in part due to design disagreements.
+but was eventually abandoned by the author.
 
 \Bnote{
 Terminology refresher for division, where
@@ -291,7 +290,7 @@ the remainder has the divisor (right operand) sign.
     \td{to zero}
 }
 \tr{
-    \td{ARM}
+    \td{ARMv7-A and newer}
     \td{CPU}
     \td{\tt{sdiv}, \tt{udiv}}
     \td{N/A}
@@ -319,7 +318,7 @@ the remainder has the divisor (right operand) sign.
     \td{to zero}
 }
 \tr{
-    \td{AVR (8-bit)}
+    \td{AVR (8-bit), PIC16, etc.}
     \td{CPU}
     \td{N/A}
     \td{N/A}
@@ -401,7 +400,7 @@ See below for some motivating examples.
 \Bex{
 A common problem is to compute how many chunks/buckets/blocks of a fixed size
 are needed to fit a certain amount of elements,
-which involves a division which rounds towards positive infinity.
+which involves a division which rounds towards \pos-inf{}.
 \cppblock{
 const int bucket_size = 1000;
 int elements = 100;
@@ -413,7 +412,7 @@ int buckets_required = std::div_to_inf(elements, bucket_size); // OK, one bucket
 
 \Bex{
 A common problem is to compute which chunk/bucket/block an element falls into.
-This requires division which rounds towards negative infinity.
+This requires division which rounds towards \neg-inf{}.
 \cppblock{
 const int bucket_size = 1000;
 int a = 10;
@@ -445,20 +444,20 @@ However, doing so with correct output, high performance,
 and without introducing more undefined behavior than \tcode{x / y} already has,
 is surprisingly hard.
 
-There is an \em{ocean} of examples where C++ users have gotten this wrong.
+There is an \em{ocean} of examples where C and C++ users have gotten this wrong.
 A few droplets are listed below.
 
 \Bug{
 At the time of writing,
 the \em{first} Google search result for "c++ ceiling integer division"
-yields \ref[StackOverflowDivision].
+yields \ref[StackOverflowCeil].
 Almost every answer does not permit signed integers,
 gives wrong results,
 or has undefined behavior for certain inputs
 (not counting division by zero or \tcode{\hl[macro]{INT_MIN} / -1}).
 
 For example, one answer with 67 upvotes (at the time of writing)
-attempts to implement ceiling (rounded towards positive infinity)
+attempts to implement ceiling (rounded towards \pos-inf)
 integer division as follows:
 \cppblock{
 q = (x % y) ? x / y + 1 : x / y;
@@ -470,6 +469,39 @@ which is obviously wrong because it rounds \tcode{-0.5} up to \tcode{1}, skippin
 To be fair, the answer is correct for positive integers,
 and perhaps the author didn't want to support negative inputs anyway.
 However, the answer contains no disclaimer that clarifies this.
+}
+
+\Bug{
+In the question "Rounding integer division (instead of truncating)" for C
+(\ref[StackOverflowRound]),
+OP expresses that they want to divide with rounding to the nearest integer,
+rather than rounding towards zero.
+
+While the top 11 answers are highly decorated with upvotes,
+they all overflow for large inputs,
+use \tcode{float} (which has accuracy issues),
+have the wrong rounding mode,
+or are plain incorrect.
+
+The first correct solution can only be found at 5 upvotes, by user A Fog:
+\cppblock{
+unsigned int rounded_division(unsigned int n, unsigned int d) {
+    unsigned int q = n / d;  // quotient
+    unsigned int r = n % d;  // remainder
+    if (r > d>>1  // fraction > 0.5
+    || (r == d>>1 && (q&1) && !(d&1))) { // fraction == 0.5 and odd
+        q++;
+    }
+    return q;
+}
+}
+Unfortunately, this solution does not support negative inputs,
+and is somewhat branch-heavy.
+When compiled with Clang,
+a possible path of execution would go through four conditional jumps
+depending on \tcode{(r > d>>1)}, \tcode{(r == d>>1)}, \tcode{(q&1)}, and \tcode{!(d&1)},
+where all but \tcode{(r == d>>1)} are extremely unpredictable (basically coin flips).
+See \ref[https://godbolt.org/z/ax6hr1r53].
 }
 
 \Bug{
@@ -492,8 +524,7 @@ static int div_ceil(int a, int b) {
 \li{\tcode{div_round} overflows on large inputs in \tcode{a - b} and \tcode{a + b}}
 \li{
 all functions branch depending on whether the quotient is negative,
-and at least for a standard library (which has to cover a wide variety of use cases),
-such a branch could be \em{highly} unpredictable
+which may be highly unpredictable
 }
 }
 }
@@ -628,7 +659,7 @@ just towards different targets.
 \li{
 The scheme is needlessly hostile towards novices
 who are not yet familiar with the fact that \math{\mrow{\mi{floor}\mo{(}\mi{x}\mo{)}}}
-rounds towards negative infinity.
+rounds towards \neg-inf{}.
 By comparison, \tcode{std::div_to_neg_inf} is self-documenting.
 }
 }
@@ -848,7 +879,7 @@ but no division to the nearest integer with tie breaks away from zero.
 The "trivial" functions \tcode{std::div_to_zero}
 and \tcode{std::rem_dividend_sign} exist solely for consistency and enhanced expressiveness.
 Note that not every has a truncating integer division like C++.
-For example, the \tt{\hl[sym-op]{//}} operator in Python rounds towards negative infinity.
+For example, the \tt{\hl[sym-op]{//}} operator in Python rounds towards \neg-inf{}.
 A team of developers with primarily Python experience/habits
 may thus benefit from always expressing
 rounding mode explicitly with \tcode{std::div_to_zero} to avoid confusion.
@@ -857,7 +888,7 @@ rounding mode explicitly with \tcode{std::div_to_zero} to avoid confusion.
 
 Rounding to even/odd integers is mainly useful because it is unbiased.
 That is, when dividing a large amount of integers,
-results would not gravitate towards one end due to rounding mode bias towards zero, infinity, etc.
+results would not gravitate towards one end due to rounding mode bias towards zero, \pos-inf, etc.
 This may be important when operating on fixed-point numbers.
 
 \ref[P0105R1] provides additional motivation and explanation of these rounding modes.
@@ -905,7 +936,7 @@ and then adjusting the quotient and remainder to emulate a different rounding mo
 
 \Bex{
 Just to illustrate the principle,
-consider how one would round towards positive infinity with unsigned operands:
+consider how one would round towards \pos-inf with unsigned operands:
 \cppblock{
 unsigned div_to_zero(unsigned x, unsigned y) { // for reference
     return x / y;
@@ -1485,6 +1516,14 @@ A function call expression that violates the precondition in the \expects elemen
 is not a core constant expression\iref{expr.const}.   
 }
 
+\h2{Acknowledgements}
+
+I sincerely thank Lawrence Crowl (the author of the predecessor paper \ref[P0105R1])
+for reviewing this paper in great detail,
+providing detailed feedback.
+The choice to include combined quotient/remainder functions was only made
+after his feedback.
+
 \h2{References}
 
 \bib[
@@ -1520,9 +1559,14 @@ is not a core constant expression\iref{expr.const}.
     long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html
 ]
 \bib[
-    id = StackOverflowDivision,
+    id = StackOverflowCeil,
     title = Fast ceiling of an integer division in C / C++,
     link = https://stackoverflow.com/q/2745074/5740428
+]
+\bib[
+    id = StackOverflowRound,
+    title = Rounding integer division (instead of truncating),
+    link = https://stackoverflow.com/q/2422712/5740428
 ]
 \bib[
     id = BuggyDivisions,
