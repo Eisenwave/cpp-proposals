@@ -92,7 +92,7 @@ a:visited {
 }
 }
 
-\macro[\slide-controls]{\important{
+\macro[\slide-controls]{\Bimp{
 This document has custom controls\inline{\noscript{ \b{which require JavaScript}}}:
 \ul{
 \li{

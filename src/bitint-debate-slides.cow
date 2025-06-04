@@ -47,7 +47,7 @@ li>ul {
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3721R0}}
-    \dt{Date:}            \dd{\tt{2025-05-31}}
+    \dt{Date:}            \dd{\tt{2025-06-04}}
     \dt{Audience:}        \dd{SG22}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -145,6 +145,27 @@ foo(0); // OK, calls foo<32> on most platforms
 }
 This could also be addressed by P2998,
 "Deducing function parameter types using alias template CTAD".
+}
+
+\slide{
+\slidehfun{Why not reinvent integers?}
+
+Users have many grievances with the standard integers:
+\cppblock{
+decltype(+uint8_t{1})        // int?!
+unsigned(0) < -1             // true?!
+uint8_t x = 1000;            // OK?!
+int x = 0.5f;                // OK?!
+0 + true                     // OK?!
+uint32_t x;                  // optional?!
+uint128_t x;                 // why not?!
+sizeof(int) == sizeof(long)  // true?!
+}
+
+\ul{
+\li{\tcode{_BitInt} solves many issues in C, but not all (e.g. mixed-sign comp.)}
+\li{if fundamental in C++, could revamp integer types}
+}
 }
 
 \slide{

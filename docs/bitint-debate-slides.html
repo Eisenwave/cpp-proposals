@@ -411,6 +411,10 @@ main {
     margin-right: auto;
 }
 
+p {
+    text-align: justify;
+}
+
 abstract-block,
 blockquote,
 bug-block,
@@ -1221,6 +1225,8 @@ h-[data-h^=null] { color:#00607c; }
 h-[data-h^=bool] { color:#9f6807; }
 h-[data-h^=this] { color:#00607c; }
 h-[data-h^=mac] { color:#6f4e37; }
+h-[data-h^=id] { color:#000000; }
+h-[data-h^=id_labl] { color:#517a0b; }
 h-[data-h^=kw] { color:#00607c; }
 h-[data-h^=sym] { color:#570057; }
 h-[data-h^=sym_punc] { color:#000000; }
@@ -1254,6 +1260,8 @@ h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line
 h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 h-[data-h^=sh_cmd] { color:#00607c; }
 h-[data-h^=sh-opt] { color:#000000; }
+h-[data-h^=asm_ins] { color:#00607c; }
+h-[data-h^=asm_ins_psu] { color:#9f6807; }
 }
 @media (prefers-color-scheme: dark) {
 h-[data-h^=err] { color:#ff0000; }
@@ -1271,6 +1279,8 @@ h-[data-h^=null] { color:#62ded6; }
 h-[data-h^=bool] { color:#f2d18d; }
 h-[data-h^=this] { color:#62ded6; }
 h-[data-h^=mac] { color:#cc946e; }
+h-[data-h^=id] { color:#f0f0f0; }
+h-[data-h^=id_labl] { color:#d8eda6; }
 h-[data-h^=kw] { color:#62ded6; }
 h-[data-h^=sym] { color:#baa6b9; }
 h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1303,7 +1313,9 @@ h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline lin
 h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
 h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 h-[data-h^=sh_cmd] { color:#62ded6; }
-h-[data-h^=sh-opt] { color:#d0d0d0; }
+h-[data-h^=sh-opt] { color:#f0f0f0; }
+h-[data-h^=asm_ins] { color:#62ded6; }
+h-[data-h^=asm_ins_psu] { color:#e6aee6; }
 }
 
 html.light h-[data-h^=err] { color:#ff0000; }
@@ -1317,6 +1329,8 @@ html.light h-[data-h^=null] { color:#00607c; }
 html.light h-[data-h^=bool] { color:#9f6807; }
 html.light h-[data-h^=this] { color:#00607c; }
 html.light h-[data-h^=mac] { color:#6f4e37; }
+html.light h-[data-h^=id] { color:#000000; }
+html.light h-[data-h^=id_labl] { color:#517a0b; }
 html.light h-[data-h^=kw] { color:#00607c; }
 html.light h-[data-h^=sym] { color:#570057; }
 html.light h-[data-h^=sym_punc] { color:#000000; }
@@ -1350,6 +1364,8 @@ html.light h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:und
 html.light h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 html.light h-[data-h^=sh_cmd] { color:#00607c; }
 html.light h-[data-h^=sh-opt] { color:#000000; }
+html.light h-[data-h^=asm_ins] { color:#00607c; }
+html.light h-[data-h^=asm_ins_psu] { color:#9f6807; }
 
 html.dark h-[data-h^=err] { color:#ff0000; }
 html.dark h-[data-h^=cmt] { color:#a2e08d; font-style:italic; }
@@ -1366,6 +1382,8 @@ html.dark h-[data-h^=null] { color:#62ded6; }
 html.dark h-[data-h^=bool] { color:#f2d18d; }
 html.dark h-[data-h^=this] { color:#62ded6; }
 html.dark h-[data-h^=mac] { color:#cc946e; }
+html.dark h-[data-h^=id] { color:#f0f0f0; }
+html.dark h-[data-h^=id_labl] { color:#d8eda6; }
 html.dark h-[data-h^=kw] { color:#62ded6; }
 html.dark h-[data-h^=sym] { color:#baa6b9; }
 html.dark h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1398,7 +1416,9 @@ html.dark h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:und
 html.dark h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
 html.dark h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 html.dark h-[data-h^=sh_cmd] { color:#62ded6; }
-html.dark h-[data-h^=sh-opt] { color:#d0d0d0; }
+html.dark h-[data-h^=sh-opt] { color:#f0f0f0; }
+html.dark h-[data-h^=asm_ins] { color:#62ded6; }
+html.dark h-[data-h^=asm_ins_psu] { color:#e6aee6; }
   </style>
   <script>
 const theme = localStorage.getItem("cowel-theme");
@@ -1640,7 +1660,7 @@ li>ul {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3721R0>P3721R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-05-31</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-04</tt-></dd>
     <dt>Audience:</dt>        <dd>SG22</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-To:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1812,7 +1832,43 @@ Slide 4
 <section id=slide-5>
 
 
-<h2 id=slide-h-5>𝔽 – Problems with a common spelling</h2>
+<h2 id=slide-h-5>𝔽 – Why not reinvent integers?</h2>
+
+    
+
+<p>Users have many grievances with the standard integers:
+</p><code-block><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>+</h-><h- data-h=id_type>uint8_t</h-><h- data-h=sym_brac>{</h-><h- data-h=num>1</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h->        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> int?!</h->
+<h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h->             <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> true?!</h->
+<h- data-h=id_type>uint8_t</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>1000</h-><h- data-h=sym_punc>;</h->            <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h->
+<h- data-h=kw_type>int</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_deco>f</h-><h- data-h=sym_punc>;</h->                <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h->
+<h- data-h=num>0</h-> <h- data-h=sym_op>+</h-> <h- data-h=bool>true</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK?!</h->
+<h- data-h=id_type>uint32_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h->                  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> optional?!</h->
+<h- data-h=id_type>uint128_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h->                 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> why not?!</h->
+<h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>long</h-><h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> true?!</h-></code-block>
+
+<ul>
+<li><code><h- data-h=kw_type>_BitInt</h-></code> solves many issues in C, but not all (e.g. mixed-sign comp.)</li>
+<li>if fundamental in C++, could revamp integer types</li>
+</ul>
+
+
+<div class=slide-foot>
+Jan Schultke
+ | 
+Slides for P3639R0
+—
+The _BitInt Debate
+ | 
+SG22 Telecon 2025-06-04
+ | 
+Slide 5
+</div>
+</section>
+
+<section id=slide-6>
+
+
+<h2 id=slide-h-6>𝔽 – Problems with a common spelling</h2>
 
     
 
@@ -1840,14 +1896,14 @@ The _BitInt Debate
  | 
 SG22 Telecon 2025-06-04
  | 
-Slide 5
+Slide 6
 </div>
 </section>
 
-<section id=slide-6>
+<section id=slide-7>
 
 
-<h2 id=slide-h-6>𝕃 – Class is easier to implement, teach</h2>
+<h2 id=slide-h-7>𝕃 – Class is easier to implement, teach</h2>
 
     
 
@@ -1875,14 +1931,14 @@ The _BitInt Debate
  | 
 SG22 Telecon 2025-06-04
  | 
-Slide 6
+Slide 7
 </div>
 </section>
 
-<section id=slide-7>
+<section id=slide-8>
 
 
-<h2 id=slide-h-7>𝕃 – Fundamentals have <em>huge</em> blast radius</h2>
+<h2 id=slide-h-8>𝕃 – Fundamentals have <em>huge</em> blast radius</h2>
 
     
 
@@ -1910,19 +1966,19 @@ The _BitInt Debate
  | 
 SG22 Telecon 2025-06-04
  | 
-Slide 7
+Slide 8
 </div>
 </section>
 
-<section id=slide-8>
+<section id=slide-9>
 
 
-<h2 id=slide-h-8>Summary</h2>
+<h2 id=slide-h-9>Summary</h2>
 
 
 <p><b>Key arguments</b> (see <a href="https://wg21%2elink/p3639r0">[P3639R0]</a> for more):
 </p><ul>
-<li>𝔽 – Fundamentals can do more</li><li>𝔽 – Problems with a common spelling</li><li>𝕃 – Class is easier to implement, teach</li><li>𝕃 – Fundamentals have <em>huge</em> blast radius</li>
+<li>𝔽 – Fundamentals can do more</li><li>𝔽 – Why not reinvent integers?</li><li>𝔽 – Problems with a common spelling</li><li>𝕃 – Class is easier to implement, teach</li><li>𝕃 – Fundamentals have <em>huge</em> blast radius</li>
 </ul>
 
 <p><b>Author position</b>: neutral / slightly 𝔽
@@ -1937,7 +1993,7 @@ The _BitInt Debate
  | 
 SG22 Telecon 2025-06-04
  | 
-Slide 8
+Slide 9
 </div>
 </section>
 
