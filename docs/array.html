@@ -1551,10 +1551,16 @@ and should be simplified.
 <a href="#isn%27t-this-a-waste-of-time?"><h3>Isn't this a waste of time?</h3></a>
 <div class=toc-num data-level=2>3</div>
 <a href=#design-considerations><h2>Design considerations</h2></a>
+<div class=toc-num data-level=3>3.1</div>
+<a href=#additional-improvements-to-zero-length-arrays><h3>Additional improvements to zero-length arrays</h3></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#impact-on-implementations><h2>Impact on implementations</h2></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=3>5.1</div>
+<a href=#[array%2eoverview]><h3>[array.overview]</h3></a>
+<div class=toc-num data-level=3>5.2</div>
+<a href=#[array%2ezero]><h3>[array.zero]</h3></a>
 <div class=toc-num data-level=2>6</div>
 <a href=#references><h2>References</h2></a>
 </div>
@@ -1708,14 +1714,45 @@ Note that the array cannot simply be an empty class because the double-brace ini
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code> should be valid to make generic programming easier,
 and this requires <em>some</em> data member.
 </p>
+<h3 id=additional-improvements-to-zero-length-arrays><a class=para href=#additional-improvements-to-zero-length-arrays></a>3.1. Additional improvements to zero-length arrays</h3>
+
+<p>Within <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a>,
+there are some long-standing issues going back to 2012.
+LWG has visited this subclause many times in <a href="https://cplusplus%2egithub%2eio/LWG/issue2157">[LWG2157]</a>,
+but never fully completed a solution.
+This work has been absorbed mostly unmodified into <a href=#wording>§5. Wording</a>.
+</p>
+<p>Among other peculiarities,
+<a href=https://eel%2eis/c++draft/array%2ezero#2>[array.zero] paragraph 2</a> specifies:
+</p>
+<blockquote>
+<p>In the case that <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>, <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-></code> unique value.
+The return value of <code><h- data-h=id>data</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is unspecified.
+</p></blockquote>
+
+<p>It is unclear whether this "unique value" is meant to be unique per object,
+unique for each invocation, etc.
+</p>
+<p>Furthermore, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is entirely undefined,
+making it equivalent to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unreachable</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>,
+which feels out-of-place especially following C++26,
+where <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> normally has a <i>Hardened preconditions</i> specification.
+Changing this behavior is a design issue,
+so it requires LEWG approval.
+</p>
 <h2 id=impact-on-implementations><a class=para href=#impact-on-implementations></a>4. Impact on implementations</h2>
 
-<p>No existing implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> is affected.
+<p>Existing implementations of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> are virtually unaffected.
+One exception to this is that the behavior of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>
+is no longer undefined;
+see below for specifics.
 </p>
 <h2 id=wording><a class=para href=#wording></a>5. Wording</h2>
 
 <p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
+<h3 id=[array.overview]><a class=para href=#[array%2eoverview]></a>5.1. [array.overview]</h3>
+
 <p>Change <a href=https://eel%2eis/c++draft/array%2eoverview#2>[array.overview] paragraph 2</a> as follows:
 </p>
 <diff-block>
@@ -1757,9 +1794,54 @@ are template-argument-equivalent.
 <h- data-h=sym_brac>}</h-></code-block>
 </diff-block>
 
-<todo-block><p><intro-></intro-> Changes to <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a> remain to be done.</p></todo-block>
+<h3 id=[array.zero]><a class=para href=#[array%2ezero]></a>5.2. [array.zero]</h3>
+
+<p>Change <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a> as follows:
+</p>
+
+
+<diff-block>
+<p>1
+<code><h- data-h=id>array</h-></code> <del>shall</del> provide<ins>s</ins> support for the special case <del>N == 0</del>
+<ins>of a zero-sized <code><h- data-h=id>array</h-></code> that is always empty, i.e. <code><h- data-h=id>N</h-></code> equals <code><h- data-h=num>0</h-></code>,
+with the properties described in this subclause.</ins></p>
+
+<p style=text-align:left><ins>?
+A zero-sized array type is an aggregate that meets the
+<i>Cpp17DefaultConstructible</i> ([tab:cpp17.defaultconstructible]),
+<i>Cpp17CopyConstructible</i> ([tab:cpp17.copyconstructible]), and
+<i>Cpp17CopyAssignable</i> ([tab:cpp17.copyassignable]) requirements.
+There is a single element of the aggregate,
+of an unspecified empty aggregate type
+whose alignment is <code><h- data-h=kw>alignof</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-></code> or lower.<br/>
+<wg21-block>[<i>Note</i>: 
+This allows initialization of the form <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>a</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code>.
+There is no requirement for <code><h- data-h=id>T</h-></code> to be <i>Cpp17DefaultConstructible</i>.
+ — <i>end note</i>]</wg21-block>
+</ins></p>
+
+<p>2
+<del>In the case that <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>, <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-></code> unique value</del>
+<ins><code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> return non-dereferenceable iterators
+such that <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=bool>true</h-></code>.
+When <code><h- data-h=id>a</h-></code> and <code><h- data-h=id>b</h-></code> are distinct objects of the same zero-sized array type,
+<code><h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>b</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> are not iterators over the same underlying sequence.
+<br/><wg21-block>[<i>Note</i>: 
+Therefore <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> does not return a value-initialized iterator.
+ — <i>end note</i>]</wg21-block></ins></p>
+
+<p>3
+The effect of calling <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> or <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>
+for a zero-sized array is <del>undefined</del>
+<ins>equivalent to <code><h- data-h=kw>contract_assert</h-><h- data-h=sym_par>(</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h-></code></ins>.
+</p>
+<p>4
+Member function <code><h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> <del>shall have</del> <ins>has constant complexity and</ins>
+a non-throwing exception specification.
+</p></diff-block>
 
 <h2 id=references><a class=para href=#references></a>6. References</h2>
+
 
 
 
@@ -1768,6 +1850,11 @@ are template-argument-equivalent.
 <span class=bib-author>Thomas Köppe.</span>
 <span class=bib-title>Working Draft, Programming Languages — C++</span>
 <span class=bib-date>2025-03-15</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div></div>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/n5008%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf</a></div><div id=bib-item-LWG2157 class=bib-item>
+<a href="https://cplusplus%2egithub%2eio/LWG/issue2157">[LWG2157]</a>
+<span class=bib-author>Daryle Walker.</span>
+<span class=bib-title>How does std::array&lt;T,0&gt; initialization work when T is not default-constructible?</span>
+<span class=bib-date>2012-05-08</span>
+<a href="https://cplusplus%2egithub%2eio/LWG/issue2157" class=bib-link>https://cplusplus.github.io/LWG/issue2157</a></div></div>
 </main></body>
 </html>

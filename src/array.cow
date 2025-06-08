@@ -183,13 +183,44 @@ Note that the array cannot simply be an empty class because the double-brace ini
 \tcode{std::array<int, 0>{{}}} should be valid to make generic programming easier,
 and this requires \em{some} data member.
 
+\h3{Additional improvements to zero-length arrays}
+
+Within \eelis{array.zero},
+there are some long-standing issues going back to 2012.
+LWG has visited this subclause many times in \ref[LWG2157],
+but never fully completed a solution.
+This work has been absorbed mostly unmodified into \ref[#wording].
+
+Among other peculiarities,
+\eelis{array.zero#2} specifies:
+
+\Bquote{
+In the case that \tcode{N == 0}, \tcode{begin() == end() ==} unique value.
+The return value of \tcode{data()} is unspecified.
+}
+
+It is unclear whether this "unique value" is meant to be unique per object,
+unique for each invocation, etc.
+
+Furthermore, \tcode{std::array<T, 0>::front()} is entirely undefined,
+making it equivalent to \tcode{std::unreachable()},
+which feels out-of-place especially following C++26,
+where \tcode{front()} normally has a \i{Hardened preconditions} specification.
+Changing this behavior is a design issue,
+so it requires LEWG approval.
+
 \h2{Impact on implementations}
 
-No existing implementation of \tcode{std::array} is affected.
+Existing implementations of \tcode{std::array} are virtually unaffected.
+One exception to this is that the behavior of \tcode{std::array<T, 0>::front()}
+is no longer undefined;
+see below for specifics.
 
 \h2{Wording}
 
 The following changes are relative to \ref[N5008].
+
+\h3{[array.overview]}
 
 Change \eelis{array.overview#2} as follows:
 
@@ -234,7 +265,51 @@ namespace std {
 }
 }
 
-\Btodo{Changes to \eelis{array.zero} remain to be done.}
+\h3{[array.zero]}
+
+Change \eelis{array.zero} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\pnum
+\tcode{array} \del{shall} provide\ins{s} support for the special case \del{N == 0}
+\ins{of a zero-sized \tcode{array} that is always empty, i.e. \tcode{N} equals \tcode{0},
+with the properties described in this subclause.}
+
+\p[style=text-align:left]{\ins{?
+A zero-sized array type is an aggregate that meets the
+\i{Cpp17DefaultConstructible} ([tab:cpp17.defaultconstructible]),
+\i{Cpp17CopyConstructible} ([tab:cpp17.copyconstructible]), and
+\i{Cpp17CopyAssignable} ([tab:cpp17.copyassignable]) requirements.
+There is a single element of the aggregate,
+of an unspecified empty aggregate type
+whose alignment is \tcode{alignof(T)} or lower.\br
+\wg21-note{
+This allows initialization of the form \tcode{array<T, 0> a = {{}};}.
+There is no requirement for \tcode{T} to be \i{Cpp17DefaultConstructible}.
+}
+}}
+
+\pnum
+\del{In the case that \tcode{N == 0}, \tcode{begin() == end() ==} unique value}
+\ins{\tcode{begin()} and \tcode{end()} return non-dereferenceable iterators
+such that \tcode{begin() == end()} is \tcode{true}.
+When \tcode{a} and \tcode{b} are distinct objects of the same zero-sized array type,
+\tcode{a.begin()} and \tcode{b.begin()} are not iterators over the same underlying sequence.
+\br\wg21-note{
+Therefore \tcode{begin()} does not return a value-initialized iterator.
+}}
+
+\pnum
+The effect of calling \tcode{front()} or \tcode{back()}
+for a zero-sized array is \del{undefined}
+\ins{equivalent to \tcode{contract_assert(false)}}.
+
+\pnum
+Member function \tcode{swap()} \del{shall have} \ins{has constant complexity and}
+a non-throwing exception specification.
+}
 
 \h2{References}
 
@@ -245,6 +320,13 @@ namespace std {
     author = Thomas Köppe,
     link = https://wg21.link/n5008,
     long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+    id = LWG2157,
+    title = How does std::array<T\,0> initialization work when T is not default-constructible?,
+    author = Daryle Walker,
+    date = 2012-05-08,
+    link = https://cplusplus.github.io/LWG/issue2157
 ]
 
 \make-bib
