@@ -1,0 +1,250 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = \tcode{std::array} is a wrapper for an array!
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3737R0}}
+    \dt{Date:}            \dd{\tt{2025-06-08}}
+    \dt{Audience:}        \dd{LEWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3737/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/array.cow]}
+}
+\hr
+}
+
+\Babstract{
+The \tcode{std::array} class template is implemented as a simple wrapper type
+for a "C-style array".
+However, its specification in the standard is considerably more permissive
+and should be simplified.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+The \tcode{std::array} class template has established itself
+as a de-facto replacement for "builtin arrays" or "C-style arrays" in many code bases.
+This also means that it is frequently taught to novice programmers,
+with an explanation along the lines of:
+
+\Bquote{
+\tcode{std::array} is just a wrapper for a C-style array:
+\cppblock{
+template <typename T, size_t N>
+struct array {
+    T __array[N];
+    // ...
+}
+}
+}
+
+While this explanation is not correct for zero-length \tcode{std::array}s,
+it does match how the template is implemented in every standard library for \tcode{N != 0},
+and there is very little reason not to implemented it in this obvious fashion.
+
+\h3[id=specification]{What the standard says}
+
+The actual specification of \tcode{std::array} is not so simple,
+and is a combination of multiple constraints on the implementation:
+\ul{
+\li{
+It is a class template,
+a contiguous container\iref{array.overview#1},
+and a reversible container (with an exception; see \eelis{array.overview#3}),
+and it meets some requirements of a sequence container.
+}
+\li{
+It can be list-initialized with up to N elements
+whose types are convertible to \tcode{T}\iref{array.overview#2}.
+This is obviously not exhaustive; initialization with \tcode{{}} or
+\tcode{{other_array}} should also be possible.
+}
+\li{
+It is a structural type if \tcode{T} is a structural type\iref{array.overview#4},
+and therefore, also a literal class type in that event.
+}
+}
+
+Additionally, while this does not strictly specify anything about the layout,
+some helper functions in the standard library de-facto rely on it.
+Take \eelis{array.creation} for example:
+
+\Bquote{
+\itemdecl{
+template<class T, size_t N>
+  constexpr array<remove_cv_t<T>, N> to_array(T (&a)[N]);
+}
+\itemdescr{
+\mandates
+\tcode{is_array_v<T>} is \tcode{false}
+and \tcode{is_constructible_v<remove_cv_t<T>, T&>} is \tcode{true}.
+
+\expects
+\tcode{T} meets the \i{Cpp17CopyConstructible} requirements.
+
+\returns
+\tcode{{{ a[0], \N{HORIZONTAL ELLIPSIS}, a[N - 1] }}}
+}
+}
+
+The use of double braces in the \i{Returns} specification
+would be nonsensical if \tcode{std::array} was not
+"a wrapper for an array".
+
+\h3[id=unexpected]{What the standard does not say}
+
+Notably, there are quite a couple of guarantees that are absent.
+
+\Bex{
+It would be compliant to implement \tcode{std::array} as follows:
+\cppblock{
+struct alignas(1024) malice_and_evil {
+    constexpr malice_and_evil() { }
+    malice_and_evil(const malice_and_evil&) { }
+};
+
+template <typename T, size_t N>
+struct array {
+    T __array[N];
+    malice_and_evil evil;
+};
+}
+}
+
+Such an implementation technically satisfies all the requirements for \tcode{std::array}, but
+\ul{
+\li{copying the array would not be a constant expression,}
+\li{\tcode{std::array} would not be trivially copyable for any type, and}
+\li{its size and alignment would be much greater than that of \tcode{T[N]}.}
+}
+
+\Bex{
+An even more insane implementation would be:
+\cppblock{
+struct gobbler {
+    constexpr gobbler() = default;
+    constexpr gobbler(auto&&) {}
+};
+
+template <typename T, size_t N>
+struct array {
+    gobbler __gobblers[N];
+    T __array[N]; // necessary to satisfy contiguous container requirements etc.
+    // ...
+};
+}
+Since \eelis{array} never states what effect list-initialization has for a \tcode{std::array},
+and even \tcode{std::to_array} is just stated to return the result of \em{some expression},
+nothing suggests that \tcode{begin()}
+would give us an iterator to \tcode{x} after initializing like \tcode{std::array<T,1>{{x}}}.
+All list-initialization could be "gobbled up".
+}
+
+\h2{Motivation}
+
+It seems like the vagueness in the specification serves no practical purpose;
+it is unclear what implementations could do with the additional freedom,
+other than pranking their users.
+It would be beneficial to the C++ community if the simplified explanation in \ref[#introduction]
+was what the standard actually said.
+
+A stricter specification would provide additional useful guarantees
+such as \tcode{std::array<T, N>} being trivially copyable when \tcode{T} is trivially copyable.
+This is relevant to use cases like \tcode{std::bit_cast<std::array<std::byte, sizeof(x)>>(x)},
+which \em{technically} rely on implementation details, not on standard behavior.
+
+\h3{Isn't this a waste of time?}
+
+While it could be argued that only a malicious implementation would violate our user
+expectations as in \ref[#unexpected] and it is therefore time-wasting to restrict
+\tcode{std::array} any further,
+it would be unusual for WG21 to shy away from standardizing universally existing practice
+and to recommend users to rely on non-standard implementation details,
+simply because those implementation details are widespread.
+If the remaining implementation freedom can only be used for evil,
+perhaps we should not grant it.
+
+\h2{Design considerations}
+
+While the specification for arrays of nonzero length is rather obvious,
+it is unclear how many guarantees we want to provide for zero-length arrays.
+For example, should \tcode{std::array<std::string, 0>} be trivially copyable,
+even though \tcode{std::string} is not?
+
+The zero-length case is also where we see some implementation divergence in size and alignment
+of the array.
+Note that the array cannot simply be an empty class because the double-brace initialization
+\tcode{std::array<int, 0>{{}}} should be valid to make generic programming easier,
+and this requires \em{some} data member.
+
+\h2{Impact on implementations}
+
+No existing implementation of \tcode{std::array} is affected.
+
+\h2{Wording}
+
+The following changes are relative to \ref[N5008].
+
+Change \eelis{array.overview#2} as follows:
+
+\Bdiff{
+An \tcode{array} is an aggregate\iref{dcl.init.aggr} \del{that can be
+list-initialized with up
+to \tcode{N} elements whose types are convertible to \tcode{T}}
+\ins{containing a single public non-static data member of type \tcode{T[N]}
+if \tcode{N} is nonzero;
+otherwise see \eelis{array.zero}}.
+}
+
+Delete \eelis{array.overview#4}:
+
+\Bdel{
+\tcode{array<T, N>} is a structural type\iref{term.structural.type} if
+\tcode{T} is a structural type.
+Two values \tcode{a1} and \tcode{a2} of type \tcode{array<T, N>}
+are template-argument-equivalent\iref{temp.type} if and only if
+each pair of corresponding elements in \tcode{a1} and \tcode{a2}
+are template-argument-equivalent.
+}
+
+\macro[\black_comment]{\hl[sym-punc]{//}\serif{\i{\hl[sym-punc]{ \put}}}}
+
+Change \eelis{array.overview#5} as follows:
+
+\Bdiff{
+\itemdecl{
+namespace std {
+  template<class T, size_t N>
+  struct array {
+    \ins{// \serif{non-static data members}
+    T \exposid{arr}[N];                          // \serif{name is exposition-only}}
+
+    \black_comment{types}
+    using value_type             = T;
+    using pointer                = T*;
+    \html{[\N{HORIZONTAL ELLIPSIS}]}
+  };
+}
+}
+}
+
+\Btodo{Changes to \eelis{array.zero} remain to be done.}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+
+\make-bib
