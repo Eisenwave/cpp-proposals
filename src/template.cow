@@ -8,7 +8,7 @@
     \dt{Date:}            \dd{\tt{2025-05-19}}
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
@@ -16,7 +16,7 @@
 \hr
 }
 
-\abstract{
+\Babstract{
 The utilities in \header{cctype} or \header{locale}
 are locale-specific,
 not \tcode{constexpr},
@@ -63,33 +63,6 @@ We propose lightweight, locale-independent alternatives.
     title = Partial implementation of character utilities,
     author = Jan Schultke\, Corentin Jabot,
     link = https://godbolt.org/z/5nvWzdf8G
-]
-\bib[
-    id = µlight,
-    title = ascii_chars.hpp utilities in µlight,
-    author = Jan Schultke,
-    link = https://github.com/Eisenwave/ulight/blob/main/include/ulight/impl/ascii_chars.hpp
-]
-\bib[
-    id = AVX2strncasecmp,
-    title = glibc [PATCH v1 21/23] x86: Add AVX2 optimized str{n}casecmp,
-    date = 2022-03-23,
-    author = Noah Goldstein,
-    link = https://sourceware.org/pipermail/libc-alpha/2022-March/137272.html
-]
-\bib[
-    id = AvoidCharByChar,
-    title = Avoid character-by-character processing when performance matters,
-    date = 2020-07-21,
-    author = Daniel Lemire,
-    link = https://lemire.me/blog/2020/07/21/avoid-character-by-character-processing-when-performance-matters/
-]
-\bib[
-    id = AVX-512CaseConv,
-    title = Converting ASCII strings to lower case at crazy speeds with AVX-512,
-    date = 2024-08-03,
-    author = Daniel Lemire,
-    link = https://lemire.me/blog/2024/08/03/converting-ascii-strings-to-lower-case-at-crazy-speeds-with-avx-512/
 ]
 
 \make-bib
