@@ -18,7 +18,8 @@ Author: Jan Schultke
 
 **Status**: Active<br>
 **Audience**: LEWG-I, LEWG<br>
-**Slides:** [P3192](../slides/p3104-slides.pdf)
+**Slides:** [P3192](../slides/p3104-slides.pdf),
+[P3730](bit-permutations-slides.html)
 
 - [Latest](bit-permutations.html)
 - [P3104R3](bit-permutations-p3104r3.html)
@@ -26,20 +27,13 @@ Author: Jan Schultke
 - [P3104R1](bit-permutations-p3104r1.html)
 - [P3104R0](bit-permutations-p3104r0.html)
 
-### P3140: `std::int_least128_t`
-
-**Status**: Needs revision<br>
-**Audience**: LEWG-I, LEWG, EWG-I, EWG, SG22
-
-- [Latest](int-least128.html)
-- [P3140R0](int-least128-p3140r0.html)
-
 ### P3568: `break label;` and `continue label;`
 
 **Status**: Active<br>
-**Audience**: EWG, SG22<br>
+**Audience**: SG22, EWG<br>
 **Summary**: [P3628](break-continue-label-tldr.html) (tl; dr version for EWGI at Hagenberg 2025)<br>
-**Slides**: [P3630](../slides/p3568-slides.pdf) (Syntax discussion slides for EWG at Hagenberg 2025)
+**Slides**: [P3630](../slides/p3568-slides.pdf) (Syntax discussion slides for EWG at Hagenberg 2025),
+[P3630](break-continue-label-slides.html)
 
 - [Latest](break-continue-label.html)
 - [P3568R1](break-continue-label-p3568r1.html)
@@ -48,7 +42,8 @@ Author: Jan Schultke
 ### P3639: The `_BitInt` Debate
 
 **Status**: Active<br>
-**Audience**: EWG, LEWG, SG6
+**Audience**: SG6, SG22, EWG, LEWG<br>
+**Slides**: [P3721](bitint-debate-slides.html) (Slides for SG6 and SG22, 2025)
 
 - [Latest](bitint-debate.html)
 - [P3639](bitint-debate-p3639r0.html)
@@ -70,6 +65,9 @@ Author: Jan Schultke
 - [P3642R0](clmul-p3642r0.html)
 
 ### P3643: `std::to_signed`, `std::to_unsigned`
+
+**Status**: Active<br>
+**Audience**: LEWG
 
 - [Latest](to-signed-unsigned.html)
 - [P3643R0](to-signed-unsigned.html)
@@ -93,7 +91,7 @@ Author: Jan Schultke
 ### P3701: Concepts for integer types, not integral types
 
 **Status**: Active<br>
-**Audience**: CWG, LEWG
+**Audience**: LEWG, CWG
 
 - [Latest](signed-or-unsigned.html)
 - [P3701R0](signed-or-unsigned-p3701r0.html)
@@ -101,10 +99,24 @@ Author: Jan Schultke
 ### P3702: Stricter requirements for document submissions (SD-7)
 
 **Status**: Active<br>
-**Audience**: CWG, LEWG
+**Audience**: Admin
 
 - [Latest](sd7-updates.html)
 - [P3702R0](sd7-updates-p3702r0.html)
+
+### P3724: Integer division
+
+**Status**: Active<br>
+**Audience**: SG6, LEWG
+
+- [Latest](intdiv.html)
+
+### P3733: More named universal character escapes
+
+**Status**: Active<br>
+**Audience**: SG16
+
+- [Latest](more-unicode-escapes.html)
 
 ## Inactive
 
@@ -129,11 +141,20 @@ Author: Jan Schultke
 
 ### (Accepted) P3176: The Oxford variadic comma
 
-**Status**: Accepted
+**Status**: Accepted<br>
+**Audience**: EWG-I, EWG, CWG
 
 - [Latest](oxford-variadic-comma.html)
 - [P3176R1](oxford-variadic-comma-p3176r1.html)
 - [P3176R0](oxford-variadic-comma-p3176r0.html)
+
+### P3140: `std::int_least128_t`
+
+**Status**: Superseded by [P3666](bitint.html) (`_BitInt`)<br>
+**Audience**: LEWG-I, LEWG, EWG-I, EWG, SG22
+
+- [Latest](int-least128.html)
+- [P3140R0](int-least128-p3140r0.html)
 
 ### NP: Define `offsetof` semantics in the C++ standard
 
