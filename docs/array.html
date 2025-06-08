@@ -1753,15 +1753,55 @@ see below for specifics.
 </p>
 <h3 id=[array.overview]><a class=para href=#[array%2eoverview]></a>5.1. [array.overview]</h3>
 
+<p>Change <a href=https://eel%2eis/c++draft/array%2eoverview#1>[array.overview] paragraph 1</a> as follows:
+</p>
+<diff-block>
+<p>The header <tt->&lt;array&gt;</tt-> defines a class template
+for storing fixed-size sequences of objects.
+<del>An <code><h- data-h=id>array</h-></code> is a contiguous container (<a href=https://eel%2eis/c++draft/container%2ereqmts>[container.reqmts]</a>).</del>
+An <del>instance</del> <ins>object</ins> of <ins>type</ins> <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>N</h-><h- data-h=sym_op>&gt;</h-></code>
+stores <code><h- data-h=id>N</h-></code> elements of type <code><h- data-h=id>T</h-></code>, so that
+<del><code><h- data-h=id>size</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>N</h-></code> is an invariant</del>
+<ins><code><h- data-h=id>size</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> always equals <code><h- data-h=id>N</h-></code></ins>.
+</p></diff-block>
+
 <p>Change <a href=https://eel%2eis/c++draft/array%2eoverview#2>[array.overview] paragraph 2</a> as follows:
 </p>
 <diff-block>
 <p>An <code><h- data-h=id>array</h-></code> is an aggregate (<a href=https://eel%2eis/c++draft/dcl%2einit%2eaggr>[dcl.init.aggr]</a>) <del>that can be
 list-initialized with up
 to <code><h- data-h=id>N</h-></code> elements whose types are convertible to <code><h- data-h=id>T</h-></code></del>
-<ins>containing a single public non-static data member of type <code><h- data-h=id>T</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>N</h-><h- data-h=sym_sqr>]</h-></code>
+<ins>with no base classes.
+A specialization <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>N</h-><h- data-h=sym_op>&gt;</h-></code>
+has a single public non-static data member of type
+<span class=word>"array of <code><h- data-h=id>N</h-></code> <code><h- data-h=id>T</h-></code>"</span>
 if <code><h- data-h=id>N</h-></code> is nonzero;
-otherwise see <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a></ins>.
+otherwise the contents are specified in <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a></ins>.
+</p>
+<p><ins><wg21-block>[<i>Note</i>: 
+An <code><h- data-h=id>array</h-></code> is trivially copyable, standard-layout, and a structural type
+if <code><h- data-h=id>T</h-></code> is trivially copyable, standard-layout,
+and a structural type, respectively.
+ — <i>end note</i>]</wg21-block></ins>
+</p></diff-block>
+
+<p>Change <a href=https://eel%2eis/c++draft/array%2eoverview#3>[array.overview] paragraph 3</a> as follows:
+</p>
+<diff-block>
+<p>An <code><h- data-h=id>array</h-></code> meets all of the requirements
+of a container (<a href=https://eel%2eis/c++draft/container%2ereqmts>[container.reqmts]</a>)<ins>,
+of a contiguous container,</ins> and
+of a reversible container (<a href=https://eel%2eis/c++draft/container%2erev%2ereqmts>[container.rev.reqmts]</a>),
+except that a
+<del>default constructed <code><h- data-h=id>array</h-></code> object</del>
+<ins>default-initialized or value-initialized object of type <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>N</h-><h- data-h=sym_op>&gt;</h-></code></ins>
+is not empty if <code><h- data-h=id>N</h-></code> &gt; 0.
+An <code><h- data-h=id>array</h-></code> meets some of the requirements of a sequence
+container (<a href=https://eel%2eis/c++draft/sequence%2ereqmts>[sequence.reqmts]</a>).
+Descriptions are provided here
+only for operations on <code><h- data-h=id>array</h-></code> that are not described in
+one of these tables<ins>,</ins> and
+for operations where there is additional semantic information.
 </p></diff-block>
 
 <p>Delete <a href=https://eel%2eis/c++draft/array%2eoverview#4>[array.overview] paragraph 4</a>:
@@ -1833,7 +1873,7 @@ Therefore <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_
 <p>3
 The effect of calling <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> or <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>
 for a zero-sized array is <del>undefined</del>
-<ins>equivalent to <code><h- data-h=kw>contract_assert</h-><h- data-h=sym_par>(</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h-></code></ins>.
+<ins>a contract violation (<a href=https://eel%2eis/c++draft/basic%2econtract%2eeval>[basic.contract.eval]</a>) with terminating semantics</ins>.
 </p>
 <p>4
 Member function <code><h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> <del>shall have</del> <ins>has constant complexity and</ins>

@@ -222,15 +222,55 @@ The following changes are relative to \ref[N5008].
 
 \h3{[array.overview]}
 
+Change \eelis{array.overview#1} as follows:
+
+\Bdiff{
+The header \tt{<array>} defines a class template
+for storing fixed-size sequences of objects.
+\del{An \tcode{array} is a contiguous container\iref{container.reqmts}.}
+An \del{instance} \ins{object} of \ins{type} \tcode{array<T, N>}
+stores \tcode{N} elements of type \tcode{T}, so that
+\del{\tcode{size() == N} is an invariant}
+\ins{\tcode{size()} always equals \tcode{N}}.
+}
+
 Change \eelis{array.overview#2} as follows:
 
 \Bdiff{
 An \tcode{array} is an aggregate\iref{dcl.init.aggr} \del{that can be
 list-initialized with up
 to \tcode{N} elements whose types are convertible to \tcode{T}}
-\ins{containing a single public non-static data member of type \tcode{T[N]}
+\ins{with no base classes.
+A specialization \tcode{array<T, N>}
+has a single public non-static data member of type
+\nobr{"array of \tcode{N} \tcode{T}"}
 if \tcode{N} is nonzero;
-otherwise see \eelis{array.zero}}.
+otherwise the contents are specified in \eelis{array.zero}}.
+
+\ins{\wg21-note{
+An \tcode{array} is trivially copyable, standard-layout, and a structural type
+if \tcode{T} is trivially copyable, standard-layout,
+and a structural type, respectively.
+}}
+}
+
+Change \eelis{array.overview#3} as follows:
+
+\Bdiff{
+An \tcode{array} meets all of the requirements
+of a container\iref{container.reqmts}\ins{,
+of a contiguous container,} and
+of a reversible container\iref{container.rev.reqmts},
+except that a
+\del{default constructed \tcode{array} object}
+\ins{default-initialized or value-initialized object of type \tcode{array<T, N>}}
+is not empty if \tcode{N} > 0.
+An \tcode{array} meets some of the requirements of a sequence
+container\iref{sequence.reqmts}.
+Descriptions are provided here
+only for operations on \tcode{array} that are not described in
+one of these tables\ins{,} and
+for operations where there is additional semantic information.
 }
 
 Delete \eelis{array.overview#4}:
@@ -304,7 +344,7 @@ Therefore \tcode{begin()} does not return a value-initialized iterator.
 \pnum
 The effect of calling \tcode{front()} or \tcode{back()}
 for a zero-sized array is \del{undefined}
-\ins{equivalent to \tcode{contract_assert(false)}}.
+\ins{a contract violation\iref{basic.contract.eval} with terminating semantics}.
 
 \pnum
 Member function \tcode{swap()} \del{shall have} \ins{has constant complexity and}
