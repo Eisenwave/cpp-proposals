@@ -118,6 +118,13 @@ Author: Jan Schultke
 
 - [Latest](more-unicode-escapes.html)
 
+### P3735: `partial_sort_n`, `nth_element_n`
+
+**Status**: Active<br>
+**Audience**: SG9
+
+- [Latest](n-algorithms.html)
+
 ## Inactive
 
 ### P3087: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
