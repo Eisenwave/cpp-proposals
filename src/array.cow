@@ -177,21 +177,139 @@ it is unclear how many guarantees we want to provide for zero-length arrays.
 For example, should \tcode{std::array<std::string, 0>} be trivially copyable,
 even though \tcode{std::string} is not?
 
-The zero-length case is also where we see some implementation divergence in size and alignment
-of the array.
-Note that the array cannot simply be an empty class because the double-brace initialization
-\tcode{std::array<int, 0>{{}}} should be valid to make generic programming easier,
-and this requires \em{some} data member.
-
-\h3{Additional improvements to zero-length arrays}
-
 Within \eelis{array.zero},
 there are some long-standing issues going back to 2012.
 LWG has visited this subclause many times in \ref[LWG2157],
 but never fully completed a solution.
 This work has been absorbed mostly unmodified into \ref[#wording].
 
-Among other peculiarities,
+\h3{Zero-length \tcode{std::array} status quo}
+
+The zero-length case is also where we see some implementation divergence in size and alignment
+of the array.
+The following table shows how major standard libraries implement zero-length \tcode{std::array}.
+
+\style{
+  .center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .striped tr:nth-child(even) td {
+    background-color: var(--deep-background-color);
+  }
+  #lib-table td:nth-child(3),
+  #lib-table td:nth-child(4),
+  #lib-table td:nth-child(5) {
+    text-align: center;
+  }
+}
+
+\table[id=lib-table, class=center striped]{
+  \tr{
+    \th{Library}
+    \th{Implementation}
+    \th{Size}
+    \th{Trivially copyable}
+    \th{Assignable}
+  }
+  \tr{
+    \td{\ref[https://github.com/microsoft/STL/blob/7841cf88ff9af837fb980f2d2d4ac0f267e714c7/stl/inc/array#L761-L763]{MSVC STL}}
+    \td{contains \tcode{T} if \tcode{T} is default-constructible,\br{}otherwise \tcode{struct{}}}
+    \td{\tcode{sizeof(T)} or \tcode{1}}
+    \td{depends on \tcode{T}}
+    \td{depends on \tcode{T}}
+  }
+  \tr{
+    \td{\ref[https://github.com/gcc-mirror/gcc/blob/e477e7cd104af96c55379f69125db3f1c350c9ed/libstdc\N{PERCENT SIGN}2B\N{PERCENT SIGN}2B-v3/include/std/array#L72-L81]{libstdc++}}
+    \td{contains \tcode{struct{}}}
+    \td{\tcode{1}}
+    \td{always}
+    \td{always}
+  }
+  \tr{
+    \td{\ref[https://github.com/gcc-mirror/gcc/blob/e477e7cd104af96c55379f69125db3f1c350c9ed/libstdc\N{PERCENT SIGN}2B\N{PERCENT SIGN}2B-v3/include/std/array#L72-L81]{libc++}}
+    \td{contains (possibly const)\br{}\tcode{__empty[sizeof(T)]}}
+    \td{\tcode{sizeof(T)}}
+    \td{always}
+    \td{depends on \tcode{T}}
+  }
+}
+
+\Bug{
+The MSVC STL implementation is non-compliant and insane.
+Despite \tcode{std::array<T,0>} being a \em{zero-length} container with
+\em{no} elements,
+it will actually hold one element (and call its constructors and destructors)
+as long as \tcode{T} is default-constructible.
+}
+
+\h4[id=conclusion-status-quo]{Conclusion}
+
+Generally speaking,
+it is desirable if a zero-length \tcode{std::array} behaves as similarly
+to a regular \tcode{std::array} of the same element type.
+libc++ is the only implementation that does this well.
+The "greatest common denominator" between these implementations should be standardized, which is:
+
+\ul{
+  \li{\tcode{std::array<T, 0>} is trivially copyable if \tcode{T} is.}
+  \li{\tcode{std::array<T, 0>} is assignable if \tcode{T} is.}
+  \li{\tcode{std::array<T, 0>} has size and alignment at most that of \tcode{T}.}
+  \li{\tcode{std::array<T, 0>} is not an empty class.}
+}
+
+Without breaking ABI, that implementation would look something like:
+\cppblock{
+struct __empty {};
+
+template<class T>
+struct array<T, 0> {
+  // const __empty if T is const
+  using __empty_type = \exposid{copy-cv}<T, __empty>;
+
+  // No alignas for libstdc++.
+  alignas(T) __empty_type arr;
+};
+}
+
+\h3{Trivial copyability of zero-length arrays}
+
+Whether a type is trivially copyable has ABI impact.
+It may change whether the type is passed via register or one the stack,
+and so we cannot mandate any change to this behavior without breaking ABI.
+
+For MSVC, a \tcode{std::array<int,0>} is trivially copyable,
+but a \tcode{std::array<std::string,0>} is not.
+This seems reasonable;
+there is no strong motivation for making arrays trivially copyable even if
+a nonzero variant of the same array wouldn't have been.
+In fact, it could be argued that this is surprising and inconsistent.
+
+\h4[id=conclusion-trivial-copy]{Conclusion}
+
+Mandate that \tcode{std::array<T,0>} is trivially copyable if \tcode{T} is.
+Otherwise leave this up to implementations.
+
+\h3{Double-brace initialization for zero-length arrays}
+
+Note that we need to make double-brace initialization like
+\tcode{std::array<int, 0>{{}}} valid to make generic programming easier.
+It is plausible that we perform this when expanding an empty pack like:
+\tcode{std::array<int, sizeof...(args)>{{ args... }}}.
+
+Making this valid requires either some non-static data member,
+or a base class.
+An empty base class would make the array as a whole an empty class,
+and this would be an ABI break,
+so it is out of the question.
+
+\h4[id=conclusion-double-brace-init]{Conclusion}
+
+Standardize the existing practice of having a non-static data member which enables
+double-brace initialization.
+
+\h3{Problematic iterator requirements for zero-length arrays}
+
 \eelis{array.zero#2} specifies:
 
 \Bquote{
@@ -199,15 +317,72 @@ In the case that \tcode{N == 0}, \tcode{begin() == end() ==} unique value.
 The return value of \tcode{data()} is unspecified.
 }
 
-It is unclear whether this "unique value" is meant to be unique per object,
+Firstly, it is unclear whether this "unique value" is meant to be unique per object,
 unique for each invocation, etc.
 
-Furthermore, \tcode{std::array<T, 0>::front()} is entirely undefined,
+Secondly, this requirement was never implemented by any compiler and it is too late to fix now.
+Note that MSVC STL, libc++, and libstdc++ all use \tcode{T*} as an iterator type.
+Considering that, a possible implementation looks like:
+
+\cppblock{
+template<class T>
+struct zero_length_array {
+  union U {
+    char c;
+    int i;
+    U() = default;
+  } u;
+
+  constexpr const T* begin() const noexcept { return &u.i; }
+  constexpr const T* end() const noexcept { return begin(); }
+  // ...
+};
+
+constexpr zero_length_array<int> a{{}}; // OK
+static_assert(a.begin() == a.end());    // OK
+}
+
+However, this would require \tcode{std::array<T,0>} to be at least one \tcode{T} large,
+and it is only a single byte large for libstdc++.
+Changing the size of the type would break ABI.
+The only way to conjure up a \tcode{T*} out of thin air would be to use
+\tcode{reinterpret_cast}, but that would not work in constant expressions.
+
+\h4[id=conclusion-begin-end]{Conclusion}
+
+Delete the uniqueness requirement.
+Without specifying anything special for zero-length arrays,
+it still acts as an empty range, and \tcode{begin() == end()} is \tcode{true},
+which is all we really need.
+
+\h3[id=front-is-unreachable]{\tcode{std::array<T,0>::front()} is \tcode{std::unreachable()}?!}
+
+\tcode{std::array<T, 0>::front()} is entirely undefined,
 making it equivalent to \tcode{std::unreachable()},
 which feels out-of-place especially following C++26,
 where \tcode{front()} normally has a \i{Hardened preconditions} specification.
-Changing this behavior is a design issue,
-so it requires LEWG approval.
+
+Note that deleting \tcode{front()} and \tcode{back()} for zero-length arrays is not feasible because
+of (existing) code along the lines of:
+
+\cppblock{
+if (a.size() != 0) {
+    return a.front();
+}
+}
+
+It is quite plausible that \tcode{std::array<T,0>::front()} is called in code
+that is logically unreachable,
+so it should not result in a compiler error, which would be the consequence of
+\tcode{= delete;}.
+
+\h4[id=conclusion-front-back]{Conclusion}
+
+Make \tcode{front()} and \tcode{back()} always result in a contract violation,
+as if they had \i{Hardened preconditions} that are always violated.
+However, if the implementation is not hardened,
+these functions should simply terminate instead of being another spelling for
+\tcode{std::unreachable()}.
 
 \h2{Impact on implementations}
 
@@ -307,48 +482,65 @@ namespace std {
 
 \h3{[array.zero]}
 
-Change \eelis{array.zero} as follows:
+Delete all paragraphs within \eelis{array.zero}:
 
 \Vset[pnum]{0}
 
-\Bdiff{
+\Bdel{
 \pnum
-\tcode{array} \del{shall} provide\ins{s} support for the special case \del{N == 0}
-\ins{of a zero-sized \tcode{array} that is always empty, i.e. \tcode{N} equals \tcode{0},
-with the properties described in this subclause.}
+\tcode{array} shall provide support for the special case \tcode{N == 0}.
 
-\p[style=text-align:left]{\ins{?
-A zero-sized array type is an aggregate that meets the
-\i{Cpp17DefaultConstructible} ([tab:cpp17.defaultconstructible]),
-\i{Cpp17CopyConstructible} ([tab:cpp17.copyconstructible]), and
-\i{Cpp17CopyAssignable} ([tab:cpp17.copyassignable]) requirements.
-There is a single element of the aggregate,
-of an unspecified empty aggregate type
-whose alignment is \tcode{alignof(T)} or lower.\br
-\wg21-note{
-This allows initialization of the form \tcode{array<T, 0> a = {{}};}.
-There is no requirement for \tcode{T} to be \i{Cpp17DefaultConstructible}.
+\pnum
+In the case that \tcode{N == 0}, \tcode{begin() == end() ==} unique value.
+The return value of \tcode{data()} is unspecified.
+
+\pnum
+The effect of calling \tcode{front()} or \tcode{back()} for a zero-sized array is
+undefined.
+
+\pnum
+Member function \tcode{swap()} shall have a
+non-throwing exception specification.
 }
-}}
+
+\Vset[pnum]{0}
+
+Insert new paragraphs within \eelis{array.zero}:
+
+\Bins{
+\pnum
+A specialization \tcode{array<T, 0>} does not have an \placeholder{arr} data member.
+Instead, it has a non-static data member of
+unspecified, trivially copyable, standard-layout, empty aggregate type \tcode{U}
+with no base classes
+and with the same cv-qualification as \tcode{T}.
+The size and alignment of \tcode{U} is an implementation-defined choice between \tcode{1} and
+the size and alignment of \tcode{T}.
 
 \pnum
-\del{In the case that \tcode{N == 0}, \tcode{begin() == end() ==} unique value}
-\ins{\tcode{begin()} and \tcode{end()} return non-dereferenceable iterators
-such that \tcode{begin() == end()} is \tcode{true}.
-When \tcode{a} and \tcode{b} are distinct objects of the same zero-sized array type,
-\tcode{a.begin()} and \tcode{b.begin()} are not iterators over the same underlying sequence.
-\br\wg21-note{
-Therefore \tcode{begin()} does not return a value-initialized iterator.
-}}
+The value representation of an \tcode{array<T, 0>} is empty.
 
 \pnum
-The effect of calling \tcode{front()} or \tcode{back()}
-for a zero-sized array is \del{undefined}
-\ins{a contract violation\iref{basic.contract.eval} with terminating semantics}.
+The \tcode{begin}, \tcode{end}, \tcode{cbegin}, \tcode{cend}, \tcode{rbegin}, \tcode{rend},
+and \tcode{data}
+member functions of an \tcode{array<T, 0>}
+return value-initialized results.
 
 \pnum
-Member function \tcode{swap()} \del{shall have} \ins{has constant complexity and}
-a non-throwing exception specification.
+The \tcode{fill} and \tcode{swap} member functions
+of an \tcode{array<T, 0>}
+are equivalent to functions with a \grammarterm{function-body} \tcode{{}},
+and have a non-throwing exception specification.
+
+\pnum
+\tcode{std::terminate} is invoked when execution reaches the end of
+member functions \tcode{operator[]}, \tcode{front}, or \tcode{back}
+of an \tcode{array<T, 0>}.
+\br\wg21-example{
+This can occur if the implementation is not hardened,
+or if the contract violation\iref{basic.contract.eval}
+resulting from the function call is evaluated with ignore semantic.
+} 
 }
 
 \h2{References}

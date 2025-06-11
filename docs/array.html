@@ -1552,7 +1552,25 @@ and should be simplified.
 <div class=toc-num data-level=2>3</div>
 <a href=#design-considerations><h2>Design considerations</h2></a>
 <div class=toc-num data-level=3>3.1</div>
-<a href=#additional-improvements-to-zero-length-arrays><h3>Additional improvements to zero-length arrays</h3></a>
+<a href=#zero-length--status-quo><h3>Zero-length <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> status quo</h3></a>
+<div class=toc-num data-level=4>3.1.1</div>
+<a href=#conclusion-status-quo><h4>Conclusion</h4></a>
+<div class=toc-num data-level=3>3.2</div>
+<a href=#trivial-copyability-of-zero-length-arrays><h3>Trivial copyability of zero-length arrays</h3></a>
+<div class=toc-num data-level=4>3.2.1</div>
+<a href=#conclusion-trivial-copy><h4>Conclusion</h4></a>
+<div class=toc-num data-level=3>3.3</div>
+<a href=#double-brace-initialization-for-zero-length-arrays><h3>Double-brace initialization for zero-length arrays</h3></a>
+<div class=toc-num data-level=4>3.3.1</div>
+<a href=#conclusion-double-brace-init><h4>Conclusion</h4></a>
+<div class=toc-num data-level=3>3.4</div>
+<a href=#problematic-iterator-requirements-for-zero-length-arrays><h3>Problematic iterator requirements for zero-length arrays</h3></a>
+<div class=toc-num data-level=4>3.4.1</div>
+<a href=#conclusion-begin-end><h4>Conclusion</h4></a>
+<div class=toc-num data-level=3>3.5</div>
+<a href=#front-is-unreachable><h3><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unreachable</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>?!</h3></a>
+<div class=toc-num data-level=4>3.5.1</div>
+<a href=#conclusion-front-back><h4>Conclusion</h4></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#impact-on-implementations><h2>Impact on implementations</h2></a>
 <div class=toc-num data-level=2>5</div>
@@ -1708,37 +1726,206 @@ it is unclear how many guarantees we want to provide for zero-length arrays.
 For example, should <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>string</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> be trivially copyable,
 even though <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>string</h-></code> is not?
 </p>
-<p>The zero-length case is also where we see some implementation divergence in size and alignment
-of the array.
-Note that the array cannot simply be an empty class because the double-brace initialization
-<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code> should be valid to make generic programming easier,
-and this requires <em>some</em> data member.
-</p>
-<h3 id=additional-improvements-to-zero-length-arrays><a class=para href=#additional-improvements-to-zero-length-arrays></a>3.1. Additional improvements to zero-length arrays</h3>
-
 <p>Within <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a>,
 there are some long-standing issues going back to 2012.
 LWG has visited this subclause many times in <a href="https://cplusplus%2egithub%2eio/LWG/issue2157">[LWG2157]</a>,
 but never fully completed a solution.
 This work has been absorbed mostly unmodified into <a href=#wording>§5. Wording</a>.
 </p>
-<p>Among other peculiarities,
-<a href=https://eel%2eis/c++draft/array%2ezero#2>[array.zero] paragraph 2</a> specifies:
+<h3 id=zero-length--status-quo><a class=para href=#zero-length--status-quo></a>3.1. Zero-length <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> status quo</h3>
+
+<p>The zero-length case is also where we see some implementation divergence in size and alignment
+of the array.
+The following table shows how major standard libraries implement zero-length <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code>.
+</p>
+<style>
+  .center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .striped tr:nth-child(even) td {
+    background-color: var(--deep-background-color);
+  }
+  #lib-table td:nth-child(3),
+  #lib-table td:nth-child(4),
+  #lib-table td:nth-child(5) {
+    text-align: center;
+  }
+</style>
+
+<table id=lib-table class="center striped">
+  <tr>
+    <th>Library</th>
+    <th>Implementation</th>
+    <th>Size</th>
+    <th>Trivially copyable</th>
+    <th>Assignable</th>
+  </tr>
+  <tr>
+    <td><a href=https://github%2ecom/microsoft/STL/blob/7841cf88ff9af837fb980f2d2d4ac0f267e714c7/stl/inc/array#L761-L763>MSVC STL</a></td>
+    <td>contains <code><h- data-h=id>T</h-></code> if <code><h- data-h=id>T</h-></code> is default-constructible,<br/>otherwise <code><h- data-h=kw>struct</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-></code> or <code><h- data-h=num>1</h-></code></td>
+    <td>depends on <code><h- data-h=id>T</h-></code></td>
+    <td>depends on <code><h- data-h=id>T</h-></code></td>
+  </tr>
+  <tr>
+    <td><a href=https://github%2ecom/gcc-mirror/gcc/blob/e477e7cd104af96c55379f69125db3f1c350c9ed/libstdc%252B%252B-v3/include/std/array#L72-L81>libstdc++</a></td>
+    <td>contains <code><h- data-h=kw>struct</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=num>1</h-></code></td>
+    <td>always</td>
+    <td>always</td>
+  </tr>
+  <tr>
+    <td><a href=https://github%2ecom/gcc-mirror/gcc/blob/e477e7cd104af96c55379f69125db3f1c350c9ed/libstdc%252B%252B-v3/include/std/array#L72-L81>libc++</a></td>
+    <td>contains (possibly const)<br/><code><h- data-h=id>__empty</h-><h- data-h=sym_sqr>[</h-><h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-><h- data-h=sym_sqr>]</h-></code></td>
+    <td><code><h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-></code></td>
+    <td>always</td>
+    <td>depends on <code><h- data-h=id>T</h-></code></td>
+  </tr>
+</table>
+
+<bug-block><p><intro-></intro-> 
+The MSVC STL implementation is non-compliant and insane.
+Despite <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> being a <em>zero-length</em> container with
+<em>no</em> elements,
+it will actually hold one element (and call its constructors and destructors)
+as long as <code><h- data-h=id>T</h-></code> is default-constructible.
+</p></bug-block>
+
+<h4 id=conclusion-status-quo><a class=para href=#conclusion-status-quo></a>3.1.1. Conclusion</h4>
+
+<p>Generally speaking,
+it is desirable if a zero-length <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> behaves as similarly
+to a regular <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-></code> of the same element type.
+libc++ is the only implementation that does this well.
+The "greatest common denominator" between these implementations should be standardized, which is:
+</p>
+<ul>
+  <li><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is trivially copyable if <code><h- data-h=id>T</h-></code> is.</li>
+  <li><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is assignable if <code><h- data-h=id>T</h-></code> is.</li>
+  <li><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> has size and alignment at most that of <code><h- data-h=id>T</h-></code>.</li>
+  <li><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is not an empty class.</li>
+</ul>
+
+<p>Without breaking ABI, that implementation would look something like:
+</p><code-block><h- data-h=kw>struct</h-> <h- data-h=id>__empty</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> const __empty if T is const</h->
+  <h- data-h=kw>using</h-> <h- data-h=id>__empty_type</h-> <h- data-h=sym_op>=</h-> <i><h- data-h=id>copy-cv</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>__empty</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+
+  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> No alignas for libstdc++.</h->
+  <h- data-h=kw>alignas</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-> <h- data-h=id>__empty_type</h-> <h- data-h=id>arr</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<h3 id=trivial-copyability-of-zero-length-arrays><a class=para href=#trivial-copyability-of-zero-length-arrays></a>3.2. Trivial copyability of zero-length arrays</h3>
+
+<p>Whether a type is trivially copyable has ABI impact.
+It may change whether the type is passed via register or one the stack,
+and so we cannot mandate any change to this behavior without breaking ABI.
+</p>
+<p>For MSVC, a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is trivially copyable,
+but a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>string</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is not.
+This seems reasonable;
+there is no strong motivation for making arrays trivially copyable even if
+a nonzero variant of the same array wouldn't have been.
+In fact, it could be argued that this is surprising and inconsistent.
+</p>
+<h4 id=conclusion-trivial-copy><a class=para href=#conclusion-trivial-copy></a>3.2.1. Conclusion</h4>
+
+<p>Mandate that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is trivially copyable if <code><h- data-h=id>T</h-></code> is.
+Otherwise leave this up to implementations.
+</p>
+<h3 id=double-brace-initialization-for-zero-length-arrays><a class=para href=#double-brace-initialization-for-zero-length-arrays></a>3.3. Double-brace initialization for zero-length arrays</h3>
+
+<p>Note that we need to make double-brace initialization like
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code> valid to make generic programming easier.
+It is plausible that we perform this when expanding an empty pack like:
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>sizeof</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>(</h-><h- data-h=id>args</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-> <h- data-h=id>args</h-><h- data-h=sym_op>...</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code>.
+</p>
+<p>Making this valid requires either some non-static data member,
+or a base class.
+An empty base class would make the array as a whole an empty class,
+and this would be an ABI break,
+so it is out of the question.
+</p>
+<h4 id=conclusion-double-brace-init><a class=para href=#conclusion-double-brace-init></a>3.3.1. Conclusion</h4>
+
+<p>Standardize the existing practice of having a non-static data member which enables
+double-brace initialization.
+</p>
+<h3 id=problematic-iterator-requirements-for-zero-length-arrays><a class=para href=#problematic-iterator-requirements-for-zero-length-arrays></a>3.4. Problematic iterator requirements for zero-length arrays</h3>
+
+<p><a href=https://eel%2eis/c++draft/array%2ezero#2>[array.zero] paragraph 2</a> specifies:
 </p>
 <blockquote>
 <p>In the case that <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>, <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-></code> unique value.
 The return value of <code><h- data-h=id>data</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is unspecified.
 </p></blockquote>
 
-<p>It is unclear whether this "unique value" is meant to be unique per object,
+<p>Firstly, it is unclear whether this "unique value" is meant to be unique per object,
 unique for each invocation, etc.
 </p>
-<p>Furthermore, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is entirely undefined,
+<p>Secondly, this requirement was never implemented by any compiler and it is too late to fix now.
+Note that MSVC STL, libc++, and libstdc++ all use <code><h- data-h=id>T</h-><h- data-h=sym_op>*</h-></code> as an iterator type.
+Considering that, a possible implementation looks like:
+</p>
+<code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>zero_length_array</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=kw>union</h-> <h- data-h=id>U</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=id>c</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=id>i</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>U</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-> <h- data-h=id>u</h-><h- data-h=sym_punc>;</h->
+
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw>const</h-> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_op>&amp;</h-><h- data-h=id>u</h-><h- data-h=sym_op>.</h-><h- data-h=id>i</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw>const</h-> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> ...</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw>constexpr</h-> <h- data-h=id>zero_length_array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>a</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK</h->
+<h- data-h=kw>static_assert</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK</h-></code-block>
+
+<p>However, this would require <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> to be at least one <code><h- data-h=id>T</h-></code> large,
+and it is only a single byte large for libstdc++.
+Changing the size of the type would break ABI.
+The only way to conjure up a <code><h- data-h=id>T</h-><h- data-h=sym_op>*</h-></code> out of thin air would be to use
+<code><h- data-h=kw>reinterpret_cast</h-></code>, but that would not work in constant expressions.
+</p>
+<h4 id=conclusion-begin-end><a class=para href=#conclusion-begin-end></a>3.4.1. Conclusion</h4>
+
+<p>Delete the uniqueness requirement.
+Without specifying anything special for zero-length arrays,
+it still acts as an empty range, and <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=bool>true</h-></code>,
+which is all we really need.
+</p>
+<h3 id=front-is-unreachable><a class=para href=#front-is-unreachable></a>3.5. <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unreachable</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>?!</h3>
+
+<p><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is entirely undefined,
 making it equivalent to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unreachable</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>,
 which feels out-of-place especially following C++26,
 where <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> normally has a <i>Hardened preconditions</i> specification.
-Changing this behavior is a design issue,
-so it requires LEWG approval.
+</p>
+<p>Note that deleting <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> for zero-length arrays is not feasible because
+of (existing) code along the lines of:
+</p>
+<code-block><h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>size</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-></code-block>
+
+<p>It is quite plausible that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is called in code
+that is logically unreachable,
+so it should not result in a compiler error, which would be the consequence of
+<code><h- data-h=sym_op>=</h-> <h- data-h=kw>delete</h-><h- data-h=sym_punc>;</h-></code>.
+</p>
+<h4 id=conclusion-front-back><a class=para href=#conclusion-front-back></a>3.5.1. Conclusion</h4>
+
+<p>Make <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> always result in a contract violation,
+as if they had <i>Hardened preconditions</i> that are always violated.
+However, if the implementation is not hardened,
+these functions should simply terminate instead of being another spelling for
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unreachable</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>.
 </p>
 <h2 id=impact-on-implementations><a class=para href=#impact-on-implementations></a>4. Impact on implementations</h2>
 
@@ -1836,49 +2023,66 @@ are template-argument-equivalent.
 
 <h3 id=[array.zero]><a class=para href=#[array%2ezero]></a>5.2. [array.zero]</h3>
 
-<p>Change <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a> as follows:
+<p>Delete all paragraphs within <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a>:
 </p>
 
 
-<diff-block>
+<del-block>
 <p>1
-<code><h- data-h=id>array</h-></code> <del>shall</del> provide<ins>s</ins> support for the special case <del>N == 0</del>
-<ins>of a zero-sized <code><h- data-h=id>array</h-></code> that is always empty, i.e. <code><h- data-h=id>N</h-></code> equals <code><h- data-h=num>0</h-></code>,
-with the properties described in this subclause.</ins></p>
-
-<p style=text-align:left><ins>?
-A zero-sized array type is an aggregate that meets the
-<i>Cpp17DefaultConstructible</i> ([tab:cpp17.defaultconstructible]),
-<i>Cpp17CopyConstructible</i> ([tab:cpp17.copyconstructible]), and
-<i>Cpp17CopyAssignable</i> ([tab:cpp17.copyassignable]) requirements.
-There is a single element of the aggregate,
-of an unspecified empty aggregate type
-whose alignment is <code><h- data-h=kw>alignof</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_par>)</h-></code> or lower.<br/>
-<wg21-block>[<i>Note</i>: 
-This allows initialization of the form <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>a</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code>.
-There is no requirement for <code><h- data-h=id>T</h-></code> to be <i>Cpp17DefaultConstructible</i>.
- — <i>end note</i>]</wg21-block>
-</ins></p>
-
+<code><h- data-h=id>array</h-></code> shall provide support for the special case <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>.
+</p>
 <p>2
-<del>In the case that <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>, <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-></code> unique value</del>
-<ins><code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> return non-dereferenceable iterators
-such that <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is <code><h- data-h=bool>true</h-></code>.
-When <code><h- data-h=id>a</h-></code> and <code><h- data-h=id>b</h-></code> are distinct objects of the same zero-sized array type,
-<code><h- data-h=id>a</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> and <code><h- data-h=id>b</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> are not iterators over the same underlying sequence.
-<br/><wg21-block>[<i>Note</i>: 
-Therefore <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> does not return a value-initialized iterator.
- — <i>end note</i>]</wg21-block></ins></p>
-
+In the case that <code><h- data-h=id>N</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-></code>, <code><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-> <h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>==</h-></code> unique value.
+The return value of <code><h- data-h=id>data</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> is unspecified.
+</p>
 <p>3
-The effect of calling <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> or <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>
-for a zero-sized array is <del>undefined</del>
-<ins>a contract violation (<a href=https://eel%2eis/c++draft/basic%2econtract%2eeval>[basic.contract.eval]</a>) with terminating semantics</ins>.
+The effect of calling <code><h- data-h=id>front</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> or <code><h- data-h=id>back</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> for a zero-sized array is
+undefined.
 </p>
 <p>4
-Member function <code><h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> <del>shall have</del> <ins>has constant complexity and</ins>
-a non-throwing exception specification.
-</p></diff-block>
+Member function <code><h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> shall have a
+non-throwing exception specification.
+</p></del-block>
+
+
+
+<p>Insert new paragraphs within <a href=https://eel%2eis/c++draft/array%2ezero>[array.zero]</a>:
+</p>
+<ins-block>
+<p>1
+A specialization <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> does not have an <tt-><i><h- data-h=id>arr</h-></i></tt-> data member.
+Instead, it has a non-static data member of
+unspecified, trivially copyable, standard-layout, empty aggregate type <code><h- data-h=id>U</h-></code>
+with no base classes
+and with the same cv-qualification as <code><h- data-h=id>T</h-></code>.
+The size and alignment of <code><h- data-h=id>U</h-></code> is an implementation-defined choice between <code><h- data-h=num>1</h-></code> and
+the size and alignment of <code><h- data-h=id>T</h-></code>.
+</p>
+<p>2
+The value representation of an <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> is empty.
+</p>
+<p>3
+The <code><h- data-h=id>begin</h-></code>, <code><h- data-h=id>end</h-></code>, <code><h- data-h=id>cbegin</h-></code>, <code><h- data-h=id>cend</h-></code>, <code><h- data-h=id>rbegin</h-></code>, <code><h- data-h=id>rend</h-></code>,
+and <code><h- data-h=id>data</h-></code>
+member functions of an <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code>
+return value-initialized results.
+</p>
+<p>4
+The <code><h- data-h=id>fill</h-></code> and <code><h- data-h=id>swap</h-></code> member functions
+of an <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code>
+are equivalent to functions with a <g-term>function-body</g-term> <code><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code>,
+and have a non-throwing exception specification.
+</p>
+<p>5
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>terminate</h-></code> is invoked when execution reaches the end of
+member functions <code><h- data-h=kw>operator</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-></code>, <code><h- data-h=id>front</h-></code>, or <code><h- data-h=id>back</h-></code>
+of an <code><h- data-h=id>array</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code>.
+<br/><wg21-block>[<i>Example</i>: 
+This can occur if the implementation is not hardened,
+or if the contract violation (<a href=https://eel%2eis/c++draft/basic%2econtract%2eeval>[basic.contract.eval]</a>)
+resulting from the function call is evaluated with ignore semantic.
+ — <i>end example</i>]</wg21-block></p> 
+</ins-block>
 
 <h2 id=references><a class=para href=#references></a>6. References</h2>
 
