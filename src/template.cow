@@ -9,19 +9,14 @@
     \dt{Audience:}        \dd{LEWG, SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
-    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
 }
 \hr
 }
 
 \Babstract{
-The utilities in \header{cctype} or \header{locale}
-are locale-specific,
-not \tcode{constexpr},
-and provide no support for Unicode character types.
-We propose lightweight, locale-independent alternatives.
+
 }
 
 \h2[listed=no]{Contents}
@@ -49,20 +44,6 @@ We propose lightweight, locale-independent alternatives.
     author = Bengt Gustafsson,
     link = https://wg21.link/p3312r1,
     long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
-]
-\bib[
-    id = P3695R0,
-    title = Deprecate implicit conversions between char8_t\, char16_t\, and char32_t,
-    date = 2025-05-18,
-    author = Jan Schultke,
-    link = https://wg21.link/p3695r0,
-    long-link = https://isocpp.org/files/papers/P3695R0.html
-]
-\bib[
-    id = CompilerExplorer,
-    title = Partial implementation of character utilities,
-    author = Jan Schultke\, Corentin Jabot,
-    link = https://godbolt.org/z/5nvWzdf8G
 ]
 
 \make-bib
