@@ -1531,8 +1531,8 @@ ins-block .para::before {
 <p><div class=wg21-head><h1>Last chance to fix <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h1>
 
 <dl>
-    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3740R0>P3740R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-11</tt-></dd>
+    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/D3740R0>D3740R0</a></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-12</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -2149,7 +2149,7 @@ Initializes
 such that
 <code><i><h- data-h=id>thunk</h-></i><h- data-h=sym_par>(</h-><i><h- data-h=id>bound-entity</h-></i><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>
 is expression-equivalent (<a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a>) to
-<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
+<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>F</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
 </p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><del><h- data-h=kw>auto</h-> <h- data-h=id>f</h-></del> <ins><h- data-h=kw>class</h-> <h- data-h=id>F</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->

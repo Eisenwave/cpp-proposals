@@ -19,8 +19,8 @@
     title = Last chance to fix \tcode{std::nontype}
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{P3740R0}}
-    \dt{Date:}            \dd{\tt{2025-06-11}}
+    \dt{Document number:} \dd{\docnum{D3740R0}}
+    \dt{Date:}            \dd{\tt{2025-06-12}}
     \dt{Audience:}        \dd{LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -632,7 +632,7 @@ Initializes
 such that
 \tcode{\exposid{thunk}(\exposid{bound-entity}, \exposid{call-args}...)}
 is expression-equivalent\iref{defns.expression.equivalent} to
-\tcode{invoke_r<R>(f, static_cast<\exposid{cv} T&>(obj), \exposid{call-args}...)}.
+\tcode{invoke_r<R>(\del{f} \ins{F{}}, static_cast<\exposid{cv} T&>(obj), \exposid{call-args}...)}.
 }
 
 \itemdecl{
