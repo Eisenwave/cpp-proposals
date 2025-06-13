@@ -37,6 +37,12 @@
 \macro[\result]{\Fundesc{Result}}
 \macro[\returntype]{\Fundesc{Return type}}
 
+\macro[\oldconcept]{\i{Cpp17\put}}
+\macro[\libconcept]{\tcode{\put}}
+\macro[\exposconcept]{\tcode{\exposid{\put}}}
+
+\macro[\bigoh]{\N{MATHEMATICAL SCRIPT CAPITAL O}(\put)}
+
 \style{
 ins-block .para::before {
     display: none;
