@@ -1,0 +1,1754 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = Not all predicates must be regular
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3734R0}}
+    \dt{Date:}            \dd{\tt{2025-06-13}}
+    \dt{Audience:}        \dd{LWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3734/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/irregular-pred.cow]}
+}
+\hr
+}
+
+\Babstract{
+Some algorithms, such as \tcode{std::remove_if} and \tcode{std::copy_if} are over-constrained
+by requiring the predicate to be regular,
+despite the predicate visiting elements exactly once,
+making the requirement meaningless.
+These constraints should be relaxed.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+Consider the following function,
+which transform a string such as \tcode{"abc //def"} into \tcode{"abc-def"}:
+
+\cppblock{
+bool allowed_in_id(char c) {
+    return c >= 'a' && c <= 'z';
+}
+
+void sanitize_id(std::string& id) {
+    auto removed_range = std::ranges::remove_if(id, [](char& c) {
+        if (c == ' ') {
+            c = '-';
+            return false;
+        }
+        return not allowed_in_id(c);
+    });
+    id.erase(removed_range.begin(), removed_range.end());
+}
+}
+
+Such code is perfectly reasonable; it allows us to transform a range and remove some of its
+elements in a single pass,
+which may be substantially faster than two separate passes.
+
+While this code works as expected in practice,
+it \em{technically} has undefined behavior
+due to the fact that the predicate passed to \tcode{erase_if}
+violates semantic requirements for the predicate,
+specified in \eelis{concept.regularinvocable}:
+
+\Bquote{
+\itemdecl{
+template<class F, class... Args>
+  concept regular_invocable = invocable<F, Args...>;
+}
+\itemdescr{
+The \tcode{invoke} function call expression shall be
+equality-preserving\iref{concepts.equality}
+and shall not modify the function object or the arguments.
+}
+}
+
+For example, when visiting \tcode{' '} in the string the first time,
+it is replaced with \tcode{'-'}, and \tcode{false} is returned,
+but no action is taken the second time, and \tcode{true} is returned.
+Thus, both semantic requirements of \tcode{regular_invocable} are violated.
+
+\Bnote{
+I deliberately did not use \tcode{std::erase_if} because the code would be well-defined
+based on the technicality that the predicate does not apply any non-constant functions
+through its arguments\iref{algorithms.requirements#15}.
+These semantic requirements are relevant to
+\tcode{remove_if} rather than \tcode{ranges::remove_if},
+and the former is used by \tcode{erase_if} at the time of writing.
+}
+
+\h3{Why these functions are over-constrained}
+
+There is no motivation for the behavior being undefined in this case.
+Algorithms such as \tcode{remove_if} have a specification as follows\iref{alg.remove}:
+
+\Bquote{
+\complexity
+Exactly \tcode{last - first} applications of the corresponding predicate and any projection.
+}
+
+This means that \tcode{remove_if} can only visit each element a single time anyway.
+If the element is modified by the predicate or if the result of the predicate changes,
+that is of no consequence
+because no element is visited twice.
+
+It is also worth pointing out that while \tcode{std::remove_if} is is restricted,
+\tcode{std::remove} is not.
+It would be possible to provide a type
+for which the expression \tcode{x == y} modifies \tcode{x} or \tcode{y}.
+To be fair, \tcode{std::ranges::remove_if} makes use of the \tcode{indirect_binary_predicate}
+concept and is therefore stricter than its non-ranges counterpart.
+
+\h3{Possible implementation}
+
+For illustration purposes,
+here is a reference implementation of \tcode{remove_if} taken from
+\ref[https://en.cppreference.com/w/cpp/algorithm/remove.html]{cppreference}:
+
+\cppblock{
+template<class ForwardIt, class UnaryPred>
+ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPred p)
+{
+    first = std::find_if(first, last, p);
+    if (first != last)
+        for (ForwardIt i = first; ++i != last;)
+            if (!p(*i))
+                *first++ = std::move(*i);
+    return first;
+}
+}
+
+As can be seen,
+the whole algorithm is a simple linear pass from \tcode{first} to \tcode{last}.
+No element is visited twice,
+so who cares if \tcode{p} modifies an element?
+
+\h2{Motivation}
+
+We should relax these requirements because they are of no benefit to the implementation,
+and they render the behavior of useful code undefined by technicality. 
+
+\h2{Impact on implementations}
+
+The only change is that in some places,
+standard concepts are swapped out for exposition-only concepts which only differ
+in semantic requirements, or vice-versa.
+For example,
+\tcode{predicate} is replaced with \tcode{\exposid{boolean-test}} in some places,
+and both these concepts ultimately expand to \tcode{\exposid{boolean-testable}<invoke_result_t<F, Args>>}.
+
+Therefore, some minor tweaks to implementation-specific concepts may have to be made
+for internal documentation purposes,
+but any existing implementation already complies because
+semantic requirements of concepts are not checked.
+
+\h2{Impact on existing code}
+
+Code with undefined behavior may become well-defined. \N{SMILING FACE WITH OPEN MOUTH}
+
+\h2{Impact on the standard}
+
+Only algorithms that apply predicates exactly once per element are affected.
+This includes both modifying algorithms like \tcode{remove_if}
+and non-modifying algorithms like \tcode{find}.
+For such algorithms, modification of the element cannot possibly alter the course of the algorithm.
+
+There are certain edge cases like \tcode{adjacent_find_if} and \tcode{unique}.
+While these don't apply predicates multiple times,
+they do apply projections more than once,
+and elements are revisited,
+so it's possible that a modification performed by the predicate is unsafe.
+
+Another edge case is \tcode{std::partition_point}.
+Although the predicate is not even applied once per element,
+if the predicate modifies the range,
+this could retroactively violate the \i{Preconditions} that the input range is partitioned.
+
+\h2{Wording}
+
+All changes are relative to \ref[N5008].
+
+\macro[\etc]{\html{[\N{HORIZONTAL ELLIPSIS}]}}
+
+\h3[show-number=no]{[algorithms.requirements]}
+
+\comment{26.2}
+Chang \eelis{algorithms.requirements#7} as follows:
+
+\Bdiff{
+When not otherwise constrained, the \tcode{Predicate}
+\ins{or \tcode{UnaryTest}}
+parameter is used
+whenever an algorithm expects a function object\iref{function.objects} that,
+when applied to the result of dereferencing the corresponding iterator,
+returns a value testable as \tcode{true}.
+If an algorithm takes \tcode{Predicate pred}
+\ins{or \tcode{UnaryTest pred}}
+as its argument and
+\tcode{first} as its iterator argument with value type \tcode{T},
+the expression \tcode{pred(*first)} shall be well-formed and
+the type \tcode{decltype(pred(*first))} shall model
+\exposconcept{boolean-testable}\iref{concept.booleantestable}.
+\del{The} \ins{If specified with type \tcode{Predicate}, the}
+function object \tcode{pred}
+shall not apply any non-constant function
+through its argument\del{. Given}\ins{, and given}
+a glvalue \tcode{u} of type (possibly const) \tcode{T}
+that designates the same object as \tcode{*first},
+\tcode{pred(u)} shall be a valid expression
+that is equal to \tcode{pred(*first)}.
+}
+
+Change \eelis{algorithms.requirements#8} as follows:
+
+\Bdiff{
+When not otherwise constrained, the \tcode{BinaryPredicate}
+\ins{or \tcode{BinaryTest}} parameter is used
+whenever an algorithm expects a function object that, when applied
+to the result of dereferencing two corresponding iterators or
+to dereferencing an iterator and type \tcode{T}
+when \tcode{T} is part of the signature,
+returns a value testable as \tcode{true}.
+If an algorithm takes \tcode{BinaryPredicate binary_pred}
+\ins{or \tcode{BinaryTest} binary_pred}
+as its argument and
+\tcode{first1} and \tcode{first2} as its iterator arguments
+with respective value types \tcode{T1} and \tcode{T2},
+the expression \tcode{binary_pred(*first1, *first2)} shall be well-formed and
+the type \tcode{decltype(binary_pred(*first1, *first2))} shall model
+\exposconcept{boolean-testable}.
+Unless otherwise specified,
+\tcode{BinaryPredicate} always takes the first iterator's \tcode{value_type}
+as its first argument, that is, in those cases when \tcode{T value}
+is part of the signature,
+the expression \tcode{binary_pred(*first1, value)} shall be well-formed and
+the type \tcode{decltype(binary_pred(*first1, value))} shall model
+\exposconcept{boolean-testable}.
+\ins{If specified with type \tcode{BinaryPredicate}, }
+\tcode{binary_pred} shall not apply any non-constant function
+through any of its arguments\del{. Given}\ins{, and given}
+a glvalue \tcode{u} of type (possibly const) \tcode{T1}
+that designates the same object as \tcode{*first1}, and
+a glvalue \tcode{v} of type (possibly const) \tcode{T2}
+that designates the same object as \tcode{*first2},
+\tcode{binary_pred(u, *first2)},
+\tcode{binary_pred(*first1, v)}, and
+\tcode{binary_pred(u, v)}
+shall each be a valid expression that is equal to
+\tcode{binary_pred(*first1, *first2)}, and
+\tcode{binary_pred(u, value)}
+shall be a valid expression that is equal to
+\tcode{binary_pred(*first1, value)}.
+}
+
+\h3[show-number=no]{[indirectcallable.indirectinvocable]}
+
+\comment{24.3.6.3}
+Change \eelis{indirectcallable.indirectinvocable#1} as follows:
+
+\Bdiff{
+The indirect callable concepts are used to constrain those algorithms
+that accept callable objects\iref{func.def} as arguments.
+\itemdecl{
+namespace std {
+  \etc
+
+  template<class F, class I>
+    concept indirect_unary_predicate =
+      indirectly_readable<I> &&
+      copy_constructible<F> &&
+      predicate<F&, \exposid{indirect-value-t}<I>> &&
+      predicate<F&, iter_reference_t<I>>;
+
+\ins{  template<class F, class Args...>            // \serif{exposition only}
+    concept \exposid{boolean-test} = \exposid{boolean-testable}<invoke_result_t<F, Args...>>;}
+
+\ins{  template<class F, class I>                  // \serif{exposition only}
+    concept \exposid{indirect-unary-test} =
+      indirectly_readable<I> &&
+      copy_constructible<F> &&
+      \exposid{boolean-test}<F&, \exposid{indirect-value-t}<I>> &&
+      \exposid{boolean-test}<F&, iter_reference_t<I>>;}
+
+  template<class F, class I1, class I2>
+    concept indirect_binary_predicate =
+      indirectly_readable<I1> && indirectly_readable<I2> &&
+      copy_constructible<F> &&
+      predicate<F&, \exposid{indirect-value-t}<I1>, \exposid{indirect-value-t}<I2>> &&
+      predicate<F&, \exposid{indirect-value-t}<I1>, iter_reference_t<I2>> &&
+      predicate<F&, iter_reference_t<I1>, \exposid{indirect-value-t}<I2>> &&
+      predicate<F&, iter_reference_t<I1>, iter_reference_t<I2>>;
+
+\ins{  template<class F, class I1, class I2>        // \serif{exposition only}
+    concept \exposid{indirect-binary-test} =
+      indirectly_readable<I1> && indirectly_readable<I2> &&
+      copy_constructible<F> &&
+      \exposid{boolean-test}<F&, \exposid{indirect-value-t}<I1>, \exposid{indirect-value-t}<I2>> &&
+      \exposid{boolean-test}<F&, \exposid{indirect-value-t}<I1>, iter_reference_t<I2>> &&
+      \exposid{boolean-test}<F&, iter_reference_t<I1>, \exposid{indirect-value-t}<I2>> &&
+      \exposid{boolean-test}<F&, iter_reference_t<I1>, iter_reference_t<I2>>;}
+
+  \etc
+}
+}
+\ins{\wg21-note{
+\tcode{\exposid{boolean-test}} and \tcode{predicate}
+are satisfied (but not modeled) by the same types.}
+}
+}
+
+\h3[show-number=no]{[alg.eq.ind.cmp]}
+
+\comment{24.3.7.5}
+Change \eelis{alg.req.ind.cmp#1} as follows:
+
+\Bdiff{
+The \tcode{indirectly_comparable} concept specifies the common requirements
+of algorithms that compare values from two different sequences.
+\itemdecl{
+template<class I1, class I2, class R, class P1 = identity,
+         class P2 = identity>
+  concept indirectly_comparable =
+    indirect_binary_predicate<R, projected<I1, P1>, projected<I2, P2>>;
+
+\ins{template<class I1, class I2, class R, class P1 = identity,   // exposition only
+         class P2 = identity>
+  concept \exposid{indirectly-binary-testable} =
+    \exposid{indirect-binary-test}<R, projected<I1, P1>, projected<I2, P2>>;}
+}
+\ins{\wg21-note{
+\tcode{\exposid{indirectly-binary-testable}} and \tcode{indirectly_comparable}
+are satisfied (but not modeled) by the same types.}
+}
+}
+
+\h3[show-number=no]{[alg.all.of]}
+
+\comment{26.6.1}
+Change \eelis{alg.all.of} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr bool all_of(InputIterator first, InputIterator last, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  bool all_of(ExecutionPolicy&& exec, ForwardIterator first, ForwardIterator last,
+              \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr bool ranges::all_of(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr bool ranges::all_of(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{pred(*i)} for the overloads in namespace \tcode{std};}
+\li{
+  \tcode{invoke(pred, invoke(proj, *i))}
+  for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\returns
+\tcode{false} if \math{\mi{E}} is \tcode{false}
+for some iterator \tcode{i} in the range [\tcode{first}, \tcode{last}), and
+\tcode{true} otherwise.
+
+\pnum
+\complexity
+At most \tcode{last - first} applications of the predicate and any projection.
+}
+}
+
+\h3[show-number=no]{[alg.any.of]}
+
+\comment{26.6.2}
+Change \eelis{alg.any.of} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr bool any_of(InputIterator first, InputIterator last, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  bool any_of(ExecutionPolicy&& exec, ForwardIterator first, ForwardIterator last,
+              \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr bool ranges::any_of(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr bool ranges::any_of(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{pred(*i)} for the overloads in namespace \tcode{std};}
+\li{
+  \tcode{invoke(pred, invoke(proj, *i))}
+  for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\returns
+\tcode{true} if \math{\mi{E}} is \tcode{true}
+for some iterator \tcode{i} in the range [\tcode{first}, \tcode{last}), and
+\tcode{false} otherwise.
+
+\pnum
+\complexity
+At most \tcode{last - first} applications of the predicate and any projection.
+}
+}
+
+\h3[show-number=no]{[alg.none.of]}
+
+\comment{26.6.3}
+Change \eelis{alg.none.of} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr bool none_of(InputIterator first, InputIterator last, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  bool none_of(ExecutionPolicy&& exec, ForwardIterator first, ForwardIterator last,
+              \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr bool ranges::none_of(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr bool ranges::none_of(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{pred(*i)} for the overloads in namespace \tcode{std};}
+\li{
+  \tcode{invoke(pred, invoke(proj, *i))}
+  for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\returns
+\tcode{false} if \math{\mi{E}} is \tcode{true}
+for some iterator \tcode{i} in the range [\tcode{first}, \tcode{last}), and
+\tcode{true} otherwise.
+
+\pnum
+\complexity
+At most \tcode{last - first} applications of the predicate and any projection.
+}
+}
+
+\h3[show-number=no]{[alg.find]}
+
+\comment{26.6.6}
+Change \eelis{alg.find} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class T = iterator_traits<InputIterator>::value_type>
+  constexpr InputIterator find(InputIterator first, InputIterator last,
+                               const T& value);
+template<class ExecutionPolicy, class ForwardIterator,
+         class T = iterator_traits<ForwardIterator>::value_type>
+  ForwardIterator find(ExecutionPolicy&& exec, ForwardIterator first, ForwardIterator last,
+                       const T& value);
+
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr InputIterator find_if(InputIterator first, InputIterator last,
+                                  \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class Predicate>
+  ForwardIterator find_if(ExecutionPolicy&& exec, ForwardIterator first, ForwardIterator last,
+                          \del{Predicate} \ins{UnaryTest} pred);
+
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr InputIterator find_if_not(InputIterator first, InputIterator last,
+                                      \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  ForwardIterator find_if_not(ExecutionPolicy&& exec,
+                              ForwardIterator first, ForwardIterator last,
+                              \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         class T = projected_value_t<I, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T*>
+  constexpr I ranges::find(I first, S last, const T& value, Proj proj = {});
+template<input_range R, class Proj = identity, class T = projected_value_t<iterator_t<R>, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>
+  constexpr borrowed_iterator_t<R>
+    ranges::find(R&& r, const T& value, Proj proj = {});
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr I ranges::find_if(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr borrowed_iterator_t<R>
+    ranges::find_if(R&& r, Pred pred, Proj proj = {});
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr I ranges::find_if_not(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr borrowed_iterator_t<R>
+    ranges::find_if_not(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{\tcode{*i == value} for \tcode{find};}
+\li{\tcode{pred(*i) != false} for \tcode{find_if};}
+\li{\tcode{pred(*i) == false} for \tcode{find_if_not};}
+\li{\tcode{bool(invoke(proj, *i) == value)} for \tcode{ranges::find};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *i)))} for \tcode{ranges::find_if};}
+\li{\tcode{bool(!invoke(pred, invoke(proj, *i)))} for \tcode{ranges::find_if_not}.}
+}
+
+\pnum
+\returns
+The first iterator \tcode{i} in the range [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} is \tcode{true}.
+Returns \tcode{last} if no such iterator is found.
+
+\pnum
+\complexity
+At most \tcode{last - first} applications
+of the corresponding predicate and any projection.
+}
+}
+
+\h3[show-number=no]{[alg.find.last]}
+
+\comment{26.6.7}
+Change \eelis{alg.find.last} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<forward_iterator I, sentinel_for<I> S, class Proj = identity,
+         class T = projected_value_t<I, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T*>
+  constexpr subrange<I> ranges::find_last(I first, S last, const T& value, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         class T = projected_value_t<iterator_t<R>, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>
+  constexpr borrowed_subrange_t<R> ranges::find_last(R&& r, const T& value, Proj proj = {});
+template<forward_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr subrange<I> ranges::find_last_if(I first, S last, Pred pred, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr borrowed_subrange_t<R> ranges::find_last_if(R&& r, Pred pred, Proj proj = {});
+template<forward_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr subrange<I> ranges::find_last_if_not(I first, S last, Pred pred, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr borrowed_subrange_t<R> ranges::find_last_if_not(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+\tcode{bool(invoke(proj, *i) == value)} for \tcode{ranges::find_last};}
+\li{
+\tcode{bool(invoke(pred, invoke(proj, *i)))} for \tcode{ranges::find_last_if};}
+\li{
+\tcode{bool(!invoke(pred, invoke(proj, *i)))} for \tcode{ranges::find_last_if_not}.}
+}
+
+\pnum
+\returns
+Let \tcode{i} be the last iterator in the range [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} is \tcode{true}.
+Returns \tcode{\{i, last\}}, or
+\tcode{\{last, last\}} if no such iterator is found.
+
+\pnum
+\complexity
+At most \tcode{last - first} applications of
+the corresponding predicate and projection.
+}
+}
+
+\comment{
+\h3[show-number=no]{[alg.adjacent.find]}
+
+\comment{26.6.10}
+Change \eelis{alg.adjacent.find} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class ForwardIterator>
+  constexpr ForwardIterator
+    adjacent_find(ForwardIterator first, ForwardIterator last);
+template<class ExecutionPolicy, class ForwardIterator>
+  ForwardIterator
+    adjacent_find(ExecutionPolicy&& exec,
+                  ForwardIterator first, ForwardIterator last);
+
+template<class ForwardIterator, class \del{BinaryPredicate} \ins{BinaryTest}>
+  constexpr ForwardIterator
+    adjacent_find(ForwardIterator first, ForwardIterator last,
+                  \del{BinaryPredicate} \ins{BinaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class BinaryPredicate>
+  ForwardIterator
+    adjacent_find(ExecutionPolicy&& exec,
+                  ForwardIterator first, ForwardIterator last,
+                  BinaryPredicate pred);
+
+template<forward_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_binary_predicate}
+         \ins{\exposid{indirect-binary-test}}<projected<I, Proj>,
+                              projected<I, Proj>> Pred = ranges::equal_to>
+  constexpr I ranges::adjacent_find(I first, S last, Pred pred = {}, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         \del{indirect_binary_predicate}
+         \ins{\exposid{indirect-binary-test}}<projected<iterator_t<R>, Proj>,
+                              projected<iterator_t<R>, Proj>> Pred = ranges::equal_to>
+  constexpr borrowed_iterator_t<R> ranges::adjacent_find(R&& r, Pred pred = {}, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{\tcode{*i == *(i + 1)} for the overloads with no parameter \tcode{pred};}
+\li{\tcode{pred(*i, *(i + 1)) != false} for the overloads with a parameter \tcode{pred} and no parameter \tcode{proj};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *i), invoke(proj, *(i + 1))))} for the overloads with both parameters \tcode{pred} and \tcode{proj}.}
+}
+
+\pnum
+\returns
+The first iterator \tcode{i}
+such that both \tcode{i} and \tcode{i + 1} are in the range [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} holds.
+Returns \tcode{last} if no such iterator is found.
+
+\pnum
+\complexity
+For the overloads with no \tcode{ExecutionPolicy},
+exactly
+\Bindent{min(\tcode{(i - first) + 1}, \tcode{(last - first) - 1})}
+applications of the corresponding predicate,
+where \tcode{i} is \tcode{adjacent_find}'s return value.
+For the overloads with an \tcode{ExecutionPolicy},
+\bigoh{\tcode{last - first}} applications of the corresponding predicate,
+and no more than twice as many applications of any projection.
+}
+}
+}
+
+\h3[show-number=no]{[alg.count]}
+
+\comment{26.6.11}
+Change \eelis{alg.count} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class T = iterator_traits<InputIterator>::value_type>
+  constexpr typename iterator_traits<InputIterator>::difference_type
+    count(InputIterator first, InputIterator last, const T& value);
+template<class ExecutionPolicy, class ForwardIterator,
+         class T = iterator_traits<ForwardIterator>::value_type>
+  typename iterator_traits<ForwardIterator>::difference_type
+    count(ExecutionPolicy&& exec,
+          ForwardIterator first, ForwardIterator last, const T& value);
+
+template<class InputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr typename iterator_traits<InputIterator>::difference_type
+    count_if(InputIterator first, InputIterator last, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  typename iterator_traits<ForwardIterator>::difference_type
+    count_if(ExecutionPolicy&& exec,
+             ForwardIterator first, ForwardIterator last, \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         class T = projected_value_t<I, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T*>
+  constexpr iter_difference_t<I>
+    ranges::count(I first, S last, const T& value, Proj proj = {});
+template<input_range R, class Proj = identity, class T = projected_value_t<iterator_t<R>, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>
+  constexpr range_difference_t<R>
+    ranges::count(R&& r, const T& value, Proj proj = {});
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr iter_difference_t<I>
+    ranges::count_if(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr range_difference_t<R>
+    ranges::count_if(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{*i == value} for the overloads
+  with no parameter \tcode{pred} or \tcode{proj};}
+\li{
+  \tcode{pred(*i) != false} for the overloads
+  with a parameter \tcode{pred} but no parameter \tcode{proj};}
+\li{
+  \tcode{invoke(proj, *i) == value} for the overloads
+  with a parameter \tcode{proj} but no parameter \tcode{pred};}
+\li{
+  \tcode{bool(invoke(pred, invoke(proj, *i)))} for the overloads
+  with both parameters \tcode{proj} and \tcode{pred}.}
+}
+
+\pnum
+\effects
+Returns the number of iterators \tcode{i} in the range [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} holds.
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+}
+}
+
+\h3[show-number=no]{[alg.mismatch]}
+
+\comment{26.6.12}
+Change \eelis{alg.mismatch} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator1, class InputIterator2>
+  constexpr pair<InputIterator1, InputIterator2>
+    mismatch(InputIterator1 first1, InputIterator1 last1,
+             InputIterator2 first2);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2>
+  pair<ForwardIterator1, ForwardIterator2>
+    mismatch(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2);
+
+template<class InputIterator1, class InputIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  constexpr pair<InputIterator1, InputIterator2>
+    mismatch(InputIterator1 first1, InputIterator1 last1,
+             InputIterator2 first2, \del{BinaryPredicate} \ins{BinaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  pair<ForwardIterator1, ForwardIterator2>
+    mismatch(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, \del{BinaryPredicate} \ins{BinaryTest} pred);
+
+template<class InputIterator1, class InputIterator2>
+  constexpr pair<InputIterator1, InputIterator2>
+    mismatch(InputIterator1 first1, InputIterator1 last1,
+             InputIterator2 first2, InputIterator2 last2);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2>
+  pair<ForwardIterator1, ForwardIterator2>
+    mismatch(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, ForwardIterator2 last2);
+
+template<class InputIterator1, class InputIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  constexpr pair<InputIterator1, InputIterator2>
+    mismatch(InputIterator1 first1, InputIterator1 last1,
+             InputIterator2 first2, InputIterator2 last2,
+             \del{BinaryPredicate} \ins{BinaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  pair<ForwardIterator1, ForwardIterator2>
+    mismatch(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, ForwardIterator2 last2,
+             \del{BinaryPredicate} \ins{BinaryTest} pred);
+
+template<input_iterator I1, sentinel_for<I1> S1, input_iterator I2, sentinel_for<I2> S2,
+         class Pred = ranges::equal_to, class Proj1 = identity, class Proj2 = identity>
+  requires \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<I1, I2, Pred, Proj1, Proj2>
+  constexpr ranges::mismatch_result<I1, I2>
+    ranges::mismatch(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
+                     Proj1 proj1 = {}, Proj2 proj2 = {});
+template<input_range R1, input_range R2,
+         class Pred = ranges::equal_to, class Proj1 = identity, class Proj2 = identity>
+  requires \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>
+  constexpr ranges::mismatch_result<borrowed_iterator_t<R1>, borrowed_iterator_t<R2>>
+    ranges::mismatch(R1&& r1, R2&& r2, Pred pred = {},
+                     Proj1 proj1 = {}, Proj2 proj2 = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{last2} be \tcode{first2 + (last1 - first1)}
+for the overloads with no parameter \tcode{last2} or \tcode{r2}.
+
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{!(*(first1 + n) == *(first2 + n))}
+  for the overloads with no parameter \tcode{pred};}
+\li{
+  \tcode{pred(*(first1 + n), *(first2 + n)) == false}
+  for the overloads with a parameter \tcode{pred} and
+  no parameter \tcode{proj1};}
+\li{
+  \tcode{!invoke(pred, invoke(proj1, *(first1 + n)), invoke(proj2, *(first2 + n)))}
+  for the overloads with both parameters \tcode{pred} and \tcode{proj1}.}
+}
+
+\pnum
+Let \math{\mi{N}} be min(\tcode{last1 - first1}, \tcode{last2 - first2}).
+
+\pnum
+\returns
+\tcode{\{ first1 + n, first2 + n \}},
+where \tcode{n} is the smallest integer in [\tcode{0}, \tcode{\math{\mi{N}}}) such that \math{\mi{E}} holds,
+or \math{\mi{N}} if no such integer exists.
+
+\pnum
+\complexity
+At most \math{\mi{N}} applications of the corresponding predicate and any projections.
+}
+}
+
+\h3[show-number=no]{[alg.equal]}
+
+\comment{26.6.13}
+Change \eelis{alg.equal} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator1, class InputIterator2>
+  constexpr bool equal(InputIterator1 first1, InputIterator1 last1,
+                       InputIterator2 first2);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2>
+  bool equal(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2);
+
+template<class InputIterator1, class InputIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  constexpr bool equal(InputIterator1 first1, InputIterator1 last1,
+                       InputIterator2 first2, \del{BinaryPredicate} \ins{BinaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class BinaryPredicate>
+  bool equal(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, BinaryPredicate pred);
+
+template<class InputIterator1, class InputIterator2>
+  constexpr bool equal(InputIterator1 first1, InputIterator1 last1,
+                       InputIterator2 first2, InputIterator2 last2);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2>
+  bool equal(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, ForwardIterator2 last2);
+
+template<class InputIterator1, class InputIterator2,
+         class \del{BinaryPredicate} \ins{BinaryTest}>
+  constexpr bool equal(InputIterator1 first1, InputIterator1 last1,
+                       InputIterator2 first2, InputIterator2 last2,
+                       \del{BinaryPredicate} \ins{BinaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class BinaryPredicate BinaryTest>
+  bool equal(ExecutionPolicy&& exec,
+             ForwardIterator1 first1, ForwardIterator1 last1,
+             ForwardIterator2 first2, ForwardIterator2 last2,
+             BinaryPredicate pred);
+
+template<input_iterator I1, sentinel_for<I1> S1, input_iterator I2, sentinel_for<I2> S2,
+         class Pred = ranges::equal_to, class Proj1 = identity, class Proj2 = identity>
+  requires \del{indirectly_comparable} \ins{\exposid{indirectly-binary-testable}}<I1, I2, Pred, Proj1, Proj2>
+  constexpr bool ranges::equal(I1 first1, S1 last1, I2 first2, S2 last2,
+                               Pred pred = {},
+                               Proj1 proj1 = {}, Proj2 proj2 = {});
+template<input_range R1, input_range R2, class Pred = ranges::equal_to,
+         class Proj1 = identity, class Proj2 = identity>
+  requires \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>
+  constexpr bool ranges::equal(R1&& r1, R2&& r2, Pred pred = {},
+                               Proj1 proj1 = {}, Proj2 proj2 = {});
+}
+\itemdescr{
+\pnum
+Let:
+\ul{
+\li{
+  \tcode{last2} be \tcode{first2 + (last1 - first1)}
+  for the overloads with no parameter \tcode{last2} or \tcode{r2};}
+\li{
+  \tcode{pred} be \tcode{equal_to\{\}}
+  for the overloads with no parameter \tcode{pred};}
+\li{
+  \math{\mi{E}} be:
+  \ul{
+  \li{
+    \tcode{pred(*i, *(first2 + (i - first1)))}
+    for the overloads with no parameter \tcode{proj1};}
+  \li{
+    \tcode{invoke(pred, invoke(proj1, *i), invoke(proj2, *(first2 + (i - first1))))}
+    for the overloads with parameter \tcode{proj1}.}
+  }}
+}
+
+\pnum
+\returns
+If \tcode{last1 - first1 != last2 - first2}, return \tcode{false}.
+Otherwise return \tcode{true}
+if \math{\mi{E}} holds for every iterator \tcode{i} in the range [\tcode{first1}\tcode{last1}).
+Otherwise, returns \tcode{false}.
+
+\pnum
+\complexity
+If
+\ul{
+\li{
+  the types of \tcode{first1}, \tcode{last1}, \tcode{first2}, and \tcode{last2}
+  meet the
+  \oldconcept{RandomAccessIterator} requirements\iref{random.access.iterators}
+  and \tcode{last1 - first1 != last2 - first2}
+  for the overloads in namespace \tcode{std};}
+\li{
+ the types of \tcode{first1}, \tcode{last1}, \tcode{first2}, and \tcode{last2}
+ pairwise model \libconcept{sized_sentinel_for}\iref{iterator.concept.sizedsentinel}
+  and \tcode{last1 - first1 != last2 - first2}
+  for the first overload in namespace \tcode{ranges},}
+\li{
+   \tcode{R1} and \tcode{R2} each model \libconcept{sized_range} and
+   \tcode{ranges::distance(r1) != ranges::distance(r2)}
+   for the second overload in namespace \tcode{ranges},}
+}
+then no applications of the corresponding predicate and each projection;
+otherwise,
+\ul{
+\li{
+  For the overloads with no \tcode{ExecutionPolicy},
+  at most min(\tcode{last1 - first1}, \tcode{last2 - first2})
+  applications of the corresponding predicate and any projections.}
+\li{
+  For the overloads with an \tcode{ExecutionPolicy},
+  \bigoh{min(\tcode{last1 - first1}, \tcode{last2 - first2})}
+  applications of the corresponding predicate.}
+}
+}
+}
+
+\h3[show-number=no]{[alg.starts.with]}
+
+\comment{26.6.16}
+Change \eelis{alg.starts.with} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<input_iterator I1, sentinel_for<I1> S1, input_iterator I2, sentinel_for<I2> S2,
+         class Pred = ranges::equal_to, class Proj1 = identity, class Proj2 = identity>
+  requires \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<I1, I2, Pred, Proj1, Proj2>
+  constexpr bool ranges::starts_with(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
+                                     Proj1 proj1 = {}, Proj2 proj2 = {});
+template<input_range R1, input_range R2, class Pred = ranges::equal_to, class Proj1 = identity,
+         class Proj2 = identity>
+  requires \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>
+  constexpr bool ranges::starts_with(R1&& r1, R2&& r2, Pred pred = {},
+                                     Proj1 proj1 = {}, Proj2 proj2 = {});
+}
+\itemdescr{
+\pnum
+\returns
+\itemdecl{
+ranges::mismatch(std::move(first1), last1, std::move(first2), last2,
+                 pred, proj1, proj2).in2 == last2
+}
+}
+}
+
+\h3[show-number=no]{[alg.ends.with]}
+
+\comment{26.6.17}
+Change \eelis{alg.ends.with} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<input_iterator I1, sentinel_for<I1> S1, input_iterator I2, sentinel_for<I2> S2,
+         class Pred = ranges::equal_to, class Proj1 = identity, class Proj2 = identity>
+  requires (forward_iterator<I1> || sized_sentinel_for<S1, I1>) &&
+           (forward_iterator<I2> || sized_sentinel_for<S2, I2>) &&
+           \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<I1, I2, Pred, Proj1, Proj2>
+  constexpr bool ranges::ends_with(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
+                                   Proj1 proj1 = {}, Proj2 proj2 = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{N1} be \tcode{last1 - first1} and
+\tcode{N2} be \tcode{last2 - first2}.
+
+\pnum
+\returns
+\tcode{false} if \tcode{N1} < \tcode{N2}, otherwise
+\itemdecl{
+ranges::equal(std::move(first1) + (N1 - N2), last1, std::move(first2), last2,
+              pred, proj1, proj2)
+}
+}
+\itemdecl{
+template<input_range R1, input_range R2, class Pred = ranges::equal_to, class Proj1 = identity,
+         class Proj2 = identity>
+  requires (forward_range<R1> || sized_range<R1>) &&
+           (forward_range<R2> || sized_range<R2>) &&
+           \del{indirectly_comparable}
+           \ins{\exposid{indirectly-binary-testable}}<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>
+  constexpr bool ranges::ends_with(R1&& r1, R2&& r2, Pred pred = {},
+                                   Proj1 proj1 = {}, Proj2 proj2 = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{N1} be \tcode{ranges::distance(r1)} and
+\tcode{N2} be \tcode{ranges::distance(r2)}.
+
+\pnum
+\returns
+\tcode{false} if \tcode{N1} < \tcode{N2}, otherwise
+\itemdecl{
+ranges::equal(views::drop(ranges::ref_view(r1), N1 - static_cast<decltype(N1)>(N2)),
+              r2, pred, proj1, proj2)
+}
+}
+}
+
+\h3[show-number=no]{[alg.copy]}
+
+Change \eelis{alg.copy} as follows:
+
+\Vset[pnum]{14}
+
+\Bdiff{
+\etc
+
+\itemdecl{
+template<class InputIterator, class OutputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr OutputIterator copy_if(InputIterator first, InputIterator last,
+                                   OutputIterator result, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class \del{Predicate} \ins{UnaryTest}>
+  ForwardIterator2 copy_if(ExecutionPolicy&& exec,
+                           ForwardIterator1 first, ForwardIterator1 last,
+                           ForwardIterator2 result, \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, weakly_incrementable O, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  requires indirectly_copyable<I, O>
+  constexpr ranges::copy_if_result<I, O>
+    ranges::copy_if(I first, S last, O result, Pred pred, Proj proj = {});
+template<input_range R, weakly_incrementable O, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires indirectly_copyable<iterator_t<R>, O>
+  constexpr ranges::copy_if_result<borrowed_iterator_t<R>, O>
+    ranges::copy_if(R&& r, O result, Pred pred, Proj proj = {});
+}
+
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be:
+\ul{
+\li{
+  \tcode{bool(pred(*i))}
+  for the overloads in namespace \tcode{std};}
+\li{
+  \tcode{bool(invoke(pred, invoke(proj, *i)))}
+  for the overloads in namespace \tcode{ranges},}
+}
+and \math{\mi{N}} be the number of iterators \tcode{i} in the range [\tcode{first}, \tcode{last})
+for which the condition \math{\mi{E}} holds.
+
+\pnum
+\expects
+The ranges [\tcode{first}, \tcode{last}) and [\tcode{result}, \tcode{result + (last - first)})
+do not overlap.
+\br\wg21-note{
+For the overload with an \tcode{ExecutionPolicy},
+there might be a performance cost
+if \tcode{iterator_traits<ForwardIterator1>::value_type}
+is not \oldconcept{MoveConstructible} (\eelis{cpp17.moveconstructible}).
+}
+
+\pnum
+\effects
+Copies all of the elements referred to
+by the iterator \tcode{i} in the range [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} is \tcode{true}.
+
+\pnum
+\returns
+\ul{
+\li{
+  \tcode{result + \math{\mi{N}}}
+  for the overloads in namespace \tcode{std}.}
+\li{
+  \tcode{\{last, result + \math{\mi{N}}\}}
+  for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+
+\pnum
+\remarks
+Stable\iref{algorithm.stable}.
+}
+
+\etc
+}
+
+\h3[show-number=no]{[alg.replace]}
+
+Change \eelis{alg.replace} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class ForwardIterator, class T = iterator_traits<ForwardIterator>::value_type>
+  constexpr void replace(ForwardIterator first, ForwardIterator last,
+                         const T& old_value, const T& new_value);
+template<class ExecutionPolicy, class ForwardIterator,
+         class T = iterator_traits<ForwardIterator>::value_type>
+  void replace(ExecutionPolicy&& exec,
+               ForwardIterator first, ForwardIterator last,
+               const T& old_value, const T& new_value);
+
+template<class ForwardIterator, class \del{Predicate} \ins{UnaryTest},
+         class T = iterator_traits<ForwardIterator>::value_type>
+  constexpr void replace_if(ForwardIterator first, ForwardIterator last,
+                            \del{Predicate} \ins{UnaryTest} pred, const T& new_value);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest},
+         class T = iterator_traits<ForwardIterator>::value_type>
+  void replace_if(ExecutionPolicy&& exec,
+                  ForwardIterator first, ForwardIterator last,
+                  \del{Predicate} \ins{UnaryTest} pred, const T& new_value);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         class T1 = projected_value_t<I, Proj>, class T2 = T1>
+  requires indirectly_writable<I, const T2&> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T1*>
+  constexpr I
+    ranges::replace(I first, S last, const T1& old_value, const T2& new_value, Proj proj = {});
+template<input_range R, class Proj = identity,
+         class T1 = projected_value_t<iterator_t<R>, Proj>, class T2 = T1>
+  requires indirectly_writable<iterator_t<R>, const T2&> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T1*>
+  constexpr borrowed_iterator_t<R>
+    ranges::replace(R&& r, const T1& old_value, const T2& new_value, Proj proj = {});
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         class T = projected_value_t<I, Proj>,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  requires indirectly_writable<I, const T&>
+  constexpr I ranges::replace_if(I first, S last, Pred pred, const T& new_value, Proj proj = {});
+template<input_range R, class Proj = identity, class T = projected_value_t<iterator_t<R>, Proj>,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires indirectly_writable<iterator_t<R>, const T&>
+  constexpr borrowed_iterator_t<R>
+    ranges::replace_if(R&& r, Pred pred, const T& new_value, Proj proj = {});
+}
+
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be
+\ul{
+\li{\tcode{bool(*i == old_value)} for \tcode{replace};}
+\li{\tcode{bool(pred(*i))} for \tcode{replace_if};}
+\li{\tcode{bool(invoke(proj, *i) == old_value)} for \tcode{ranges::replace};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *i)))} for \tcode{ranges::replace_if}.}
+}
+
+
+\pnum
+\mandates
+\tcode{new_value} is writable\iref{iterator.requirements.general} to \tcode{first}.
+
+\pnum
+\effects
+Substitutes elements referred by the iterator \tcode{i}
+in the range [\tcode{first}, \tcode{last}) with \tcode{new_value},
+when \math{\mi{E}} is \tcode{true}.
+
+\pnum
+\returns
+\tcode{last} for the overloads in namespace \tcode{ranges}.
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+}
+
+\itemdecl{
+template<class InputIterator, class OutputIterator, class T>
+  constexpr OutputIterator
+    replace_copy(InputIterator first, InputIterator last,
+                 OutputIterator result,
+                 const T& old_value, const T& new_value);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2, class T>
+  ForwardIterator2
+    replace_copy(ExecutionPolicy&& exec,
+                 ForwardIterator1 first, ForwardIterator1 last,
+                 ForwardIterator2 result,
+                 const T& old_value, const T& new_value);
+
+template<class InputIterator, class OutputIterator, class \del{Predicate} \ins{UnaryTest}, class T>
+  constexpr OutputIterator
+    replace_copy_if(InputIterator first, InputIterator last,
+                    OutputIterator result,
+                    \del{Predicate} \ins{UnaryTest} pred, const T& new_value);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class \del{Predicate} \ins{UnaryTest}, class T>
+  ForwardIterator2
+    replace_copy_if(ExecutionPolicy&& exec,
+                    ForwardIterator1 first, ForwardIterator1 last,
+                    ForwardIterator2 result,
+                    \del{Predicate} \ins{UnaryTest} pred, const T& new_value);
+
+template<input_iterator I, sentinel_for<I> S, class O,
+         class Proj = identity, class T1 = projected_value_t<I, Proj>, class T2 = iter_value_t<O>>
+  requires indirectly_copyable<I, O> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T1*> &&
+           output_iterator<O, const T2&>
+  constexpr ranges::replace_copy_result<I, O>
+    ranges::replace_copy(I first, S last, O result, const T1& old_value, const T2& new_value,
+                         Proj proj = {});
+template<input_range R, class O, class Proj = identity,
+         class T1 = projected_value_t<iterator_t<R>, Proj>, class T2 = iter_value_t<O>>
+  requires indirectly_copyable<iterator_t<R>, O> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T1*>
+           && output_iterator<O, const T2&>
+  constexpr ranges::replace_copy_result<borrowed_iterator_t<R>, O>
+    ranges::replace_copy(R&& r, O result, const T1& old_value, const T2& new_value,
+                         Proj proj = {});
+
+template<input_iterator I, sentinel_for<I> S,class O, class T = iter_value_t<O>,
+         class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  requires indirectly_copyable<I, O> && output_iterator<O, const T&>
+  constexpr ranges::replace_copy_if_result<I, O>
+    ranges::replace_copy_if(I first, S last, O result, Pred pred, const T& new_value,
+                            Proj proj = {});
+template<input_range R, class O, class T = iter_value_t<O>, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires indirectly_copyable<iterator_t<R>, O> && output_iterator<O, const T&>
+  constexpr ranges::replace_copy_if_result<borrowed_iterator_t<R>, O>
+    ranges::replace_copy_if(R&& r, O result, Pred pred, const T& new_value,
+                            Proj proj = {});
+}
+
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be
+\ul{
+\li{\tcode{bool(*(first + (i - result)) == old_value)}
+  for \tcode{replace_copy};}
+\li{\tcode{bool(pred(*(first + (i - result))))}
+  for \tcode{replace_copy_if};}
+\li{\tcode{bool(invoke(proj, *(first + (i - result))) == old_value)}
+  for \tcode{ranges::replace_copy};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *(first + (i - result)))))}
+  for \tcode{ranges::replace_copy_if}.}
+}
+
+\pnum
+\mandates
+The results of the expressions \tcode{*first} and \tcode{new_value}
+are writable\iref{iterator.requirements.general} to \tcode{result}.
+
+\pnum
+\expects
+The ranges [\tcode{first}, \tcode{last}) and [\tcode{result}, \tcode{result + (last - first)})
+do not overlap.
+
+\pnum
+\effects
+Assigns through every iterator \tcode{i}
+in the range [\tcode{result}, \tcode{result + (last - first)})
+a new corresponding value
+\ul{
+\li{\tcode{new_value} if \math{\mi{E}} is \tcode{true} or}
+\li{\tcode{*(first + (i - result))} otherwise.}
+}
+
+\pnum
+\returns
+\ul{
+\li{
+  \tcode{result + (last - first)}
+  for the overloads in namespace \tcode{std}.}
+\li{
+  \tcode{\{last, result + (last - first)\}}
+  for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+}
+}
+
+\Bnote{
+It is strange that \tcode{replace} is not a stable algorithm,
+unlike \tcode{remove} and \tcode{copy},
+but that's probably best solved in a different issue/paper.
+}
+
+\h3[show-number=no]{[alg.remove]}
+
+Change \eelis{alg.remove} as follows:
+
+\Bdiff{
+\itemdecl{
+template<class ForwardIterator, class T = iterator_traits<ForwardIterator>::value_type>
+  constexpr ForwardIterator remove(ForwardIterator first, ForwardIterator last,
+                                   const T& value);
+template<class ExecutionPolicy, class ForwardIterator,
+         class T = iterator_traits<ForwardIterator>::value_type>
+  ForwardIterator remove(ExecutionPolicy&& exec,
+                         ForwardIterator first, ForwardIterator last,
+                         const T& value);
+
+template<class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr ForwardIterator remove_if(ForwardIterator first, ForwardIterator last,
+                                      \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  ForwardIterator remove_if(ExecutionPolicy&& exec,
+                            ForwardIterator first, ForwardIterator last,
+                            \del{Predicate} \ins{UnaryTest} pred);
+
+template<permutable I, sentinel_for<I> S, class Proj = identity,
+         class T = projected_value_t<I, Proj>>
+  requires \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T*>
+  constexpr subrange<I> ranges::remove(I first, S last, const T& value, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         class T = projected_value_t<iterator_t<R>, Proj>>
+  requires permutable<iterator_t<R>> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>
+  constexpr borrowed_subrange_t<R>
+    ranges::remove(R&& r, const T& value, Proj proj = {});
+template<permutable I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate}
+         \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr subrange<I> ranges::remove_if(I first, S last, Pred pred, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         \del{indirect_unary_predicate}
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires permutable<iterator_t<R>>
+  constexpr borrowed_subrange_t<R>
+    ranges::remove_if(R&& r, Pred pred, Proj proj = {});
+}
+
+\Vset[pnum]{0}
+
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be
+\ul{
+\li{\tcode{bool(*i == value)} for \tcode{remove};}
+\li{\tcode{bool(pred(*i))} for \tcode{remove_if};}
+\li{\tcode{bool(invoke(proj, *i) == value)} for \tcode{ranges::remove};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *i)))} for \tcode{ranges::remove_if}.}
+}
+
+\pnum
+\expects
+For the algorithms in namespace \tcode{std},
+the type of \tcode{*first}
+meets the \oldconcept{MoveAssignable} requirements (\eelis{cpp17.moveassignable}).
+
+\pnum
+\effects
+Eliminates all the elements referred to by iterator \tcode{i}
+in the range [\tcode{first}, \tcode{last}) for which \math{\mi{E}} holds.
+
+\pnum
+\returns
+Let \math{\mi{j}} be the end of the resulting range. Returns:
+\ul{
+\li{\math{\mi{j}} for the overloads in namespace \tcode{std}.}
+\li{\tcode{\{\math{\mi{j}}, last\}} for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+
+\pnum
+\remarks
+Stable\iref{algorithm.stable}.
+
+\pnum
+\wg21-note{
+Each element in the range [\tcode{ret}, \tcode{last}),
+where \tcode{ret} is the returned value,
+has a valid but unspecified state,
+because the algorithms can eliminate elements
+by moving from elements that were originally in that range.
+}
+}
+
+\itemdecl{
+template<class InputIterator, class OutputIterator,
+         class T = iterator_traits<InputIterator>::value_type>
+  constexpr OutputIterator
+    remove_copy(InputIterator first, InputIterator last,
+                OutputIterator result, const T& value);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class T = iterator_traits<ForwardIterator1>::value_type>
+  ForwardIterator2
+    remove_copy(ExecutionPolicy&& exec,
+                ForwardIterator1 first, ForwardIterator1 last,
+                ForwardIterator2 result, const T& value);
+
+template<class InputIterator, class OutputIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr OutputIterator
+    remove_copy_if(InputIterator first, InputIterator last,
+                   OutputIterator result, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
+         class \del{Predicate} \ins{UnaryTest}>
+  ForwardIterator2
+    remove_copy_if(ExecutionPolicy&& exec,
+                   ForwardIterator1 first, ForwardIterator1 last,
+                   ForwardIterator2 result, \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, weakly_incrementable O,
+         class Proj = identity, class T = projected_value_t<I, Proj>>
+  requires indirectly_copyable<I, O> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<I, Proj>, const T*>
+  constexpr ranges::remove_copy_result<I, O>
+    ranges::remove_copy(I first, S last, O result, const T& value, Proj proj = {});
+template<input_range R, weakly_incrementable O, class Proj = identity,
+         class T = projected_value_t<iterator_t<R>, Proj>>
+  requires indirectly_copyable<iterator_t<R>, O> &&
+           \del{indirect_binary_predicate}
+           \ins{\exposid{indirect-binary-test}}<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>
+  constexpr ranges::remove_copy_result<borrowed_iterator_t<R>, O>
+    ranges::remove_copy(R&& r, O result, const T& value, Proj proj = {});
+template<input_iterator I, sentinel_for<I> S, weakly_incrementable O,
+         class Proj = identity, \del{indirect_unary_predicate}
+                                \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  requires indirectly_copyable<I, O>
+  constexpr ranges::remove_copy_if_result<I, O>
+    ranges::remove_copy_if(I first, S last, O result, Pred pred, Proj proj = {});
+template<input_range R, weakly_incrementable O, class Proj = identity,
+         \del{indirect_unary_predicate}
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires indirectly_copyable<iterator_t<R>, O>
+  constexpr ranges::remove_copy_if_result<borrowed_iterator_t<R>, O>
+    ranges::remove_copy_if(R&& r, O result, Pred pred, Proj proj = {});
+}
+
+\itemdescr{
+\pnum
+Let \math{\mi{E}} be
+\ul{
+\li{\tcode{bool(*i == value)} for \tcode{remove_copy};}
+\li{\tcode{bool(pred(*i))} for \tcode{remove_copy_if};}
+\li{\tcode{bool(invoke(proj, *i) == value)} for \tcode{ranges::remove_copy};}
+\li{\tcode{bool(invoke(pred, invoke(proj, *i)))} for \tcode{ranges::remove_copy_if}.}
+}
+
+\pnum
+Let \math{\mi{N}} be the number of elements in [\tcode{first}, \tcode{last})
+for which \math{\mi{E}} is \tcode{false}.
+
+\pnum
+\mandates
+\tcode{*first} is writable\iref{iterator.requirements.general} to \tcode{result}.
+
+\pnum
+\expects
+The ranges [\tcode{first}, \tcode{last}) and [\tcode{result}, \tcode{result + (last - first)})
+do not overlap.
+\br\wg21-note{
+For the overloads with an \tcode{ExecutionPolicy},
+there might be a performance cost
+if \tcode{iterator_traits<ForwardIterator1>::value_type} does not meet
+the \oldconcept{MoveConstructible} (\eelis{cpp17.moveconstructible}) requirements.
+}
+
+\pnum
+\effects
+Copies all the elements referred to by the iterator \tcode{i}
+in the range [\tcode{first}, \tcode{last}) for which \math{\mi{E}} is \tcode{false}.
+
+\pnum
+\returns
+\ul{
+\li{\tcode{result + \math{\mi{N}}}, for the algorithms in namespace \tcode{std}.}
+\li{\tcode{\{last, result + \math{\mi{N}}\}}, for the algorithms in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications
+of the corresponding predicate and any projection.
+
+\pnum
+\remarks
+Stable\iref{algorithm.stable}.
+}
+}
+
+
+\h3[show-number=no]{[alg.partitions]}
+
+Change \eelis{alg.partitions} as follows:
+
+\Vset[pnum]{0}
+
+\Bdiff{
+\itemdecl{
+template<class InputIterator, class Predicate>
+  constexpr bool is_partitioned(InputIterator first, InputIterator last,
+                                \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class Predicate>
+  bool is_partitioned(ExecutionPolicy&& exec,
+                      ForwardIterator first, ForwardIterator last, \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr bool ranges::is_partitioned(I first, S last, Pred pred, Proj proj = {});
+template<input_range R, class Proj = identity,
+         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  constexpr bool ranges::is_partitioned(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{proj} be \tcode{identity\{\}}
+for the overloads with no parameter named \tcode{proj}.
+
+\pnum
+\returns
+\tcode{true} if and only if the elements \tcode{e} of [\tcode{first}, \tcode{last})
+are partitioned with respect to the expression
+\tcode{bool(invoke(pred, invoke(proj, e)))}.
+
+\pnum
+\complexity
+Linear.
+At most \tcode{last - first} applications of \tcode{pred} and \tcode{proj}.
+}
+
+\itemdecl{
+template<class ForwardIterator, class \del{Predicate} \ins{UnaryTest}>
+  constexpr ForwardIterator
+    partition(ForwardIterator first, ForwardIterator last, \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class Predicate>
+  ForwardIterator
+    partition(ExecutionPolicy&& exec,
+              ForwardIterator first, ForwardIterator last, Predicate pred);
+
+template<permutable I, sentinel_for<I> S, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  constexpr subrange<I>
+    ranges::partition(I first, S last, Pred pred, Proj proj = {});
+template<forward_range R, class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires permutable<iterator_t<R>>
+  constexpr borrowed_subrange_t<R>
+    ranges::partition(R&& r, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{proj} be \tcode{identity\{\}}
+for the overloads with no parameter named \tcode{proj}
+and let \math{\mi{E}}(\math{\mi{x}}) be \tcode{bool(invoke(pred, invoke(proj, \math{\mi{x}})))}.
+
+\pnum
+\expects
+For the overloads in namespace \tcode{std},
+\tcode{ForwardIterator} meets
+the \oldconcept{ValueSwappable} requirements\iref{swappable.requirements}.
+
+\pnum
+\effects
+Places all the elements \tcode{e} in [\tcode{first}, \tcode{last})
+that satisfy \math{\mi{E}}(\tcode{e}) before all the elements that do not.
+
+\pnum
+\returns
+Let \tcode{i} be an iterator such that \math{\mi{E}}(\tcode{*j}) is
+\tcode{true} for every iterator \tcode{j} in [\tcode{first}, \tcode{i}) and
+\tcode{false} for every iterator \tcode{j} in [\tcode{i}, \tcode{last}).
+Returns:
+\ul{
+\li{\tcode{i} for the overloads in namespace \tcode{std}.}
+\li{\tcode{\{i, last\}} for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Let \math{\mi{N}} = \tcode{last - first}:
+\ul{
+\li{
+  For the overload with no \tcode{ExecutionPolicy},
+  exactly \math{\mi{N}} applications of the predicate and projection.
+  At most \math{\mrow{\mi{N}\mo{/}\mn{2}}} swaps if the type of \tcode{first} meets
+  the \oldconcept{BidirectionalIterator} requirements
+  for the overloads in namespace \tcode{std} or
+  models \libconcept{bidirectional_iterator}
+  for the overloads in namespace \tcode{ranges},
+  and at most \math{\mi{N}} swaps otherwise.}
+\li{
+  For the overload with an \tcode{ExecutionPolicy},
+  \bigoh{\math{\mrow{\mi{N}\mo{log}\mi{N}}}} swaps and \bigoh{\math{\mi{N}}} applications of the predicate.}
+}
+}
+
+\etc
+\Vset[pnum]{13}
+
+\itemdecl{
+template<class InputIterator, class OutputIterator1, class OutputIterator2,
+         class \del{Predicate} \ins{UnaryTest}>
+  constexpr pair<OutputIterator1, OutputIterator2>
+    partition_copy(InputIterator first, InputIterator last,
+                   OutputIterator1 out_true, OutputIterator2 out_false,
+                   \del{Predicate} \ins{UnaryTest} pred);
+template<class ExecutionPolicy, class ForwardIterator, class ForwardIterator1,
+         class ForwardIterator2, class \del{Predicate} \ins{UnaryTest}>
+  pair<ForwardIterator1, ForwardIterator2>
+    partition_copy(ExecutionPolicy&& exec,
+                   ForwardIterator first, ForwardIterator last,
+                   ForwardIterator1 out_true, ForwardIterator2 out_false,
+                   \del{Predicate} \ins{UnaryTest} pred);
+
+template<input_iterator I, sentinel_for<I> S, weakly_incrementable O1, weakly_incrementable O2,
+         class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
+  requires indirectly_copyable<I, O1> && indirectly_copyable<I, O2>
+  constexpr ranges::partition_copy_result<I, O1, O2>
+    ranges::partition_copy(I first, S last, O1 out_true, O2 out_false, Pred pred,
+                           Proj proj = {});
+template<input_range R, weakly_incrementable O1, weakly_incrementable O2,
+         class Proj = identity,
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+  requires indirectly_copyable<iterator_t<R>, O1> &&
+           indirectly_copyable<iterator_t<R>, O2>
+  constexpr ranges::partition_copy_result<borrowed_iterator_t<R>, O1, O2>
+    ranges::partition_copy(R&& r, O1 out_true, O2 out_false, Pred pred, Proj proj = {});
+}
+\itemdescr{
+\pnum
+Let \tcode{proj} be \tcode{identity\{\}}
+for the overloads with no parameter named \tcode{proj} and
+let \math{\mi{E}}(\math{\mi{x}}) be \tcode{bool(invoke(pred, invoke(proj, \math{\mi{x}})))}.
+
+\pnum
+\mandates
+For the overloads in namespace \tcode{std},
+the expression \tcode{*first}
+is writable\iref{iterator.requirements.general}
+to \tcode{out_true} and \tcode{out_false}.
+
+\pnum
+\expects
+The input range and output ranges do not overlap.
+\br\wg21-note{
+For the overload with an \tcode{ExecutionPolicy},
+there might be a performance cost if \tcode{first}'s value type
+does not meet the \oldconcept{CopyConstructible} requirements.
+}
+
+\pnum
+\effects
+For each iterator \tcode{i} in [\tcode{first}, \tcode{last}),
+copies \tcode{*i} to the output range beginning with \tcode{out_true}
+if \math{\mi{E}}(\tcode{*i}) is \tcode{true}, or
+to the output range beginning with \tcode{out_false} otherwise.
+
+\pnum
+\returns
+Let \tcode{o1} be the end of the output range beginning at \tcode{out_true},
+and \tcode{o2} the end of the output range beginning at \tcode{out_false}.
+Returns
+\ul{
+\li{\tcode{\{o1, o2\}} for the overloads in namespace \tcode{std}.}
+\li{\tcode{\{last, o1, o2\}} for the overloads in namespace \tcode{ranges}.}
+}
+
+\pnum
+\complexity
+Exactly \tcode{last - first} applications of \tcode{pred} and \tcode{proj}.
+}
+}
+
+\h2{References}
+
+\bib[
+    id = N5008,
+    title = Working Draft\, Programming Languages — C++,
+    date = 2025-03-15,
+    author = Thomas Köppe,
+    link = https://wg21.link/n5008,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+
+\make-bib
