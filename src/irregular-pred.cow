@@ -5,8 +5,8 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3734R0}}
-    \dt{Date:}            \dd{\tt{2025-06-13}}
-    \dt{Audience:}        \dd{LWG}
+    \dt{Date:}            \dd{\tt{2025-06-14}}
+    \dt{Audience:}        \dd{SG9}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3734/github]}
@@ -32,6 +32,7 @@ These constraints should be relaxed.
 Consider the following function,
 which transform a string such as \tcode{"abc //def"} into \tcode{"abc-def"}:
 
+\Bex{
 \cppblock{
 bool allowed_in_id(char c) {
     return c >= 'a' && c <= 'z';
@@ -46,6 +47,7 @@ void sanitize_id(std::string& id) {
         return not allowed_in_id(c);
     });
     id.erase(removed_range.begin(), removed_range.end());
+}
 }
 }
 
@@ -134,7 +136,137 @@ so who cares if \tcode{p} modifies an element?
 \h2{Motivation}
 
 We should relax these requirements because they are of no benefit to the implementation,
-and they render the behavior of useful code undefined by technicality. 
+and they render the behavior of useful code undefined by technicality.
+A useful example for the modifying algorithms has already been presented in \ref[#introduction].
+
+Even in the case of non-modifying algorithms,
+modification is useful.
+
+\Bex{
+The following code has undefined behavior, even in a single-threaded environment:
+\cppblock{
+struct Resource {
+    int data;
+    std::mutex m;
+
+    int get() {
+        std::scoped_lock lock{m};
+        return data;
+    }
+};
+
+bool contains_nonzero(std::span<Resource> resources) {
+    return std::ranges::any_of(resources, [](Resource& r) {
+        return r.get() != 0;
+    });
+}
+}
+This use of \tcode{any_of} may seem innocuous,
+but it would violate the semantic requirements of \eelis{concept.predicate}
+if the arguments to the function object are modified,
+and locking a mutex may be a modification.
+}
+
+We can imagine similar examples with result of computations
+being cached inside \tcode{Resource}, etc.
+Any reasonable user should expect this code to work,
+rather than having undefined behavior based on some gotcha.
+With the current restrictions,
+we make many algorithms useless for a wide variety of use cases.
+This is antithetical to the purpose of any standard library.
+
+\h2{Design discussion}
+
+While the proposal does no more than getting rid of an unnecessary technicality
+by which some algorithm uses are undefined behavior,
+it is still a fairly significant change.
+Notably, it would even allow the range to be modified within non-modifying
+algorithms like \tcode{find_if}, and it's not obvious whether that would be okay or desirable.
+The following subsections address these concerns.
+
+\h3{But it's bad practice to modify the range in \tcode{find_if}!}
+
+It could be argued that modifying elements within the predicate is bad practice,
+at least for algorithms that are non-modifying.
+I actually agree with this,
+and don't feel like there is much motivation to allow this.
+However, there is quite a bit of motivation for allowing modification in algorithms
+that are already modifying, like \tcode{remove_if}.
+
+Also, it is not the job of WG21 to police what is "good practice"
+and "bad practice" by making things undefined behavior.
+CppCoreGuidelines and other style guides can police things just fine.
+Even if the predicate modifies the elements it's called with,
+that is of no consequence to how \tcode{find_if} operates,
+and by that logic, it shouldn't be undefined.
+
+We should also be cautious of status-quo bias.
+If \tcode{find_if} was well-defined for modifying predicates since C++98,
+and someone proposed to make it undefined \em{now} for stylistic or philosophical reasons,
+they would be laughed out of the room.
+
+\h3{But algorithms are too under-specified to permit modification!}
+
+Consider the following example:
+
+\cppblock{
+std::vector<int> v(42, 0);
+std::ranges::find_if(v, [](int& i) { i = 1; return true; });
+}
+
+\tcode{find_if} is simply stated to return the first iterator
+for which the predicate returns \tcode{true}.
+It does not specify that the algorithm is "lazy" and immediately returns
+upon a \tcode{true} result,
+and it does not specify in which order the elements are traversed.
+Therefore, it is unspecified how many \tcode{0} elements have been turned into \tcode{1},
+and in what order.
+However, this is not a problem for this proposal for the following reasons:
+
+\ul{
+  \li{
+    The issue of algorithms being a bit under-specified is entirely pre-existing.
+    If you captured \tcode{&i} in a \tcode{vector<int*>} within the predicate,
+    you would also not know how large the \tcode{vector} is after running \tcode{find_if},
+    and would not know what the size of that \tcode{vector} is.
+  }
+  \li{
+    This under-specification still does not justify undefined behavior.
+    Each element that the predicate was invoked with is modified,
+    exactly as the user wrote.
+    It is strictly better to reason that \em{some} elements are modified (but we don't know which)
+    than for the behavior to be entirely undefined for no technical benefit.
+  }
+  \li{
+    To a large extent, this is a pre-existing quality-of-implementation issue.
+    It would be extremely surprising to the user
+    if the code above modified more than one \tcode{int}, but
+    it would also be extremely surprising if the predicate was invoked more than once,
+    with or without that modification.
+    Considering the vast amount of existing C++ code,
+    some of it probably assumes that e.g. \tcode{find_if} is lazy already.
+  }
+}
+
+\h3{But this makes algorithms harder to reason about!}
+
+Currently, we have the "guarantee" that \tcode{find_if} does not modify the range
+because the algorithm itself doesn't do that,
+and it would result in undefined behavior if the predicate did that.
+For instance, this would let you reason that \tcode{find_if} is \em{idempotent};
+that is, you can call it multiple times in a row on the same range and obtain the same iterator.
+
+However, the flaw in that reasoning lies in that undefined behavior.
+It is neither statically nor dynamically ensured by any implementation that predicates
+do not modify the elements passed into them,
+so at best, we can hope that users avoid modifying the range because they have read
+\eelis{algorithms.requirements#6}.
+In reality, there is no strict guarantee at all,
+only hopes and recommendations.
+
+Furthermore, we do not lose any of these guarantees as long as the predicate does not modify the range.
+If so, \tcode{find_if} remains idempotent, as it has been.
+We are merely widening the contract of \tcode{find_if} at no cost to implementations.
 
 \h2{Impact on implementations}
 
@@ -349,7 +481,7 @@ template<input_iterator I, sentinel_for<I> S, class Proj = identity,
          \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
   constexpr bool ranges::all_of(I first, S last, Pred pred, Proj proj = {});
 template<input_range R, class Proj = identity,
-         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
   constexpr bool ranges::all_of(R&& r, Pred pred, Proj proj = {});
 }
 \itemdescr{
@@ -394,7 +526,7 @@ template<input_iterator I, sentinel_for<I> S, class Proj = identity,
          \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
   constexpr bool ranges::any_of(I first, S last, Pred pred, Proj proj = {});
 template<input_range R, class Proj = identity,
-         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
   constexpr bool ranges::any_of(R&& r, Pred pred, Proj proj = {});
 }
 \itemdescr{
@@ -439,7 +571,7 @@ template<input_iterator I, sentinel_for<I> S, class Proj = identity,
          \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<I, Proj>> Pred>
   constexpr bool ranges::none_of(I first, S last, Pred pred, Proj proj = {});
 template<input_range R, class Proj = identity,
-         \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
+         \del{indirect_unary_predicate} \ins{\exposid{indirect-unary-test}}<projected<iterator_t<R>, Proj>> Pred>
   constexpr bool ranges::none_of(R&& r, Pred pred, Proj proj = {});
 }
 \itemdescr{

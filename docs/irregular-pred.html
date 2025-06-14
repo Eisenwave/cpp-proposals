@@ -1526,8 +1526,8 @@ ins-block .para::before {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3734R0>P3734R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-13</tt-></dd>
-    <dt>Audience:</dt>        <dd>LWG</dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-14</tt-></dd>
+    <dt>Audience:</dt>        <dd>SG9</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
     <dt>GitHub Issue:</dt>    <dd><a href=https://wg21%2elink/P3734/github class=sans>wg21.link/P3734/github</a></dd>
@@ -1555,48 +1555,56 @@ These constraints should be relaxed.
 <div class=toc-num data-level=2>2</div>
 <a href=#motivation><h2>Motivation</h2></a>
 <div class=toc-num data-level=2>3</div>
-<a href=#impact-on-implementations><h2>Impact on implementations</h2></a>
+<a href=#design-discussion><h2>Design discussion</h2></a>
+<div class=toc-num data-level=3>3.1</div>
+<a href=#but-its-bad-practice-to-modify-the-range-in-><h3>But it's bad practice to modify the range in <code><h- data-h=id>find_if</h-></code>!</h3></a>
+<div class=toc-num data-level=3>3.2</div>
+<a href=#but-algorithms-are-too-under-specified-to-permit-modification><h3>But algorithms are too under-specified to permit modification!</h3></a>
+<div class=toc-num data-level=3>3.3</div>
+<a href=#but-this-makes-algorithms-harder-to-reason-about><h3>But this makes algorithms harder to reason about!</h3></a>
 <div class=toc-num data-level=2>4</div>
-<a href=#impact-on-existing-code><h2>Impact on existing code</h2></a>
+<a href=#impact-on-implementations><h2>Impact on implementations</h2></a>
 <div class=toc-num data-level=2>5</div>
-<a href=#impact-on-the-standard><h2>Impact on the standard</h2></a>
+<a href=#impact-on-existing-code><h2>Impact on existing code</h2></a>
 <div class=toc-num data-level=2>6</div>
-<a href=#wording><h2>Wording</h2></a>
-<div class=toc-num data-level=3>6.1</div>
-<a href=#algorithms%2erequirements><h3>[algorithms.requirements]</h3></a>
-<div class=toc-num data-level=3>6.2</div>
-<a href=#indirectcallable%2eindirectinvocable><h3>[indirectcallable.indirectinvocable]</h3></a>
-<div class=toc-num data-level=3>6.3</div>
-<a href=#alg%2eeq%2eind%2ecmp><h3>[alg.eq.ind.cmp]</h3></a>
-<div class=toc-num data-level=3>6.4</div>
-<a href=#alg%2eall%2eof><h3>[alg.all.of]</h3></a>
-<div class=toc-num data-level=3>6.5</div>
-<a href=#alg%2eany%2eof><h3>[alg.any.of]</h3></a>
-<div class=toc-num data-level=3>6.6</div>
-<a href=#alg%2enone%2eof><h3>[alg.none.of]</h3></a>
-<div class=toc-num data-level=3>6.7</div>
-<a href=#alg%2efind><h3>[alg.find]</h3></a>
-<div class=toc-num data-level=3>6.8</div>
-<a href=#alg%2efind%2elast><h3>[alg.find.last]</h3></a>
-<div class=toc-num data-level=3>6.9</div>
-<a href=#alg%2ecount><h3>[alg.count]</h3></a>
-<div class=toc-num data-level=3>6.10</div>
-<a href=#alg%2emismatch><h3>[alg.mismatch]</h3></a>
-<div class=toc-num data-level=3>6.11</div>
-<a href=#alg%2eequal><h3>[alg.equal]</h3></a>
-<div class=toc-num data-level=3>6.12</div>
-<a href=#alg%2estarts%2ewith><h3>[alg.starts.with]</h3></a>
-<div class=toc-num data-level=3>6.13</div>
-<a href=#alg%2eends%2ewith><h3>[alg.ends.with]</h3></a>
-<div class=toc-num data-level=3>6.14</div>
-<a href=#alg%2ecopy><h3>[alg.copy]</h3></a>
-<div class=toc-num data-level=3>6.15</div>
-<a href=#alg%2ereplace><h3>[alg.replace]</h3></a>
-<div class=toc-num data-level=3>6.16</div>
-<a href=#alg%2eremove><h3>[alg.remove]</h3></a>
-<div class=toc-num data-level=3>6.17</div>
-<a href=#alg%2epartitions><h3>[alg.partitions]</h3></a>
+<a href=#impact-on-the-standard><h2>Impact on the standard</h2></a>
 <div class=toc-num data-level=2>7</div>
+<a href=#wording><h2>Wording</h2></a>
+<div class=toc-num data-level=3>7.1</div>
+<a href=#algorithms%2erequirements><h3>[algorithms.requirements]</h3></a>
+<div class=toc-num data-level=3>7.2</div>
+<a href=#indirectcallable%2eindirectinvocable><h3>[indirectcallable.indirectinvocable]</h3></a>
+<div class=toc-num data-level=3>7.3</div>
+<a href=#alg%2eeq%2eind%2ecmp><h3>[alg.eq.ind.cmp]</h3></a>
+<div class=toc-num data-level=3>7.4</div>
+<a href=#alg%2eall%2eof><h3>[alg.all.of]</h3></a>
+<div class=toc-num data-level=3>7.5</div>
+<a href=#alg%2eany%2eof><h3>[alg.any.of]</h3></a>
+<div class=toc-num data-level=3>7.6</div>
+<a href=#alg%2enone%2eof><h3>[alg.none.of]</h3></a>
+<div class=toc-num data-level=3>7.7</div>
+<a href=#alg%2efind><h3>[alg.find]</h3></a>
+<div class=toc-num data-level=3>7.8</div>
+<a href=#alg%2efind%2elast><h3>[alg.find.last]</h3></a>
+<div class=toc-num data-level=3>7.9</div>
+<a href=#alg%2ecount><h3>[alg.count]</h3></a>
+<div class=toc-num data-level=3>7.10</div>
+<a href=#alg%2emismatch><h3>[alg.mismatch]</h3></a>
+<div class=toc-num data-level=3>7.11</div>
+<a href=#alg%2eequal><h3>[alg.equal]</h3></a>
+<div class=toc-num data-level=3>7.12</div>
+<a href=#alg%2estarts%2ewith><h3>[alg.starts.with]</h3></a>
+<div class=toc-num data-level=3>7.13</div>
+<a href=#alg%2eends%2ewith><h3>[alg.ends.with]</h3></a>
+<div class=toc-num data-level=3>7.14</div>
+<a href=#alg%2ecopy><h3>[alg.copy]</h3></a>
+<div class=toc-num data-level=3>7.15</div>
+<a href=#alg%2ereplace><h3>[alg.replace]</h3></a>
+<div class=toc-num data-level=3>7.16</div>
+<a href=#alg%2eremove><h3>[alg.remove]</h3></a>
+<div class=toc-num data-level=3>7.17</div>
+<a href=#alg%2epartitions><h3>[alg.partitions]</h3></a>
+<div class=toc-num data-level=2>8</div>
 <a href=#references><h2>References</h2></a>
 </div>
 
@@ -1605,7 +1613,8 @@ These constraints should be relaxed.
 <p>Consider the following function,
 which transform a string such as <code><h- data-h=str_dlim>"</h-><h- data-h=str>abc //def</h-><h- data-h=str_dlim>"</h-></code> into <code><h- data-h=str_dlim>"</h-><h- data-h=str>abc-def</h-><h- data-h=str_dlim>"</h-></code>:
 </p>
-<code-block><h- data-h=kw_type>bool</h-> <h- data-h=id>allowed_in_id</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+<example-block><p><intro-></intro-> 
+</p><code-block><h- data-h=kw_type>bool</h-> <h- data-h=id>allowed_in_id</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>&lt;=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>z</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
@@ -1619,6 +1628,7 @@ which transform a string such as <code><h- data-h=str_dlim>"</h-><h- data-h=str>
     <h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>id</h-><h- data-h=sym_op>.</h-><h- data-h=id>erase</h-><h- data-h=sym_par>(</h-><h- data-h=id>removed_range</h-><h- data-h=sym_op>.</h-><h- data-h=id>begin</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>removed_range</h-><h- data-h=sym_op>.</h-><h- data-h=id>end</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
+</example-block>
 
 <p>Such code is perfectly reasonable; it allows us to transform a range and remove some of its
 elements in a single pass,
@@ -1701,9 +1711,135 @@ so who cares if <code><h- data-h=id>p</h-></code> modifies an element?
 <h2 id=motivation><a class=para href=#motivation></a>2. Motivation</h2>
 
 <p>We should relax these requirements because they are of no benefit to the implementation,
-and they render the behavior of useful code undefined by technicality. 
+and they render the behavior of useful code undefined by technicality.
+A useful example for the modifying algorithms has already been presented in <a href=#introduction>§1. Introduction</a>.
 </p>
-<h2 id=impact-on-implementations><a class=para href=#impact-on-implementations></a>3. Impact on implementations</h2>
+<p>Even in the case of non-modifying algorithms,
+modification is useful.
+</p>
+<example-block><p><intro-></intro-> 
+The following code has undefined behavior, even in a single-threaded environment:
+</p><code-block><h- data-h=kw>struct</h-> <h- data-h=id>Resource</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=id>data</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>mutex</h-> <h- data-h=id>m</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=kw_type>int</h-> <h- data-h=id>get</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>scoped_lock</h-> <h- data-h=id>lock</h-><h- data-h=sym_brac>{</h-><h- data-h=id>m</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>data</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw_type>bool</h-> <h- data-h=id>contains_nonzero</h-><h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>span</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>Resource</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>resources</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>any_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>resources</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=id>Resource</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>r</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>r</h-><h- data-h=sym_op>.</h-><h- data-h=id>get</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>!=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>This use of <code><h- data-h=id>any_of</h-></code> may seem innocuous,
+but it would violate the semantic requirements of <a href=https://eel%2eis/c++draft/concept%2epredicate>[concept.predicate]</a>
+if the arguments to the function object are modified,
+and locking a mutex may be a modification.
+</p></example-block>
+
+<p>We can imagine similar examples with result of computations
+being cached inside <code><h- data-h=id>Resource</h-></code>, etc.
+Any reasonable user should expect this code to work,
+rather than having undefined behavior based on some gotcha.
+With the current restrictions,
+we make many algorithms useless for a wide variety of use cases.
+This is antithetical to the purpose of any standard library.
+</p>
+<h2 id=design-discussion><a class=para href=#design-discussion></a>3. Design discussion</h2>
+
+<p>While the proposal does no more than getting rid of an unnecessary technicality
+by which some algorithm uses are undefined behavior,
+it is still a fairly significant change.
+Notably, it would even allow the range to be modified within non-modifying
+algorithms like <code><h- data-h=id>find_if</h-></code>, and it's not obvious whether that would be okay or desirable.
+The following subsections address these concerns.
+</p>
+<h3 id=but-its-bad-practice-to-modify-the-range-in-><a class=para href=#but-its-bad-practice-to-modify-the-range-in-></a>3.1. But it's bad practice to modify the range in <code><h- data-h=id>find_if</h-></code>!</h3>
+
+<p>It could be argued that modifying elements within the predicate is bad practice,
+at least for algorithms that are non-modifying.
+I actually agree with this,
+and don't feel like there is much motivation to allow this.
+However, there is quite a bit of motivation for allowing modification in algorithms
+that are already modifying, like <code><h- data-h=id>remove_if</h-></code>.
+</p>
+<p>Also, it is not the job of WG21 to police what is "good practice"
+and "bad practice" by making things undefined behavior.
+CppCoreGuidelines and other style guides can police things just fine.
+Even if the predicate modifies the elements it's called with,
+that is of no consequence to how <code><h- data-h=id>find_if</h-></code> operates,
+and by that logic, it shouldn't be undefined.
+</p>
+<p>We should also be cautious of status-quo bias.
+If <code><h- data-h=id>find_if</h-></code> was well-defined for modifying predicates since C++98,
+and someone proposed to make it undefined <em>now</em> for stylistic or philosophical reasons,
+they would be laughed out of the room.
+</p>
+<h3 id=but-algorithms-are-too-under-specified-to-permit-modification><a class=para href=#but-algorithms-are-too-under-specified-to-permit-modification></a>3.2. But algorithms are too under-specified to permit modification!</h3>
+
+<p>Consider the following example:
+</p>
+<code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>vector</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>(</h-><h- data-h=num>42</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>find_if</h-><h- data-h=sym_par>(</h-><h- data-h=id>v</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=bool>true</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p><code><h- data-h=id>find_if</h-></code> is simply stated to return the first iterator
+for which the predicate returns <code><h- data-h=bool>true</h-></code>.
+It does not specify that the algorithm is "lazy" and immediately returns
+upon a <code><h- data-h=bool>true</h-></code> result,
+and it does not specify in which order the elements are traversed.
+Therefore, it is unspecified how many <code><h- data-h=num>0</h-></code> elements have been turned into <code><h- data-h=num>1</h-></code>,
+and in what order.
+However, this is not a problem for this proposal for the following reasons:
+</p>
+<ul>
+  <li>
+    The issue of algorithms being a bit under-specified is entirely pre-existing.
+    If you captured <code><h- data-h=sym_op>&amp;</h-><h- data-h=id>i</h-></code> in a <code><h- data-h=id>vector</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-><h- data-h=sym_op>&gt;</h-></code> within the predicate,
+    you would also not know how large the <code><h- data-h=id>vector</h-></code> is after running <code><h- data-h=id>find_if</h-></code>,
+    and would not know what the size of that <code><h- data-h=id>vector</h-></code> is.
+  </li>
+  <li>
+    This under-specification still does not justify undefined behavior.
+    Each element that the predicate was invoked with is modified,
+    exactly as the user wrote.
+    It is strictly better to reason that <em>some</em> elements are modified (but we don't know which)
+    than for the behavior to be entirely undefined for no technical benefit.
+  </li>
+  <li>
+    To a large extent, this is a pre-existing quality-of-implementation issue.
+    It would be extremely surprising to the user
+    if the code above modified more than one <code><h- data-h=kw_type>int</h-></code>, but
+    it would also be extremely surprising if the predicate was invoked more than once,
+    with or without that modification.
+    Considering the vast amount of existing C++ code,
+    some of it probably assumes that e.g. <code><h- data-h=id>find_if</h-></code> is lazy already.
+  </li>
+</ul>
+
+<h3 id=but-this-makes-algorithms-harder-to-reason-about><a class=para href=#but-this-makes-algorithms-harder-to-reason-about></a>3.3. But this makes algorithms harder to reason about!</h3>
+
+<p>Currently, we have the "guarantee" that <code><h- data-h=id>find_if</h-></code> does not modify the range
+because the algorithm itself doesn't do that,
+and it would result in undefined behavior if the predicate did that.
+For instance, this would let you reason that <code><h- data-h=id>find_if</h-></code> is <em>idempotent</em>;
+that is, you can call it multiple times in a row on the same range and obtain the same iterator.
+</p>
+<p>However, the flaw in that reasoning lies in that undefined behavior.
+It is neither statically nor dynamically ensured by any implementation that predicates
+do not modify the elements passed into them,
+so at best, we can hope that users avoid modifying the range because they have read
+<a href=https://eel%2eis/c++draft/algorithms%2erequirements#6>[algorithms.requirements] paragraph 6</a>.
+In reality, there is no strict guarantee at all,
+only hopes and recommendations.
+</p>
+<p>Furthermore, we do not lose any of these guarantees as long as the predicate does not modify the range.
+If so, <code><h- data-h=id>find_if</h-></code> remains idempotent, as it has been.
+We are merely widening the contract of <code><h- data-h=id>find_if</h-></code> at no cost to implementations.
+</p>
+<h2 id=impact-on-implementations><a class=para href=#impact-on-implementations></a>4. Impact on implementations</h2>
 
 <p>The only change is that in some places,
 standard concepts are swapped out for exposition-only concepts which only differ
@@ -1717,11 +1853,11 @@ for internal documentation purposes,
 but any existing implementation already complies because
 semantic requirements of concepts are not checked.
 </p>
-<h2 id=impact-on-existing-code><a class=para href=#impact-on-existing-code></a>4. Impact on existing code</h2>
+<h2 id=impact-on-existing-code><a class=para href=#impact-on-existing-code></a>5. Impact on existing code</h2>
 
 <p>Code with undefined behavior may become well-defined. 😃</p>
 
-<h2 id=impact-on-the-standard><a class=para href=#impact-on-the-standard></a>5. Impact on the standard</h2>
+<h2 id=impact-on-the-standard><a class=para href=#impact-on-the-standard></a>6. Impact on the standard</h2>
 
 <p>Only algorithms that apply predicates exactly once per element are affected.
 This includes both modifying algorithms like <code><h- data-h=id>remove_if</h-></code>
@@ -1739,7 +1875,7 @@ Although the predicate is not even applied once per element,
 if the predicate modifies the range,
 this could retroactively violate the <i>Preconditions</i> that the input range is partitioned.
 </p>
-<h2 id=wording><a class=para href=#wording></a>6. Wording</h2>
+<h2 id=wording><a class=para href=#wording></a>7. Wording</h2>
 
 <p>All changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
@@ -1911,7 +2047,7 @@ are satisfied (but not modeled) by the same types. — <i>end note</i>]</wg21-bl
          <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>I</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>all_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>I</h-> <h- data-h=id>first</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>S</h-> <h- data-h=id>last</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>input_range</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>Proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>identity</h-><h- data-h=sym_punc>,</h->
-         <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
+         <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>all_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>R</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>r</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 <div class=indent>
 <p>1
@@ -1954,7 +2090,7 @@ At most <code><h- data-h=id>last</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>fir
          <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>I</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>any_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>I</h-> <h- data-h=id>first</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>S</h-> <h- data-h=id>last</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>input_range</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>Proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>identity</h-><h- data-h=sym_punc>,</h->
-         <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
+         <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>any_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>R</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>r</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 <div class=indent>
 <p>1
@@ -1997,7 +2133,7 @@ At most <code><h- data-h=id>last</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>fir
          <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>I</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>none_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>I</h-> <h- data-h=id>first</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>S</h-> <h- data-h=id>last</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>input_range</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>Proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>identity</h-><h- data-h=sym_punc>,</h->
-         <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
+         <del><h- data-h=id>indirect_unary_predicate</h-></del> <ins><i><h- data-h=id>indirect-unary-test</h-></i></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>projected</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>iterator_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-><h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>Pred</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>ranges</h-><h- data-h=sym_op>::</h-><h- data-h=id>none_of</h-><h- data-h=sym_par>(</h-><h- data-h=id>R</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>r</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Pred</h-> <h- data-h=id>pred</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Proj</h-> <h- data-h=id>proj</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 <div class=indent>
 <p>1
@@ -3192,7 +3328,7 @@ Exactly <code><h- data-h=id>last</h-> <h- data-h=sym_op>-</h-> <h- data-h=id>fir
 </p></div>
 </diff-block>
 
-<h2 id=references><a class=para href=#references></a>7. References</h2>
+<h2 id=references><a class=para href=#references></a>8. References</h2>
 
 
 
