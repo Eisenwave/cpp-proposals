@@ -12,6 +12,8 @@
 \macro[\tcode]{\code[cpp]{\put}}
 \macro[\grammarterm]{\gterm{\put}}
 \macro[\header{...}]{\code[cpp]{\hl[string]{<\put>}}}
+\macro[\cv]{\exposid{cv}}
+\macro[\seebelow]{\exposid{see below}}
 
 \macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
 \macro[\itemdescr]{\Bindent{\paragraphs{\put}}}
