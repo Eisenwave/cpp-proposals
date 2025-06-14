@@ -19,8 +19,8 @@
     title = Last chance to fix \tcode{std::nontype}
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{D3740R0}}
-    \dt{Date:}            \dd{\tt{2025-06-12}}
+    \dt{Document number:} \dd{\docnum{P3740R0}}
+    \dt{Date:}            \dd{\tt{2025-06-14}}
     \dt{Audience:}        \dd{LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -201,6 +201,27 @@ int func(int);
 std::function_ref<int(int)> r = {
   std::stateless,
   [](int x) { return func(x); }
+};
+}}
+}
+
+\tr{
+\td{\codeblock[cpp,borders=no]{
+// construction from member
+struct S { int x; };
+
+std::function_ref<int(S)> r
+  = std::nontype<&S::x>;
+
+//
+}}
+\td{\codeblock[cpp,borders=no]{
+// construction from member
+struct S { int x; };
+
+std::function_ref<int(S)> r = {
+  std::stateless,
+  [](S s) { return s.x; }
 };
 }}
 }
@@ -476,6 +497,16 @@ and is definitely something that we could do for C++26.
 In \ref[#wording], both the wording for \ref[#proposed-solution]
 and for \ref[#renaming-nontype] is presented.
 
+\h2{Implementation experience}
+
+\ref[#proposed-solution] has been implemented at \ref[GitHub].
+This was done by forking the existing reference implementation of \ref[P0792R14].
+
+No issues whatsoever were encountered in the process;
+either solution provides the same functionality for the most part,
+although \tcode{std::nontype} does provide more direct support for function pointers
+and member pointers.
+
 \h2{Wording}
 
 \macro[\black_comment]{\hl[sym-punc]{//}\serif{\i{\hl[sym-punc]{ \put}}}}
@@ -497,7 +528,7 @@ In \eelis{version.syn}, update the feature-test macro:
 }
 
 In \eelis{utility.syn},
-delete the declaration of \tcode{nontype_t} and \tcode{nontype}.
+delete the declarations of \tcode{nontype_t} and \tcode{nontype}.
 
 \Bdel{
 \itemdecl{
@@ -925,6 +956,13 @@ template<auto f, class T>
   author = Bengt Gustafsson,
   link = https://wg21.link/p3312r1,
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+]
+\bib[
+  id = GitHub,
+  title = Reference implementation of std::function_ref with std::stateless,
+  date = 2025-06-14,
+  author = Jan Schultke,
+  link = https://github.com/Eisenwave/nontype_functional
 ]
 
 \make-bib
