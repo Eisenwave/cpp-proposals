@@ -125,6 +125,13 @@ Author: Jan Schultke
 
 - [Latest](n-algorithms.html)
 
+### P3740: Last chance to fix `std::nontype`
+
+**Status**: Active<br>
+**Audience**: LEWG
+
+- [Latest](nontype.html)
+
 ## Inactive
 
 ### P3087: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
