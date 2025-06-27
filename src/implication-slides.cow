@@ -34,11 +34,11 @@ li>ul {
 }
 
 \wg21-head[
-    title = Slides for P2971R3 \br No implication for C++
+    title = Slides against P2971R3 \br No implication for C++
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{PXXXX}}
-    \dt{Date:}            \dd{\tt{2025-06-18}}
+    \dt{Document number:} \dd{\docnum{P3736R0}}
+    \dt{Date:}            \dd{\tt{2025-06-27}}
     \dt{Audience:}        \dd{EWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
