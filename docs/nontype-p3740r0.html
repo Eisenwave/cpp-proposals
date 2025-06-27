@@ -1539,12 +1539,11 @@ ins-block .para::before {
 <p><div class=wg21-head><h1>Last chance to fix <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h1>
 
 <dl>
-    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3740R1>P3740R1</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-20</tt-></dd>
+    <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3740R0>P3740R0</a></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-14</tt-></dd>
     <dt>Audience:</dt>        <dd>LEWG</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
-    <dt>Co-authors:</dt>      <dd>Bronek Kozicki &lt;<a href=mailto:brok@incorrekt%2ecom class=sans>brok@incorrekt.com</a>&gt;</dd>
     <dt>GitHub Issue:</dt>    <dd><a href=https://wg21%2elink/P3740/github class=sans>wg21.link/P3740/github</a></dd>
     <dt>Source:</dt>          <dd><a href=https://github%2ecom/Eisenwave/cpp-proposals/blob/master/src/nontype%2ecow class=sans>github.com/Eisenwave/cpp-proposals/blob/master/src/nontype.cow</a></dd>
 </dl>
@@ -1559,33 +1558,38 @@ and its name has become a bad choice now that C++26 no longer replaced the term
 "non-type template parameter",
 with "constant template parameter".
 </p></abstract-block>
+
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
 <div class=toc><div class=toc-num data-level=2>1</div>
-<a href=#revision-history><h2>Revision history</h2></a>
-<div class=toc-num data-level=3>1.1</div>
-<a href=#changes-since-r0><h3>Changes since R0</h3></a>
-<div class=toc-num data-level=2>2</div>
 <a href=#introduction><h2>Introduction</h2></a>
-<div class=toc-num data-level=3>2.1</div>
+<div class=toc-num data-level=3>1.1</div>
 <a href=#why-did-we-need-nontype><h3>Why did we need a new <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> type?</h3></a>
-<div class=toc-num data-level=3>2.2</div>
+<div class=toc-num data-level=3>1.2</div>
 <a href=#nontype-refresher><h3>Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</h3></a>
+<div class=toc-num data-level=2>2</div>
+<a href=#proposed-solution><h2>Proposed solution</h2></a>
+<div class=toc-num data-level=3>2.1</div>
+<a href=#comparison-with-std::nontype><h3>Comparison with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3></a>
+<div class=toc-num data-level=4>2.1.1</div>
+<a href=#note-on-free-function-ergonomics><h4>Note on free function ergonomics</h4></a>
+<div class=toc-num data-level=3>2.2</div>
+<a href=#stateless-misuse><h3>Possible misuse of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code></h3></a>
+<div class=toc-num data-level=3>2.3</div>
+<a href=#advantages-over-nontype><h3>Advantages compared to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3></a>
 <div class=toc-num data-level=2>3</div>
-<a href=#options-considered><h2>Options considered</h2></a>
+<a href=#alternatives-considered><h2>Alternatives considered</h2></a>
 <div class=toc-num data-level=3>3.1</div>
-<a href=#stateless><h3>Using a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> constructor tag instead</h3></a>
-<div class=toc-num data-level=3>3.2</div>
 <a href=#removing-std::nontype-with-no-replacement-revisiting-for-c29><h3>Removing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with no replacement, revisiting for C++29</h3></a>
-<div class=toc-num data-level=3>3.3</div>
+<div class=toc-num data-level=3>3.2</div>
 <a href=#waiting-for-constexpr-function-parameters><h3>Waiting for <code><h- data-h=kw>constexpr</h-></code> function parameters</h3></a>
+<div class=toc-num data-level=3>3.3</div>
+<a href=#replacing-std::nontype-with-std::constant_wrapper><h3>Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></h3></a>
 <div class=toc-num data-level=3>3.4</div>
-<a href=#using-constant-wrapper><h3>Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></h3></a>
-<div class=toc-num data-level=3>3.5</div>
 <a href=#exposing-the-boundentitytype><h3>Exposing the <tt-><i><h- data-h=id>BoundEntityType</h-></i></tt-></h3></a>
-<div class=toc-num data-level=3>3.6</div>
+<div class=toc-num data-level=3>3.5</div>
 <a href=#renaming-nontype><h3>Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3></a>
-<div class=toc-num data-level=3>3.7</div>
+<div class=toc-num data-level=3>3.6</div>
 <a href=#conclusion><h3>Conclusion</h3></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#implementation-experience><h2>Implementation experience</h2></a>
@@ -1593,20 +1597,8 @@ with "constant template parameter".
 <a href=#wording><h2>Wording</h2></a>
 <div class=toc-num data-level=3>5.1</div>
 <a href=#wording-option-proposed><h3>
-  Option A — Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>
+  Option A — Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> tag
 </h3></a>
-<div class=toc-num data-level=4>5.1.1</div>
-<a href=#version%2esyn><h4>[version.syn]</h4></a>
-<div class=toc-num data-level=4>5.1.2</div>
-<a href=#utility%2esyn><h4>[utility.syn]</h4></a>
-<div class=toc-num data-level=4>5.1.3</div>
-<a href=#func%2ewrap%2efunc-std::function><h4>[func.wrap.func] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function</h-></code></h4></a>
-<div class=toc-num data-level=4>5.1.4</div>
-<a href=#func%2ewrap%2emove-std::move_only_function><h4>[func.wrap.move] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code></h4></a>
-<div class=toc-num data-level=4>5.1.5</div>
-<a href=#func%2ewrap%2ecopy-std::copyable_function><h4>[func.wrap.copy] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>copyable_function</h-></code></h4></a>
-<div class=toc-num data-level=4>5.1.6</div>
-<a href=#func%2ewrap%2eref-std::function_ref><h4>[func.wrap.ref] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code></h4></a>
 <div class=toc-num data-level=3>5.2</div>
 <a href=#wording-option-rename><h3>
   Option B — Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_arg</h-></code>
@@ -1615,22 +1607,7 @@ with "constant template parameter".
 <a href=#references><h2>References</h2></a>
 </div>
 
-<h2 id=revision-history><a class=para href=#revision-history></a>1. Revision history</h2>
-
-<h3 id=changes-since-r0><a class=para href=#changes-since-r0></a>1.1. Changes since R0</h3>
-
-<ul>
-  <li>
-    abandoned the use of a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> constructor tag,
-    as it became apparent that this approach has little chance of finding consensus  
-  </li>
-  <li>
-    instead investigated feasibility of using <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> instead of
-    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>, with proposed wording for that approach
-  </li>
-</ul>
-
-<h2 id=introduction><a class=para href=#introduction></a>2. Introduction</h2>
+<h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
 <p><a href="https://wg21%2elink/p2472r3">[P2472R3]</a> proposed additional overloads for the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>
 constructor which utilize a helper type <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>.
@@ -1657,7 +1634,7 @@ and the corresponding variable template is called <code><h- data-h=id>std</h-><h
 This document refers to the feature as a whole as <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>.
 </p></note-block>
 
-<h3 id=why-did-we-need-nontype><a class=para href=#why-did-we-need-nontype></a>2.1. Why did we need a new <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> type?</h3>
+<h3 id=why-did-we-need-nontype><a class=para href=#why-did-we-need-nontype></a>1.1. Why did we need a new <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> type?</h3>
 
 <p>An obvious question may be why the existing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral_constant</h-></code>
 cannot be used instead.
@@ -1669,7 +1646,7 @@ This has multiple reasons:
   which produces friction with the other constructors.</li>
 </ul>
 
-<h3 id=nontype-refresher><a class=para href=#nontype-refresher></a>2.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</h3>
+<h3 id=nontype-refresher><a class=para href=#nontype-refresher></a>1.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</h3>
 
 <p><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is used only within constructors of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>:
 </p>
@@ -1683,7 +1660,7 @@ This has multiple reasons:
 <p>Intuitively, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> is the C++ counterpart to the C idiom of passing
 <code><h- data-h=kw_type>void</h-><h- data-h=sym_op>*</h-></code> and a function pointer which that <code><h- data-h=kw_type>void</h-><h- data-h=sym_op>*</h-></code> is fed into,
 as seen in <code><h- data-h=id>qsort</h-></code>.
-It is common practice to provide a null pointer to <code><h- data-h=id>qsort</h-></code>
+It is extremely common practice to provide a null pointer to <code><h- data-h=id>qsort</h-></code>
 and thus rely on a "capture-less" comparison.
 </p>
 <p>With <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> can support such use "capture-less" uses:
@@ -1708,30 +1685,7 @@ At best, we could store function pointer within <tt-><i><h- data-h=id>bound-enti
 and call that function pointer from within <tt-><i><h- data-h=id>bound-entity</h-></i></tt->.
 This would introduce entirely unnecessary overhead.
 </p>
-<p>Besides overhead, we need <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> constructors to make a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>
-which has the functionality provided by a lambda,
-but does not reference any specific lambda.
-This is crucial for being able to store <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> somewhere long-term
-without paying attention to the lifetime of the callable type it has been initialized with.
-</p>
-<h2 id=options-considered><a class=para href=#options-considered></a>3. Options considered</h2>
-
-<p>Besides the proposed approach,
-there are other possible solutions.
-However, the author position is that every one of them is worse than what is proposed.
-</p>
-<h3 id=stateless><a class=para href=#stateless></a>3.1. Using a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> constructor tag instead</h3>
-
-<important-block><p><intro-></intro-> 
-This approach was the author's proposed solution in R0.
-Despite not polling in LEWG on this issue,
-it was readily apparent that the room had no appetite for this change in direction.
-In particular, the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> technique is less verbose at the call site,
-which convinced multiple attendees that it would be the superior approach.
-</p>
-<p>A more detailed discussion and proposed wording for this approach can be found
-in R0 of this paper.
-</p></important-block>
+<h2 id=proposed-solution><a class=para href=#proposed-solution></a>2. Proposed solution</h2>
 
 <p>We can ditch <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> and obtain the functionality it provides in a different way.
 This would be very tempting because we don't have the dilemma of naming it right,
@@ -1739,7 +1693,7 @@ making it redundant with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h
 having a weird workaround that becomes obsolete with <code><h- data-h=kw>constexpr</h-></code> function parameters, etc.
 Instead, we can get the same functionality using a tagged constructor.
 </p>
-<p>The crucial observation in <a href=#nontype-refresher>§2.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a> is that the lambda we create for
+<p>The crucial observation in <a href=#nontype-refresher>§1.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a> is that the lambda we create for
 <tt-><i><h- data-h=id>thunk-ptr</h-></i></tt-> cannot capture the constructor parameters.
 However, that is not actually necessary if we only need the type of the parameter,
 not its identity.
@@ -1769,11 +1723,161 @@ Specifically, the tagged constructor would function like:
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Same idea, but bound-entity becomes addressof(obj):</h->
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>obj</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<h3 id=removing-std::nontype-with-no-replacement-revisiting-for-c29><a class=para href=#removing-std::nontype-with-no-replacement-revisiting-for-c29></a>3.2. Removing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with no replacement, revisiting for C++29</h3>
+<h3 id=comparison-with-std::nontype><a class=para href=#comparison-with-std::nontype></a>2.1. Comparison with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3>
+
+<style>
+  .tony-table {
+      margin-left: auto;
+      margin-right: auto;
+      min-width: 90%;
+      table-layout: fixed;
+  }
+  .tony-table td {
+      background-color: var(--deep-background-color);
+      width: 50%;
+      border: 1px solid var(--border-color);
+  }
+</style>
+
+<table class=tony-table>
+<tr><th><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></th><th><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code></th></tr>
+
+<tr>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from free function</h->
+<h- data-h=kw_type>int</h-> <h- data-h=id>func</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>func</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=cmt_dlim>//</h-></code-block></td>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from free function</h->
+<h- data-h=kw_type>int</h-> <h- data-h=id>func</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h->
+  <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=id>func</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block></td>
+</tr>
+
+<tr>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from member</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>S</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>S</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-><h- data-h=sym_op>&lt;</h-><h- data-h=sym_op>&amp;</h-><h- data-h=id>S</h-><h- data-h=sym_op>::</h-><h- data-h=id>x</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=cmt_dlim>//</h-></code-block></td>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from member</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>S</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>S</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h->
+  <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=id>S</h-> <h- data-h=id>s</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=id>s</h-><h- data-h=sym_op>.</h-><h- data-h=id>x</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block></td>
+</tr>
+
+<tr>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from stateless type</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>less</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block></td>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> construction from stateless type</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>less</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block></td>
+</tr>
+
+<tr>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> if we need a lambda anyway ...</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>vector</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>out</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=id>put</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=kw>auto</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>o</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>o</h-><h- data-h=sym_op>.</h-><h- data-h=id>push_back</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>void</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>consumer</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>put</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>out</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block></td>
+<td><code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> if we need a lambda anyway ...</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>vector</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>out</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=id>put</h->
+  <h- data-h=sym_op>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=kw>auto</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>o</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>o</h-><h- data-h=sym_op>.</h-><h- data-h=id>push_back</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>void</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>consumer</h->
+  <h- data-h=sym_brac>{</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>put</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>out</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block></td>
+</tr>
+
+</table>
+
+<h4 id=note-on-free-function-ergonomics><a class=para href=#note-on-free-function-ergonomics></a>2.1.1. Note on free function ergonomics</h4>
+
+<p>While the construction from a regular function seems much more verbose with tagged constructors,
+<a href="https://wg21%2elink/p3312r1">[P3312R1]</a> "Overload Set Types" could make this substantially more concise.
+Furthermore, it is common practice to create <code><h- data-h=mac>LIFT</h-></code> macros for this purpose,
+which would be used like:
+</p><code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h-> <h- data-h=mac>LIFT</h-><h- data-h=sym_par>(</h-><h- data-h=id>func</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>Since most standard library functions aren't addressable anyway,
+the ergonomics of creating a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> directly from a free function
+may not be that significant.
+In fact, it could be argued that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> encourages the user to write
+possibly-ill-formed code like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>sqrtf</h-><h- data-h=sym_op>&gt;</h-></code> by making it so frictionless.
+</p>
+<h3 id=stateless-misuse><a class=para href=#stateless-misuse></a>2.2. Possible misuse of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code></h3>
+
+<bug-block><p><intro-></intro-> 
+It is possible to misuse the proposed feature as follows:
+</p><code-block><h- data-h=kw_type>int</h-> <h- data-h=id>f</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>f</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+<p>This would invoke a value-constructed <code><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> when <code><h- data-h=id>r</h-></code> is called,
+resulting in undefined behavior.
+</p></bug-block>
+
+<p>This possible bug can be easily caught by adding deleted constructors though:
+</p><code-block><h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>auto</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>delete</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>auto</h-><h- data-h=sym_op>*</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>auto</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>delete</h-><h- data-h=sym_punc>;</h-></code-block>
+<p>An even better option would be to add <i>Mandates</i> specifications
+to the <code><h- data-h=id_type>stateless_t</h-></code> constructors which require that the given callable
+is not a function pointer type.
+Although none of these fixes prevent the user from writing this mistake,
+it can be caught statically with ease,
+rather than actually resulting in undefined behavior.
+</p>
+<h3 id=advantages-over-nontype><a class=para href=#advantages-over-nontype></a>2.3. Advantages compared to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3>
+
+<p>The proposed approach has several advantages:
+</p>
+<ul>
+  <li>
+    Providing tag types within constructors is a more well-established design
+    within the standard library.
+  </li>
+  <li>
+    The naming issue for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is eliminated completely.
+    While the tag also needs a good name,
+    we don't need to worry about conflicting with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>,
+    which seems harder to solve.
+  </li>
+  <li>
+    Potential user confusion over what the difference between <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>
+    and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> is,
+    and why the language needs both is,
+    is eliminated.
+  </li>
+  <li>
+    The design wouldn't feel immediately obsolete and deprecation-worthy
+    once/if we get <code><h- data-h=kw>constexpr</h-></code> function parameters (<a href="https://wg21%2elink/p1045r1">[P1045R1]</a>).
+    It is worth noting that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> does not require structural types,
+    so there may be niche use cases where it could be used and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> couldn't.
+  </li>
+</ul>
+
+<h2 id=alternatives-considered><a class=para href=#alternatives-considered></a>3. Alternatives considered</h2>
+
+<p>Besides the proposed approach,
+there are other possible solutions.
+However, the author position is that every one of them is worse than what is proposed.
+</p>
+<h3 id=removing-std::nontype-with-no-replacement-revisiting-for-c29><a class=para href=#removing-std::nontype-with-no-replacement-revisiting-for-c29></a>3.1. Removing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with no replacement, revisiting for C++29</h3>
 
 <p>Since there is a lot of active work in this area,
 perhaps we could simply shove <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> into C++29 and deal with the problem later.
-However, as demonstrated in <a href=#nontype-refresher>§2.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a>,
+However, as demonstrated in <a href=#nontype-refresher>§1.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a>,
 this helper type covers crucial use cases such as
 </p>
 <ul>
@@ -1788,7 +1892,7 @@ not a nice-to-have feature that can be ripped out.
 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> without these constructors would be akin
 to using containers without move semantics.
 </p>
-<h3 id=waiting-for-constexpr-function-parameters><a class=para href=#waiting-for-constexpr-function-parameters></a>3.3. Waiting for <code><h- data-h=kw>constexpr</h-></code> function parameters</h3>
+<h3 id=waiting-for-constexpr-function-parameters><a class=para href=#waiting-for-constexpr-function-parameters></a>3.2. Waiting for <code><h- data-h=kw>constexpr</h-></code> function parameters</h3>
 
 <p><code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>integral_constant</h-></code>, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>, and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>
 are – to an extent – temporary hacks.
@@ -1823,58 +1927,53 @@ and to deprecate <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h
 Overall, there is little reason to treat <code><h- data-h=kw>constexpr</h-></code> function parameters
 as a prerequisite; we don't need to wait.
 </p>
-<h3 id=using-constant-wrapper><a class=para href=#using-constant-wrapper></a>3.4. Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></h3>
+<h3 id=replacing-std::nontype-with-std::constant_wrapper><a class=para href=#replacing-std::nontype-with-std::constant_wrapper></a>3.3. Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></h3>
 
 <p>The seemingly obvious solution is to use <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> from <a href="https://wg21%2elink/p2781r8">[P2781R8]</a>.
 The option to use <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> as a replacement for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>
 was discussed during an LEWG telecon 2025-03-11.
-Major concerns have been raised at the time,
-but after gaining implementation experience,
-these have been addressed.
-In particular:
+</p>
+<p>Major concerns have been raised over the fact that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>
+is substantially more complex than <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>:
 </p><ul>
   <li>
-    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> already has a call operator
-    (which returns a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>)
-    and is convertible to its wrapped constant,
-    so this was suspected to cause issues in the constructor overload set or otherwise.
-    However, the other overloads taking <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> (now <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>)
-    would always win in overload resolution,
-    so the extra functionality is inconsequential.
+    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> has an <code><h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> already.
+    If we have, say, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>cw</h-><h- data-h=sym_op>&lt;</h-><h- data-h=sym_op>&amp;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-></code> made from some <code><h- data-h=kw_type>int</h-> <h- data-h=id>f</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>,
+    calling this wrapper would give us a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> convertible to <code><h- data-h=kw_type>int</h-></code>.
+    This means that it could also be passed into the constructor
+    of a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-></code> taking some callable type <code><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-></code>.
   </li>
   <li>
-    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> could be used with other
-    function wrappers (<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code> etc.) in some cases already (see below),
-    and its behavior would be inconsistent with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
-    We address this by adding corresponding overloads to other function wrapper constructors.
+    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> also has a user-defined conversion function
+    which returns the constant it wraps.
+    If it wraps a function pointer (and this is a desired use case for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>),
+    this would also make the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> constructor taking <code><h- data-h=id>F</h-><h- data-h=sym_op>*</h-></code>
+    (i.e. the function pointer constructor) a candidate.
+    However, that candidate would always lose in overload resolution,
+    so this is not a major concern.
+  </li>
+  <li>
+    <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> would only treated specially by <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>,
+    but due to the behavior described in the previous bullets,
+    it could also be passed into other "function wrappers" like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code>.
+    This could easily confuse users who may expect that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>
+    is a general mechanism for wrapping functions passed to such "function wrappers".
   </li>
 </ul>
 
-<example-block><p><intro-></intro-> 
-To illustrate the second point, the following code
-would compile without <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> being treated specially
-by <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code>.
-</p><code-block><h- data-h=kw>constexpr</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>f</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw_ctrl>return</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
-<h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>r</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>cw</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block>
-<p>This works because the type of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>cw</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-></code> has a call operator
-which returns <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>cw</h-><h- data-h=sym_op>&lt;</h-><h- data-h=num>0</h-><h- data-h=sym_op>&gt;</h-></code> in this case,
-which is convertible to <code><h- data-h=kw_type>int</h-></code>.
-</p></example-block>
-
-<p><b>Author position</b>:
-Considering that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is intended to wrap a constant,
-much like <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>.
-If this can be done with no major technical issues,
-it presumably <em>should</em> be done.
-However, if we do this, we have to add corresponding support for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>
-for other function wrappers so that the use of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>
-is not subtly different for different wrappers.
-Also, this can only be done now;
-adding support for that in C++29 risks altering the meaning of existing C++26 code which uses <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>.
+<p>However, even with these major concerns,
+it would not be <em>impossible</em> to use <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> for this.
+The <code><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-></code> and <code><h- data-h=id>F</h-><h- data-h=sym_op>*</h-></code> constructors should be losing in overload resolution anyway.
+Even if they didn't, the overload set could be modified to resolve ambiguity.
 </p>
-<h3 id=exposing-the-boundentitytype><a class=para href=#exposing-the-boundentitytype></a>3.5. Exposing the <tt-><i><h- data-h=id>BoundEntityType</h-></i></tt-></h3>
+<p><b>Author position</b>:
+Considering the call operator and user-defined conversion functions of
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_wrapper</h-></code>, the type is not a good fit for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>
+construction.
+</p>
+<h3 id=exposing-the-boundentitytype><a class=para href=#exposing-the-boundentitytype></a>3.4. Exposing the <tt-><i><h- data-h=id>BoundEntityType</h-></i></tt-></h3>
 
-<p>Remember the example in <a href=#nontype-refresher>§2.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a>.
+<p>Remember the example in <a href=#nontype-refresher>§1.2. Refresher on what <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> accomplishes</a>.
 Our end goal is to enable more possible constructions of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
 Technically, this could be done by ripping the implementation open and exposing its details:
 </p>
@@ -1893,7 +1992,7 @@ but this may also be a <code><h- data-h=kw>union</h-></code>, it may be multiple
 Exposing the <tt-><i><h- data-h=id>BoundEntityType</h-></i></tt-> to the user seems like a bad idea,
 and it would encourage writing code that is inadvertently not portable.
 </p>
-<h3 id=renaming-nontype><a class=para href=#renaming-nontype></a>3.6. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3>
+<h3 id=renaming-nontype><a class=para href=#renaming-nontype></a>3.5. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></h3>
 
 <p>Perhaps the most simple solution is to simply rename <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code>.
 However, no good candidate with high consensus has been presented yet,
@@ -1924,59 +2023,42 @@ Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nont
 and it's unlikely that any solution will make everyone happy.
 Of all the options, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_arg</h-></code> seems like the least bad candidate.
 </p>
-<h3 id=conclusion><a class=para href=#conclusion></a>3.7. Conclusion</h3>
+<h3 id=conclusion><a class=para href=#conclusion></a>3.6. Conclusion</h3>
 
 <p>Every alternative seems bad in its own way,
-but <a href=#using-constant-wrapper>§3.4. Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></a> seems most obvious,
-and <a href=#renaming-nontype>§3.6. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></a> seems least intrusive.
-These are definitely something that we could do for C++26.
+but <a href=#renaming-nontype>§3.5. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></a> seems least intrusive,
+and is definitely something that we could do for C++26.
 </p>
-<note-block><p><intro-></intro-> 
-In <a href=#wording>§5. Wording</a>, both the wording for <a href=#using-constant-wrapper>§3.4. Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></a>
-and for <a href=#renaming-nontype>§3.6. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></a> is presented.
-</p></note-block>
-
+<p>In <a href=#wording>§5. Wording</a>, both the wording for <a href=#proposed-solution>§2. Proposed solution</a>
+and for <a href=#renaming-nontype>§3.5. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></a> is presented.
+</p>
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>4. Implementation experience</h2>
 
-<p><a href=#renaming-nontype>§3.6. Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code></a> requires no implementation experience
-because it is merely changing the name of a symbol.
-</p>
-<p><a href=#using-constant-wrapper>§3.4. Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></a> was implemented at <a href="https://github%2ecom/MFHava/P2548/compare/master%2e%2e%2eBronek:P2548:bronek/with_constant_wrapper">[GitHub1]</a>.
+<p><a href=#proposed-solution>§2. Proposed solution</a> has been implemented at <a href="https://github%2ecom/Eisenwave/nontype_functional">[GitHub]</a>.
 This was done by forking the existing reference implementation of <a href="https://wg21%2elink/p0792r14">[P0792R14]</a>.
-This implementation already had <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function</h-></code>
-constructors taking <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> and has been thoroughly tested,
-which made it easy to verify that <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> could be used instead.
-A reference implementation for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>copyable_function</h-></code>
-was also tested for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code> integration in that repository.
 </p>
-<p><a href=#stateless>§3.1. Using a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> constructor tag instead</a> has been implemented at <a href="https://github%2ecom/Eisenwave/nontype_functional">[GitHub2]</a>.
-This was done by forking the existing reference implementation of <a href="https://wg21%2elink/p0792r14">[P0792R14]</a>.
+<p>No issues whatsoever were encountered in the process;
+either solution provides the same functionality for the most part,
+although <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> does provide more direct support for function pointers
+and member pointers.
 </p>
 <h2 id=wording><a class=para href=#wording></a>5. Wording</h2>
 
 
 
-<p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>
-with the changes in <a href="https://wg21%2elink/p2781r8">[P2781R8]</a> applied.
+<p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
 
 
 <h3 id=wording-option-proposed><a class=para href=#wording-option-proposed></a>5.1. 
-  Option A — Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code>
+  Option A — Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>stateless</h-></code> tag
 </h3>
-
-<h4 id=version.syn><a class=para href=#version%2esyn></a>5.1.1. [version.syn]</h4>
 
 <p>In <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a>, update the feature-test macro:
 </p>
 <diff-block>
-<code-block class=borderless><h- data-h=mac>#define __cpp_lib_copyable_function </h-><del><h- data-h=mac>202306L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac> </h-><h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> also in &lt;functional&gt;</h-></i></f-serif>
-<ins><h- data-h=mac>#define __cpp_lib_function 20XXXXL </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> also in &lt;functional&gt;</h-></ins>
-<h- data-h=mac>#define __cpp_lib_function_ref </h-><del><h- data-h=mac>202306L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac> </h-><h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> also in &lt;functional&gt;</h-></i></f-serif>
-<h- data-h=mac>#define __cpp_lib_move_only_function </h-><del><h- data-h=mac>202110L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac> </h-><h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> also in &lt;functional&gt;</h-></i></f-serif></code-block>
+<code-block class=borderless><h- data-h=mac>#define __cpp_lib_function_ref </h-><del><h- data-h=mac>202306L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac> </h-><h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> also in &lt;functional&gt;</h-></i></f-serif></code-block>
 </diff-block>
-
-<h4 id=utility.syn><a class=para href=#utility%2esyn></a>5.1.2. [utility.syn]</h4>
 
 <p>In <a href=https://eel%2eis/c++draft/utility%2esyn>[utility.syn]</a>,
 delete the declarations of <code><h- data-h=id_type>nontype_t</h-></code> and <code><h- data-h=id>nontype</h-></code>.
@@ -1990,178 +2072,15 @@ delete the declarations of <code><h- data-h=id_type>nontype_t</h-></code> and <c
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>nontype</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
 </del-block>
 
-<h4 id=func.wrap.func-std::function><a class=para href=#func%2ewrap%2efunc-std::function></a>5.1.3. [func.wrap.func] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function</h-></code></h4>
-
-<p>Change the synopsis in <a href=https://eel%2eis/c++draft/func%2ewrap%2efunc%2egeneral>[func.wrap.func.general]</a> as follows:
+<p>In its place, insert the following declaration:
 </p>
-<diff-block><code-block class=borderless><h- data-h=kw>namespace</h-> <h- data-h=id>std</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>ArgTypes</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>class</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>public</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=kw>using</h-> <h- data-h=id>result_type</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.func.con], construct/copy/destroy</h-></i></f-serif>
-    <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
-
-    <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>reference_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_op>~</h-><h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.func.mod], function modifiers</h-></i></f-serif>
-    <h- data-h=kw_type>void</h-> <h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=id>function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.func.cap], function capacity</h-></i></f-serif>
-    <h- data-h=kw>explicit</h-> <h- data-h=kw>operator</h-> <h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.func.inv], function invocation</h-></i></f-serif>
-    <h- data-h=id>R</h-> <h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.func.targ], function target access</h-></i></f-serif>
-    <h- data-h=kw>const</h-> <h- data-h=id>type_info</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>target_type</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->       <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>target</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>const</h-> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>target</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-
-  <ins><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[func.wrap.func.deduct] deduction guides</h-></f-serif></ins>
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>ArgTypes</h-><h- data-h=sym_op>&gt;</h->
-    <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-  <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></ins>
-<h- data-h=sym_brac>}</h-></code-block></diff-block>
-
-<p>Make the following changes; specific wording to be provided in the next revision:
-</p>
-<todo-block><p><intro-></intro-> 
-Provide specifications for new constructor overload set and for the deduction guides,
-with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is currently used in <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
-</p></todo-block>
-
-<h4 id=func.wrap.move-std::move_only_function><a class=para href=#func%2ewrap%2emove-std::move_only_function></a>5.1.4. [func.wrap.move] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move_only_function</h-></code></h4>
-
-<p>Change the synopsis in <a href=https://eel%2eis/c++draft/func%2ewrap%2efunc%2egeneral>[func.wrap.func.general]</a> as follows:
-</p>
-<diff-block><code-block class=borderless><h- data-h=kw>namespace</h-> <h- data-h=id>std</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>ArgTypes</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>class</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <i><h- data-h=id>cv</h-></i> <i><h- data-h=id>ref</h-></i> <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>noex</h-></i><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>public</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=kw>using</h-> <h- data-h=id>result_type</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.move.ctor], constructors, assignment, and destructor</h-></i></f-serif>
-    <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>explicit</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>in_place_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>explicit</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>in_place_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>initializer_list</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
-
-    <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_op>~</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> // [func.wrap.move.inv], invocation</h-></i></f-serif>
-    <h- data-h=kw>explicit</h-> <h- data-h=kw>operator</h-> <h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>R</h-> <h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <i><h- data-h=id>cv</h-></i> <i><h- data-h=id>ref</h-></i> <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>noex</h-></i><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> // [func.wrap.move.util], utility</h-></i></f-serif>
-    <h- data-h=kw_type>void</h-> <h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>void</h-> <h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>==</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>move_only_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-
-    <ins><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[func.wrap.move.deduct], deduction guides</h-></f-serif>
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></ins>
-
-  <h- data-h=kw>private</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>VT</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>static</h-> <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <i><h- data-h=id>is-callable-from</h-></i> <h- data-h=sym_op>=</h-> <i><h- data-h=id>see below</h-></i><h- data-h=sym_punc>;</h->       <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> exposition only</h-></i></f-serif>
-  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-></code-block></diff-block>
-
-<p>Make the following changes; specific wording to be provided in the next revision:
-</p>
-<todo-block><p><intro-></intro-> 
-Provide specifications for new constructor overload set and for the deduction guides,
-with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is currently used in <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
-</p></todo-block>
-
-<h4 id=func.wrap.copy-std::copyable_function><a class=para href=#func%2ewrap%2ecopy-std::copyable_function></a>5.1.5. [func.wrap.copy] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>copyable_function</h-></code></h4>
-
-<p>Change <a href=https://eel%2eis/c++draft/func%2ewrap%2ecopy%2eclass>[func.wrap.copy.class]</a>, as follows:
-</p>
-<diff-block><code-block class=borderless><h- data-h=kw>namespace</h-> <h- data-h=id>std</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>ArgTypes</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>class</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <i><h- data-h=id>cv</h-></i> <i><h- data-h=id>ref</h-></i> <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><i><h- data-h=id>noex</h-></i><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=kw>public</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=kw>using</h-> <h- data-h=id>result_type</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>R</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.copy.ctor], constructors, assignments, and destructors</h-></i></f-serif>
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>explicit</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>in_place_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-><h- data-h=sym_op>...</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>explicit</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>in_place_type_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>initializer_list</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
-
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_op>~</h-><h- data-h=id>copyable_function</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.copy.inv], invocation</h-></i></f-serif>
-    <h- data-h=kw>explicit</h-> <h- data-h=kw>operator</h-> <h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>const</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>R</h-> <h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>ArgTypes</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <h- data-h=id>cv</h-> <h- data-h=id>ref</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>noex</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-
-    <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.copy.util], utility</h-></i></f-serif>
-    <h- data-h=kw_type>void</h-> <h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>void</h-> <h- data-h=id>swap</h-><h- data-h=sym_par>(</h-><h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <h- data-h=kw_type>bool</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>==</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>copyable_function</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>nullptr_t</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-
-    <ins><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[func.wrap.copy.deduct], deduction guides</h-></f-serif>
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_par>(</h-><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></ins>
-
-  <h- data-h=kw>private</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>VT</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>static</h-> <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h-> <i><h- data-h=id>is-callable-from</h-></i> <h- data-h=sym_op>=</h-> <i><h- data-h=id>see below</h-></i><h- data-h=sym_punc>;</h->       <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> exposition only</h-></i></f-serif>
-  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-></code-block></diff-block>
-
-<p>Make the following changes; specific wording to be provided in the next revision:
-</p>
-<todo-block><p><intro-></intro-> 
-Provide specifications for new constructor overload set and for the deduction guides,
-with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> is currently used in <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
-</p></todo-block>
-
-<h4 id=func.wrap.ref-std::function_ref><a class=para href=#func%2ewrap%2eref-std::function_ref></a>5.1.6. [func.wrap.ref] <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code></h4>
+<ins-block>
+<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>stateless argument tag</h-></f-serif>
+<h- data-h=kw>struct</h-> <h- data-h=id_type>stateless_t</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=kw>explicit</h-> <h- data-h=id_type>stateless_t</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>inline</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id_type>stateless_t</h-> <h- data-h=id>stateless</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+</ins-block>
 
 <p>Change <a href=https://eel%2eis/c++draft/func%2ewrap%2eref%2eclass>[func.wrap.ref.class]</a>, as follows:
 </p>
@@ -2173,12 +2092,12 @@ with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::<
     <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.ref.ctor], constructors and assignment operators</h-></i></f-serif>
     <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
-    <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+    <del><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></del>
+    <ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
 
     <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>=</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
@@ -2198,10 +2117,10 @@ with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::<
   <h- data-h=sym_punc>//</h-><f-serif><i><h- data-h=sym_punc> [func.wrap.ref.deduct], deduction guides</h-></i></f-serif>
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h->
     <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id>F</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
-    <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+  <del><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
   <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-    <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></del>
 <h- data-h=sym_brac>}</h-></code-block>
 </diff-block>
 
@@ -2210,21 +2129,21 @@ with behavior analogous to how <code><h- data-h=id>std</h-><h- data-h=sym_op>::<
 
 
 <diff-block>
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><del><h- data-h=kw>auto</h-> <h- data-h=id>f</h-></del> <ins><h- data-h=kw>class</h-> <h- data-h=id>F</h-></ins><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-></del> <ins><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-></ins><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <div class=indent>
-<p>9
-Let <code><h- data-h=id>F</h-></code> be <code><del><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></ins></code>.
-</p>
+<p><del>9 Let <code><h- data-h=id>F</h-></code> be <code><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></code>.</del></p>
+
 <p>10
 <i>Constraints</i>:
-<code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>.
+<code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-><ins> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>is_default_constructible_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></ins></code> is <code><h- data-h=bool>true</h-></code>.
 </p>
 <p>11
 <i>Mandates</i>:
-If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>,
-then <code><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> is <code><h- data-h=bool>true</h-></code>.
-</p>
+<del>If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>,
+then <code><h- data-h=id>f</h-> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> is <code><h- data-h=bool>true</h-></code>.</del>
+<ins><code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>false</h-></code>.</ins></p>
+
 <p>12
 <i>Effects</i>:
 Initializes
@@ -2234,87 +2153,88 @@ null pointer value, and
 such that
 <code><i><h- data-h=id>thunk</h-></i><h- data-h=sym_par>(</h-><i><h- data-h=id>bound-entity</h-></i><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>
 is expression-equivalent (<a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a>) to
-<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
+<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>F</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></ins><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
 </p></div>
 
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>obj</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><del><h- data-h=kw>auto</h-> <h- data-h=id>f</h-></del> <ins><h- data-h=kw>class</h-> <h- data-h=id>F</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-></del> <ins><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>obj</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <div class=indent>
 <p>13
-Let <code><h- data-h=id>T</h-></code> be <code><h- data-h=id_type>remove_reference_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-></code> and
-<code><h- data-h=id>F</h-></code> be <code><del><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></ins></code>.
+Let <code><h- data-h=id>T</h-></code> be <code><h- data-h=id_type>remove_reference_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h-></code><del> and
+<code><h- data-h=id>F</h-></code> be <code><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></code></del>.
 </p>
 <p>14
 <i>Constraints</i>:
 </p><ul>
-  <li><code><h- data-h=id>is_rvalue_reference_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>false</h-></code>, and</li>
-  <li><code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>.</li>
+  <li><code><h- data-h=id>is_rvalue_reference_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>U</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>false</h-></code>,<del> and</del></li>
+  <li><code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code><del>.</del><ins>, and</ins></li>
+  <li><ins><code><h- data-h=id>is_default_constructible_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>.</ins></li>
 </ul>
 
 <p>15
 <i>Mandates</i>:
-If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>is</h-> <code><h- data-h=bool>true</h-></code><h- data-h=sym_punc>,</h->
-<h- data-h=id>then</h-> <code><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> <h- data-h=id>is</h-> <code><h- data-h=bool>true</h-></code><h- data-h=sym_op>.</h->
+<del>If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>,
+then <code><h- data-h=id>f</h-> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> is <code><h- data-h=bool>true</h-></code>.</del>
+<ins><code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>false</h-></code>.</ins></p>
 
-<h- data-h=num>16</h->
-<i><h- data-h=id>Effects</h-></i><h- data-h=sym_punc>:</h->
-<h- data-h=id>Initializes</h->
-<code><i><h- data-h=id>bound-entity</h-></i></code> <h- data-h=id>with</h-> <code><h- data-h=id>addressof</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-></code><h- data-h=sym_punc>,</h-> <h- data-h=kw>and</h->
-<code><i><h- data-h=id>thunk-ptr</h-></i></code> <h- data-h=id>with</h-> <h- data-h=id>the</h-> <h- data-h=id>address</h-> <h- data-h=id>of</h-> <h- data-h=id>a</h-> <h- data-h=id>function</h-> <code><i><h- data-h=id>thunk</h-></i></code>
-<h- data-h=id>such</h-> <h- data-h=id>that</h->
+<p>16
+<i>Effects</i>:
+Initializes
+<code><i><h- data-h=id>bound-entity</h-></i></code> with <code><h- data-h=id>addressof</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-></code>, and
+<code><i><h- data-h=id>thunk-ptr</h-></i></code> with the address of a function <code><i><h- data-h=id>thunk</h-></i></code>
+such that
 <code><i><h- data-h=id>thunk</h-></i><h- data-h=sym_par>(</h-><i><h- data-h=id>bound-entity</h-></i><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>
-<h- data-h=id>is</h-> <h- data-h=id>expression</h-><h- data-h=sym_op>-</h-><h- data-h=id>equivalent</h-> <h- data-h=sym_par>(</h-><a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a><h- data-h=sym_par>)</h-> <h- data-h=id>to</h->
-<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code><h- data-h=sym_op>.</h->
-</code>
+is expression-equivalent (<a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a>) to
+<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>F</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
 </p></div>
 
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>obj</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><del><h- data-h=kw>auto</h-> <h- data-h=id>f</h-></del> <ins><h- data-h=kw>class</h-> <h- data-h=id>F</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-></del> <ins><h- data-h=id_type>stateless_t</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>F</h-><h- data-h=sym_op>&amp;</h-></ins><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-> <h- data-h=id>obj</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <div class=indent>
-<p>17
-Let <code><h- data-h=id>F</h-></code> be <code><del><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></ins></code>.
-</p>
+<p><del>17
+Let <code><h- data-h=id>F</h-></code> be <code><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></code>.</del></p>
+
 <p>18
 <i>Constraints</i>:
-<code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>.
+<code><i><h- data-h=id>is-invocable-using</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>cv</h-></i> <h- data-h=id>T</h-><h- data-h=sym_op>*</h-><h- data-h=sym_op>&gt;</h-><ins> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=id>is_default_constructible_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></ins></code> is <code><h- data-h=bool>true</h-></code>.
 </p>
 <p>19
 <i>Mandates</i>:
-If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>is</h-> <code><h- data-h=bool>true</h-></code><h- data-h=sym_punc>,</h->
-<h- data-h=id>then</h-> <code><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> <h- data-h=id>is</h-> <code><h- data-h=bool>true</h-></code><h- data-h=sym_op>.</h->
+<del>If <code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>,
+then <code><h- data-h=id>f</h-> <h- data-h=sym_op>!=</h-> <h- data-h=null>nullptr</h-></code> is <code><h- data-h=bool>true</h-></code>.</del>
+<ins><code><h- data-h=id>is_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>||</h-> <h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>false</h-></code>.</ins></p>
 
-<h- data-h=num>20</h->
-<i><h- data-h=id>Preconditions</h-></i><h- data-h=sym_punc>:</h->
-<h- data-h=id>If</h-> <code><h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> <h- data-h=id>is</h-> <code><h- data-h=bool>true</h-></code><h- data-h=sym_punc>,</h->
-<code><h- data-h=id>obj</h-></code> <h- data-h=id>is</h-> <h- data-h=kw>not</h-> <h- data-h=id>a</h-> <h- data-h=id>null</h-> <h- data-h=id>pointer</h-><h- data-h=sym_op>.</h->
-
-<h- data-h=num>21</h->
-<i><h- data-h=id>Effects</h-></i><h- data-h=sym_punc>:</h->
-<h- data-h=id>Initializes</h->
-<code><i><h- data-h=id>bound-entity</h-></i></code> <h- data-h=id>with</h-> <code><h- data-h=id>obj</h-></code><h- data-h=sym_punc>,</h-> <h- data-h=kw>and</h->
-<code><i><h- data-h=id>thunk-ptr</h-></i></code> <h- data-h=id>with</h-> <h- data-h=id>the</h-> <h- data-h=id>address</h-> <h- data-h=id>of</h-> <h- data-h=id>a</h-> <h- data-h=id>function</h-> <code><i><h- data-h=id>thunk</h-></i></code>
-<h- data-h=id>such</h-> <h- data-h=id>that</h->
+<p>20
+<i>Preconditions</i>:
+If <code><h- data-h=id>is_member_pointer_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>F</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>,
+<code><h- data-h=id>obj</h-></code> is not a null pointer.
+</p>
+<p>21
+<i>Effects</i>:
+Initializes
+<code><i><h- data-h=id>bound-entity</h-></i></code> with <code><h- data-h=id>obj</h-></code>, and
+<code><i><h- data-h=id>thunk-ptr</h-></i></code> with the address of a function <code><i><h- data-h=id>thunk</h-></i></code>
+such that
 <code><i><h- data-h=id>thunk</h-></i><h- data-h=sym_par>(</h-><i><h- data-h=id>bound-entity</h-></i><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>
-<h- data-h=id>is</h-> <h- data-h=id>expression</h-><h- data-h=sym_op>-</h-><h- data-h=id>equivalent</h-> <h- data-h=sym_par>(</h-><a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a><h- data-h=sym_par>)</h-> <h- data-h=id>to</h->
-<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=id>obj</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code><h- data-h=sym_op>.</h->
-</code>
+is expression-equivalent (<a href=https://eel%2eis/c++draft/defns%2eexpression%2eequivalent>[defns.expression.equivalent]</a>) to
+<code><h- data-h=id>invoke_r</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><del><h- data-h=id>f</h-></del> <ins><h- data-h=id>F</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></ins><h- data-h=sym_punc>,</h-> <h- data-h=id>obj</h-><h- data-h=sym_punc>,</h-> <i><h- data-h=id>call-args</h-></i><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>.
 </p></div>
 </diff-block>
 
 <p>In <a href=https://eel%2eis/c++draft/func%2ewrap%2eref%2ededuct>[func.wrap.ref.deduct]</a>,
-change the deduction guides as follows:
+delete the following deduction guides:
 </p>
 
 
-<diff-block>
+<del-block>
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h->@<i><h- data-h=id>see below</h-></i>@&gt;;</code-block>
 
 <div class=indent>
 <p>2
-Let <code><h- data-h=id>F</h-></code> be <code><h- data-h=id_type>remove_pointer_t</h-><h- data-h=sym_op>&lt;</h-><del><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></ins><h- data-h=sym_op>&gt;</h-></code>.
+Let <code><h- data-h=id>F</h-></code> be <code><h- data-h=id_type>remove_pointer_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-></code>.
 </p>
 <p>3
 <i>Constraints</i>:
@@ -2326,11 +2246,11 @@ The deduced type is <code><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;<
 </p></div>
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><del><h- data-h=id_type>nontype_t</h-></del> <ins><h- data-h=id>constant_wrapper</h-></ins><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=id>function_ref</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>nontype_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&amp;&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>-&gt;</h-> <h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>see below</h-></i><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <div class=indent>
 <p>5
-Let <code><h- data-h=id>F</h-></code> be <code><del><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></del> <ins><h- data-h=id>constant_wrapper</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></ins></code>.
+Let <code><h- data-h=id>F</h-></code> be <code><h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>f</h-><h- data-h=sym_par>)</h-></code>.
 </p>
 <p>6
 <i>Constraints</i>:
@@ -2357,7 +2277,7 @@ let <code><h- data-h=id>R</h-></code> be <code><h- data-h=id_type>invoke_result_
 <i>Remarks</i>:
 The deduced type is <code><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=id>A</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>E</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-></code>.
 </p></div>
-</diff-block>
+</del-block>
 
 
 
@@ -2489,7 +2409,6 @@ replace every occurrence of <code><h- data-h=id_type>nontype_t</h-></code> with 
 
 
 
-
 <div class=bib><div id=bib-item-N5008 class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
 <span class=bib-author>Thomas Köppe.</span>
@@ -2525,13 +2444,8 @@ replace every occurrence of <code><h- data-h=id_type>nontype_t</h-></code> with 
 <span class=bib-author>Bengt Gustafsson.</span>
 <span class=bib-title>Overload Set Types</span>
 <span class=bib-date>2025-04-16</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3312r1%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf</a></div><div id=bib-item-GitHub1 class=bib-item>
-<a href="https://github%2ecom/MFHava/P2548/compare/master%2e%2e%2eBronek:P2548:bronek/with_constant_wrapper">[GitHub1]</a>
-<span class=bib-author>Bronek Kozicki.</span>
-<span class=bib-title>Reference implementation of function wrappers with std::constant_wrapper</span>
-<span class=bib-date>2025-06-19</span>
-<a href="https://github%2ecom/MFHava/P2548/compare/master%2e%2e%2eBronek:P2548:bronek/with_constant_wrapper" class=bib-link>https://github.com/MFHava/P2548/compare/master...Bronek:P2548:bronek/with_constant_wrapper</a></div><div id=bib-item-GitHub2 class=bib-item>
-<a href="https://github%2ecom/Eisenwave/nontype_functional">[GitHub2]</a>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3312r1%2epdf" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf</a></div><div id=bib-item-GitHub class=bib-item>
+<a href="https://github%2ecom/Eisenwave/nontype_functional">[GitHub]</a>
 <span class=bib-author>Jan Schultke.</span>
 <span class=bib-title>Reference implementation of std::function_ref with std::stateless</span>
 <span class=bib-date>2025-06-14</span>
