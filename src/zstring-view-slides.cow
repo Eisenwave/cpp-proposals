@@ -1,0 +1,119 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides against P3655R2
+\N{EM DASH}
+Concerns regarding \tcode{std::zstring_view}
+\footsep
+LEWG at Sofia 2025
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.075 * var(--sw)) !important;
+    font-size: 250%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P3655R2 \br Concerns regarding \tcode{std::zstring_view}
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{PXXXX}}
+    \dt{Date:}            \dd{\tt{2025-06-18}}
+    \dt{Audience:}        \dd{EWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/zstring-view-slides.cow]}
+}
+\hr
+\slide-controls
+}
+
+\slide{
+\html-h1{Concerns regarding \tcode{std::zstring_view}\br
+\html-span[id=docnum]{P3655R2}}
+}
+
+\slide{
+\slideh{Some obvious problems}
+
+\ul{
+  \li{we have a lot of string types already; \tcode{std::zstring_view} makes it worse:\ul{
+    \tcode{std::string}, \tcode{std::string_view}, \ins{\tcode{std::zstring_view},}
+    \tcode{std::u8string}, \tcode{std::u8string_view}, \ins{\tcode{std::u8zstring_view},} \N{HORIZONTAL ELLIPSIS}
+  }}
+  \li{\tcode{std::zstring_view} is a weird name with no precedent in C++ standard\ul{
+    \li{\tcode{std::cstring_view} probably better}
+  }}
+}
+}
+
+\slide{
+\slideh{P3655R2 lacks discussion of performance}
+
+\ul{
+  \li{Why not just \tcode{c_function(std::string(sv).c_str())}?\ul{
+    \li{for short strings, can also dump into local \tcode{char[N]}}
+    \li{C APIs usually either take short strings, or also take sizes}
+    \li{e.g. \tcode{fopen} takes short string, \tcode{fwrite} takes \tcode{size_t}}
+  }}
+  \li{\tcode{std::zstring_view} only makes sense if ...\ul{
+    \li{C API takes no \tcode{size_t}}
+    \li{function is called often enough to make "buffer spilling" in hot code}
+  }}
+  \li{\tcode{std::zstring_view} computes size, but does not pass to C API}
+}
+}
+
+\slide{
+\slideh{\tcode{std::zstring_view} is a viral annotation}
+
+Preserving null terminators is not easy:
+
+\cppblock{
+void c_api_wrapper(std::zstring_view s);
+
+const zstring_view config_source = /* ... */;
+map<string_view, string_view> config = json::parse(config_source);
+
+c_api_wrapper(config.at("file")); // error
+}
+
+\ul{
+  \li{\tcode{zstring_view} → \tcode{\del{z}string_view} → \tcode{zstring_view} → C API \N{CROSS MARK}}
+  \li{\tcode{zstring_view} → \tcode{\ins{z}string_view} → \tcode{zstring_view} → C API \N{WHITE HEAVY CHECK MARK}}
+}
+}
+
+\slide{
+\slideh{Suggestions to increase consensus}
+
+\ul{
+  \li{explore alternative solutions more\ul{
+    don't handwave performance issues, provide numbers
+  }}
+  \li{address viral annotation problems\ul{
+    how do existing libraries handle this?
+  }}
+  \li{\del{\tcode{std::zstring_view}} \ins{\tcode{std::cstring_view}} please}
+}
+}
