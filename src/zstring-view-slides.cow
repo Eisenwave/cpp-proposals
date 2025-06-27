@@ -6,7 +6,7 @@
 \macro[\slidefoot]{
 Jan Schultke
 \footsep
-Slides against P3655R2
+Slides in response to P3655R2
 \N{EM DASH}
 Concerns regarding \tcode{std::zstring_view}
 \footsep
@@ -34,11 +34,11 @@ li>ul {
 }
 
 \wg21-head[
-    title = Slides for P3655R2 \br Concerns regarding \tcode{std::zstring_view}
+    title = Slides in response to P3655R2 \br Concerns regarding \tcode{std::zstring_view}
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{PXXXX}}
-    \dt{Date:}            \dd{\tt{2025-06-18}}
+    \dt{Document number:} \dd{\docnum{P3749R0}}
+    \dt{Date:}            \dd{\tt{2025-06-27}}
     \dt{Audience:}        \dd{EWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
