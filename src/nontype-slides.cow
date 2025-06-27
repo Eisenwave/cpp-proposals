@@ -1,0 +1,175 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides for P3740R1
+\N{EM DASH}
+Last chance to fix \tcode{std::nontype}
+\footsep
+LEWG at Sofia 2025-06-20
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.075 * var(--sw)) !important;
+    font-size: 250%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P3740R1 \br Last chance to fix \tcode{std::nontype}
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3753R1}}
+    \dt{Date:}            \dd{\tt{2025-06-20}}
+    \dt{Audience:}        \dd{LEWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/nontype-slides.cow]}
+}
+\hr
+\slide-controls
+}
+
+\slide{
+\html-h1{Last chance\br to fix \tcode{std::nontype}\br
+\html-span[id=docnum]{P3740R1}}
+}
+
+\slide{
+\slideh{Introduction}
+\ul{
+  \li{P2472R3 added \tcode{std::nontype} constructors for \tcode{std::function_ref}}
+  \li{merged into P0792R14, plenary-approved Varna 2023 for C++26}
+  \li{\tcode{std::nontype} possibly obsoleted by \tcode{std::constant_wrapper} (P2781R9)\ul{
+    \li{Wording review completed by LWG}
+  }}
+  \li{"non-type template parameter" term was removed by P2841R1 (C++26)}
+}
+\html-h3{Conclusion}
+
+History is messy.
+\tcode{std::nontype} may be a bad feature now,
+or at least have a terrible name.
+}
+
+\slide{
+\slideh{\tcode{std::function_ref} refresher}
+
+\tcode{std::function_ref} is a "function wrapper"
+similar to \tcode{std::function}, \tcode{std::move_only_function},
+\tcode{std::copyable_function}, but without ownership.
+
+\hr
+
+\tcode{std::function_ref<R(Args...) \exposid{cv} \exposid{noex}>} stores:
+\ul{
+  \li{\tcode{\exposid{bound-entity}} \N{EM DASH} \tcode{\exposid{BoundEntityType}} (basically a \tcode{\exposid{cv} void*})}
+  \li{\tcode{\exposid{thunk-ptr}} \N{EM DASH} \tcode{R(*)(\exposid{BoundEntityType}, Args...) \exposid{noex}}}
+}
+
+\Bnote{
+For illustration purposes, we'll ignore \tcode{\exposid{cv}}, \tcode{\exposid{noex}}, \tcode{invoke}.
+}
+}
+
+\slide{
+\slideh{\tcode{std::nontype} in \tcode{std::function_ref}}
+
+\cppblock{
+template<class F>         function_ref(F*);
+template<class F>         function_ref(F&&);
+template<auto f>          function_ref(nontype_t<f>);
+template<auto f, class U> function_ref(nontype_t<f>, U&&);
+template<auto f, class T> function_ref(nontype_t<f>, T*);
+}
+
+\cppblock{
+template<auto f>
+function_ref(nontype_t<f>) {
+  this->\exposid{bound-entity} = {};
+  this->\exposid{thunk-ptr} = [](\exposid{BoundEntityType}, Args&&... args) -> R {
+    return f(std::forward<Args&&>(args)...);
+  };
+}
+}
+}
+
+\slide{
+\slideh{With \tcode{std::constant_wrapper}}
+
+\cppblock{
+template<class F>         function_ref(F*);
+template<class F>         function_ref(F&&);
+template<auto f>          function_ref(constant_wrapper<f>);
+template<auto f, class U> function_ref(constant_wrapper<f>, U&&);
+template<auto f, class T> function_ref(constant_wrapper<f>, T*);
+}
+
+\cppblock{
+template<auto f>
+function_ref(constant_wrapper<f>) {
+  this->\exposid{bound-entity} = {};
+  this->\exposid{thunk-ptr} = [](\exposid{BoundEntityType}, Args&&... args) -> R
+  { return constant_wrapper<f>::value
+      (std::forward<Args&&>(args)...); };
+}
+}
+}
+
+\slide{
+\slideh{Alternatives considered}
+
+\ul{
+  \li{Low consensus:\ul{
+    \li{\tcode{std::stateless} constructor tag}
+    \li{remove \tcode{std::nontype}, revisit in C++29}
+    \li{wait for P1045R1 \tcode{constexpr} function parameters}
+    \li{expose the \tcode{\exposid{BoundEntityType}}}
+  }}
+  \li{Plausible:\ul{
+    \li{replace \tcode{std::nontype} with \tcode{std::constant_wrapper}}
+    \li{rename \tcode{std::nontype} (to \tcode{std::constant_arg})}
+  }}
+}
+}
+
+\slide{
+\slideh{\tcode{std::constant_wrapper} concerns}
+
+\tcode{std::cw<&free_function>} already behaves \em{much} like wrapped function:
+
+\ul{
+  \li{\tcode{F&&} and \tcode{F*} constructors are candidates\ul{
+    \li{not a problem, these lose in overload resolution}
+  }}
+  \li{danger of inconsistent behavior with \tcode{std::move_only_function} etc.}
+}
+
+\cppblock{
+constexpr int f() { return 0; }
+std::move_only_function<int()> r = std::cw<f>; // OK ?!
+}
+
+\ul{
+  \li{\b{Solution}: Provide corresponding overloads for \em{all} function wrappers.}
+  \li{\b{Urgency}: If done later, meaning of existing code sublty changed.}
+}
+}
