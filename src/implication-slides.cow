@@ -1,0 +1,158 @@
+\import{libwg21.cow}
+\import{libslides.cow}
+
+\macro[\footsep]{\N{EM SPACE}|\N{EM SPACE}}
+
+\macro[\slidefoot]{
+Jan Schultke
+\footsep
+Slides against P2971R3
+\N{EM DASH}
+No implication for C++
+\footsep
+EWG at Sofia 2025
+\footsep
+Slide \Vget[slidenum]
+}
+
+\style{
+section>h1 {
+    margin-top: calc(0.075 * var(--sw)) !important;
+    font-size: 250%;
+    text-align: center;
+}
+
+#docnum {
+    font-family: var(--sans-serif-family);
+    font-size: 80%;
+    font-weight: normal;
+}
+
+li>ul {
+    margin-top: 0;
+}
+}
+
+\wg21-head[
+    title = Slides for P2971R3 \br No implication for C++
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{PXXXX}}
+    \dt{Date:}            \dd{\tt{2025-06-18}}
+    \dt{Audience:}        \dd{EWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/implication-slides.cow]}
+}
+\hr
+\slide-controls
+}
+
+\slide{
+\html-h1{No implication for C++\br
+\html-span[id=docnum]{P2971R3}}
+}
+
+\slide{
+\slideh{Comparison}
+
+\style{
+#tony-table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    table-layout: fixed;
+    font-size: 90%;
+}
+#tony-table td {
+    background-color: var(--deep-background-color);
+    width: 50%;
+}
+}
+
+\table[id=tony-table]{
+\tr{
+    \th{Status quo}
+    \th{P29271R3}
+}
+\tr{
+\td{\codeblock[cpp,borders=no]{
+// from P2971R3:
+reference_type<D>
+ || destructible_type<D>;
+
+not x.has_value() || *x == *y;
+
+// Mine:
+p == nullptr || p->valid;
+}}
+\td{\codeblock[cpp,borders=no]{
+// from P2971R3:
+nonreference_type<D>
+  => destructible_type<D>;
+
+x.has_value() => *x == *y;
+
+// Mine:
+p != nullptr => p->valid;
+}}
+}
+}
+
+\ul{
+  \li{P29271R3 hinges on right side being \em{much} better, enough for new operator}
+  \li{that is obviously not the case}
+}
+}
+
+\slide{
+\slideh{Adding operators is costly}
+
+\ul{
+  \li{more ways to express same code}
+  \li{operator precedence rules to learn}
+  \li{teaching materials, compilers, tooling, etc.}
+  \li{valuable syntax space is lost forever\ul{
+    \li{\em{especially} '\tcode{=>}' could be used in the future (abbreviated lambdas?)}
+  }}
+  \li{smaller common subset with other languages}
+  \li{unlike \tcode{||}, \tcode{&&}, and \tcode{!}, no \tcode{or}, \tcode{and}, and \tcode{not}\ul{
+    \li{not realistic to add \tcode{\hl[keyword]{implies}}/\tcode{\hl[keyword]{impl}} alt. keyword}
+  }}
+}
+}
+
+\slide{
+\slideh{Confusing fold expressions}
+
+Given \tcode{(args => ...)}:
+\ul{
+  \li{for one-element pack, equivalent to \tcode{true => args}\ul{
+    \li{suggests that neutral element is \tcode{true}}
+  }}
+  \li{for zero-element pack, equivalent to \tcode{false}\ul{
+    \li{suggested by author for symmetry with \tcode{or}}
+  }}
+}
+
+\Bimp{
+This is not a problem worth solving.
+\tcode{and} and \tcode{or} do this much better already!
+}
+}
+
+\slide{
+\slideh{Implication invites bugs}
+
+\cppblock{
+// \serif{\tt{i} is equal or greater to \tt{0} \N{HORIZONTAL ELLIPSIS} or is it?}
+for (int i = 10; i => 0; --i) {
+  // \N{HORIZONTAL ELLIPSIS}
+}
+}
+
+\ul{
+  \li{currently: compiler error}
+  \li{after P2971R3: does the wrong thing}
+}
+}
