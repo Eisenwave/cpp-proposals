@@ -4,7 +4,7 @@
     title = Carry-less product: \tt{std::clmul}
 ]{
 \dl{
-    \dt{Document number:} \dd{\ref[https://wg21.link/P3642R1]{P3642R1}}
+    \dt{Document number:} \dd{\docnum{P3642R1}}
     \dt{Date:}            \dd{\tt{2025-06-03}}
     \dt{Audience:}        \dd{LEWGI, SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
@@ -19,23 +19,41 @@
 Add widening and non-widening carry-less multiplication functions.
 }
 
-\h2[listed=no]{Revision history}
+\h2[listed=no]{Contents}
 
-\h3[listed=no]{Changes since R0}
+\make-contents
+
+\h2{Revision history}
+
+\h3{Changes since R1}
+
+The paper was seen by SG6 at Sofia 2025
+with the following feedback:
+
+\Bquote{
+Bla bla no problems but add SIMD support.
+}
+
+The following changes were made:
+
+\ul{
+  \li{Dismiss SG6 recommendations in \ref[#simd]}
+  \li{Make \ref[#wording] and design in general independent of \ref[P3161R4]}
+  \li{Provide detailed design description for \ref[#widening]}
+  \li{Fix stray \tcode{U} type name in \ref[#wording]}
+}
+
+\h3{Changes since R0}
 
 \ul{
 \li{Generate the proposal using COWEL instead of bikeshed}
-\li{Fix incorrect formula in \ref[#proposed-wording] for bits \c{ge} the integer width}
+\li{Fix incorrect formula in \ref[#wording] for bits \c{ge} the integer width}
 \li{Fix \ref[#hardware-support] missing new VPCLMULQDQ instructions}
 \li{Fix improper uses of \tcode{std::unsigned_integral} in \ref[#introduction]}
 \li{Make slight editorial wording adjustments}
 \li{Rebase on \ref[N5008] and \ref[P3161R4]}
 \li{Mention \ref[SimdJsonClmul] in \ref[#motivation]}
 }
-
-\h2[listed=no]{Contents}
-
-\make-contents
 
 \h2{Introduction}
 
@@ -378,105 +396,130 @@ The (proposed) LLVM intrinsic function (\ref[LLVMClmul]) is tentatively named \t
 }
 }
 
-\h3{SIMD support}
+\h3[id=widening]{Widening operation}
 
-The proposal is currently limited to the scalar version of \tcode{clmul}.
-However, \header{simd} support may be useful to add,
-and would be backed by hardware support to an extent.
+In addition to the \tcode{std::clmul} function template,
+there exists a \tcode{std::clmul_wide} function template:
 
-\Bdecision{
-If LEWG approves, should decide whether \header{simd} support should be added in \em{this} paper,
-or in a separate paper, if at all.
-}
-
-\h2{Proposed wording}
-
-The proposed changes are relative to the working draft of the standard as of \ref[N5008],
-with the changes in \ref[P3161R4] applied.
-
-Update subclause \eelis{version.syn#2} as follows:
-
-\Bdiff{
-\itemdecl{
-#define __cpp_lib_clamp                             201603L // also in <algorithm>
-\ins{#define __cpp_lib_clmul                             20????L // also in <numeric>}
-\serif{\html{[...]}}
-#define __cpp_lib_overflow_arithmetic               \del{20????L} \ins{20????L} // also in <numeric>
-}
-}
-
-Update the synopsis in \eelis{numeric.ops.overview} as follows:
-
-\Bdiff{
-\itemdecl{
-template<class T, class U>
-  constexpr T saturate_cast(U x) noexcept;              // freestanding
-
+\cppblock{
 template<class T>
-struct add_carry_result {                               // freestanding
-  T low_bits;
-  bool overflow;
+struct mul_wide_result {
+    T low_bits;
+    T high_bits;
+    friend \exposid{synth-three-way-result}<T>
+      operator<=>(const mul_wide_result&, const mul_wide_result&) = default;
 };
 
 template<class T>
-using sub_borrow_result = add_carry_result;             // freestanding
-
-template<class T>
-struct mul_wide_result {                                // freestanding
-  T low_bits;
-  T high_bits;
-};
-
-template<class T>
-struct div_result {                                     // freestanding
-  T quotient;
-  T remainder;
-};
-
-template<class T>
-  constexpr add_carry_result<T>
-    add_carry(T x, T y, bool carry) noexcept;           // freestanding
-template<class T>
-  constexpr sub_borrow_result<T>
-    sub_borrow(T left, T right, bool borrow) noexcept;  // freestanding
-template<class T>
-  constexpr mul_wide_result<T>
-    mul_wide(T x, T y) noexcept;                        // freestanding
-\ins{template<class T>
-  constexpr mul_wide_result<T>
-    clmul_wide(T x, T y) noexcept;                      // freestanding}
-template<class T>
-  constexpr div_result<T>
-    div_wide(T dividend_high, T dividend_low,           // freestanding
-             T divisor ) noexcept;
-
-template<class T>
-  constexpr bool
-    is_div_defined(T dividend, T divisor) noexcept      // freestanding
-template<class T>
-  constexpr bool
-    is_div_wide_defined(T dividend_high,                // freestanding
-                        T dividend_low,
-                        T divisor) noexcept;
-
-\ins{
-// [numeric.clmul], carry-less product
-template<class T>
-  constexpr T clmul(T x, U y) noexcept;                 // freestanding
-}
-}
+constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
 }
 
-In subclause
-\eelis{numeric.overflow}
-(known as \eelis{numeric.sat} at the time of writing),
-insert the following item,
-immediately following the description of \tcode{mul_wide}:
+Such a widening function is important in a various cryptographic use cases.
+There is universal \ref[#hardware-support] for obtaining all 128 bits
+of a multiplication for that reason.
+
+Most of the design choices take the design of \ref[P3161R4] into consideration:
+
+\ul{
+  \li{
+    The result type is deliberately not named \tcode{clmul_wide_result}
+    so that a future \tcode{mul_wide} can use the same result type,
+    which eliminates an otherwise unnecessary type.
+  }
+  \li{
+    The \tcode{operator<=>} exists so that the result can be easily compared
+    against expected results in test cases,
+    can be used out of the box with \tcode{std::sort}, etc.
+  }
+  \li{
+    The \tcode{low_bits} appear before the \tcode{high_bits},
+    so that on the more widespread little-endian architectures,
+    the layout of the \tcode{struct} is identical to that of an integer,
+    which is slightly better for calling conventions.
+  }
+}
+
+\Bnote{
+It would not be possible to simply return an integer with twice the
+width of the input because it is not guaranteed that such a type exists,
+especially in the case of \tcode{unsigned long long} inputs.
+}
+
+\h3[id=simd]{SIMD support}
+
+Upon seeing this proposal at Sofia 2025,
+SG6 recommended to add SIMD support.
+This recommendation was provided under the assumption that it would be
+a simple addition in the style of \ref[P2933R4].
+Therefore, this proposal provides non-widening SIMD carry-less multiplication.
+
+\h4{SIMD widening operations are out of scope}
+
+AVX-512 provides a \tt{u64\N{MULTIPLICATION SIGN}4 \N{RIGHTWARDS ARROW} u128\N{MULTIPLICATION SIGN}4} operation,
+and there is currently no precedent for such widening operations in the SIMD library.
+Specifically, the VPCLMULQDQ instruction ignores one of each 64-bit pairs,
+and produces a 128-bit output for each such pair.
+
+It would take \em{considerable} design and wording effort to standardize this,
+especially if one wants to expose the full VPCLMULQDQ behavior,
+which allows choosing for each 64-bit integer pair,
+which of these integers is multiplied and which is ignored.
+
+It would be procedurally better if that design effort was part of
+\ref[P3161R4] (which proposes widening operations in general)
+or some follow-up proposal for SIMD widening operations specifically.
+For \tcode{std::clmul}, designing SIMD widening operations would be enormous scope creep.
+
+\h2[id=wording]{Proposed wording}
+
+The proposed changes are relative to the working draft of the standard as of \ref[N5008]:
+
+Change \eelis{version.syn#2} as follows:
 
 \Bins{
 \itemdecl{
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+#define __cpp_lib_clmul 20????L // \serif{also in <numeric>}
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+#define __cpp_lib_simd \del{????} \ins{20????L} // \serif{also in <simd>}
+}
+}
+
+\Bnote{
+We only bump \tcode{__cpp_lib_simd} without creating a new SIMD
+feature test macro because \ref[P2933R4] did the same.
+}
+
+Add the following declarations to the synopsis in \eelis{numeric.ops.overview},
+immediately following the declarations associated with \eelis{numeric.sat}:
+
+\Bins{
+\itemdecl{
+// \serif{[numeric.clmul], carry-less product}
 template<class T>
-   constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
+struct mul_wide_result {                                        // \serif{freestanding}
+  T low_bits;
+  T high_bits;
+  friend \exposid{synth-three-way-result}<T>
+    operator<=>(const mul_wide_result&, const mul_wide_result&) = default;
+};
+
+template<class T>
+  constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;   // \serif{freestanding}
+template<class T>
+  constexpr T clmul(T x, T y) noexcept;                         // \serif{freestanding}
+}
+}
+
+In subclause \eelis{numeric.ops},
+append a subclause immediately following \eelis{numeric.sat}:
+
+\Bins{
+\html-h3{Carry-less product \stable-ref{numeric.clmul}}
+
+\itemdecl{
+template<class T>
+  constexpr mul_wide_result<T> clmul_wide(T x, T y) noexcept;
 }
 \itemdescr{
 \macro[\alpha]{\N{GREEK SMALL LETTER ALPHA}}
@@ -499,58 +542,67 @@ is given by Formula \tt{?.?},
 and \mathvar{N} is the width of \tcode{T}.
 The result object is initialized so that
 \ul{
-\li{\tcode{low_bits} stores the \mathvar{N} least significant bits of \mathvar{c}, and}
-\li{\tcode{high_bits} stores the subsequent \mathvar{N} bits of \mathvar{c}.}
+  \li{\tcode{low_bits} stores the \mathvar{N} least significant bits of \mathvar{c}, and}
+  \li{\tcode{high_bits} stores the subsequent \mathvar{N} bits of \mathvar{c}.}
 }
 
 \style{
-math[display=block] {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 125%;
-}
+  math[display=block] {
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 125%;
+  }
 
-.formula-container {
-    position: relative;
-    width: 100%;
-}
+  .formula-container {
+      position: relative;
+      width: 100%;
+  }
 
-.formula-number {
-    position: absolute;
-    right: 0;
-    vertical-align: middle;
-    top: 50%;
-    transform: translate(0, -50%);
-}
+  .formula-number {
+      position: absolute;
+      right: 0;
+      vertical-align: middle;
+      top: 50%;
+      transform: translate(0, -50%);
+  }
 }
 
 \block{\html-div[class=formula-container]{
-\html-span[class=formula-number]{[FORMULA ?.?]}
-\mathblock{
-\mrow{
-    \msub{
+  \html-span[class=formula-number]{[FORMULA ?.?]}
+  \mathblock{
+    \mrow{
+      \msub{
         \mi{c}
         \mi{i}
-    }
-    \mo{=}
-    \munderover{
+      }
+      \mo{=}
+      \munderover{
         \mo{\N{N-ARY CIRCLED PLUS OPERATOR}}
         \mrow{\mi{j}\mo{=}\mn{0}}
         \mi{i}
-    }
-    \msub{\mi{x}\mi{j}}
-    \msub{
+      }
+      \msub{\mi{x}\mi{j}}
+      \msub{
         \mi{y}
         \mrow{
-            \mi{i}\mo{\N{MINUS SIGN}}\mi{j}
+          \mi{i}\mo{\N{MINUS SIGN}}\mi{j}
         }
+      }
     }
-}
-}
+  }
 }}
 
-} \comment{itemdescr}
-} \comment{insblock}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T clmul(T x, T y) noexcept;
+}
+\itemdescr{
+\effects
+Equivalent to \tcode{clmul_wide(x, y).low_bits}.
+}
+}
 
 \comment{Proof for math formula at https://godbolt.org/z/8YsnTGdvz}
 
@@ -580,23 +632,38 @@ c_i = \bigoplus_{j = 0}^i x_i y_{i - j}
 }}
 }
 
-In subclause \eelis{numeric.ops},
-append a subclause immediately following \eelis{numeric.overflow}
-(known as \eelis{numeric.sat} at the time of writing):
+Add the following declarations to the synopsis in \eelis{simd.syn},
+immediately following the declarations associated with \eelis{simd.bit}:
 
 \Bins{
-\html-h3{Carry-less product \stable-ref{numeric.clmul}}
+\itemdecl{
+// \serif{[simd.clmul], carry-less product}
+template<\exposid{simd-type} V>
+  constexpr V clmul(const V& v) noexcept;
+}
+}
+
+In subclause \eelis{simd},
+append a subclause immediately following \eelis{simd.bit}:
+
+\Bins{
+\html-h3{\tcode{basic_vec} carry-less product \stable-ref{simd.clmul}}
 
 \itemdecl{
-template<class T>
-   constexpr T clmul(T x, T y) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V clmul(const V& v) noexcept;
 }
-\itemdescr{
-\constraints
-\tcode{T} is an unsigned integer type (\eelis{basic.fundamental}).
 
+\itemdescr{
+\pnum
+\constraints
+The type \tcode{V::value_type} is an unsigned integer type\iref{basic.fundamental}.
+
+\pnum
 \returns
-\tcode{clmul_wide(x, y).low_bits} (\eelis{numeric.overflow}).
+A \tcode{basic_vec} object where the \math{\msup{\mi{i}\mtext{th}}} element is initialized
+to the result of \tcode{clmul(v[\math{\mi{i}}])}
+for all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}).
 }
 }
 
@@ -633,6 +700,14 @@ template<class T>
     author = Tiago Freire,
     link = https://wg21.link/p3161r4,
     long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html
+]
+\bib[
+    id = P2933R4,
+    title = Extend <bit> header function with overloads for std::simd,
+    date = 2025-02-13,
+    author = Daniel Towner\, Ruslan Arutyunyan,
+    link = https://wg21.link/p2933r4,
+    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2933r4.html
 ]
 \bib[
     id = BitPermutations,

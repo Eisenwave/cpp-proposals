@@ -1502,14 +1502,6 @@ if (theme !== null) {
 
 
 
-
-
-
-
-
-
-
-
 <style>
 ins-block .para::before {
     display: none;
@@ -1542,75 +1534,47 @@ ins-block .para::before {
 Add widening and non-widening carry-less multiplication functions.
 </p></abstract-block>
 
-<h2 id=contents><a class=para href=#contents></a>Contents</h2>
+<h2 id=revision-history><a class=para href=#revision-history></a>Revision history</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div>
-<a href=#revision-history><h2>Revision history</h2></a>
-<div class=toc-num data-level=3>1.1</div>
-<a href=#changes-since-r1><h3>Changes since R1</h3></a>
-<div class=toc-num data-level=3>1.2</div>
-<a href=#changes-since-r0><h3>Changes since R0</h3></a>
-<div class=toc-num data-level=2>2</div>
-<a href=#introduction><h2>Introduction</h2></a>
-<div class=toc-num data-level=2>3</div>
-<a href=#motivation><h2>Motivation</h2></a>
-<div class=toc-num data-level=3>3.1</div>
-<a href=#parity-computation-and-json-parsing><h3>Parity computation and JSON parsing</h3></a>
-<div class=toc-num data-level=3>3.2</div>
-<a href=#fast-space-filling-curves><h3>Fast space-filling curves</h3></a>
-<div class=toc-num data-level=2>4</div>
-<a href=#possible-implementation><h2>Possible implementation</h2></a>
-<div class=toc-num data-level=3>4.1</div>
-<a href=#hardware-support><h3>Hardware support</h3></a>
-<div class=toc-num data-level=2>5</div>
-<a href=#design-considerations><h2>Design considerations</h2></a>
-<div class=toc-num data-level=3>5.1</div>
-<a href=#naming><h3>Naming</h3></a>
-<div class=toc-num data-level=3>5.2</div>
-<a href=#widening><h3>Widening operation</h3></a>
-<div class=toc-num data-level=3>5.3</div>
-<a href=#simd><h3>SIMD support</h3></a>
-<div class=toc-num data-level=4>5.3.1</div>
-<a href=#simd-widening-operations-are-out-of-scope><h4>SIMD widening operations are out of scope</h4></a>
-<div class=toc-num data-level=2>6</div>
-<a href=#wording><h2>Proposed wording</h2></a>
-<div class=toc-num data-level=2>7</div>
-<a href=#references><h2>References</h2></a>
-</div>
-
-<h2 id=revision-history><a class=para href=#revision-history></a>1. Revision history</h2>
-
-<h3 id=changes-since-r1><a class=para href=#changes-since-r1></a>1.1. Changes since R1</h3>
-
-<p>The paper was seen by SG6 at Sofia 2025
-with the following feedback:
-</p>
-<blockquote>
-<p>Bla bla no problems but add SIMD support.
-</p></blockquote>
-
-<p>The following changes were made:
-</p>
-<ul>
-  <li>Dismiss SG6 recommendations in <a href=#simd>§5.3. SIMD support</a></li>
-  <li>Make <a href=#wording>§6. Proposed wording</a> and design in general independent of <a href="https://wg21%2elink/p3161r4">[P3161R4]</a></li>
-  <li>Provide detailed design description for <a href=#widening>§5.2. Widening operation</a></li>
-  <li>Fix stray <code><h- data-h=id>U</h-></code> type name in <a href=#wording>§6. Proposed wording</a></li>
-</ul>
-
-<h3 id=changes-since-r0><a class=para href=#changes-since-r0></a>1.2. Changes since R0</h3>
+<h3 id=changes-since-r0><a class=para href=#changes-since-r0></a>Changes since R0</h3>
 
 <ul>
 <li>Generate the proposal using COWEL instead of bikeshed</li>
-<li>Fix incorrect formula in <a href=#wording>§6. Proposed wording</a> for bits &ge; the integer width</li>
-<li>Fix <a href=#hardware-support>§4.1. Hardware support</a> missing new VPCLMULQDQ instructions</li>
-<li>Fix improper uses of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integral</h-></code> in <a href=#introduction>§2. Introduction</a></li>
+<li>Fix incorrect formula in <a href=#proposed-wording>§5. Proposed wording</a> for bits &ge; the integer width</li>
+<li>Fix <a href=#hardware-support>§3.1. Hardware support</a> missing new VPCLMULQDQ instructions</li>
+<li>Fix improper uses of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>unsigned_integral</h-></code> in <a href=#introduction>§1. Introduction</a></li>
 <li>Make slight editorial wording adjustments</li>
 <li>Rebase on <a href="https://wg21%2elink/N5008">[N5008]</a> and <a href="https://wg21%2elink/p3161r4">[P3161R4]</a></li>
-<li>Mention <a href="https://branchfree%2eorg/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">[SimdJsonClmul]</a> in <a href=#motivation>§3. Motivation</a></li>
+<li>Mention <a href="https://branchfree%2eorg/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">[SimdJsonClmul]</a> in <a href=#motivation>§2. Motivation</a></li>
 </ul>
 
-<h2 id=introduction><a class=para href=#introduction></a>2. Introduction</h2>
+<h2 id=contents><a class=para href=#contents></a>Contents</h2>
+
+<div class=toc><div class=toc-num data-level=2>1</div>
+<a href=#introduction><h2>Introduction</h2></a>
+<div class=toc-num data-level=2>2</div>
+<a href=#motivation><h2>Motivation</h2></a>
+<div class=toc-num data-level=3>2.1</div>
+<a href=#parity-computation-and-json-parsing><h3>Parity computation and JSON parsing</h3></a>
+<div class=toc-num data-level=3>2.2</div>
+<a href=#fast-space-filling-curves><h3>Fast space-filling curves</h3></a>
+<div class=toc-num data-level=2>3</div>
+<a href=#possible-implementation><h2>Possible implementation</h2></a>
+<div class=toc-num data-level=3>3.1</div>
+<a href=#hardware-support><h3>Hardware support</h3></a>
+<div class=toc-num data-level=2>4</div>
+<a href=#design-considerations><h2>Design considerations</h2></a>
+<div class=toc-num data-level=3>4.1</div>
+<a href=#naming><h3>Naming</h3></a>
+<div class=toc-num data-level=3>4.2</div>
+<a href=#simd-support><h3>SIMD support</h3></a>
+<div class=toc-num data-level=2>5</div>
+<a href=#proposed-wording><h2>Proposed wording</h2></a>
+<div class=toc-num data-level=2>6</div>
+<a href=#references><h2>References</h2></a>
+</div>
+
+<h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
 <p><a href=https://en%2ewikipedia%2eorg/wiki/Carry-less_product>Carry-less multiplication</a>
 is a simple numerical operation on unsigned integers.
@@ -1635,7 +1599,7 @@ two polynomials in GF(2), where each bit is a coefficient.
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
 <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<h2 id=motivation><a class=para href=#motivation></a>3. Motivation</h2>
+<h2 id=motivation><a class=para href=#motivation></a>2. Motivation</h2>
 
 <p>Carry-less multiplication is an important operation in a number of use cases:
 </p>
@@ -1669,7 +1633,7 @@ two polynomials in GF(2), where each bit is a coefficient.
 some dating back more than a decade.
 See below for motivating examples.
 </p>
-<h3 id=parity-computation-and-json-parsing><a class=para href=#parity-computation-and-json-parsing></a>3.1. Parity computation and JSON parsing</h3>
+<h3 id=parity-computation-and-json-parsing><a class=para href=#parity-computation-and-json-parsing></a>2.1. Parity computation and JSON parsing</h3>
 
 <p>The <dfn>parity</dfn> of an integer <code><h- data-h=id>x</h-></code> is <code><h- data-h=num>0</h-></code> if the number of one-bits is even,
 and <code><h- data-h=num>1</h-></code> if it is odd.
@@ -1700,7 +1664,7 @@ abc xxx <h- data-h=str_dlim>"</h-><h- data-h=str>foobar</h-><h- data-h=str_dlim>
 </pre>
 </example-block>
 
-<h3 id=fast-space-filling-curves><a class=para href=#fast-space-filling-curves></a>3.2. Fast space-filling curves</h3>
+<h3 id=fast-space-filling-curves><a class=para href=#fast-space-filling-curves></a>2.2. Fast space-filling curves</h3>
 
 <p>The special form <code><h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-></code> can be used to accelerate the computation of Hilbert curves.
 To properly understand this example, I will explain the basic notion of space-filling curves.
@@ -1792,7 +1756,7 @@ In the example above, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- d
 <a href="https://wg21%2elink/p3104r3">[P3104R3]</a>'s <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>bit_expand</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>55555555</h-><h- data-h=num_deco>u</h-><h- data-h=sym_par>)</h-></code>.
 </p></note-block>
 
-<h2 id=possible-implementation><a class=para href=#possible-implementation></a>4. Possible implementation</h2>
+<h2 id=possible-implementation><a class=para href=#possible-implementation></a>3. Possible implementation</h2>
 
 <p>A naive and unconstrained implementation looks as follows:
 </p><code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
@@ -1805,7 +1769,7 @@ In the example above, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- d
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>result</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
 
-<h3 id=hardware-support><a class=para href=#hardware-support></a>4.1. Hardware support</h3>
+<h3 id=hardware-support><a class=para href=#hardware-support></a>3.1. Hardware support</h3>
 
 <p>The implementation difficulty lies mostly in utilizing available hardware instructions,
 not in the naive fallback implementation.
@@ -1898,7 +1862,7 @@ A limited x86_64 implementation of <code><h- data-h=id>clmul_wide</h-></code> ma
 which would add an <tt->@llvm.clmul</tt-> intrinsic function.
 </p>
 
-<h2 id=design-considerations><a class=para href=#design-considerations></a>5. Design considerations</h2>
+<h2 id=design-considerations><a class=para href=#design-considerations></a>4. Design considerations</h2>
 
 <p>Multiple design choices lean on <a href="https://wg21%2elink/p0543r3">[P0543R3]</a> and <a href="https://wg21%2elink/p3161r4">[P3161R4]</a>.
 Specifically,
@@ -1911,7 +1875,7 @@ Specifically,
 <li>the decision to have a <code><h- data-h=sym_par>(</h-><h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_par>)</h-></code> parameter list.</li>
 </ul>
 
-<h3 id=naming><a class=para href=#naming></a>5.1. Naming</h3>
+<h3 id=naming><a class=para href=#naming></a>4.1. Naming</h3>
 
 <p>Carry-less multiplication is also commonly called "Galois Field Multiplication" or "Polynomial Multiplication".
 </p>
@@ -1935,123 +1899,100 @@ The (proposed) LLVM intrinsic function (<a href="https://github%2ecom/llvm/llvm-
 </li>
 </ul>
 
-<h3 id=widening><a class=para href=#widening></a>5.2. Widening operation</h3>
+<h3 id=simd-support><a class=para href=#simd-support></a>4.2. SIMD support</h3>
 
-<p>In addition to the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul</h-></code> function template,
-there exists a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul_wide</h-></code> function template:
+<p>The proposal is currently limited to the scalar version of <code><h- data-h=id>clmul</h-></code>.
+However, <code><h- data-h=str>&lt;simd&gt;</h-></code> support may be useful to add,
+and would be backed by hardware support to an extent.
 </p>
-<code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>struct</h-> <h- data-h=id>mul_wide_result</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw>friend</h-> <i><h- data-h=id>synth-three-way-result</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-      <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+<decision-block><p><intro-></intro-> 
+If LEWG approves, should decide whether <code><h- data-h=str>&lt;simd&gt;</h-></code> support should be added in <em>this</em> paper,
+or in a separate paper, if at all.
+</p></decision-block>
+
+<h2 id=proposed-wording><a class=para href=#proposed-wording></a>5. Proposed wording</h2>
+
+<p>The proposed changes are relative to the working draft of the standard as of <a href="https://wg21%2elink/N5008">[N5008]</a>,
+with the changes in <a href="https://wg21%2elink/p3161r4">[P3161R4]</a> applied.
+</p>
+<p>Update subclause <a href=https://eel%2eis/c++draft/version%2esyn#2>[version.syn] paragraph 2</a> as follows:
+</p>
+<diff-block>
+<code-block class=borderless><h- data-h=mac>#define __cpp_lib_clamp                             201603L </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> also in &lt;algorithm&gt;</h->
+<ins><h- data-h=mac>#define __cpp_lib_clmul                             20????L </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> also in &lt;numeric&gt;</h-></ins>
+<f-serif>[...]</f-serif>
+<h- data-h=mac>#define __cpp_lib_overflow_arithmetic               </h-><del><h- data-h=mac>20????L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20????L</h-></ins><h- data-h=mac> </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> also in &lt;numeric&gt;</h-></code-block>
+</diff-block>
+
+<p>Update the synopsis in <a href=https://eel%2eis/c++draft/numeric%2eops%2eoverview>[numeric.ops.overview]</a> as follows:
+</p>
+<diff-block>
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>class</h-> <h- data-h=id>U</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>saturate_cast</h-><h- data-h=sym_par>(</h-><h- data-h=id>U</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=kw>struct</h-> <h- data-h=id>add_carry_result</h-> <h- data-h=sym_brac>{</h->                               <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+  <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw_type>bool</h-> <h- data-h=id>overflow</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+<h- data-h=kw>using</h-> <h- data-h=id>sub_borrow_result</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>add_carry_result</h-><h- data-h=sym_punc>;</h->             <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
 
-<p>Such a widening function is important in a various cryptographic use cases.
-There is universal <a href=#hardware-support>§4.1. Hardware support</a> for obtaining all 128 bits
-of a multiplication for that reason.
-</p>
-<p>Most of the design choices take the design of <a href="https://wg21%2elink/p3161r4">[P3161R4]</a> into consideration:
-</p>
-<ul>
-  <li>
-    The result type is deliberately not named <code><h- data-h=id>clmul_wide_result</h-></code>
-    so that a future <code><h- data-h=id>mul_wide</h-></code> can use the same result type,
-    which eliminates an otherwise unnecessary type.
-  </li>
-  <li>
-    The <code><h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-></code> exists so that the result can be easily compared
-    against expected results in test cases,
-    can be used out of the box with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>sort</h-></code>, etc.
-  </li>
-  <li>
-    The <code><h- data-h=id>low_bits</h-></code> appear before the <code><h- data-h=id>high_bits</h-></code>,
-    so that on the more widespread little-endian architectures,
-    the layout of the <code><h- data-h=kw>struct</h-></code> is identical to that of an integer,
-    which is slightly better for calling conventions.
-  </li>
-</ul>
-
-<note-block><p><intro-></intro-> 
-It would not be possible to simply return an integer with twice the
-width of the input because it is not guaranteed that such a type exists,
-especially in the case of <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw_type>long</h-></code> inputs.
-</p></note-block>
-
-<h3 id=simd><a class=para href=#simd></a>5.3. SIMD support</h3>
-
-<p>Upon seeing this proposal at Sofia 2025,
-SG6 recommended to add SIMD support.
-This recommendation was provided under the assumption that it would be
-a simple addition in the style of <a href="https://wg21%2elink/p2933r4">[P2933R4]</a>.
-Therefore, this proposal provides non-widening SIMD carry-less multiplication.
-</p>
-<h4 id=simd-widening-operations-are-out-of-scope><a class=para href=#simd-widening-operations-are-out-of-scope></a>5.3.1. SIMD widening operations are out of scope</h4>
-
-<p>AVX-512 provides a <tt->u64×4 → u128×4</tt-> operation,
-and there is currently no precedent for such widening operations in the SIMD library.
-Specifically, the VPCLMULQDQ instruction ignores one of each 64-bit pairs,
-and produces a 128-bit output for each such pair.
-</p>
-<p>It would take <em>considerable</em> design and wording effort to standardize this,
-especially if one wants to expose the full VPCLMULQDQ behavior,
-which allows choosing for each 64-bit integer pair,
-which of these integers is multiplied and which is ignored.
-</p>
-<p>It would be procedurally better if that design effort was part of
-<a href="https://wg21%2elink/p3161r4">[P3161R4]</a> (which proposes widening operations in general)
-or some follow-up proposal for SIMD widening operations specifically.
-For <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul</h-></code>, designing SIMD widening operations would be enormous scope creep.
-</p>
-<h2 id=wording><a class=para href=#wording></a>6. Proposed wording</h2>
-
-<p>The proposed changes are relative to the working draft of the standard as of <a href="https://wg21%2elink/N5008">[N5008]</a>:
-</p>
-<p>Change <a href=https://eel%2eis/c++draft/version%2esyn#2>[version.syn] paragraph 2</a> as follows:
-</p>
-<ins-block>
-<code-block class=borderless>[…]
-<h- data-h=mac>#define __cpp_lib_clmul 20????L </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in &lt;numeric&gt;</h-></f-serif>
-[…]
-<h- data-h=mac>#define __cpp_lib_simd </h-><del><h- data-h=mac>????</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20????L</h-></ins><h- data-h=mac> </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in &lt;simd&gt;</h-></f-serif></code-block>
-</ins-block>
-
-<note-block><p><intro-></intro-> 
-We only bump <code><h- data-h=id>__cpp_lib_simd</h-></code> without creating a new SIMD
-feature test macro because <a href="https://wg21%2elink/p2933r4">[P2933R4]</a> did the same.
-</p></note-block>
-
-<p>Add the following declarations to the synopsis in <a href=https://eel%2eis/c++draft/numeric%2eops%2eoverview>[numeric.ops.overview]</a>,
-immediately following the declarations associated with <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
-</p>
-<ins-block>
-<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[numeric.clmul], carry-less product</h-></f-serif>
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>struct</h-> <h- data-h=id>mul_wide_result</h-> <h- data-h=sym_brac>{</h->                                        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding</h-></f-serif>
+<h- data-h=kw>struct</h-> <h- data-h=id>mul_wide_result</h-> <h- data-h=sym_brac>{</h->                                <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
   <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
   <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=kw>friend</h-> <i><h- data-h=id>synth-three-way-result</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-    <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding</h-></f-serif>
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->                         <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding</h-></f-serif></code-block>
-</ins-block>
+<h- data-h=kw>struct</h-> <h- data-h=id>div_result</h-> <h- data-h=sym_brac>{</h->                                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+  <h- data-h=id>T</h-> <h- data-h=id>quotient</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=id>T</h-> <h- data-h=id>remainder</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
-<p>In subclause <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
-append a subclause immediately following <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a>:
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>add_carry_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>add_carry</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>carry</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->           <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>sub_borrow_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>sub_borrow</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>left</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>right</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>bool</h-> <h- data-h=id>borrow</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>mul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->                        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+<ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->                      <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h-></ins>
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>div_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+    <h- data-h=id>div_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>dividend_high</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>dividend_low</h-><h- data-h=sym_punc>,</h->           <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+             <h- data-h=id>T</h-> <h- data-h=id>divisor</h-> <h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h->
+    <h- data-h=id>is_div_defined</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>dividend</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>divisor</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h->      <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h->
+    <h- data-h=id>is_div_wide_defined</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>dividend_high</h-><h- data-h=sym_punc>,</h->                <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+                        <h- data-h=id>T</h-> <h- data-h=id>dividend_low</h-><h- data-h=sym_punc>,</h->
+                        <h- data-h=id>T</h-> <h- data-h=id>divisor</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+
+<ins>
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> [numeric.clmul], carry-less product</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>U</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->                 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> freestanding</h->
+</ins></code-block>
+</diff-block>
+
+<p>In subclause
+<a href=https://eel%2eis/c++draft/numeric%2eoverflow>[numeric.overflow]</a>
+(known as <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a> at the time of writing),
+insert the following item,
+immediately following the description of <code><h- data-h=id>mul_wide</h-></code>:
 </p>
 <ins-block>
-<h3>Carry-less product <span class=stable-ref>[numeric.clmul]</span></h3>
-
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+   <h- data-h=kw>constexpr</h-> <h- data-h=id>mul_wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <div class=indent>
 
 
@@ -2073,65 +2014,58 @@ is given by Formula <tt->?.?</tt->,
 and <math display=inline><mi>N</mi></math> is the width of <code><h- data-h=id>T</h-></code>.
 The result object is initialized so that
 </p><ul>
-  <li><code><h- data-h=id>low_bits</h-></code> stores the <math display=inline><mi>N</mi></math> least significant bits of <math display=inline><mi>c</mi></math>, and</li>
-  <li><code><h- data-h=id>high_bits</h-></code> stores the subsequent <math display=inline><mi>N</mi></math> bits of <math display=inline><mi>c</mi></math>.</li>
+<li><code><h- data-h=id>low_bits</h-></code> stores the <math display=inline><mi>N</mi></math> least significant bits of <math display=inline><mi>c</mi></math>, and</li>
+<li><code><h- data-h=id>high_bits</h-></code> stores the subsequent <math display=inline><mi>N</mi></math> bits of <math display=inline><mi>c</mi></math>.</li>
 </ul>
 
 <style>
-  math[display=block] {
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 125%;
-  }
+math[display=block] {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 125%;
+}
 
-  .formula-container {
-      position: relative;
-      width: 100%;
-  }
+.formula-container {
+    position: relative;
+    width: 100%;
+}
 
-  .formula-number {
-      position: absolute;
-      right: 0;
-      vertical-align: middle;
-      top: 50%;
-      transform: translate(0, -50%);
-  }
+.formula-number {
+    position: absolute;
+    right: 0;
+    vertical-align: middle;
+    top: 50%;
+    transform: translate(0, -50%);
+}
 </style>
 
 <div class=formula-container>
-  <span class=formula-number>[FORMULA ?.?]</span>
-  <math display=block>
-    <mrow>
-      <msub>
+<span class=formula-number>[FORMULA ?.?]</span>
+<math display=block>
+<mrow>
+    <msub>
         <mi>c</mi>
         <mi>i</mi>
-      </msub>
-      <mo>=</mo>
-      <munderover>
+    </msub>
+    <mo>=</mo>
+    <munderover>
         <mo>⨁</mo>
         <mrow><mi>j</mi><mo>=</mo><mn>0</mn></mrow>
         <mi>i</mi>
-      </munderover>
-      <msub><mi>x</mi><mi>j</mi></msub>
-      <msub>
+    </munderover>
+    <msub><mi>x</mi><mi>j</mi></msub>
+    <msub>
         <mi>y</mi>
         <mrow>
-          <mi>i</mi><mo>−</mo><mi>j</mi>
+            <mi>i</mi><mo>−</mo><mi>j</mi>
         </mrow>
-      </msub>
-    </mrow>
-  </math>
+    </msub>
+</mrow>
+</math>
 </div>
 
-</div>
-
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
-<div class=indent>
-<p><i>Effects</i>:
-Equivalent to <code><h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-></code>.
-</p></div>
-</ins-block>
+</div><p> 
+</p></ins-block><p> </p>
 
 
 
@@ -2159,39 +2093,25 @@ The formula above in TeX notation is:
 </p><code-block>c<h- data-h=sym_op>_</h->i = <h- data-h=mk_tag>\bigoplus</h-><h- data-h=sym_op>_</h-><h- data-h=sym_brac>{</h->j = 0<h- data-h=sym_brac>}</h-><h- data-h=sym_op>^</h->i x<h- data-h=sym_op>_</h->i y<h- data-h=sym_op>_</h-><h- data-h=sym_brac>{</h->i - j<h- data-h=sym_brac>}</h-></code-block>
 </note-block>
 
-<p>Add the following declarations to the synopsis in <a href=https://eel%2eis/c++draft/simd%2esyn>[simd.syn]</a>,
-immediately following the declarations associated with <a href=https://eel%2eis/c++draft/simd%2ebit>[simd.bit]</a>:
+<p>In subclause <a href=https://eel%2eis/c++draft/numeric%2eops>[numeric.ops]</a>,
+append a subclause immediately following <a href=https://eel%2eis/c++draft/numeric%2eoverflow>[numeric.overflow]</a>
+(known as <a href=https://eel%2eis/c++draft/numeric%2esat>[numeric.sat]</a> at the time of writing):
 </p>
 <ins-block>
-<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[simd.clmul], carry-less product</h-></f-serif>
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
-</ins-block>
+<h3>Carry-less product <span class=stable-ref>[numeric.clmul]</span></h3>
 
-<p>In subclause <a href=https://eel%2eis/c++draft/simd>[simd]</a>,
-append a subclause immediately following <a href=https://eel%2eis/c++draft/simd%2ebit>[simd.bit]</a>:
-</p>
-<ins-block>
-<h3><code><h- data-h=id>basic_vec</h-></code> carry-less product <span class=stable-ref>[simd.clmul]</span></h3>
-
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
-
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
+   <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 <div class=indent>
-<p>1
-<i>Constraints</i>:
-The type <code><h- data-h=id>V</h-><h- data-h=sym_op>::</h-><h- data-h=id>value_type</h-></code> is an unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).
+<p><i>Constraints</i>:
+<code><h- data-h=id>T</h-></code> is an unsigned integer type (<a href=https://eel%2eis/c++draft/basic%2efundamental>[basic.fundamental]</a>).
 </p>
-<p>2
-<i>Returns</i>:
-A <code><h- data-h=id>basic_vec</h-></code> object where the <math display=inline><msup><mi>i</mi><mtext>th</mtext></msup></math> element is initialized
-to the result of <code><h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>v</h-><h- data-h=sym_sqr>[</h-><math display=inline><mi>i</mi></math><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-></code>
-for all <math display=inline><mi>i</mi></math> in the range [<code><h- data-h=num>0</h-></code>, <code><h- data-h=id>V</h-><h- data-h=sym_op>::</h-><h- data-h=id>size</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code>).
+<p><i>Returns</i>:
+<code><h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-></code> (<a href=https://eel%2eis/c++draft/numeric%2eoverflow>[numeric.overflow]</a>).
 </p></div>
 </ins-block>
 
-<h2 id=references><a class=para href=#references></a>7. References</h2>
-
+<h2 id=references><a class=para href=#references></a>6. References</h2>
 
 
 
@@ -2226,12 +2146,7 @@ for all <math display=inline><mi>i</mi></math> in the range [<code><h- data-h=nu
 <span class=bib-author>Tiago Freire.</span>
 <span class=bib-title>Unified integer overflow arithmetic</span>
 <span class=bib-date>2025-03-26</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html</a></div><div id=bib-item-P2933R4 class=bib-item>
-<a href="https://wg21%2elink/p2933r4">[P2933R4]</a>
-<span class=bib-author>Daniel Towner, Ruslan Arutyunyan.</span>
-<span class=bib-title>Extend &lt;bit&gt; header function with overloads for std::simd</span>
-<span class=bib-date>2025-02-13</span>
-<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p2933r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2933r4.html</a></div><div id=bib-item-BitPermutations class=bib-item>
+<a href="https://www%2eopen-std%2eorg/jtc1/sc22/wg21/docs/papers/2025/p3161r4%2ehtml" class=bib-link>https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3161r4.html</a></div><div id=bib-item-BitPermutations class=bib-item>
 <a href="https://github%2ecom/Eisenwave/cxx26-bit-permutations">[BitPermutations]</a>
 <span class=bib-author>Jan Schultke.</span>
 <span class=bib-title>C++26 Bit permutations reference implementation</span>
