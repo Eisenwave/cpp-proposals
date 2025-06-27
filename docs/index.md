@@ -39,29 +39,13 @@ Author: Jan Schultke
 - [P3568R1](break-continue-label-p3568r1.html)
 - [P3568R0](break-continue-label-p3568r0.html)
 
-### P3639: The `_BitInt` Debate
-
-**Status**: Active<br>
-**Audience**: SG6, SG22, EWG, LEWG<br>
-**Slides**: [P3721](bitint-debate-slides.html) (Slides for SG6 and SG22, 2025)
-
-- [Latest](bitint-debate.html)
-- [P3639](bitint-debate-p3639r0.html)
-
-### P3641: Rename `std::observable` to `std::observable_checkpoint`, and add a feature-test macro
-
-**Status**: Active<br>
-**Audience**: LEWG
-
-- [Latest](observable-checkpoint.html)
-- [P3641R0](observable-checkpoint-p3641r0.html)
-
 ### P3642: Carry-less product: `std::clmul`
 
 **Status**: Active<br>
 **Audience**: SG6, LEWG
 
 - [Latest](clmul.html)
+- [P3642R1](clmul-p3642r1.html)
 - [P3642R0](clmul-p3642r0.html)
 
 ### P3643: `std::to_signed`, `std::to_unsigned`
@@ -125,13 +109,6 @@ Author: Jan Schultke
 
 - [Latest](n-algorithms.html)
 
-### P3740: Last chance to fix `std::nontype`
-
-**Status**: Active<br>
-**Audience**: LEWG
-
-- [Latest](nontype.html)
-
 ## Inactive
 
 ### P3087: Make direct-initialization for enumeration types at least as permissive as direct-list-initialization
@@ -153,9 +130,9 @@ Author: Jan Schultke
 - [P3105R1](constexpr-uncaught-exceptions-p3105r1.html)
 - [P3105R0](constexpr-uncaught-exceptions-p3105r0.html)
 
-### (Accepted) P3176: The Oxford variadic comma
+### P3176: The Oxford variadic comma
 
-**Status**: Accepted<br>
+**Status**: C++26<br>
 **Audience**: EWG-I, EWG, CWG
 
 - [Latest](oxford-variadic-comma.html)
@@ -169,6 +146,32 @@ Author: Jan Schultke
 
 - [Latest](int-least128.html)
 - [P3140R0](int-least128-p3140r0.html)
+
+### P3639: The `_BitInt` Debate
+
+**Status**: Complete, desired feedback obtained<br>
+**Audience**: SG6, SG22, EWG, LEWG<br>
+**Slides**: [P3721](bitint-debate-slides.html) (Slides for SG6 and SG22, 2025)
+
+- [Latest](bitint-debate.html)
+- [P3639](bitint-debate-p3639r0.html)
+
+### P3641: Rename `std::observable` to `std::observable_checkpoint`, and add a feature-test macro
+
+**Status**: C++26<br>
+**Audience**: LEWG
+
+- [Latest](observable-checkpoint.html)
+- [P3641R0](observable-checkpoint-p3641r0.html)
+
+### P3740: Last chance to fix `std::nontype`
+
+**Status**: Forwarded to LWG for C++26, but too late for plenary<br>
+**Audience**: LEWG
+
+- [Latest](nontype.html)
+- [P3740R1](nontype-p3740r1.html)
+- [P3740R0](nontype-p3740r0.html)
 
 ### NP: Define `offsetof` semantics in the C++ standard
 
