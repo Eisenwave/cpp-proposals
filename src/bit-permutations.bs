@@ -5,7 +5,7 @@ Revision: 4
 Status: P
 Date: 2025-06-28
 Group: WG21
-Audience: LWG
+Audience: SG6, LWG
 Editor: Jan Schultke, janschultke@gmail.com
 ED: https://eisenwave.github.io/cpp-proposals/bit-permutations.html
 !Source: [eisenwave/cpp-proposals](https://github.com/Eisenwave/cpp-proposals/blob/master/src/bit-permutations.bs)
