@@ -42,6 +42,9 @@
 \macro[\oldconcept]{\i{Cpp17\put}}
 \macro[\libconcept]{\tcode{\put}}
 \macro[\exposconcept]{\tcode{\exposid{\put}}}
+\macro[\libheader]{\header{\put}}
+
+\macro[\brk]{\wbr}
 
 \macro[\bigoh]{\N{MATHEMATICAL SCRIPT CAPITAL O}(\put)}
 
