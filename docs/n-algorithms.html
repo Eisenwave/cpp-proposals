@@ -1502,15 +1502,36 @@ if (theme !== null) {
 
 
 
-<style>
-ins-block .para::before {
-    display: none;
-}
 
-.stable-ref {
+
+
+
+
+
+
+
+
+
+
+<style>
+  ins-block .para::before {
+    display: none;
+  }
+
+  .stable-ref {
     float: right;
-}
+  }
+
+  .five-way-poll {
+    table-layout: fixed;
+  }
+  .five-way-poll td {
+    width: 20%;
+    text-align: center;
+  }
 </style>
+
+
 
 
 
@@ -1520,7 +1541,7 @@ ins-block .para::before {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3735R0>P3735R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-08</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-28</tt-></dd>
     <dt>Audience:</dt>        <dd>SG9</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1703,6 +1724,14 @@ Existing overload sets are not modified.
 
 <p>The proposed changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
+<p>In <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a>,
+add two feature-test macros as follows:
+</p>
+<ins-block>
+<code-block class=borderless><h- data-h=mac>#define __cpp_lib_ranges_partial_sort_n </h-><h- data-h=num>20XXXXL</h-><h- data-h=mac> </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in </h-><tt-><h- data-h=cmt>&lt;algorithm&gt;</h-></tt-></f-serif>
+<h- data-h=mac>#define __cpp_lib_ranges_nth_element_n  </h-><h- data-h=num>20XXXXL</h-><h- data-h=mac> </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in </h-><tt-><h- data-h=cmt>&lt;algorithm&gt;</h-></tt-></f-serif></code-block>
+</ins-block>
+
 <p>In <a href=https://eel%2eis/c++draft/algorithm%2esyn>[algorithm.syn]</a>,
 change the synopsis of <code><h- data-h=str>&lt;algorithm&gt;</h-></code> as follows:
 </p>

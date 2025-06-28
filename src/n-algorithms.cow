@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3735R0}}
-    \dt{Date:}            \dd{\tt{2025-06-08}}
+    \dt{Date:}            \dd{\tt{2025-06-28}}
     \dt{Audience:}        \dd{SG9}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -185,6 +185,16 @@ Existing overload sets are not modified.
 \h2{Wording}
 
 The proposed changes are relative to \ref[N5008].
+
+In \eelis{version.syn},
+add two feature-test macros as follows:
+
+\Bins{
+\itemdecl{
+#define __cpp_lib_ranges_partial_sort_n \hl[number]{20XXXXL} // \serif{also in \tt{<algorithm>}}
+#define __cpp_lib_ranges_nth_element_n  \hl[number]{20XXXXL} // \serif{also in \tt{<algorithm>}}
+}
+}
 
 In \eelis{algorithm.syn},
 change the synopsis of \header{algorithm} as follows:
@@ -451,12 +461,12 @@ Equivalent to:
 \h2{References}
 
 \bib[
-    id = N5008,
-    title = Working Draft\, Programming Languages — C++,
-    date = 2025-03-15,
-    author = Thomas Köppe,
-    link = https://wg21.link/n5008,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
 ]
 
 \make-bib
