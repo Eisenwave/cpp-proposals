@@ -11,7 +11,7 @@
     \dt{Audience:}        \dd{CWG, LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3701R0/github]}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3701/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/signed-or-unsigned.cow]}
 }
 \hr
@@ -38,7 +38,7 @@ character types such as \tcode{char}, as well as \tcode{bool},
 and cv-qualified versions of all these types.
 \tcode{std::signed_integral} and \tcode{std::unsigned_integral} are similarly permissive.
 
-\bug{
+\Bug{
 The constraints on the following template
 most likely don't match the intent of the author.
 \cppblock{
@@ -119,23 +119,23 @@ This can be improved with the following strategy:
 }
 }
 
-\note{
+\Bnote{
 With this new strategy,
 \tcode{char} and \tcode{bool} are not integer types, but integral types.
 }
 
 Some alternative designs instead of \tcode{std::integer} were considered:
 \ul{
-\item{
+\li{
 \tcode{std::signed_or_unsigned} would be inappropriate
 because \tcode{std::is_signed_v<float>} is \tcode{true}.
 }
-\item{
+\li{
 \tcode{std::signed_or_unsigned_integer} is comically verbose.
 It would also perpetuate the "signed or unsigned integer" workaround in wording;
 we ought to have a simpler name.
 }
-\item{
+\li{
 \tcode{std::real_integer}, \tcode{std::actual_integer}, \tcode{std::integral2},
 and other such "integers but like, for real this time" names
 aren't any less confusing than \tcode{std::integer}.
@@ -153,12 +153,12 @@ that behaves like an integer mathematically.
 User code that is currently constrained with \tcode{std::integral<T>}
 likely makes some assumptions about \tcode{T}, like
 \ul{
-\item{expressions of type \tcode{T} can be used in a \tcode{switch}, as an array index, etc.,}
-\item{\tcode{T} is trivially copyable and usually small,}
-\item{\tcode{T} is default-constructible,}
-\item{no operation can throw, terminate, etc.,}
-\item{\tcode{T} can be converted to floating-point types, among other things,}
-\item{...}
+\li{expressions of type \tcode{T} can be used in a \tcode{switch}, as an array index, etc.,}
+\li{\tcode{T} is trivially copyable and usually small,}
+\li{\tcode{T} is default-constructible,}
+\li{no operation can throw, terminate, etc.,}
+\li{\tcode{T} can be converted to floating-point types, among other things,}
+\li{...}
 }
 
 \tcode{std::integer} is a quick way to constrain a function while documenting these assumptions,
@@ -176,12 +176,12 @@ I argue that \tcode{const int} should not be an integer type.
 While that may be counter-intuitive at first glance,
 this behavior is tremendously more useful:
 \ul{
-\item{
+\li{
 A substantial amount of wording (\ref[#wording]) can be simplified to just
 "is of integer type" or "models \tcode{integer}".
 This would need to be qualified with "cv-unqualified" otherwise.
 }
-\item{
+\li{
 When the user constrains a numeric function template so it only accepts integer types,
 they are not interested in supporting \tcode{const int}.
 Neither is the standard library.
@@ -191,18 +191,18 @@ it never happens organically through deduction.
 In the extremely unlikely event they want to support it,
 they should do so explicitly via \tcode{std::remove_cv_t}.
 }
-\item{
+\li{
 It is \em{extremely} unlikely that the user intended to support \tcode{volatile int}
 in their types and functions, so this should require opt-in, not opt-out.
 \tcode{std::integer<std::remove_volatile_t<T>>} would be opt-in.
 Opt-out would be the natural consequence of including cv-qualified types in "integer type".
 }
-\item{
+\li{
 Every occurrence of "signed integer type" and "unsigned integer type"
 should not include cv-qualified types.
 For example, it would be insane if the \tcode{size_type} of a container could be \tcode{const}.
 }
-\item{
+\li{
 The standard needs to say "cv-unqualified floating-point type(s)"
 in a number of places (\ref[N5008]),
 and when it doesn't say "cv-unqualified",
@@ -238,23 +238,13 @@ and the "signed or unsigned integer" pattern can be simplified to just "integer"
 
 \h2{Wording}
 
-\style{
-ins-block .para::before {
-    display: none;
-}
-
-.stable-ref {
-    float: right;
-}
-}
-
 The following changes are relative to \ref[N5008].
 
 \h3{Core wording}
 
 Change \eelis{basic.fundamental#5} as follows:
 
-\diff{
+\Bdiff{
 Each value \math{\mi{x}} of an unsigned integer type with width \math{\mi{N}} has
 a unique representation \math{\mrow{
     \mi{x}
@@ -288,14 +278,14 @@ the set of signed and unsigned integer types.
 }}
 }
 
-\note{
+\Bnote{
 If you cannot see the mathematical symbols in the paragraph above,
 you are viewing this document in an old browser with no MathML support.
 }
 
 Change \eelis{basic.fundamental#6} as follows:
 
-\diff{
+\Bdiff{
 A fundamental type specified to have
 \del{a signed or unsigned} \ins{an} integer type as its \i{underlying type} has
 the same object representation,
@@ -307,7 +297,7 @@ Further, each value has the same representation in both types.
 
 Change \eelis{basic.fundamental#8} as follows:
 
-\diff{
+\Bdiff{
 Type \tcode{wchar_t} is a distinct type that has
 an implementation-defined
 \del{signed or unsigned} integer type as its underlying type.
@@ -315,7 +305,7 @@ an implementation-defined
 
 Change \eelis{basic.fundamental#11} as follows:
 
-\diff{
+\Bdiff{
 The types \tcode{char}, \tcode{wchar_t}, \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}
 are collectively called \i{character types}.
 The character types,
@@ -329,19 +319,19 @@ are collectively \del{termed} \ins{called} \i{integral types}.
 
 Change \eelis{conv.rank#1} as follows:
 
-\diff{
+\Bdiff{
 Every \del{integer type} \ins{integral type}
 has an \i{\del{integer} \ins{integral} conversion rank} defined as follows:
 \ul{
-\item{\etc}
-\item{
+\li{\etc}
+\li{
 The rank of any extended signed integer type
 relative to another extended signed integer type
 with the same width is implementation-defined,
 but still subject to the other rules
 for determining the \del{integer} \ins{integral} conversion rank.
 }
-\item{
+\li{
 For all \del{integer} \ins{integral} types \tcode{T1}, \tcode{T2}, and \tcode{T3},
 if \tcode{T1} has greater rank than \tcode{T2}\ins{,}
 and \tcode{T2} has greater rank than \tcode{T3},
@@ -355,13 +345,13 @@ and the usual arithmetic conversions (\eelis{expr.arith.conv}).
 }
 }
 
-\note{
+\Bnote{
 Notice that a comma is inserted within the last bullet.
 }
 
 Change \eelis{conv.lval#3.5} as follows:
 
-\diff{
+\Bdiff{
 Otherwise, the object indicated by the glvalue is read (\eelis{defns.access}).
 Let \tcode{V} be the value contained in the object.
 If \tcode{T} is an \del{integer} \ins{integral} type,
@@ -372,7 +362,7 @@ the value of type \tcode{T} congruent (\eelis{basic.fundamental}) to \tcode{V}, 
 
 Change \eelis{conv.prom#2} as follows:
 
-\diff{
+\Bdiff{
 A prvalue that is not a converted bit-field and has an \del{integer} \ins{integral} type other than
 \tcode{bool}, \tcode{char8_t}, \tcode{char16_t},
 \tcode{char32_t}, or \tcode{wchar_t} whose \del{integer} \ins{integral} conversion
@@ -384,7 +374,7 @@ converted to a prvalue of type \tcode{unsigned int}.
 
 Change \eelis{conv.prom#3} as follows:
 
-\diff{
+\Bdiff{
 A prvalue of an unscoped enumeration type whose underlying type is not
 fixed can be converted to a prvalue of the first of the following
 types that can represent all the values of the enumeration (\eelis{dcl.enum}):
@@ -402,7 +392,7 @@ the signed one is chosen.
 
 Change \eelis{conv.integral#1} as follows:
 
-\diff{
+\Bdiff{
 A prvalue of an \del{integer} \ins{integral} type
 can be converted to a prvalue of another \del{integer} \ins{integral} type.
 A prvalue of an unscoped enumeration type
@@ -411,7 +401,7 @@ can be converted to a prvalue of an \del{integer} \ins{integral} type.
 
 Change \eelis{conv.fpint#1} as follows:
 
-\diff{
+\Bdiff{
 A prvalue of a floating-point type can be converted to a prvalue of an
 \del{integer} \ins{integral} type.
 The conversion truncates;
@@ -422,7 +412,7 @@ in the destination type.
 
 Change \eelis{conv.fpint#2} as follows:
 
-\diff{
+\Bdiff{
 A prvalue of an \del{integer} \ins{integral} type
 or of an unscoped enumeration type
 can be converted to
@@ -432,7 +422,7 @@ a prvalue of a floating-point type.
 
 Change \eelis{expr.reinterpret.cast#5} as follows:
 
-\diff{
+\Bdiff{
 A value of integral type or enumeration type
 can be explicitly converted to a pointer.
 A pointer converted to an \del{integer} \ins{integral type} of sufficient size
@@ -445,7 +435,7 @@ implementation-defined.
 
 Change \eelis{expr.assign#2} as follows:
 
-\diff{
+\Bdiff{
 In simple assignment (\tcode{=}),
 let \tcode{V} be the result of the right operand;
 the object referred to by the left operand is
@@ -457,36 +447,36 @@ with the value congruent\iref{basic.fundamental} to \tcode{V}.
 
 Change \eelis{dcl.init.list#7} as follows:
 
-\diff{
+\Bdiff{
 A \i{narrowing conversion} is an implicit conversion
 \ul{
-\item{from a floating-point type to an \del{integer} \ins{integral} type, or}
-\item{\etc}
-\item{
+\li{from a floating-point type to an \del{integer} \ins{integral} type, or}
+\li{\etc}
+\li{
 from an \del{integer} \ins{integral} type or unscoped enumeration type to a floating-point type, except
 where the source is a constant expression and the actual value after conversion will fit
 into the target type and will produce the original value when converted back to the
 original type, or
 }
-\item{
+\li{
 from an \del{integer} \ins{integral} type or unscoped enumeration type
 to an \del{integer} \ins{integral} type that cannot represent all the
 values of the original type, except where \etc
 }
-\item{\etc}
+\li{\etc}
 }
 }
 
 Change \eelis{dcl.enum#11} as follows:
 
-\diff{
+\Bdiff{
 The value of an enumerator or an object of an unscoped enumeration type is
 converted to an \del{integer} \ins{integral type} by integral promotion\iref{conv.prom}.
 }
 
 Change \eelis{class.bit#4} as follows:
 
-\diff{
+\Bdiff{
 If a value of integral type (other than \tcode{bool}) is stored
 into a bit-field of width \math{\mi{N}} and the value would be representable
 in a hypothetical \del{signed or unsigned} integer type
@@ -498,7 +488,7 @@ the original value and the value of the bit-field compare equal. \etc
 
 Change \eelis{bitmask.types#1} as follows:
 
-\diff{
+\Bdiff{
 Several types defined in \eelis{support} through \eelis{exec} and \eelis{depr} are bitmask types.
 Each bitmask type can be implemented
 as an enumerated type that overloads certain operators, as an \del{integer} \ins{integral} type,
@@ -507,7 +497,7 @@ or as a bitset.
 
 Change \eelis{support.types.layout} as follows:
 
-\diff{
+\Bdiff{
 \recommended
 An implementation should choose types for \tcode{ptrdiff_t} and \tcode{size_t}
 whose \del{integer} \ins{integral} conversion ranks\iref{conv.rank} are no greater than that of
@@ -516,7 +506,7 @@ whose \del{integer} \ins{integral} conversion ranks\iref{conv.rank} are no great
 
 Change \eelis{version.syn#2} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 #define __cpp_lib_concepts \del{202207L} \ins{20XXXXL}
   // \serif{freestanding, also in \header{concepts}, \header{compare}}
@@ -525,7 +515,7 @@ Change \eelis{version.syn#2} as follows:
 
 Change \eelis{numeric.limits.general#4} as follows:
 
-\diff{
+\Bdiff{
 Specializations shall be provided for each
 arithmetic type,
 both floating-point and \del{integer} \ins{integral}, including
@@ -540,20 +530,20 @@ for all such specializations of
 
 Change \eelis{numeric.limits.members#10} as follows:
 
-\diff{
+\Bdiff{
 For \del{integer} \ins{integral} types,
 the number of non-sign bits in the representation.
 }
 
 Change \eelis{numeric.limits.members#18} as follows:
 
-\diff{
+\Bdiff{
 \tcode{true} if the type is \del{integer} \ins{integral}.
 }
 
 Change \eelis{numeric.limits.members#20} as follows:
 
-\diff{
+\Bdiff{
 \tcode{true} if the type uses an exact representation.
 All \del{integer} \ins{integral} types are exact,
 but not all exact types are \del{integer} \ins{integral}.
@@ -563,14 +553,14 @@ but not \del{integer} \ins{integral}.
 
 Change \eelis{numeric.limits.members#23} as follows:
 
-\diff{
+\Bdiff{
 For \del{integer} \ins{integral} types,
 specifies the base of the representation.\sup{167}
 }
 
 Change \eelis{numeric.limits.members#65} as follows:
 
-\diff{
+\Bdiff{
 Meaningful for all floating-point types.
 Specializations for \del{integer} \ins{integral} types shall return
 \tcode{round_toward_zero}.
@@ -578,7 +568,7 @@ Specializations for \del{integer} \ins{integral} types shall return
 
 Change \eelis{climits.syn#note-1} as follows:
 
-\diff{
+\Bdiff{
 \wg21-note{
 Except for \tcode{CHAR_BIT} and \tcode{MB_LEN_MAX}, a macro referring to
 an \del{integer} \ins{integral} type \tcode{T} defines a constant whose type is the promoted
@@ -588,7 +578,7 @@ type of \tcode{T}\iref{conv.prom}.
 
 Change \eelis{cstdint.syn#1} as follows:
 
-\diff{
+\Bdiff{
 The header \tt{<cstdint>}
 supplies \del{integer} \ins{integral} types having specified widths, and
 macros that specify limits of \del{integer} \ins{integral} types.
@@ -596,7 +586,7 @@ macros that specify limits of \del{integer} \ins{integral} types.
 
 Change \eelis{cstdint.syn#3} as follows:
 
-\diff{
+\Bdiff{
 All types that use the placeholder \placeholder{N}
 are optional when \placeholder{N}
 is not \tcode{8}, \tcode{16}, \tcode{32}, or \tcode{64}.
@@ -620,7 +610,7 @@ respectively.
 
 Change \eelis{concepts.syn} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 namespace std {
   \serif{\html{\etc}}
@@ -646,7 +636,7 @@ namespace std {
 
 Change \eelis{concepts.arithmetic} as follows:
 
-\diff{
+\Bdiff{
 \itemdecl{
 \ins{template<class T, class... Us>
   concept \exposid{one-of} = (same_as<T, Us> || ...);                     // \serif{exposition only}
@@ -692,7 +682,7 @@ unsigned integer types.}
 
 Change \eelis{intseq.intseq#1} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \tcode{T} \del{is an integer type} \ins{models \tcode{integral}}.
 }
@@ -700,7 +690,7 @@ Change \eelis{intseq.intseq#1} as follows:
 Change \eelis{utility.intcmp#1} and \eelis{utility.intcmp#4}
 as follows:
 
-\diff{
+\Bdiff{
 \mandates
 Both \tcode{T} and \tcode{U}
 \del{are standard integer types or extended integer types ([basic.fundamental])}
@@ -709,7 +699,7 @@ Both \tcode{T} and \tcode{U}
 
 Change \eelis{utility.intcmp#9} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 Both \tcode{T} and \tcode{R}
 \del{are standard integer types or extended integer types ([basic.fundamental])}
@@ -718,7 +708,7 @@ Both \tcode{T} and \tcode{R}
 
 Change \eelis{forward.list.ops#1} as follows:
 
-\diff{
+\Bdiff{
 In this subclause, arguments for a template parameter
 named \tcode{Predicate} or \tcode{BinaryPredicate}
 shall meet the corresponding requirements in \eelis{algorithms.requirements}.
@@ -732,7 +722,7 @@ For merge and sort, the definitions and requirements in \eelis{alg.sorting} appl
 
 Change \eelis{hive.operations#1} as follows:
 
-\diff{
+\Bdiff{
 In this subclause,
 arguments for a template parameter
 named \tcode{Predicate} or \tcode{BinaryPredicate}
@@ -745,7 +735,7 @@ For \tcode{sort}, the definitions and requirements in \eelis{alg.sorting} apply.
 
 Change \eelis{list.ops#1} as follows:
 
-\diff{
+\Bdiff{
 In this subclause,
 arguments for a template parameter
 named \tcode{Predicate} or \tcode{BinaryPredicate}
@@ -762,11 +752,11 @@ the definitions and requirements in \eelis{alg.sorting} apply.
 
 Change \eelis{mdspan.extents.overview#1} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \ul{
-\item{\tcode{IndexType} \del{is a signed or unsigned integer type} \ins{models \tcode{integer}}, and}
-\item{
+\li{\tcode{IndexType} \del{is a signed or unsigned integer type} \ins{models \tcode{integer}}, and}
+\li{
 each element of \tcode{Extents} is either equal to \tcode{dynamic_extent},
 or is representable as a value of type \tcode{IndexType}.
 }
@@ -775,7 +765,7 @@ or is representable as a value of type \tcode{IndexType}.
 
 Change \eelis{mdspan.sub.strided.slice#3} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \ins{Each of the types}
 \tcode{OffsetType}, \tcode{ExtentType}, and \tcode{StrideType}
@@ -784,7 +774,7 @@ Change \eelis{mdspan.sub.strided.slice#3} as follows:
 \tcode{\exposid{integral-constant-like}}.
 }
 
-\note{
+\Bnote{
 The "each of the types" part clarifies the wording
 in the same style as more recent wording in \eelis{numerics.c.ckdint}.
 }
@@ -793,7 +783,7 @@ Change \eelis{mdspan.sub.helpers#1}
 and \eelis{mdspan.sub.helpers#10}
 as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \tcode{IndexType}
 \del{is a signed or unsigned integer type}
@@ -802,7 +792,7 @@ as follows:
 
 Change \eelis{ranges.syn#1} as follows:
 
-\diff{
+\Bdiff{
 Within this Clause,
 for an integer-like type \tcode{X}\iref{iterator.concept.winc},
 \tcode{\exposid{make-unsigned-like-t}<X>} denotes
@@ -817,7 +807,7 @@ For an expression \tcode{x} of type \tcode{X},
 
 Change \eelis{ranges.syn#2} as follows:
 
-\diff{
+\Bdiff{
 Also within this Clause,
 \tcode{\exposid{make-signed-like-t}<X>} for an integer-like type \tcode{X}
 denotes \tcode{make_signed_t<X>} if \tcode{X} is an \del{integer} \ins{integral} type;
@@ -828,14 +818,14 @@ of the same width as \tcode{X}.
 Change \eelis{numeric.ops.gcd#1} and
 \eelis{numeric.ops.lcm#1} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \tcode{M} and \tcode{N} both are \del{integer} \ins{integral} types other than \tcode{bool}.
 }
 
 Change \eelis{numeric.ops.midpoint#1} as follows:
 
-\diff{
+\Bdiff{
 \returns
 Half the sum of \tcode{a} and \tcode{b}.
 If \tcode{T} is an \del{integer} \ins{integral} type and the sum is odd,
@@ -845,7 +835,7 @@ the result is rounded towards \tcode{a}.
 In \eelis{numeric.sat.func},
 change paragraphs 2, 4, 6, and 8 as follows:
 
-\diff{
+\Bdiff{
 \constraints
 \tcode{T}
 \del{is a signed or unsigned integer type ([basic.fundamental])}
@@ -854,7 +844,7 @@ change paragraphs 2, 4, 6, and 8 as follows:
 
 Change \eelis{numeric.sat.cast#1} as follows:
 
-\diff{
+\Bdiff{
 \constraints
 \tcode{R} and \tcode{T}
 \del{are signed or unsigned integer types ([basic.fundamental])}
@@ -863,7 +853,7 @@ Change \eelis{numeric.sat.cast#1} as follows:
 
 Change \eelis{charconv.syn#1} as follows:
 
-\diff{
+\Bdiff{
 When a function is specified
 with a type placeholder of \placeholder{integer-type},
 the implementation provides overloads
@@ -876,14 +866,14 @@ for all cv-unqualified floating-point types\iref{basic.fundamental}
 in lieu of \placeholder{floating-point-type}.
 }
 
-\note{
+\Bnote{
 Signed or unsigned integer types are already cv-unqualified;
 this wording used to be redundant.
 }
 
 Change \eelis{format.string.std#10} as follows:
 
-\diff{
+\Bdiff{
 If \tt{{ \exposid{arg-id}\sub{\serif{opt}} }} is used in a \grammarterm{width or precision} option,
 the value of the corresponding formatting argument
 is used as the value of the option.
@@ -894,14 +884,14 @@ If its value is negative, an exception of type \tcode{format_error} is thrown.
 
 Change \eelis{cmplx.over#2.2} as follows:
 
-\diff{
+\Bdiff{
 Otherwise, if the argument has \del{integer} \ins{integral} type,
 then it is effectively cast to \tcode{complex<double>}.
 }
 
 Change \eelis{cmplx.over#3} as follows:
 
-\diff{
+\Bdiff{
 Function template \tcode{pow} has additional constexpr overloads sufficient to ensure,
 for a call with one argument of type \tcode{complex<T1>} and
 the other argument of type \tcode{T2} or \tcode{complex<T2>},
@@ -914,14 +904,14 @@ then the program is ill-formed.
 
 Change \eelis{rand.util.seedseq#2} as follows:
 
-\diff{
+\Bdiff{
 \constraints
 \tcode{T} \del{is an integer type} \ins{models \tcode{integral}}.
 }
 
 Change \eelis{rand.util.seedseq#4} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 \tcode{iterator_traits<InputIterator>::value_type}
 \del{is an integer type} \ins{models \tcode{integral}}.
@@ -929,7 +919,7 @@ Change \eelis{rand.util.seedseq#4} as follows:
 
 Change \eelis{numerics.c.ckdint#1} as follows:
 
-\diff{
+\Bdiff{
 \mandates
 Each of the types \tcode{type1}, \tcode{type2}, and \tcode{type3}
 \del{is a cv-unqualified signed or unsigned integer type}
@@ -938,7 +928,7 @@ Each of the types \tcode{type1}, \tcode{type2}, and \tcode{type3}
 
 Change \eelis{cmath.syn#3} as follows:
 
-\diff{
+\Bdiff{
 For each function
 with at least one parameter of type \placeholder{floating-point-type}
 other than \tcode{abs},
@@ -959,7 +949,7 @@ from the overloads provided by the implementation.
 
 Change \eelis{simd.ctor#7.2} as follows:
 
-\diff{
+\Bdiff{
 both \tcode{U} and \tcode{value_type} are integral types and the \del{integer} \ins{integral}
 conversion rank\iref{conv.rank} of \tcode{U} is greater than the \del{integer} \ins{integral}
 conversion rank of \tcode{value_type}, or
@@ -967,7 +957,7 @@ conversion rank of \tcode{value_type}, or
 
 Change the title of \eelis{atomics.types.int} as follows:
 
-\diff{
+\Bdiff{
 \b{Specializations for \del{integers} \ins{integral types}}
 }
 
