@@ -4,22 +4,22 @@
 \macro[\ctype]{\exposid{character-type}}
 
 \wg21-head[
-    title = ASCII character utilities
+  title = ASCII character utilities
 ]{
 \dl{
-    \dt{Document number:} \dd{\ref[https://wg21.link/P3688R0]{P3688R0}}
-    \dt{Date:}            \dd{\tt{2025-05-19}}
-    \dt{Audience:}        \dd{LEWG, SG16}
-    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
-    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688R0/github]}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
+  \dt{Document number:} \dd{\ref[https://wg21.link/P3688]{P3688R1}}
+  \dt{Date:}            \dd{\tt{2025-06-28}}
+  \dt{Audience:}        \dd{SG16}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-To:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{Co-Authors:}      \dd{Corentin Jabot <\mail{corentin.jabot@gmail.com}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
 }
 \hr
 }
 
-\abstract{
+\Babstract{
 The utilities in \header{cctype} or \header{locale}
 are locale-specific,
 not \tcode{constexpr},
@@ -30,6 +30,16 @@ We propose lightweight, locale-independent alternatives.
 \h2[listed=no]{Contents}
 
 \make-contents
+
+\h2{Revision history}
+
+\h3{Changes since R0}
+
+\ul{
+  \li{In \ref[#base-parameter], explain why the precondition is not hardened}
+  \li{In \ref[#wording], fix a missing addition to \eelis{tab:headers.cpp}}
+  \li{Minor editorial changes}
+}
 
 \h2{Introduction}
 
@@ -55,47 +65,47 @@ template<class charT> bool isalnum(charT c, const locale& loc);
 
 Especially the \header{cctype} functions are ridden with problems:
 \ol{
-\item{
+  \li{
     There is no support for Unicode character types
     (\tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}).
-}
-\item{
+  }
+  \li{
     These functions are not \tcode{constexpr},
     but performing basic characters tests would be useful at compile time.
-}
-\item{
+  }
+  \li{
     There are distinct function names for \tcode{char} and \tcode{wchar_t}
     such as \tcode{std::isalnum} and \tcode{std::iswalnum},
     making generic programming more difficult.
-}
-\item{
+  }
+  \li{
     If \tcode{char} is signed,
     these functions can easily result in undefined behavior
     because the input must be representable as \tcode{unsigned char} or be \tcode{EOF}.
     If \tcode{char} represents a UTF-8 code unit,
     passing any non-ASCII code unit into these functions has undefined behavior.
-}
-\item{
+  }
+  \li{
     These functions violate the zero-overhead principle
     by also handling an \tcode{EOF} input,
     and in many use cases, \tcode{EOF} will never be passed into these functions anyway.
     The caller can easily deal with \tcode{EOF} themselves.
-}
-\item{
+  }
+  \li{
     The return type of charater tests is \tcode{int},
     where a nonzero return value indicates that a test succeeded.
     This is very unnatural in C++, where \tcode{bool} is more idiomatic.
-}
-\item{
+  }
+  \li{
     Some functions use the currently installed \tcode{"C"} locale,
     which makes their use questionable for high-performance tasks
     because each invocation is typically an opaque call that checks the current locale.
-}
+  }
 }
 
 \strong{We propose lightweight replacement functions which address all these problems.}
 
-\note{
+\Bnote{
 Many of these problems are resolved by the
 \tcode{std::locale} overloads in \header{locale},
 but their locale dependence makes them unfit for what this proposal aims to achieve.
@@ -133,7 +143,7 @@ to raise awareness for the fact that these functions do not handle Unicode chara
 A user would expect \tcode{is_upper(U'Ä')} to be \tcode{true},
 but \tcode{is_ascii_upper(U'Ä')} to be \tcode{false}.
 
-\example{
+\Bex{
 The counterpart to \tcode{std::isalpha} is declared follows:
 \cppblock{
 constexpr bool is_ascii_alpha(\ctype c) noexcept;
@@ -173,115 +183,115 @@ Note that the character set notation \tt{[}...\tt{]} is taken from RegEx.
 
 \table[id=fun-table]{
 \tr{
-    \th{\header{cctype}}
-    \th{Proposed name}
-    \th{Returns (given ASCII \tcode{char c})}
+  \th{\header{cctype}}
+  \th{Proposed name}
+  \th{Returns (given ASCII \tcode{char c})}
 }
 \tr{
-    \td{N/A}
-    \td{\tcode{is_ascii}}
-    \td{\tcode{c <= 0x7F}}
+  \td{N/A}
+  \td{\tcode{is_ascii}}
+  \td{\tcode{c <= 0x7F}}
 }
 \tr{
-    \td{\tcode{isdigit}}
-    \td{\tcode{is_ascii_digit}}
-    \td{\tcode{true} if \tcode{c} is in \charset{0-9}, otherwise \tcode{false}}
+  \td{\tcode{isdigit}}
+  \td{\tcode{is_ascii_digit}}
+  \td{\tcode{true} if \tcode{c} is in \charset{0-9}, otherwise \tcode{false}}
 }
 \tr{
-    \td{N/A}
-    \td{\tcode{is_ascii_bit}}
-    \td{\tcode{c == '0' || c == '1'}}
+  \td{N/A}
+  \td{\tcode{is_ascii_bit}}
+  \td{\tcode{c == '0' || c == '1'}}
 }
 \tr{
-    \td{N/A}
-    \td{\tcode{is_ascii_octal_digit}}
-    \td{\tcode{true} if \tcode{c} is in \charset{0-7}, otherwise \tcode{false}}
+  \td{N/A}
+  \td{\tcode{is_ascii_octal_digit}}
+  \td{\tcode{true} if \tcode{c} is in \charset{0-7}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{isxdigit}}
-    \td{\tcode{is_ascii_hex_digit}}
-    \td{\tcode{true} if \tcode{c} is in \charset{0-9A-Fa-f}, otherwise \tcode{false}}
+  \td{\tcode{isxdigit}}
+  \td{\tcode{is_ascii_hex_digit}}
+  \td{\tcode{true} if \tcode{c} is in \charset{0-9A-Fa-f}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{islower}}
-    \td{\tcode{is_ascii_lower}}
-    \td{\tcode{true} if \tcode{c} is in \charset{a-z}, otherwise \tcode{false}}
+  \td{\tcode{islower}}
+  \td{\tcode{is_ascii_lower}}
+  \td{\tcode{true} if \tcode{c} is in \charset{a-z}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{isupper}}
-    \td{\tcode{is_ascii_upper}}
-    \td{\tcode{true} if \tcode{c} is in \charset{A-Z}, otherwise \tcode{false}}
+  \td{\tcode{isupper}}
+  \td{\tcode{is_ascii_upper}}
+  \td{\tcode{true} if \tcode{c} is in \charset{A-Z}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{isalpha}}
-    \td{\tcode{is_ascii_alpha}}
-    \td{\tcode{is_ascii_lower(c) || is_ascii_upper(c)}}
+  \td{\tcode{isalpha}}
+  \td{\tcode{is_ascii_alpha}}
+  \td{\tcode{is_ascii_lower(c) || is_ascii_upper(c)}}
 }
 \tr{
-    \td{\tcode{isalnum}}
-    \td{\tcode{is_ascii_alphanumeric}}
-    \td{\tcode{is_ascii_alpha(c) || is_asci_digit(c)}}
+  \td{\tcode{isalnum}}
+  \td{\tcode{is_ascii_alphanumeric}}
+  \td{\tcode{is_ascii_alpha(c) || is_asci_digit(c)}}
 }
 \tr{
-    \td{\tcode{ispunct}}
-    \td{\tcode{is_ascii_punctuation}}
-    \td{\tcode{true} if \tcode{c} is in \charset{!"#\N{DOLLAR SIGN}\N{PERCENT SIGN}&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~}, otherwise \tcode{false}}
+  \td{\tcode{ispunct}}
+  \td{\tcode{is_ascii_punctuation}}
+  \td{\tcode{true} if \tcode{c} is in \charset{!"#\N{DOLLAR SIGN}\N{PERCENT SIGN}&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{isgraph}}
-    \td{\tcode{is_ascii_graphical}}
-    \td{\tcode{is_ascii_alphanumeric(c) || is_ascii_punctuation(c)}}
+  \td{\tcode{isgraph}}
+  \td{\tcode{is_ascii_graphical}}
+  \td{\tcode{is_ascii_alphanumeric(c) || is_ascii_punctuation(c)}}
 }
 \tr{
-    \td{\tcode{isprint}}
-    \td{\tcode{is_ascii_printable}}
-    \td{\tcode{is_ascii_graphical(c) || c == ' '}}
+  \td{\tcode{isprint}}
+  \td{\tcode{is_ascii_printable}}
+  \td{\tcode{is_ascii_graphical(c) || c == ' '}}
 }
 \tr{
-    \td{\tcode{isblank}}
-    \td{\tcode{is_ascii_horizontal_whitespace}}
-    \td{\tcode{c == ' ' || c == '\\t'}}
+  \td{\tcode{isblank}}
+  \td{\tcode{is_ascii_horizontal_whitespace}}
+  \td{\tcode{c == ' ' || c == '\\t'}}
 }
 \tr{
-    \td{\tcode{isspace}}
-    \td{\tcode{is_ascii_whitespace}}
-    \td{\tcode{true} if \tcode{c} is in \charset{ \\f\\n\\r\\t\\v}, otherwise \tcode{false}}
+  \td{\tcode{isspace}}
+  \td{\tcode{is_ascii_whitespace}}
+  \td{\tcode{true} if \tcode{c} is in \charset{ \\f\\n\\r\\t\\v}, otherwise \tcode{false}}
 }
 \tr{
-    \td{\tcode{iscntrl}}
-    \td{\tcode{is_ascii_control}}
-    \td{\tcode{(c >= 0 && c <= 0x1F) || c == '\\N{DELETE}'}}
+  \td{\tcode{iscntrl}}
+  \td{\tcode{is_ascii_control}}
+  \td{\tcode{(c >= 0 && c <= 0x1F) || c == '\\N{DELETE}'}}
 }
 \tr{
-    \td{\tcode{tolower}}
-    \td{\tcode{ascii_to_lower}}
-    \td{the respective lower-case character if \tcode{is_ascii_upper(c)} is \tcode{true}, otherwise \tcode{c}}
+  \td{\tcode{tolower}}
+  \td{\tcode{ascii_to_lower}}
+  \td{the respective lower-case character if \tcode{is_ascii_upper(c)} is \tcode{true}, otherwise \tcode{c}}
 }
 \tr{
-    \td{\tcode{toupper}}
-    \td{\tcode{ascii_to_upper}}
-    \td{the respective upper-case character if \tcode{is_ascii_lower(c)} is \tcode{true}, otherwise \tcode{c}}
+  \td{\tcode{toupper}}
+  \td{\tcode{ascii_to_upper}}
+  \td{the respective upper-case character if \tcode{is_ascii_lower(c)} is \tcode{true}, otherwise \tcode{c}}
 }
 \tr{
-    \td{N/A}
-    \td{\tcode{ascii_case_insensitive_compare}}
-    \td{\i{see \ref[#case-insensitive-comparison]}}
+  \td{N/A}
+  \td{\tcode{ascii_case_insensitive_compare}}
+  \td{\i{see \ref[#case-insensitive-comparison]}}
 }
 \tr{
-    \td{N/A}
-    \td{\tcode{ascii_case_insensitive_equals}}
-    \td{\i{see \ref[#case-insensitive-comparison]}}
+  \td{N/A}
+  \td{\tcode{ascii_case_insensitive_equals}}
+  \td{\i{see \ref[#case-insensitive-comparison]}}
 }
 }
 
-\decision{
+\Bdecision{
 The proposed names are mostly unabbreviated
 to fit the rest of the standard library style.
 Shorter names such as \tcode{is_ascii_alphanum} or \tcode{is_ascii_alnum}
 could also be used.
 }
 
-\decision{
+\Bdecision{
 \tcode{isgraph} should perhaps have no new version.
 It is of questionable use,
 and both the old and new name aren't obvious.
@@ -299,7 +309,7 @@ This additional function is mainly useful for checking if a character "is ASCII"
 i.e. falls into the basic latin block,
 before performing an ASCII-only evaluation.
 
-\example{
+\Bex{
 In the following overload set, the \tcode{char32_t} implementation delegates
 to the \tcode{char8_t} implementation to avoid repetition of its logic.
 The \tcode{std::is_ascii(c)} check is needed because
@@ -335,6 +345,12 @@ starting with \tcode{'a'} or \tcode{'A'}.
 Such a function is useful when parsing numbers with a base of choice,
 which is what \tcode{std::to_chars} does, for example.
 
+Similar to \tcode{std::from_chars} and \tcode{std::to_chars},
+the given \tcode{base} has to be between 2 and 36 (inclusive).
+This is a non-hardened precondition because all functions in \header{ascii}
+are low-level, high-performance, and spiritually numeric.
+Hardened preconditions are not used within that context.
+
 \h3[id=binary-and-octal-is-digit]{\tcode{is_ascii_bit} and \tcode{is_ascii_octal_digit}}
 
 C++ and various other programming languages support binary and octal literals,
@@ -346,7 +362,7 @@ In conclusion, we may as well have functions for bases 2, 8, 10, and 16;
 they're not doing much harm, they're trivial to implement,
 and some users may find them useful.
 
-\note{
+\Bnote{
 None of the authors feel strongly about this,
 so if LEWG insists,
 we could remove \tcode{is_ascii_bit} and \tcode{is_ascii_octal_digit},
@@ -402,7 +418,7 @@ what should \tcode{is_ascii_digit('0')} do on an EBCDIC platform,
 where this call is \tcode{is_ascii_digit(char(0xf0))} ?
 We have three options, discussed below.
 
-\note{
+\Bnote{
 \tcode{is_ascii_digit(u8'0')} is equivalent to \tcode{is_ascii_digit(char8_t(0x30))}
 on any platform.
 In general, the behavior for Unicode character types is obvious,
@@ -440,7 +456,7 @@ There are EBCDIC control characters that do not have an ASCII equivalent,
 so if we were to do conversions, we would have to decide what,
 for example, \tcode{is_ascii_control('\\u008B')} should produce.
 
-\note{
+\Bnote{
 This option was originally preferred by one of the authors,
 but proved to be \em{hugely} unpopular in discussion of the proposal.
 }
@@ -468,7 +484,7 @@ If we want them to be a general way to query the ordinary literal encoding,
 \tcode{is_ascii} is a terrible name,
 and finding a more general name would prove difficult.
 
-\note{
+\Bnote{
 If we choose this option,
 we can still provide the same transcoding functionality as the previous option
 by offering a (literal-encoded) \tcode{char} \c{rightarrow} (code point) \tcode{char32_t} function,
@@ -482,24 +498,24 @@ i.e. some code units may be > \tcode{0x7f}.
 However, we're still interested in ASCII characters within that input.
 For example, we may
 \ul{
-\item{parse pure ASCII numbers like \code[json]{123} in a UTF-8 JSON (or other config) file,}
-\item{trim ASCII whitespace in HTTP headers, which are encoded with ISO-8859-1,}
-\item{
+\li{parse pure ASCII numbers like \code[json]{123} in a UTF-8 JSON (or other config) file,}
+\li{trim ASCII whitespace in HTTP headers, which are encoded with ISO-8859-1,}
+\li{
     parse ASCII-alphanumeric variable names in Lua scripts,
     where non-ASCII characters can appear (comments, string),
 }
-\item{...}
+\li{...}
 }
 
 It is possible (and expected) that the user calls say,
 \tcode{is_ascii_digit(U'ö')}, at least indirectly.
 For the sake of convenience, all proposed functions should handle such inputs by
 \ul{
-    \item{returning \tcode{false} in the case of all testing functions, and}
-    \item{applying an identity transformation in transformation/case-insensitive comparison functions.}
+    \li{returning \tcode{false} in the case of all testing functions, and}
+    \li{applying an identity transformation in transformation/case-insensitive comparison functions.}
 }
 
-\example{
+\Bex{
 With these semantics, the user can safely write:
 \cppblock{
 std::u8string_view str = u8"öab 123";
@@ -547,7 +563,7 @@ Ignoring or transforming ASCII case in algorithms is a fairly common problem.
 Therefore, it may be useful to provide views such as \tcode{std::views::ascii_lower},
 algorithms like \tcode{std::ranges::equal_ascii_case_insensitive}, etc.
 
-\example{
+\Bex{
 HTML tag names are case-insensitive and comprised of ASCII characters,
 like \code[html]{<div>}, \code[html]{<DIV>} etc.
 To identify a \code[html]{<div>} element, it would be nice if the user could write:
@@ -575,13 +591,13 @@ Currently, this proposal is focused exclusively on operations involving characte
 It may be tempting to generalize the proposed utilities beyond ASCII, e.g. to UTF-8.
 However, this is not proposed for multiple reasons:
 \ul{
-\item{
+\li{
     You cannot pass \tcode{char8_t} into a UTF-8 \tcode{is_upper} function
     and expect meaningful results.
     In general, operations on variable-length encodings require sequences of code units.
     The interface we propose \em{only} makes sense for ASCII.
 }
-\item{
+\li{
     Unicode utilities are tremendously more complex than ASCII utilities.
     Some Unicode case conversions even require multi-code-point changes.
 }
@@ -602,10 +618,16 @@ Character tests can be optimized using 128-bit or 256-bit bitsets.
 
 The wording changes are relative to \ref[N5008].
 
+In \eelis{tab:headers.cpp}, add a new element to C++ library headers table:
+
+\Bins{
+\tt{<ascii>}
+}
+
 In subclause \eelis{version.syn},
 update the synopsis as follows:
 
-\diff{\codeblock[cpp,borders=no]{
+\Bdiff{\codeblock[cpp,borders=no]{
 \serif{\html{[...]}}
 #define __cpp_lib_as_const                          201510L // freestanding, also in <utility>
 \ins{#define __cpp_lib_ascii                             20XXXXL // freestanding, also in <ascii>}
@@ -626,7 +648,7 @@ ins-block .para::before {
 }
 }
 
-\insblock{
+\Bins{
 \h2[listed=no]{ASCII utilities \stable-ref{ascii}}
 
 Subclause [ascii] describes components for dealing with characters that are encoded using ASCII
@@ -645,7 +667,7 @@ However, \tcode{is_ascii_digit(char{0x30})}
 is \tcode{true} regardless of ordinary literal encoding.
 }
 
-\h3[listed=no]{Header \header{ascii} synopsis \stable-ref{ascii.syn}}
+\h3[listed=no]{Header \tt{<ascii>} synopsis \stable-ref{ascii.syn}}
 
 When a function is specified with a type placeholder of
 \tcode{\ctype},
@@ -780,8 +802,10 @@ constexpr bool is_ascii_alphanumeric(\ctype c) noexcept;
 constexpr bool is_ascii_punctuation(\ctype c) noexcept;
 }
 \itemdescr{
+\p[style=text-align:left]{
 \returns
 \tcode{u32string_view(U"!\\"#\N{DOLLAR SIGN}\N{PERCENT SIGN}&'()*+,-./:;<=>?@[\\\\]^_`{|}~")\wbr{}.contains(static_cast<char32_t>(c))}.
+}
 }
 
 \itemdecl{
@@ -864,7 +888,9 @@ constexpr bool ascii_case_insensitive_equals(\ctype a,
 
 }
 
-\note{
+\hr
+
+\Bnote{
 Some uses of \tcode{static_cast} are unnecessary to describe semantics.
 For example, \tcode{static_cast<char32_t>(c) == U' '}
 is equivalent to \tcode{c == U' '}.
