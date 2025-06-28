@@ -1502,15 +1502,36 @@ if (theme !== null) {
 
 
 
-<style>
-ins-block .para::before {
-    display: none;
-}
 
-.stable-ref {
+
+
+
+
+
+
+
+
+
+
+<style>
+  ins-block .para::before {
+    display: none;
+  }
+
+  .stable-ref {
     float: right;
-}
+  }
+
+  .five-way-poll {
+    table-layout: fixed;
+  }
+  .five-way-poll td {
+    width: 20%;
+    text-align: center;
+  }
 </style>
+
+
 
 
 
@@ -1525,8 +1546,8 @@ ins-block .para::before {
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3733R0>P3733R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-06-08</tt-></dd>
-    <dt>Audience:</dt>        <dd>LEWG, SG16</dd>
+    <dt>Date:</dt>            <dd><tt->2025-06-28</tt-></dd>
+    <dt>Audience:</dt>        <dd>SG16</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
     <dt>GitHub Issue:</dt>    <dd><a href=https://wg21%2elink/P3733/github class=sans>wg21.link/P3733/github</a></dd>
@@ -1571,18 +1592,6 @@ because "figment" and "abbreviation" are normatively specified in the Unicode st
 
 <h3 id=history><a class=para href=#history></a>1.1. History</h3>
 
-<style>
-.five-way-poll {
-    table-layout: fixed;
-}
-.five-way-poll td {
-    width: 20%;
-    text-align: center;
-}
-</style>
-
-
-
 
 
 <p><a href="https://wg21%2elink/p2071r2">[P2071R2]</a> introduced <g-term>named-universal-character</g-term> escapes into C++23,
@@ -1602,9 +1611,7 @@ when discussing R0:
 <p>Match name aliases?
 </p><table class=five-way-poll>
 <tr><th>SF</th><th>F</th><th>N</th><th>A</th><th>SA</th></tr>
-<tr>
-<td>8</td><td>2</td><td>0</td><td>0</td><td>0</td>
-</tr>
+<tr><td>8</td> <td>2</td> <td>0</td> <td>0</td> <td>0</td></tr>
 </table>
 </blockquote>
 
@@ -1614,9 +1621,7 @@ when discussing R0:
 <p>This [named universal character escapes] should further support aliases
 </p><table class=five-way-poll>
 <tr><th>SF</th><th>F</th><th>N</th><th>A</th><th>SA</th></tr>
-<tr>
-<td>18</td><td>2</td><td>1</td><td>0</td><td>0</td>
-</tr>
+<tr><td>18</td> <td>2</td> <td>1</td> <td>0</td> <td>0</td></tr>
 </table>
 </blockquote>
 
@@ -1824,6 +1829,24 @@ These aliases are listed in the Unicode Character Database's <tt->NameAliases.tx
 None of these names or aliases have leading or trailing spaces.
  — <i>end note</i>]</wg21-block>
 </p></diff-block>
+
+<p>Change a feature-test macro in <a href=https://eel%2eis/c++draft/tab:cpp%2epredefined%2eft>[tab:cpp.predefined.ft]</a> as follows:
+</p>
+
+
+<diff-block>
+<table>
+  <tr>
+    <th>Macro name</th><th>Value</th>
+  </tr>
+  <tr><td>[…]</td><td>[…]</td></tr>
+  <tr>
+    <td><code><h- data-h=id>__cpp_named_character_escapes</h-></code></td>
+    <td><del>202207L</del> <ins>20XXXXL</ins></td>
+  </tr>
+  <tr><td>[…]</td><td>[…]</td></tr>
+</table>
+</diff-block>
 
 <h2 id=references><a class=para href=#references></a>6. References</h2>
 

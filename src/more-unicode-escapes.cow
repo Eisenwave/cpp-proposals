@@ -10,8 +10,8 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3733R0}}
-    \dt{Date:}            \dd{\tt{2025-06-08}}
-    \dt{Audience:}        \dd{LEWG, SG16}
+    \dt{Date:}            \dd{\tt{2025-06-28}}
+    \dt{Audience:}        \dd{SG16}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3733/github]}
@@ -36,21 +36,6 @@ because "figment" and "abbreviation" are normatively specified in the Unicode st
 
 \h3{History}
 
-\style{
-.five-way-poll {
-    table-layout: fixed;
-}
-.five-way-poll td {
-    width: 20%;
-    text-align: center;
-}
-}
-
-\macro[\five-way-poll]{\table[class=five-way-poll,\put{...}]{
-\tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
-\tr{\put}
-}}
-
 \macro[\esc]{\code[cpp]{\hl[escape]{\\\put}}}
 
 \ref[P2071R2] introduced \gterm{named-universal-character} escapes into C++23,
@@ -68,18 +53,14 @@ when discussing R0:
 
 \Bquote{
 Match name aliases?
-\five-way-poll{
-\td{8}\td{2}\td{0}\td{0}\td{0}
-}
+\five_way_poll[8,2,0,0,0]
 }
 
 EWG reaffirmed that decision at the same meeting:
 
 \Bquote{
 This [named universal character escapes] should further support aliases
-\five-way-poll{
-\td{18}\td{2}\td{1}\td{0}\td{0}
-}
+\five_way_poll[18,2,1,0,0]
 }
 
 However,
@@ -291,49 +272,67 @@ None of these names or aliases have leading or trailing spaces.
 }
 }
 
+Change a feature-test macro in \eelis{tab:cpp.predefined.ft} as follows:
+
+\macro[\etc]{[\N{HORIZONTAL ELLIPSIS}]}
+
+\Bdiff{
+\table{
+  \tr{
+    \th{Macro name}\th{Value}
+  }
+  \tr{\td{\etc}\td{\etc}}
+  \tr{
+    \td{\tcode{__cpp_named_character_escapes}}
+    \td{\del{202207L} \ins{20XXXXL}}
+  }
+  \tr{\td{\etc}\td{\etc}}
+}
+}
+
 \h2{References}
 
 \bib[
-    id = N5008,
-    title = Working Draft\, Programming Languages — C++,
-    date = 2025-03-15,
-    author = Thomas Köppe,
-    link = https://wg21.link/n5008,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
 ]
 \bib[
-    id = P2071R2,
-    title = Named universal character escapes,
-    date = 2022-03-25,
-    author = Tom Honermann et al.,
-    link = https://wg21.link/p2071r2,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2071r2.html
+  id = P2071R2,
+  title = Named universal character escapes,
+  date = 2022-03-25,
+  author = Tom Honermann et al.,
+  link = https://wg21.link/p2071r2,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2071r2.html
 ]
 \bib[
-    id = P2512R0,
-    title = SG16: Unicode meeting summaries 2021-06-09 through 2021-12-15,
-    date = 2021-12-23,
-    author = Tom Honermann,
-    link = https://wg21.link/p2512r0,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2512r0.html   
+  id = P2512R0,
+  title = SG16: Unicode meeting summaries 2021-06-09 through 2021-12-15,
+  date = 2021-12-23,
+  author = Tom Honermann,
+  link = https://wg21.link/p2512r0,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2512r0.html   
 ]
 \bib[
-    id = P2736R2,
-    title = Referencing The Unicode Standard,
-    date = 2023-02-09,
-    author = Corentin Jabot,
-    link = https://wg21.link/p2736r2,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2736r2.pdf
+  id = P2736R2,
+  title = Referencing The Unicode Standard,
+  date = 2023-02-09,
+  author = Corentin Jabot,
+  link = https://wg21.link/p2736r2,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2736r2.pdf
 ]
 \bib[
-    id = UnicodeNameAliases,
-    title = Unicode® NameAliases.txt,
-    link = https://www.unicode.org/Public/16.0.0/ucd/NameAliases.txt
+  id = UnicodeNameAliases,
+  title = Unicode® NameAliases.txt,
+  link = https://www.unicode.org/Public/16.0.0/ucd/NameAliases.txt
 ]
 \bib[
-    id = UnicodeAliasStability,
-    title = Unicode® Character Encoding Stability Policies \N{EM DASH} Formal Name Alias Stability,
-    link = https://www.unicode.org/policies/stability_policy.html#Formal_Name_Alias
+  id = UnicodeAliasStability,
+  title = Unicode® Character Encoding Stability Policies \N{EM DASH} Formal Name Alias Stability,
+  link = https://www.unicode.org/policies/stability_policy.html#Formal_Name_Alias
 ]
 
 \make-bib
