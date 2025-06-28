@@ -46,14 +46,27 @@
 \macro[\bigoh]{\N{MATHEMATICAL SCRIPT CAPITAL O}(\put)}
 
 \style{
-ins-block .para::before {
+  ins-block .para::before {
     display: none;
-}
+  }
 
-.stable-ref {
+  .stable-ref {
     float: right;
-}
+  }
+
+  .five-way-poll {
+    table-layout: fixed;
+  }
+  .five-way-poll td {
+    width: 20%;
+    text-align: center;
+  }
 }
 
 \Vset[pnum]{0}
 \macro[\pnum]{\Vset[pnum]{\Cadd[\Vget[pnum],1]}\Vget[pnum]}
+
+\macro[\five_way_poll]{\table[class=five-way-poll]{
+\tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
+\tr{\td{\put{0}} \td{\put{1}} \td{\put{2}} \td{\put{3}} \td{\put{4}}}
+}}

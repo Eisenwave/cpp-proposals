@@ -1,20 +1,5 @@
 \import{libwg21.cow}
 
-\style{
-.five-way-poll {
-    table-layout: fixed;
-}
-.five-way-poll td {
-    width: 20%;
-    text-align: center;
-}
-}
-
-\macro[\five_way_poll]{\table[class=five-way-poll]{
-\tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
-\tr{\td{\put{0}} \td{\put{1}} \td{\put{2}} \td{\put{3}} \td{\put{4}}}
-}}
-
 \wg21-head[
     title = Last chance to fix \tcode{std::nontype}
 ]{
