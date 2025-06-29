@@ -1,0 +1,353 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = A utility function for propagating the most significant bit
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3764}}
+    \dt{Date:}            \dd{\tt{2025-06-29}}
+    \dt{Audience:}        \dd{SG6}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3764/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/msb-fill.cow]}
+}
+\hr
+}
+
+\Babstract{
+Add a function to the \header{bit} header
+which converts the most significant bit to a bit mask.
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+In bit manipulation,
+it is a common technique to propagate the uppermost bit to all the other bits,
+creating a "bit mask".
+This bit mask can then be used to make an otherwise branching operation branchless.
+
+\Bex{
+The following two functions for computing the positive remainder
+(assuming \tcode{y} is positive) are equivalent:
+\cppblock{
+// \serif{Naive implementation}
+int mod_naive(int x, int y) {
+  int rem = x % y;
+  if (rem < 0) rem += y;
+  return rem;
+}
+
+// \serif{Branchless implementation}
+int mod_branchless(int x, int y) {
+  int rem = x % y;
+  rem += y & (rem >> (INT_WIDTH - 1));
+  return rem;
+}
+}
+}
+
+Modern optimizing compilers often find such optimizations already,
+at least in simple examples like the one above.
+In fact, Clang optimizes both functions the same for x86_64.
+However:
+
+\ul{
+  \li{
+    In larger examples, this becomes much less reliable,
+    and \tcode{&&} and \tcode{if} do get translated into conditional jumps.
+  }
+  \li{
+    Compilers only perform this transformation if it heuristically better.
+    Branchless programming is often applied in scenarios where code must be
+    protected against timing-based side channel attacks,
+    and so branchless variants may be preferred even at an extra cost.
+  }
+  \li{
+    Even modern optimizing compilers miss optimizations like these sometimes.
+  }
+}
+
+Therefore, using this masking technique directly is not obsolete.
+You can find many examples of this technique being used at \ref[BitTwiddlingHacks]
+by searching for \tcode{sizeof} on that page.
+
+\h3{This mask creation needs a function}
+
+Creating a bit mask from the sign bit by hand is especially tedious
+compared to many other techniques in bit manipulation,
+at least when written directly using an arithmetic right-shift.
+That is because it requires right-shifting by the operand width minus one.
+In generic code that is meant to operate on different integer types,
+this requires use of \tcode{std::numeric_limits<T>::digits},
+which is quite verbose and difficult to use
+because it returns different results for signed and unsigned types.
+
+Another possible way to make such a mask (for signed types only)
+is to write \tcode{(x < 0 ? -1 : 0)},
+but this reintroduces reliance on the compiler to eliminate branches.
+It also doesn't express directly what is emitted by the compiler,
+and in the context of bit manipulation,
+keeping code "close to hardware" is often desirable.
+
+Regardless of the implementation details,
+C++ users sometimes create a utility function/macro that performs sign-masking.
+\ref[GitHubCodeSearch] for \tt{-is:fork language:C++ "sign_mask("}
+reveals that ~8000 files already use a function called \tcode{sign_mask},
+although not all of these functions have the functionality proposed here.
+
+It would be nice if this function was provided by the standard already.
+
+\h2{Motivation}
+
+A sign-masking function should be included in the \header{bit} header because
+
+\ul{
+  \li{
+    it is a useful utility, similar to \tcode{has_single_bit} and \tcode{bit_ceil},
+  }
+  \li{
+    C++ users sometimes make this function/macro themselves already,
+  }
+  \li{
+    there is some disagreement over how to write it,
+    and the specifics may depend on hardware capabilities,
+  }
+  \li{
+    the technique is sometimes used in SIMD as well,
+    and the implementation using comparison to zero is "closer to hardware"
+    in that context;
+    however, it is still the same operation, and a common SIMD/non-SIMD spelling
+    would be more expressive, and
+  }
+  \li{
+    writing this function correctly, generically,
+    is tedious when using \tcode{std::numeric_limits}.
+  }
+}
+
+\h2{Design}
+
+\h3{Support for signed and unsigned types}
+
+As shown in the example in \ref[#introduction],
+this function is sometimes used with signed types,
+not just with unsigned types.
+That is why it should accept both.
+
+Such an interface would be somewhat inconsistent with the remaining functions in \header{bit},
+but permitting the use of signed types within \header{bit} \em{in general}
+is not within the scope of this paper.
+To my knowledge,
+another SG6 proposal which proposes use of signed types in \header{bit}
+is already being developed.
+
+\h3{Naming}
+
+I propose the name \tcode{std::msb_to_mask}
+because it expresses its effects very clearly:
+
+\Bquote{
+\tcode{std::msb_to_mask} converts the most significant bit (MSB)
+into a bit-mask.
+}
+
+The function should behave bitwise-equivalently for signed and unsigned types,
+so including \tcode{sign} within the name would cause confusion because
+unsigned types have no sign.
+While the name \tcode{sign_mask} has some precedent,
+it also frequently refers to a mask where the uppermost bit is set,
+i.e. a mask \em{of} the sign bit.
+
+\h3{SIMD support}
+
+Following \ref[P2933R4],
+almost all functions (e.g. excluding \tcode{bit_cast}) in \header{bit}
+should also have \tcode{std::simd} overloads.
+There is no compelling reason why the proposed function should break that pattern.
+
+\h2{Implementation}
+
+\cppblock{
+namespace std {
+  template<\exposid{signed-or-unsigned-integer} T>
+    constexpr T msb_to_mask(T x) noexcept {
+      using S = make_signed_t<T>;
+      return static_cast<T>(static_cast<S>(x) >> numeric_limits<S>::digits);
+    }
+
+  namespace simd {
+    template<\exposid{simd-type} V>
+      constexpr V msb_to_mask(const V& v) noexcept {
+        using S = rebind_t<make_signed_t<typename V::value_type>, V>;
+        return static_cast<T>(static_cast<S>(v) >> numeric_limits<S>::digits);
+      }
+  }
+}
+}
+
+\Bnote{
+The SIMD implementation is naive.
+On x86_64 with SSE, an optimal implementation would be based on e.g.:
+\cppblock{
+_mm_cmplt_epi32(v, _mm_setzero_si128())
+}
+That is because comparison instructions like \tcode{_mm_cmplt_epi32}
+already yield bit-masks as results.
+}
+
+\h2{Wording}
+
+Bump feature-test macros in \eelis{version.syn} as follows:
+
+\Bdiff{
+\itemdecl{
+#define __cpp_lib_bitops \del{201907L} \ins{20XXXXL} // \serif{freestanding, also in \tt{<bit>}}
+#define __cpp_lib_simd \del{202502L} \ins{20XXXXL}   // \serif{also in \tt{<simd>}}
+}
+}
+
+\h3{[bit]}
+
+In \eelis{bit.syn}, change the synopsis as follows:
+
+\Bdiff{
+\itemdecl{
+namespace std {
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+
+  // \serif{[bit.count], counting}
+  template<class T>
+    constexpr int countl_zero(T x) noexcept;
+  template<class T>
+    constexpr int countl_one(T x) noexcept;
+  template<class T>
+    constexpr int countr_zero(T x) noexcept;
+  template<class T>
+    constexpr int countr_one(T x) noexcept;
+  template<class T>
+    constexpr int popcount(T x) noexcept;
+
+\ins{  // \serif{[bit.mask], masks}
+  template<class T>
+    constexpr T msb_to_mask(T x) noexcept;}
+
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+}
+}
+}
+
+In \eelis{bit}, add a new subclause immediately following \eelis{bit.count}:
+
+\Bins{
+\html-h3{Masks \stable-ref{bit.mask}}
+
+\itemdecl{
+template<class T>
+  constexpr T msb_to_mask(T x) noexcept;
+}
+
+\itemdescr{
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\effects
+Equivalent to:
+\Bindent{
+\itemdecl{
+using S = make_signed_t<T>;
+return static_cast<T>(static_cast<S>(x) >> numeric_limits<S>::digits);
+}
+}
+}
+}
+
+\h3{[simd]}
+
+In \eelis{simd.syn}, change the synopsis as follows:
+
+\Bdiff{
+\itemdecl{
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+
+// \serif{[simd.bit], Bit manipulation}
+template<simd-type V> constexpr V byteswap(const V& v) noexcept;
+template<simd-type V> constexpr V bit_ceil(const V& v) noexcept;
+template<simd-type V> constexpr V bit_floor(const V& v) noexcept;
+\ins{template<simd-type V> constexpr V msb_to_mask(const V& v) noexcept;}
+
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+
+// \serif{[simd.bit], Bit manipulation}
+using simd::byteswap;
+using simd::bit_ceil;
+using simd::bit_floor;
+\ins{using simd::msb_to_mask;}
+using simd::has_single_bit;
+using simd::rotl;
+using simd::rotr;
+using simd::bit_width;
+using simd::countl_zero;
+using simd::countl_one;
+using simd::countr_zero;
+using simd::countr_one;
+using simd::popcount;
+
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+}
+}
+
+In \eelis{simd.bit}, following the declaration of \tcode{bit_floor},
+insert a new declaration as follows:
+
+\Bins{
+\itemdecl{
+template<\exposid{simd-type} V> constexpr V msb_to_mask(const V& v) noexcept;
+}
+
+\itemdescr{
+\constraints
+The type \tcode{V::value_type} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\returns
+A \tcode{basic_vec} object where the \math{\msup{\mi{i}\mtext{th}}} element
+is initialized to the result of \tcode{std::msb_to_mask(v[\math{\mi{i}}])}\iref{bit.mask}
+for all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}).
+}
+}
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/N5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = BitTwiddlingHacks,
+  title =  Bit Twiddling Hacks,
+  author = Sean Eron Anderson,
+  link = https://graphics.stanford.edu/~seander/bithacks.html
+]
+\bib[
+  id = GitHubCodeSearch,
+  title = GitHub code search for C++ uses of a "sign_mask" function,
+  link = https://github.com/search?q=-is%3Afork+language%3AC%2B%2B++++%22sign_mask%28%22&type=code
+]
+\bib[
+  id = P2933R4,
+  title = Extend <bit> header function with overloads for std::simd,
+  date = 2025-02-13,
+  author = Daniel Towner\, Ruslan Arutyunyan,
+  link = https://wg21.link/p2933r4,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2933r4.html
+]
+
+\make-bib
