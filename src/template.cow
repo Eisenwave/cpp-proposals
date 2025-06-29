@@ -4,13 +4,13 @@
     title = ASCII character utilities
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{P3688R0}}
-    \dt{Date:}            \dd{\tt{2025-05-19}}
-    \dt{Audience:}        \dd{LEWG, SG16}
-    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
-    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688/github]}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
+  \dt{Document number:} \dd{\docnum{P3688R0}}
+  \dt{Date:}            \dd{\tt{2025-05-19}}
+  \dt{Audience:}        \dd{LEWG, SG16}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3688/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/ascii.cow]}
 }
 \hr
 }
@@ -30,20 +30,20 @@
 \h2{References}
 
 \bib[
-    id = N5008,
-    title = Working Draft\, Programming Languages — C++,
-    date = 2025-03-15,
-    author = Thomas Köppe,
-    link = https://wg21.link/n5008,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
 ]
 \bib[
-    id = P3312R1,
-    title = Overload Set Types,
-    date = 2025-04-16,
-    author = Bengt Gustafsson,
-    link = https://wg21.link/p3312r1,
-    long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+  id = P3312R1,
+  title = Overload Set Types,
+  date = 2025-04-16,
+  author = Bengt Gustafsson,
+  link = https://wg21.link/p3312r1,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
 ]
 
 \make-bib
