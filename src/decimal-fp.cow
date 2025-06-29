@@ -1,0 +1,125 @@
+\import{libwg21.cow}
+
+\wg21-head[
+    title = Add optional type aliases corresponding to the C23 decimal floating-point types
+]{
+\dl{
+  \dt{Document number:} \dd{\docnum{D3773R0}}
+  \dt{Date:}            \dd{\tt{2025-06-28}}
+  \dt{Audience:}        \dd{SG22}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3773/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/decimal-fp.cow]}
+}
+\hr
+}
+
+\Babstract{
+
+}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+\ref[P1467R9] added the set of \dfn{extended floating-point types} to C++23.
+\ref[P1467R9] is also carefully designed to enable some extended floating-point types
+to be decimal floating-point types:
+
+\Bquote{
+The radix of the exponent of each floating-point type is currently implementation-defined.
+That is not changing.
+This paper will make it easier for the radix of extended floating-point types
+to be different from the radix of the standard types,
+\b{allowing implementations to support decimal floating-point}
+while the standard floating-point types remain binary floating-point types.
+}
+
+Furthermore, there already exist \tcode{_Decimal32},
+\tcode{_Decimal64}, and \tcode{_Decimal128} types in the C23 standard.
+These are represented using the IEC\N{NO-BREAK SPACE}60559
+\i{decimal32}, \i{decimal64}, and \i{decimal128} formats respectively.
+Among others, IBM z/\N{ZERO-WIDTH NO-BREAK SPACE}Architecture
+processors have hardware support for these types.
+
+The goal of this proposal is nothing more than to introduce a standard spelling
+for these (optional) types,
+should the implementation want to provide them.
+Based on feedback from the authors of \ref[P1467R9],
+it would take little effort to make this change.
+It was simply not done for C++23 because it was not an explicit goal of \ref[P1467R9].
+
+\h2{Motivation}
+
+Extensive motivation for decimal floating-point types can be found in \ref[N2341].
+This has convinced WG14 into standardizing such types in C.
+In short, decimal floating-point types avoid issues with representing
+decimal fractional numbers in a binary format.
+For example, \tcode{0.1} cannot be exactly represented by a binary floating-point type,
+meaning that \tcode{0.1 + 0.2 == 0.3} is \tcode{false}.
+Furthermore, in text form,
+floating-point types are often represented in decimal notation,
+which makes parsing and stringification substantially more expensive
+when a binary floating-point type is used.
+In various business and financial applications,
+decimal floating-point types are utilized to avoid such issues.
+
+However, the motivation for bringing this into C++ is mainly "C has it".
+If the implementation happens to provide a decimal floating-point type,
+and that type is part of the platform's C ABI,
+there should be a way to spell this type in C++.
+
+\h2{Design considerations}
+
+As in C, decimal floating-point types would be optional.
+
+\ref[P1467R9] has essentially completed the design of this paper already,
+minus adding the necessary type aliases for decimal floating-point types.
+This includes defining conversion ranks and other rules in such a way that
+decimal floating-point types \em{can already} be supported by the implementation,
+just without a standard spelling.
+
+For the type aliases, I chose the names \tcode{std::decimal32_t},
+\tcode{std::decimal64_t}, and \tcode{std::decimal128_t}, to match the corresponding C types
+\tcode{_Decimal32}, \tcode{_Decimal64}, and \tcode{_Decimal128}.
+
+\h2{Impact on implementations}
+
+None; the feature is entirely optional.
+However, if an implementation wanted to provide such a type,
+it would obviously have to satisfy the existing requirements
+for extended floating-point types.
+
+\h2{Wording}
+
+
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = P1467R9,
+  title = Extended floating-point types and standard names,
+  date = 2022-04-22,
+  author = David Olsen\, Ilya Burylov\, Michał Dominiak,
+  link = https://wg21.link/p1467r9,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p1467r9.pdf
+]
+\bib[
+  id = N2341,
+  title = ISO/IEC TS 18661-2: Information technology — Programming languages\, their environments\, and system software interfaces — Floating-point extensions for C — Part 2: Decimal floating-point arithmetic,
+  date = 2019-02-26,
+  link = https://open-std.org/JTC1/SC22/WG14/www/docs/n2341.pdf
+]
+
+\make-bib
