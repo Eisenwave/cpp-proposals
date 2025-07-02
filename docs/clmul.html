@@ -1463,53 +1463,6 @@ if (theme !== null) {
     </script>
 </div>
 <main>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <style>
   ins-block .para::before {
     display: none;
@@ -1527,12 +1480,6 @@ if (theme !== null) {
     text-align: center;
   }
 </style>
-
-
-
-
-
-
 
 <p><div class=wg21-head><h1>Carry-less product: <tt->std::clmul</tt-></h1>
 
@@ -2086,17 +2033,17 @@ immediately following the declarations associated with <a href=https://eel%2eis/
 <ins-block>
 <code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[numeric.clmul], carry-less product</h-></f-serif>
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
     <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw>friend</h-> <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h->
       <h- data-h=kw>operator</h-><h- data-h=sym_op>==</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
-  <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
-  <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
   <h- data-h=kw>constexpr</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
@@ -2112,9 +2059,9 @@ append a subclause immediately following <a href=https://eel%2eis/c++draft/numer
 
 
 <code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
-  <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
-  <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <div class=indent>
 <p>1

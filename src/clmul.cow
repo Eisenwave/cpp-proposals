@@ -1,6 +1,6 @@
 \import{libwg21.cow}
 
-\wg21-head[
+\wg21_head[
     title = Carry-less product: \tt{std::clmul}
 ]{
 \dl{
@@ -21,7 +21,7 @@ Add widening and non-widening carry-less multiplication functions.
 
 \h2[listed=no]{Contents}
 
-\make-contents
+\make_contents
 
 \h2{Revision history}
 
@@ -541,17 +541,17 @@ immediately following the declarations associated with \eelis{numeric.sat}:
 \itemdecl{
 // \serif{[numeric.clmul], carry-less product}
 template<class T>
-struct wide_result {
+  struct wide_result {
     T low_bits;
     T high_bits;
     friend constexpr bool
       operator==(const wide_result&, const wide_result&) = default;
-};
+  };
 
 template<class T>
-constexpr auto operator<=>(const wide_result& x, const wide_result& y)
-  noexcept(noexcept(x.low_bits <=> y.low_bits))
-  -> decltype(x.low_bits <=> y.low_bits);
+  constexpr auto operator<=>(const wide_result& x, const wide_result& y)
+    noexcept(noexcept(x.low_bits <=> y.low_bits))
+    -> decltype(x.low_bits <=> y.low_bits);
 
 template<class T>
   constexpr wide_result<T> clmul_wide(T x, T y) noexcept;
@@ -569,9 +569,9 @@ append a subclause immediately following \eelis{numeric.sat}:
 
 \itemdecl{
 template<class T>
-constexpr auto operator<=>(const wide_result& x, const wide_result& y)
-  noexcept(noexcept(x.low_bits <=> y.low_bits))
-  -> decltype(x.low_bits <=> y.low_bits);
+  constexpr auto operator<=>(const wide_result& x, const wide_result& y)
+    noexcept(noexcept(x.low_bits <=> y.low_bits))
+    -> decltype(x.low_bits <=> y.low_bits);
 }
 
 \itemdescr{
@@ -849,4 +849,4 @@ for all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}).
   link = https://github.com/llvm/llvm-project/pull/140301
 ]
 
-\make-bib
+\make_bib
