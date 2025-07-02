@@ -1,53 +1,53 @@
-\macro[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}
-
-\macro[\cppblock{...}]{\codeblock[cpp]{\put}}
-\macro[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}
-
-\macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}
-\macro[\iref{...}]{ (\eelis{\put})}
-
-\macro[\term{...}]{\i{\put}}
-\macro[\exposid{...}]{\i{\hl[id]{\put}}}
-\macro[\placeholder{...}]{\tt{\exposid{\put}}}
-\macro[\tcode]{\code[cpp]{\put}}
-\macro[\grammarterm]{\gterm{\put}}
-\macro[\header{...}]{\code[cpp]{\hl[string]{<\put>}}}
-\macro[\cv]{\exposid{cv}}
-\macro[\seebelow]{\exposid{see below}}
-
-\macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}
-\macro[\itemdescr]{\Bindent{\paragraphs{\put}}}
-
-\macro[\Fundescx]{\i{\put}}
-\macro[\Fundesc]{\i{\put}:}
-\macro[\recommended]{\Fundesc{Recommended practice}}
-\macro[\required]{\Fundesc{Required behavior}}
-\macro[\constraints]{\Fundesc{Constraints}}
-\macro[\mandates]{\Fundesc{Mandates}}
-\macro[\expects]{\Fundesc{Preconditions}}
-\macro[\hardexpects]{\Fundesc{Hardened preconditions}}
-\macro[\effects]{\Fundesc{Effects}}
-\macro[\ensures]{\Fundesc{Postconditions}}
-\macro[\returns]{\Fundesc{Returns}}
-\macro[\throws]{\Fundesc{Throws}}
-\macro[\default]{\Fundesc{Default behavior}}
-\macro[\complexity]{\Fundesc{Complexity}}
-\macro[\remarks]{\Fundesc{Remarks}}
-\macro[\errors]{\Fundesc{Error conditions}}
-\macro[\sync]{\Fundesc{Synchronization}}
-\macro[\implimits]{\Fundesc{Implementation limits}}
-\macro[\result]{\Fundesc{Result}}
-\macro[\returntype]{\Fundesc{Return type}}
-
-\macro[\oldconcept]{\i{Cpp17\put}}
-\macro[\libconcept]{\tcode{\put}}
-\macro[\exposconcept]{\tcode{\exposid{\put}}}
-\macro[\libheader]{\header{\put}}
-
-\macro[\brk]{\wbr}
-
-\macro[\bigoh]{\N{MATHEMATICAL SCRIPT CAPITAL O}(\put)}
-
+\macro[\docnum{...}]{\ref[https://wg21.link/\put]{\put}}\
+\
+\macro[\cppblock{...}]{\codeblock[cpp]{\put}}\
+\macro[\stable-ref{...}]{\html-span[class=stable-ref]{[\put]}}\
+\
+\macro[\eelis{...}]{\ref[https://eel.is/c++draft/\put]}\
+\macro[\iref{...}]{ (\eelis{\put})}\
+\
+\macro[\term{...}]{\i{\put}}\
+\macro[\exposid{...}]{\i{\hl[id]{\put}}}\
+\macro[\placeholder{...}]{\tt{\exposid{\put}}}\
+\macro[\tcode]{\code[cpp]{\put}}\
+\macro[\grammarterm]{\gterm{\put}}\
+\macro[\header{...}]{\code[cpp]{\hl[string]{<\put>}}}\
+\macro[\cv]{\exposid{cv}}\
+\macro[\seebelow]{\exposid{see below}}\
+\
+\macro[\itemdecl]{\codeblock[cpp,borders=no]{\put}}\
+\macro[\itemdescr]{\Bindent{\paragraphs{\put}}}\
+\
+\macro[\Fundescx]{\i{\put}}\
+\macro[\Fundesc]{\i{\put}:}\
+\macro[\recommended]{\Fundesc{Recommended practice}}\
+\macro[\required]{\Fundesc{Required behavior}}\
+\macro[\constraints]{\Fundesc{Constraints}}\
+\macro[\mandates]{\Fundesc{Mandates}}\
+\macro[\expects]{\Fundesc{Preconditions}}\
+\macro[\hardexpects]{\Fundesc{Hardened preconditions}}\
+\macro[\effects]{\Fundesc{Effects}}\
+\macro[\ensures]{\Fundesc{Postconditions}}\
+\macro[\returns]{\Fundesc{Returns}}\
+\macro[\throws]{\Fundesc{Throws}}\
+\macro[\default]{\Fundesc{Default behavior}}\
+\macro[\complexity]{\Fundesc{Complexity}}\
+\macro[\remarks]{\Fundesc{Remarks}}\
+\macro[\errors]{\Fundesc{Error conditions}}\
+\macro[\sync]{\Fundesc{Synchronization}}\
+\macro[\implimits]{\Fundesc{Implementation limits}}\
+\macro[\result]{\Fundesc{Result}}\
+\macro[\returntype]{\Fundesc{Return type}}\
+\
+\macro[\oldconcept]{\i{Cpp17\put}}\
+\macro[\libconcept]{\tcode{\put}}\
+\macro[\exposconcept]{\tcode{\exposid{\put}}}\
+\macro[\libheader]{\header{\put}}\
+\
+\macro[\brk]{\wbr}\
+\
+\macro[\bigoh]{\N{MATHEMATICAL SCRIPT CAPITAL O}(\put)}\
+\
 \style{
   ins-block .para::before {
     display: none;
@@ -64,12 +64,12 @@
     width: 20%;
     text-align: center;
   }
-}
-
-\Vset[pnum]{0}
-\macro[\pnum]{\Vset[pnum]{\Cadd[\Vget[pnum],1]}\Vget[pnum]}
-
+}\
+\
+\Vset[pnum]{0}\
+\macro[\pnum]{\Vset[pnum]{\Cadd[\Vget[pnum],1]}\Vget[pnum]}\
+\
 \macro[\five_way_poll]{\table[class=five-way-poll]{
 \tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
 \tr{\td{\put{0}} \td{\put{1}} \td{\put{2}} \td{\put{3}} \td{\put{4}}}
-}}
+}}\
