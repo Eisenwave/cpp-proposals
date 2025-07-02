@@ -4,13 +4,13 @@
     title = A utility function for propagating the most significant bit
 ]{
 \dl{
-    \dt{Document number:} \dd{\docnum{P3764}}
-    \dt{Date:}            \dd{\tt{2025-06-29}}
+    \dt{Document number:} \dd{\docnum{P3764R0}}
+    \dt{Date:}            \dd{\tt{2025-07-02}}
     \dt{Audience:}        \dd{SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3764/github]}
-    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/msb-fill.cow]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/msb-to-mask.cow]}
 }
 \hr
 }
