@@ -78,19 +78,19 @@ two polynomials in GF(2), where each bit is a coefficient.
 I propose a \tcode{std::clmul} function to perform this operation:
 \cppblock{
 template<class T>
-constexpr T clmul(T x, T y) noexcept;
+  constexpr T clmul(T x, T y) noexcept;
 }
 
 I also propose a widening operation in the style of \ref[P3161R4], as follows:
 \cppblock{
 template<class T>
-struct wide_result {
-  T low_bits;
-  T high_bits;
-};
+  struct wide_result {
+    T low_bits;
+    T high_bits;
+  };
 
 template<class T>
-constexpr wide_result<T> clmul_wide(T x, T y) noexcept;
+  constexpr wide_result<T> clmul_wide(T x, T y) noexcept;
 }
 
 \h2{Motivation}
@@ -207,8 +207,7 @@ Note that the following example uses the \tcode{std::bit_compress} function from
 which may also be accelerated using \tcode{clmul}.
 
 \cppblock{
-pos hilbert_to_xy(uint32_t i)
-{
+pos hilbert_to_xy(uint32_t i) {
   // De-interleave the bits of i.
   uint32_t i0 = std::bit_compress(i, 0x55555555u); // abcdefgh \N{RIGHTWARDS ARROW} bdfh
   uint32_t i1 = std::bit_compress(i, 0xaaaaaaaau); // abcdefgh \N{RIGHTWARDS ARROW} aceg
@@ -244,8 +243,7 @@ a b e f
 \tcode{clmul} can be used to implement bit-interleaving in order to generate a
 \ref[https://en.wikipedia.org/wiki/Z-order_curve]{Z-order curves}.
 \cppblock{
-uint32_t xy_to_morton(uint32_t x, uint32_t y)
-{
+uint32_t xy_to_morton(uint32_t x, uint32_t y) {
   uint32_t lo = std::clmul(x, x) << 0; // abcd -> 0a0b0c0d
   uint32_t hi = std::clmul(y, y) << 1; // abcd -> a0b0c0d0
   return hi | lo;
@@ -263,14 +261,13 @@ In the example above, \tcode{std::clmul(x, x)} is equivalent to
 A naive and unconstrained implementation looks as follows:
 \cppblock{
 template<class T>
-constexpr T clmul(const T x, const T y) noexcept
-{
-  T result = 0;
-  for (int i = 0; i < numeric_limits<T>::digits; ++i) {
-    result ^= (x << i) * ((y >> i) & 1);
+  constexpr T clmul(const T x, const T y) noexcept {
+    T result = 0;
+    for (int i = 0; i < numeric_limits<T>::digits; ++i) {
+      result ^= (x << i) * ((y >> i) & 1);
+    }
+    return result;
   }
-  return result;
-}
 }
 
 \h3{Hardware support}
@@ -350,8 +347,7 @@ A limited x86_64 implementation of \tcode{clmul_wide} may look as follows:
 #include <immintrin.h>
 #include <cstdint>
 
-wide_result<uint64_t> clmul_wide(uint64_t x, uint64_t y) noexcept
-{
+wide_result<uint64_t> clmul_wide(uint64_t x, uint64_t y) noexcept {
   __m128i x_128 = _mm_set_epi64x(0, x);
   __m128i y_128 = _mm_set_epi64x(0, y);
   __m128i result_128 = _mm_clmulepi64_si128(x_128, y_128, 0);
@@ -362,7 +358,6 @@ wide_result<uint64_t> clmul_wide(uint64_t x, uint64_t y) noexcept
 }
 }
 }
-
 
 There also exists an LLVM pull request (\ref[LLVMClmul])
 which would add an \tt{@llvm.clmul} intrinsic function.
@@ -412,22 +407,22 @@ there exists a \tcode{std::clmul_wide} function template:
 
 \cppblock{
 template<class T>
-struct wide_result {
-  T low_bits;
-  T high_bits;
-  friend constexpr bool
-    operator==(const wide_result&, const wide_result&) = default;
-};
+  struct wide_result {
+    T low_bits;
+    T high_bits;
+    friend constexpr bool
+      operator==(const wide_result&, const wide_result&) = default;
+  };
 
 template<class T>
-constexpr auto operator<=>(const wide_result& x, const wide_result& y)
-  noexcept(noexcept(x.low_bits <=> y.low_bits))
-  -> decltype(x.low_bits <=> y.low_bits) {
-    return tie(x.high_bits, x.low_bits) <=> tie(y.high_bits, y.low_bits);
-  }
+  constexpr auto operator<=>(const wide_result& x, const wide_result& y)
+    noexcept(noexcept(x.low_bits <=> y.low_bits))
+    -> decltype(x.low_bits <=> y.low_bits) {
+      return tie(x.high_bits, x.low_bits) <=> tie(y.high_bits, y.low_bits);
+    }
 
 template<class T>
-constexpr wide_result<T> clmul_wide(T x, T y) noexcept;
+  constexpr wide_result<T> clmul_wide(T x, T y) noexcept;
 }
 
 Such a widening function is important in a various cryptographic use cases.

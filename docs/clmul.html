@@ -1592,17 +1592,17 @@ two polynomials in GF(2), where each bit is a coefficient.
 </p>
 <p>I propose a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul</h-></code> function to perform this operation:
 </p><code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>I also propose a widening operation in the style of <a href="https://wg21%2elink/p3161r4">[P3161R4]</a>, as follows:
 </p><code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <h2 id=motivation><a class=para href=#motivation></a>3. Motivation</h2>
 
@@ -1713,8 +1713,7 @@ which is helpful for computing Hilbert curves.
 Note that the following example uses the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>bit_compress</h-></code> function from <a href="https://wg21%2elink/p3104r3">[P3104R3]</a>,
 which may also be accelerated using <code><h- data-h=id>clmul</h-></code>.
 </p>
-<code-block><h- data-h=id>pos</h-> <h- data-h=id>hilbert_to_xy</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint32_t</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h->
-<h- data-h=sym_brac>{</h->
+<code-block><h- data-h=id>pos</h-> <h- data-h=id>hilbert_to_xy</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint32_t</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> De-interleave the bits of i.</h->
   <h- data-h=id_type>uint32_t</h-> <h- data-h=id>i0</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>bit_compress</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>55555555</h-><h- data-h=num_deco>u</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> abcdefgh </h-><h- data-h=cmt>→</h-><h- data-h=cmt> bdfh</h->
   <h- data-h=id_type>uint32_t</h-> <h- data-h=id>i1</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>bit_compress</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>aaaaaaaa</h-><h- data-h=num_deco>u</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> abcdefgh </h-><h- data-h=cmt>→</h-><h- data-h=cmt> aceg</h->
@@ -1748,8 +1747,7 @@ a b e f
 <example-block><p><intro-></intro-> 
 <code><h- data-h=id>clmul</h-></code> can be used to implement bit-interleaving in order to generate a
 <a href=https://en%2ewikipedia%2eorg/wiki/Z-order_curve>Z-order curves</a>.
-</p><code-block><h- data-h=id_type>uint32_t</h-> <h- data-h=id>xy_to_morton</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint32_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>uint32_t</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
-<h- data-h=sym_brac>{</h->
+</p><code-block><h- data-h=id_type>uint32_t</h-> <h- data-h=id>xy_to_morton</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint32_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>uint32_t</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
   <h- data-h=id_type>uint32_t</h-> <h- data-h=id>lo</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> abcd -&gt; 0a0b0c0d</h->
   <h- data-h=id_type>uint32_t</h-> <h- data-h=id>hi</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;&lt;</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> abcd -&gt; a0b0c0d0</h->
   <h- data-h=kw_ctrl>return</h-> <h- data-h=id>hi</h-> <h- data-h=sym_op>|</h-> <h- data-h=id>lo</h-><h- data-h=sym_punc>;</h->
@@ -1765,14 +1763,13 @@ In the example above, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- d
 
 <p>A naive and unconstrained implementation looks as follows:
 </p><code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h->
-<h- data-h=sym_brac>{</h->
-  <h- data-h=id>T</h-> <h- data-h=id>result</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=kw_ctrl>for</h-> <h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=id>numeric_limits</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>digits</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_op>++</h-><h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=id>result</h-> <h- data-h=sym_op>^=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>&lt;&lt;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;</h-> <h- data-h=num>1</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=sym_brac>}</h->
-  <h- data-h=kw_ctrl>return</h-> <h- data-h=id>result</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-></code-block>
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>T</h-> <h- data-h=id>clmul</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>T</h-> <h- data-h=id>result</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_ctrl>for</h-> <h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=id>numeric_limits</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_op>::</h-><h- data-h=id>digits</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_op>++</h-><h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+      <h- data-h=id>result</h-> <h- data-h=sym_op>^=</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>&lt;&lt;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-> <h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;</h-> <h- data-h=num>1</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>result</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-></code-block>
 
 <h3 id=hardware-support><a class=para href=#hardware-support></a>4.1. Hardware support</h3>
 
@@ -1850,8 +1847,7 @@ A limited x86_64 implementation of <code><h- data-h=id>clmul_wide</h-></code> ma
 <code-block><h- data-h=mac>#include &lt;immintrin.h&gt;</h->
 <h- data-h=mac>#include &lt;cstdint&gt;</h->
 
-<h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>uint64_t</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint64_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>uint64_t</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h->
-<h- data-h=sym_brac>{</h->
+<h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id_type>uint64_t</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>uint64_t</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id_type>uint64_t</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_brac>{</h->
   <h- data-h=kw_type>__m128i</h-> <h- data-h=id>x_128</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>_mm_set_epi64x</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
   <h- data-h=kw_type>__m128i</h-> <h- data-h=id>y_128</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>_mm_set_epi64x</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
   <h- data-h=kw_type>__m128i</h-> <h- data-h=id>result_128</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>_mm_clmulepi64_si128</h-><h- data-h=sym_par>(</h-><h- data-h=id>x_128</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y_128</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
@@ -1861,7 +1857,6 @@ A limited x86_64 implementation of <code><h- data-h=id>clmul_wide</h-></code> ma
   <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
 </example-block>
-
 
 <p>There also exists an LLVM pull request (<a href="https://github%2ecom/llvm/llvm-project/pull/140301">[LLVMClmul]</a>)
 which would add an <tt->@llvm.clmul</tt-> intrinsic function.
@@ -1910,22 +1905,22 @@ The (proposed) LLVM intrinsic function (<a href="https://github%2ecom/llvm/llvm-
 there exists a <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>clmul_wide</h-></code> function template:
 </p>
 <code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
-  <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=kw>friend</h-> <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h->
-    <h- data-h=kw>operator</h-><h- data-h=sym_op>==</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw>struct</h-> <h- data-h=id>wide_result</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>T</h-> <h- data-h=id>low_bits</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=id>T</h-> <h- data-h=id>high_bits</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>friend</h-> <h- data-h=kw>constexpr</h-> <h- data-h=kw_type>bool</h->
+      <h- data-h=kw>operator</h-><h- data-h=sym_op>==</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
-  <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
-  <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>tie</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>high_bits</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>tie</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>high_bits</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=sym_brac>}</h->
+  <h- data-h=kw>constexpr</h-> <h- data-h=kw>auto</h-> <h- data-h=kw>operator</h-><h- data-h=sym_op>&lt;=&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>const</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=kw>noexcept</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_op>-&gt;</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+      <h- data-h=kw_ctrl>return</h-> <h- data-h=id>tie</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>high_bits</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>x</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&lt;=&gt;</h-> <h- data-h=id>tie</h-><h- data-h=sym_par>(</h-><h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>high_bits</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_op>.</h-><h- data-h=id>low_bits</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
 
 <h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=kw>constexpr</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=kw>constexpr</h-> <h- data-h=id>wide_result</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>clmul_wide</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-> <h- data-h=id>y</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>Such a widening function is important in a various cryptographic use cases.
 There is universal <a href=#hardware-support>§4.1. Hardware support</a> for obtaining all 128 bits
