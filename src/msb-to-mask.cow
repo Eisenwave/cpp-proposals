@@ -1,6 +1,6 @@
 \import{libwg21.cow}
 
-\wg21-head[
+\wg21_head[
     title = A utility function for propagating the most significant bit
 ]{
 \dl{
@@ -22,7 +22,7 @@ which converts the most significant bit to a bit mask.
 
 \h2[listed=no]{Contents}
 
-\make-contents
+\make_contents
 
 \h2{Introduction}
 
@@ -350,4 +350,4 @@ for all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}).
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2933r4.html
 ]
 
-\make-bib
+\make_bib

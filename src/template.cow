@@ -1,6 +1,6 @@
 \import{libwg21.cow}
 
-\wg21-head[
+\wg21_head[
     title = ASCII character utilities
 ]{
 \dl{
@@ -21,7 +21,7 @@
 
 \h2[listed=no]{Contents}
 
-\make-contents
+\make_contents
 
 \h2{Introduction}
 
@@ -46,4 +46,4 @@
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
 ]
 
-\make-bib
+\make_bib
