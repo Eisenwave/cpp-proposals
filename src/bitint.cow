@@ -1,0 +1,210 @@
+\import{libwg21.cow}
+
+\wg21_head[
+    title = Bit-precise integers \N{EM DASH} \tt{_BitInt} in \nobr{C++}
+]{
+\dl{
+  \dt{Document number:} \dd{\docnum{P3666}}
+  \dt{Date:}            \dd{\tt{2025-07-03}}
+  \dt{Audience:}        \dd{SG6, SG22, EWG}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3666/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/bitint.cow]}
+}
+\hr
+}
+
+\Babstract{
+C23 has introduced so-called "bit-precise integers" into the language,
+which should be brought to C++ for compatibility, among other reasons.
+Following an exploration of possible designs in \ref[P3639R0] "The \tt{_BitInt} Debate",
+this proposal introduces a new set of fundamental types to C++.
+}
+
+\h2[listed=no]{Contents}
+
+\make_contents
+
+\h2{Introduction}
+
+\ref[N2763] introduced the \tcode{_BitInt} set of types to the C23 standard,
+and \ref[N2775] further enhanced this feature with literal suffixes.
+For example, this feature may be used as follows:
+
+\cppblock{
+// 8-bit unsigned integer initialized with value 255.
+// The literal suffix wb is unnecessary in this case.
+unsigned _BitInt(8) x = 0xFFwb;
+}
+
+In short, the behavior of these \dfn{bit-precise integers} is as follows:
+
+\ul{
+  \li{
+    No integer promotion to \tcode{int} takes place.
+  }
+  \li{
+    Mixed-signedness comparisons, implicit conversions,
+    and other permissive feature are supported.
+  }
+  \li{
+    They have lower conversion rank than standard integers,
+    so an operation between \tcode{_BitInt(8)} and \tcode{int} yields \tcode{int},
+    as does an operation with \tcode{_BitInt(N)} where \tcode{N} is the width of \tcode{int}.
+    They only have greater conversion rank when their width is greater.
+  }
+}
+
+\h2{Design discussion}
+
+\h3{Why not make it a library type?}
+
+\ref[P3639R0] explored in detail whether to make it a fundamental type or a library type.
+Furthermore, feedback given by SG22 and EWG was to make it a fundamental type, not a library type.
+This boils down to two plausible designs
+(assuming \tcode{_BitInt} is already supported by the compiler), shown below.
+
+\style{
+#tony-table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    table-layout: fixed;
+}
+#tony-table td {
+    background-color: var(--deep-background-color);
+    width: 50%;
+}
+}
+
+\table[id=tony-table]{
+\tr{
+    \th{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL F} \N{EN DASH} Fundamental type}
+    \th{\N{MATHEMATICAL DOUBLE-STRUCK CAPITAL L} \N{EN DASH} Library type}
+}
+\tr{
+\td{\codeblock[cpp,borders=no]{
+template <size_t N>
+using bit_int_t =
+    _BitInt(N);
+
+
+
+
+template <size_t N>
+using bit_uint_t =
+    unsigned _BitInt(N);
+}}
+\td{\codeblock[cpp,borders=no]{
+template <size_t N>
+class bit_int {
+  private:
+    _BitInt(N) _M_value;
+  public:
+    // ...
+};
+template <size_t N>
+class bit_uint
+  { /* ... */; };
+}}
+}
+}
+
+The reasons why we should prefer the left side are described in the following subsections.
+
+\h4{Full C compatibility requires fundamental types}
+
+\tcode{_BitInt} in C can be used as the type of a bit-field, among other places:
+
+\cppblock{
+struct S {
+    _BitInt(32) x : 10;
+};
+}
+
+Since C++ does not support the use of class types in bit-fields,
+such a \tcode{struct S} could not be passed from C++ to a C API.
+
+Furthermore, expressions of type \tcode{_BitInt} can be used as array sizes,
+in \tcode{case} labels, and any other place where integers but not class types are permitted.
+A developer would face \em{severe} difficulties
+when porting C code which makes use of these capabilities to C++.
+
+\h4{Quality of implementation requires a fundamental type}
+
+While a library type \tcode{class bit_int} gives the implementation
+the option to provide no builtin support for bit-precise integers,
+to achieve high-quality codegen,
+a fundamental type is \em{inevitably} needed anyway.
+If so, \tcode{class bit_int} is arguably adding pointless bloat.
+
+For example, when an integer division has a constant divisor, like \tcode{x / 10},
+it can be optimized to a fixed-point multiplication,
+which is much cheaper.
+Performing such an optimization requires the compiler to be aware that a division is taking place,
+and this fact is lost when division is implemented in software,
+as a loop which expands to hundreds of IR instructions.
+
+"Frontend awareness" of these operations is also necessary to provide compiler warnings
+when a division by zero or a bit-shift with undefined behavior is spotted.
+Use of \tcode{pre} on e.g. \tcode{bit_int::operator/} cannot be used to achieve this
+because numerics code needs to have no hardened preconditions and no contracts,
+for performance reasons.
+Another workaround would be an ever-growing set of implementation-specific attributes,
+but at that point, we may as well make it fundamental.
+
+\h2{Impact on implementations}
+
+\: TODO
+
+\h2{Impact on the standard}
+
+\: TODO
+
+\h2{Proposed wording}
+
+\: TODO
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = P3639R0,
+  title = The _BitInt Debate,
+  date = 2025-02-20,
+  author = Jan Schultke,
+  link = https://wg21.link/p3639r0,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3639r0.html
+]
+\bib[
+  id = P3312R1,
+  title = Overload Set Types,
+  date = 2025-04-16,
+  author = Bengt Gustafsson,
+  link = https://wg21.link/p3312r1,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+]
+\bib[
+  id = N2763,
+  title = Adding a Fundamental Type for N-bit integers,
+  date = 2021-06-21,
+  author = Aaron Ballman\, Melanie Blower\, Tommy Hoffner\, Erich Keane,
+  link = https://open-std.org/JTC1/SC22/WG14/www/docs/n2763.pdf
+]
+\bib[
+  id = N2775,
+  title = Literal suffixes for bit-precise integers,
+  date = 2021-07-13,
+  author = Aaron Ballman\, Melanie Blower,
+  link = https://open-std.org/JTC1/SC22/WG14/www/docs/n2775.pdf
+]
+
+\make_bib
