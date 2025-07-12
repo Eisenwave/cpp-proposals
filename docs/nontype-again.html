@@ -1489,7 +1489,7 @@ if (theme !== null) {
     <dt>Audience:</dt>        <dd>LEWG</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
-    <dt>Co-authors:</dt>      <dd>Bronek Kozicki &lt;<a href=mailto:brok@incorrekt%2ecom class=sans>brok@incorrekt.com</a>&gt;, Tomasz Kamiński &lt;<a href=mailto:tomaszkam@gmail%2ecom class=sans>tomaszkam@gmail.com</a>&gt;</dd>
+    <dt>Co-authors:</dt>      <dd>Bronek Kozicki &lt;<a href=mailto:brok@incorrekt%2ecom class=sans>brok@incorrekt.com</a>&gt;,<br/>Tomasz Kamiński &lt;<a href=mailto:tomaszkam@gmail%2ecom class=sans>tomaszkam@gmail.com</a>&gt;</dd>
     <dt>GitHub Issue:</dt>    <dd><a href=https://wg21%2elink/P3774/github class=sans>wg21.link/P3774/github</a></dd>
     <dt>Source:</dt>          <dd><a href=https://github%2ecom/Eisenwave/cpp-proposals/blob/master/src/nontype-again%2ecow class=sans>github.com/Eisenwave/cpp-proposals/blob/master/src/nontype-again.cow</a></dd>
 </dl>
@@ -1497,8 +1497,7 @@ if (theme !== null) {
 </div></p>
 
 <abstract-block><p><intro-></intro-> 
-<a href="https://isocpp%2eorg/files/papers/P3740R1%2ehtml">[P3740R1]</a> proposed to rename the <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> type
-to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_arg</h-></code>,
+<a href="https://isocpp%2eorg/files/papers/P3740R1%2ehtml">[P3740R1]</a> proposed to rename <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_arg</h-></code>,
 now that the term "non-type template parameter" no longer exists in the C++26 standard.
 This solution found weak consensus in LEWG,
 but there was no time in LWG to review the change,
@@ -1524,6 +1523,8 @@ a solution which has chances of achieving greater consensus.
 <a href=#making-std::nontype-more-broadly-useful><h3>Making <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> more broadly useful</h3></a>
 <div class=toc-num data-level=3>2.3</div>
 <a href=#naming><h3>Naming</h3></a>
+<div class=toc-num data-level=3>2.4</div>
+<a href=#interoperability-with-third-party-function_refs><h3>Interoperability with third-party <code><h- data-h=id>function_ref</h-></code>s</h3></a>
 <div class=toc-num data-level=2>3</div>
 <a href=#alternatives-considered><h2>Alternatives considered</h2></a>
 <div class=toc-num data-level=3>3.1</div>
@@ -1536,6 +1537,10 @@ a solution which has chances of achieving greater consensus.
 <a href=#using-constant-wrapper><h3>Replacing <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> with <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>constant_wrapper</h-></code></h3></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#implementation-experience><h2>Implementation experience</h2></a>
+<div class=toc-num data-level=3>4.1</div>
+<a href=#simple-rename-for-c26><h3>Simple rename for C++26</h3></a>
+<div class=toc-num data-level=3>4.2</div>
+<a href=#possible-implementation-of-std::fn-for-c29><h3>Possible implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code> for C++29</h3></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#wording><h2>Wording</h2></a>
 <div class=toc-num data-level=2>6</div>
@@ -1809,6 +1814,28 @@ However, the standard library generally has verbose namespaces (e.g. <code><h- d
 and suggestion to add shorthands (e.g. <code><h- data-h=id>fs</h-></code>) were historically rejected.
 </p></note-block>
 
+<h3 id=interoperability-with-third-party-function_refs><a class=para href=#interoperability-with-third-party-function_refs></a>2.4. Interoperability with third-party <code><h- data-h=id>function_ref</h-></code>s</h3>
+
+<p>It is worth noting that the proposed C++29 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code>
+would work out-of-the-box with third-party <code><h- data-h=id>function_ref</h-></code> implementations
+such as <code><h- data-h=id>llvm</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>.
+Notably, <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code> would be a variable template,
+meaning objects of type <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> have static storage duration.
+Therefore, binding an <code><h- data-h=id>llvm</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code> to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code>
+does not risk creating a dangling reference.
+</p>
+<p>However, it is still possible to produce a dangling reference to <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code>
+by deliberately copying it and creating a temporary object:
+</p>
+<code-block><h- data-h=kw_type>void</h-> <h- data-h=id>f</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id>llvm</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>void</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h->       <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> OK, safe</h->
+<h- data-h=id>llvm</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>void</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>auto</h-><h- data-h=sym_par>(</h-><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> dangling reference</h-></code-block>
+
+<p>This is also one of the reasons why <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>function_ref</h-></code>
+should special-case <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> in its set of constructors.
+Other function wrappers need no special cases because they take ownership
+over the wrapped callable anyway.
+</p>
 <h2 id=alternatives-considered><a class=para href=#alternatives-considered></a>3. Alternatives considered</h2>
 
 <p>Besides the proposed approach,
@@ -1895,10 +1922,15 @@ not to pursue this path.
 </p>
 <h2 id=implementation-experience><a class=para href=#implementation-experience></a>4. Implementation experience</h2>
 
+<h3 id=simple-rename-for-c26><a class=para href=#simple-rename-for-c26></a>4.1. Simple rename for C++26</h3>
+
 <p>Renaming <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>nontype</h-></code> requires no implementation experience
 because it is merely changing the name of a symbol;
 it obviously works.
+This is what we are proposing for C++26.
 </p>
+<h3 id=possible-implementation-of-std::fn-for-c29><a class=para href=#possible-implementation-of-std::fn-for-c29></a>4.2. Possible implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code> for C++29</h3>
+
 <p>An implementation for illustration purposes of the full C++29 <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code>
 may look as follows:
 </p>
@@ -1944,8 +1976,8 @@ may look as follows:
 
 <p>Note that the wording strategy for <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> in C++29
 would leave its details largely unspecified,
-which would allow for not implementing <code><h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> at all
-and making <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> invocable via surrogate function call
+which would allow for not implementing <code><h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> at all,
+and for making <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> invocable via surrogate function call
 (implicit conversion to function pointer, then calling that pointer).
 </p>
 <h2 id=wording><a class=para href=#wording></a>5. Wording</h2>

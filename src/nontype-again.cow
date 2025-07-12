@@ -9,7 +9,7 @@
     \dt{Audience:}        \dd{LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
-    \dt{Co-authors:}      \dd{Bronek Kozicki <\mail{brok@incorrekt.com}>\, Tomasz Kamiński <\mail{tomaszkam@gmail.com}>}
+    \dt{Co-authors:}      \dd{Bronek Kozicki <\mail{brok@incorrekt.com}>\,\br{}Tomasz Kamiński <\mail{tomaszkam@gmail.com}>}
     \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3774/github]}
     \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/nontype-again.cow]}
 }
@@ -17,8 +17,7 @@
 }
 
 \Babstract{
-\ref[P3740R1] proposed to rename the \tcode{std::nontype} type
-to \tcode{std::constant_arg},
+\ref[P3740R1] proposed to rename \tcode{std::nontype} to \tcode{std::constant_arg},
 now that the term "non-type template parameter" no longer exists in the C++26 standard.
 This solution found weak consensus in LEWG,
 but there was no time in LWG to review the change,
@@ -295,6 +294,30 @@ However, the standard library generally has verbose namespaces (e.g. \tcode{file
 and suggestion to add shorthands (e.g. \tcode{fs}) were historically rejected.
 }
 
+\h3{Interoperability with third-party \tcode{function_ref}s}
+
+It is worth noting that the proposed C++29 \tcode{std::fn}
+would work out-of-the-box with third-party \tcode{function_ref} implementations
+such as \tcode{llvm::function_ref}.
+Notably, \tcode{std::fn} would be a variable template,
+meaning objects of type \tcode{std::fn_t} have static storage duration.
+Therefore, binding an \tcode{llvm::function_ref} to \tcode{std::fn}
+does not risk creating a dangling reference.
+
+However, it is still possible to produce a dangling reference to \tcode{std::fn}
+by deliberately copying it and creating a temporary object:
+
+\cppblock{
+void f();
+llvm::function_ref<void()> x = std::fn<f>;       // OK, safe
+llvm::function_ref<void()> y = auto(std::fn<f>); // dangling reference
+}
+
+This is also one of the reasons why \tcode{std::function_ref}
+should special-case \tcode{std::fn_t} in its set of constructors.
+Other function wrappers need no special cases because they take ownership
+over the wrapped callable anyway.
+
 \h2{Alternatives considered}
 
 Besides the proposed approach,
@@ -380,9 +403,14 @@ not to pursue this path.
 
 \h2{Implementation experience}
 
+\h3{Simple rename for C++26}
+
 Renaming \tcode{std::nontype} requires no implementation experience
 because it is merely changing the name of a symbol;
 it obviously works.
+This is what we are proposing for C++26.
+
+\h3{Possible implementation of \tcode{std::fn} for C++29}
 
 An implementation for illustration purposes of the full C++29 \tcode{std::fn}
 may look as follows:
@@ -431,8 +459,8 @@ constexpr fn_t<f> fn;
 
 Note that the wording strategy for \tcode{std::fn_t} in C++29
 would leave its details largely unspecified,
-which would allow for not implementing \tcode{operator()} at all
-and making \tcode{std::fn_t} invocable via surrogate function call
+which would allow for not implementing \tcode{operator()} at all,
+and for making \tcode{std::fn_t} invocable via surrogate function call
 (implicit conversion to function pointer, then calling that pointer).
 
 \h2{Wording}
