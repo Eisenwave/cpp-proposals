@@ -328,7 +328,7 @@ However, the author position is that every one of them is worse than what is pro
 
 \ref[P3740R0] proposed to replace \tcode{std::nontype}
 with a set of constructors that take a \tcode{std::stateless} constructor tag.
-This idea essentially died the moment LEWG saw the tony table
+This idea essentially died the moment LEWG saw the Tony Table
 which compares how users would pass function pointers to \tcode{std::function_ref}
 with \tcode{std::stateless} tags compared to \tcode{std::nontype}.
 
