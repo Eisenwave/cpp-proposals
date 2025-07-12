@@ -1,0 +1,670 @@
+\import{libwg21.cow}
+
+\wg21_head[
+    title = Rename \tcode{std::nontype}\,\br{}and make it broadly useful
+]{
+\dl{
+    \dt{Document number:} \dd{\docnum{P3774R0}}
+    \dt{Date:}            \dd{\tt{2025-07-12}}
+    \dt{Audience:}        \dd{LEWG}
+    \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+    \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+    \dt{Co-authors:}      \dd{Bronek Kozicki <\mail{brok@incorrekt.com}>\, Tomasz Kamiński <\mail{tomaszkam@gmail.com}>}
+    \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3774/github]}
+    \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/nontype-again.cow]}
+}
+\hr
+}
+
+\Babstract{
+\ref[P3740R1] proposed to rename the \tcode{std::nontype} type
+to \tcode{std::constant_arg},
+now that the term "non-type template parameter" no longer exists in the C++26 standard.
+This solution found weak consensus in LEWG,
+but there was no time in LWG to review the change,
+so it did not make it into C++26.
+
+We now propose to rename it to \tcode{std::fn} and make it more broadly useful,
+a solution which has chances of achieving greater consensus.
+}
+
+\h2[listed=no]{Contents}
+
+\make_contents
+
+\h2{Introduction}
+
+\ref[P2472R3] proposed additional overloads for the \tcode{std::function_ref}
+constructor which utilize a helper type \tcode{std::nontype}.
+This paper was merged into \ref[P0792R14],
+which was plenary-approved at Varna 2023 for C++26.
+
+The naming choice \tcode{std::nontype} makes very little sense
+following \ref[P2841R1], which introduced concept and variable template parameters.
+Since those are not types either, what the standard used to call
+"non-type template parameter" has been renamed to "constant template parameter".
+
+\Bnote{
+The class template is called \tcode{std::nontype_t},
+and the corresponding variable template is called \tcode{std::nontype}.
+This document refers to the feature as a whole as \tcode{std::nontype}.
+}
+
+Furthermore, the \tcode{std::constant_wrapper} from \ref[P2781R9]
+was accepted into C++26, and it seems like a good replacement for \tcode{std::nontype}
+at first glance.
+At Sofia 2025, the choice to rename \tcode{std::nontype} to \tcode{std::constant_arg}
+instead of replacing it with \tcode{std::constant_wrapper} achieved consensus,
+by the narrowest of margins
+(see\N{NO-BREAK SPACE}\ref[https://wiki.edg.com/bin/view/Wg21sofia2025/P3740]{P3740 minutes}):
+
+\Bquote{
+\b{ACTION}:
+Get feedback on the decision from standard library implementers.
+
+\b{POLL}:
+Forward “P3740R1: Last chance to fix std::nontype” selecting Option A
+(change from nontype to constant_wrapper, also add overloads to other function wrappers (std::function))
+to LWG for C++26 (if possible)
+
+\five_way_poll[0, 4, 0, 7, 8]
+
+Outcome: No consensus for change
+
+\b{POLL}:
+Forward “P3740R1: Last chance to fix std::nontype” selecting Option A
+(change from nontype to constant_wrapper, DO NOT add overloads to other function wrappers (std::function))
+to LWG for C++26 (if possible)
+
+\five_way_poll[6, 7, 2, 6, 0]
+
+Outcome: Weak consensus in favor
+
+\b{POLL}:
+Forward “P3740R1: Last chance to fix std::nontype” selecting Option B
+(rename “std::nontype” to “std::constant_arg”)
+to LWG for C++26 (if possible)
+
+\five_way_poll[7, 9, 2, 2, 1]
+
+\mark{Outcome: Consensus in favor}
+
+\b{POLL}:
+Forward “P3740R1: Last chance to fix std::nontype” selecting Option A
+(change from nontype to constant_wrapper, DO NOT add overloads to other function wrappers (std::function))
+instead of Option B (rename `std::nontype` to `std::constant_arg`)
+to LWG for C++26 (if possible)
+
+\five_way_poll[9, 4, 2, 4, 4]
+
+Outcome: No consensus for change
+}
+
+However, LWG had no time to review this \em{extremely} last-minute change,
+so it did not make it into C++26.
+
+\Bnote{
+The reason why the last poll does not change the LEWG decision
+is that after the \mark{marked decision},
+renaming \tcode{std::nontype} became the status quo,
+and the last poll did not have enough votes to change that status quo.
+}
+
+\h3[id=why-did-we-need-nontype]{Why did we need a new \tcode{std::nontype} type?}
+
+An obvious question may be why the existing \tcode{std::integral_constant}
+cannot be used instead.
+This has multiple reasons:
+\ul{
+  \li{\tcode{std::integral_constant<class T, T v>} requires specifying the type separately.}
+  \li{\tcode{std::integral_constant} has a lengthy name.}
+  \li{\tcode{std::integral_constant} has a call operator which returns \tcode{v},
+  which produces friction with the other constructors.}
+}
+
+\h3[id=nontype-refresher]{Refresher on what \tcode{std::nontype} accomplishes}
+
+\tcode{std::nontype} is used only within constructors of \tcode{std::function_ref}:
+
+\cppblock{
+// constexpr and noexcept omitted for simplicity
+template<class F>         function_ref(F*);
+template<class F>         function_ref(F&&);
+template<auto f>          function_ref(nontype_t<f>);
+template<auto f, class U> function_ref(nontype_t<f>, U&&);
+template<auto f, class T> function_ref(nontype_t<f>, \exposid{cv} T*);
+}
+
+Intuitively, \tcode{std::function_ref} is the C++ counterpart to the C idiom of passing
+\tcode{void*} and a function pointer which that \tcode{void*} is fed into,
+as seen in \tcode{qsort}.
+It is common practice to provide a null pointer to \tcode{qsort}
+and thus rely on a "capture-less" comparison.
+
+With \tcode{std::nontype}, \tcode{std::function_ref} can support such use "capture-less" uses:
+
+\cppblock{
+// once again, some simplifications (no noexcept, no invoke, etc.) ...
+template<auto f>
+function_ref(nontype_t<f>) {
+  // bound-entity is similar to the void* we would have stored in C.
+  // We can leave it empty since we are constructing from some global callable.
+  this->\exposid{bound-entity} = {};
+  // Note that lambdas with no captures can be converted to function pointers.
+  this->\exposid{thunk-ptr} = [](\exposid{BoundEntityType}, Args&&... args) -> R {
+    // Notice that we don't need to capture f.
+    // This is only possible because f is a constant template parameter.
+    return f(std::forward<Args&&>(args)...);
+  };
+}
+}
+
+Crucially, it would be impossible to create a \tcode{std::function_ref}
+from a function directly without this helper.
+At best, we could store function pointer within \placeholder{bound-entity}
+and call that function pointer from within \placeholder{bound-entity}.
+This would introduce entirely unnecessary overhead.
+
+Besides overhead, we need \tcode{std::nontype} constructors to make a \tcode{std::function_ref}
+which has the functionality provided by a lambda,
+but does not reference any specific lambda.
+This is crucial for being able to store \tcode{std::function_ref} somewhere long-term
+without paying attention to the lifetime of the callable type it has been initialized with.
+
+\h2{Proposed solution}
+
+We propose to rename \tcode{std::nontype_t} and \tcode{std::nontype}
+to \tcode{std::fn_t} and \tcode{std::fn}.
+Such a rename is well within the scope of an NB comment,
+so it can be applied to C++26.
+Furthermore, we make the type more broadly useful for C++29 by
+\ul{
+  \li{making \tcode{std::fn_t} convertible to function pointers, and}
+  \li{
+    giving it a call operator, which makes it usable in function wrappers
+    other than \tcode{std::function_ref} (with the same effect),
+    as well as algorithms.
+  }
+}
+
+Expressed in code, this would look as follows:
+
+\Bdiff{
+\itemdecl{
+template<auto V>
+  struct \del{nontype_t} \ins{fn_t} {
+    explicit \del{nontype_t} \ins{fn_t}() = default;
+
+    \ins{// \serif{\strong{SINCE C++29:}}
+    \exposid{various new members \N{HORIZONTAL ELLIPSIS}}}
+  };
+\del{template<auto V> constexpr nontype_t<V> nontype{};}
+\ins{template<auto V> constexpr fn_t<V> fn{};}
+}
+}
+
+Among other reasons, keeping \tcode{std::nontype} instead of using \tcode{std::constant_wrapper}
+in its place was controversial because there was not enough motivation to keep both.
+This is mainly because \tcode{std::nontype} provides no distinct functionality;
+it is effectively \tcode{std::constant_wrapper} without all of the extra operator overloads.
+What we propose addresses this problem.
+
+\h3{Impact on \tcode{std::function_ref}}
+
+\tcode{std::function_ref} would handle \tcode{std::fn} exactly the same as \tcode{std::nontype},
+whether it has this C++29 functionality or not.
+No C++26 code would be broken by adding those new members later.
+That is because there are special constructors
+for \tcode{std::function_ref} taking \tcode{std::nontype},
+and these always win in overload resolution,
+whether \tcode{std::nontype} has a call operator or other members, or not.
+
+Furthermore, \tcode{std::function_ref} needs to special-case \tcode{std::nontype} to provide the
+\tcode{(nontype_t<f>, U*)} and \tcode{(nontype_t<f>, U&&)} constructors.
+That is because only \tcode{std::nontype} provides the guarantee that its address
+is irrelevant to \tcode{operator()}, and that it is empty.
+Thanks to that guarantee, \tcode{std::function_ref} can use the
+\tcode{\exposid{bound-entity}} pointer to refer to some user-specified entity,
+or simply make it \tcode{nullptr}.
+
+\h3{Making \tcode{std::nontype} more broadly useful}
+
+A common recommendation when using standard library algorithms
+is to avoid the use of function pointers.
+That is because all invocations of of say,
+\tcode{std::for_each} with function pointers of the same type
+also result in identical instantiations.
+
+Therefore, rather than making easily inlined direct calls to lambda \tcode{operator()}s,
+\tcode{std::for_each</* ... */, void(*)(int)>} makes indirect calls through a function pointer,
+and unless the algorithm is inlined and the function pointer is constant-folded,
+this may result in degraded performance.
+
+The C++29 \tcode{std::fn} solves this problem by "elevating"
+the function pointer into the type system:
+\cppblock{
+void f(int);
+std::ranges::for_each(r, f);                           // bad, passing function pointer
+std::ranges::for_each(r, [](int x) { return f(x); });  // OK, but clunky
+std::ranges::for_each(r, std::fn<f>);                  // OK, and less verbose
+}
+
+\Bnote{
+\tcode{std::constant_wrapper} is not intended to address this use case.
+The goal of \tcode{std::constant_wrapper} is to accept
+other \tcode{std::constant_wrapper}s in its operator overloads,
+and to return \tcode{std::constant_wrapper}s from them,
+so that computations are performed \em{entirely} within the type system.
+
+On the contrary, \tcode{std::fn} would simply invoke the callable type it wraps,
+forwarding arguments to it, and return the result of that invocation.
+}
+
+Furthermore, C++29 \tcode{std::fn} with a call operator could provide the same functionality
+to \tcode{std::function}, \tcode{std::move_\N{SOFT HYPHEN}only_function},
+and \tcode{std::copyable_\N{SOFT HYPHEN}function};
+it would simply be invocable like function pointers or lambdas.
+Even without any constructors added to the standard wording,
+implementations are free to convert \tcode{std::nontype} into a function pointer
+within the constructor of \tcode{std::move_only_function},
+which may improve quality of implementation further.
+This optimization is simply part of the "as-if rule".
+
+A \tcode{std::fn} with a call operator \em{just works}
+with all function wrappers and algorithms,
+exactly as expected,
+and with the same semantics as it has in \tcode{std::function_ref}.
+
+\h3{Naming}
+
+While using such a short and valuable name as \tcode{std::fn}
+would make little sense if \tcode{std::nontype} was simply being renamed with no further plans,
+we have \em{big} plans.
+\tcode{std::fn} would be \em{the} idiomatic way of lifting function pointers into
+the type system.
+
+However, such a short and valuable name is likely controversial.
+A plausible alternative is to use
+\tcode{std::fw} and \tcode{std::function_wrapper} analogous to
+\tcode{std::cw} and \tcode{std::constant_wrapper}.
+
+\Bnote{
+Some authors initially had concerns about \tcode{fn} possibly being used as a namespace
+for functional programming in the future.
+However, the standard library generally has verbose namespaces (e.g. \tcode{filesystem}),
+and suggestion to add shorthands (e.g. \tcode{fs}) were historically rejected.
+}
+
+\h2{Alternatives considered}
+
+Besides the proposed approach,
+there are other possible solutions.
+However, the author position is that every one of them is worse than what is proposed.
+
+\h3[id=stateless]{Using a \tcode{std::stateless} constructor tag instead}
+
+\ref[P3740R0] proposed to replace \tcode{std::nontype}
+with a set of constructors that take a \tcode{std::stateless} constructor tag.
+This idea essentially died the moment LEWG saw the tony table
+which compares how users would pass function pointers to \tcode{std::function_ref}
+with \tcode{std::stateless} tags compared to \tcode{std::nontype}.
+
+This alternative was not polled,
+but it was obvious during discussion that this option would not achieve consensus.
+See\N{NO-BREAK SPACE}\ref[P3740R0] for details.
+
+\h3{Removing \tcode{std::nontype} with no replacement, revisiting for C++29}
+
+Since there is a lot of active work in this area,
+perhaps we could simply shove \tcode{std::nontype} into C++29 and deal with the problem later.
+As demonstrated in \ref[#nontype-refresher],
+\tcode{std::nontype} covers crucial use cases such as
+
+\ul{
+  \li{constructing \tcode{std::function_ref} from a free function with no overhead, or}
+  \li{constructing \tcode{std::function_ref} from an existing function pointer and \tcode{void*},
+  in the style of \tcode{qsort}.}
+}
+
+This functionality is important to \tcode{std::function_ref},
+and it has shipped in C++26 already.
+None of the authors see it as reasonable to rip this functionality out entirely for C++26.
+
+\h3{Waiting for \tcode{constexpr} function parameters}
+
+\tcode{std::integral_constant}, \tcode{std::constant_wrapper}, and \tcode{std::nontype}
+are \N{EN DASH} to an extent \N{EN DASH} temporary hacks.
+If we were able to write
+\cppblock{
+function_ref(constexpr F*);
+}
+\N{HORIZONTAL ELLIPSIS} then the workaround of \tcode{std::nontype} would be obsolete.
+
+At Kona 2023, EWG showed enthusiasm for this option
+when discussing \ref[P1045R1] "\tcode{constexpr} Function parameters".
+
+\Bquote{
+Poll: P2781R3 “std::constexpr_v” and P1045R1 “constexpr function parameters”
+EWG would like to solve th eproblem solved by std::constexpr_v in the language,
+for example as proposed by P1045R1 or with “expression aliases”,
+rather than solving it in library.
+An implementation is desired. C++26 seems ambitious.
+
+\five_way_poll[6,8,5,1,0]
+}
+
+However, \ref[P1045R1] has been abandoned by the original author,
+but picked up by a new author (proposal pending).
+Nonetheless, \tcode{constexpr} function parameters do not entirely obsolete our design,
+it is unclear if they will be in C++29, and
+the \tcode{std::nontype} functionality has already shipped in C++26.
+Therefore, it makes very little sense to wait for this feature.
+
+\h3[id=using-constant-wrapper]{Replacing \tcode{std::nontype} with \tcode{std::constant_wrapper}}
+
+The seemingly obvious solution is to use \tcode{std::constant_wrapper} from \ref[P2781R9].
+The option to use \tcode{std::constant_\N{SOFT HYPHEN}wrapper} as a replacement for \tcode{std::nontype}
+was discussed during an LEWG telecon 2025-03-11.
+
+In short, the problems stem from the fact that \tcode{std::constant_wrapper}
+is already invocable; it already has a call operator,
+whose semantics would be ignored by \tcode{std::function_ref},
+in a way that is inconsistent with how \tcode{std::constant_wrapper} behaves anywhere else.
+
+More details can be found in \ref[P3740R1],
+as well as in \ref[P3792R0]
+"Why \tcode{constant_wrapper} is not a usable replacement for \tcode{nontype}".
+
+In any case, LEWG already decided (with paper-thin consensus)
+not to pursue this path.
+
+\h2{Implementation experience}
+
+Renaming \tcode{std::nontype} requires no implementation experience
+because it is merely changing the name of a symbol;
+it obviously works.
+
+An implementation for illustration purposes of the full C++29 \tcode{std::fn}
+may look as follows:
+
+\cppblock{
+template<auto f>
+struct fn_t
+{
+  using type = decltype(f);
+  static constexpr bool is_function_ptr
+    = std::is_function_v<std::remove_pointer_t<type>>;
+
+  template<bool Noex, typename Ret, typename... Args>
+  using func_type = Ret(*)(Args...) noexcept(Noex);
+
+  constexpr 
+  operator type() const noexcept
+    requires is_function_ptr
+  { return f; }
+
+  template<bool Noex, typename Ret, typename... Args>
+    requires (Noex ? std::is_nothrow_invocable_v<Ret, type const&, Args...> 
+                   : std::is_invocable_r_v<Ret, type const&, Args...>)
+  constexpr 
+  operator func_type<Noex, Ret, Args...>() const
+  {
+    if constexpr (is_function_ptr && std::is_convertible_v<type, func_type<Noex, Ret, Args...>>)
+      return f;
+    else
+      return [](Args... args) noexcept(Noex) -> Ret
+      { return std::invoke(f, std::forward<Args>(args)...); };
+  }
+
+  template<typename... Args>
+    requires (!is_function_ptr)
+  static constexpr
+  std::invoke_result_t<type const&, Args...>
+  operator()(Args&&... args)
+  noexcept(std::is_nothrow_invocable_v<type const&, Args...>)
+  { return std::invoke(f, std::forward<Args>(args)...); }
+};
+
+template<auto f>
+constexpr fn_t<f> fn;
+}
+
+Note that the wording strategy for \tcode{std::fn_t} in C++29
+would leave its details largely unspecified,
+which would allow for not implementing \tcode{operator()} at all
+and making \tcode{std::fn_t} invocable via surrogate function call
+(implicit conversion to function pointer, then calling that pointer).
+
+\h2{Wording}
+
+\macro[\black_comment]{\hl[sym-punc]{//}\serif{\i{\hl[sym-punc]{ \put}}}}
+
+The following changes are relative to \ref[N5008].
+
+\macro[\replacement_v]{fn}
+\macro[\replacement_t]{fn_t}
+\macro[\del_ins_nontype]{\del{nontype_t} \ins{\replacement_t}}
+\macro[\etc]{[\N{HORIZONTAL ELLIPSIS}]}
+
+In \eelis{version.syn}, update the feature-test macro:
+
+\Bdiff{
+\itemdecl{
+#define __cpp_lib_function_ref \del{202306L} \ins{20XXXXL} \black_comment{also in <functional>}
+}
+}
+
+In \eelis{utility.syn},
+modify the header synopsis as follows:
+
+\Bdiff{
+\itemdecl{
+\black_comment{\del{nontype} \ins{function} argument tag}
+template<auto V>
+  struct \del_ins_nontype {
+    explicit nontype_t() = default;
+  };
+\del{template<auto V> constexpr nontype_t<V> nontype{};}
+\ins{template<auto V> constexpr \replacement_t<V> \replacement_v{};}
+}
+}
+
+In \eelis{func.wrap.ref.class},
+replace every occurrence of \tcode{nontype_t} with \tcode{\replacement_t}:
+
+\Bdiff{
+\itemdecl{
+namespace std {
+  template<class R, class... ArgTypes>
+  class function_ref<R(ArgTypes...) \exposid{cv} noexcept(\exposid{noex})> {
+  public:
+    \black_comment{[func.wrap.ref.ctor], constructors and assignment operators}
+    template<class F> function_ref(F*) noexcept;
+    template<class F> constexpr function_ref(F&&) noexcept;
+    template<auto f> constexpr function_ref(\del_ins_nontype<f>) noexcept;
+    template<auto f, class U> constexpr function_ref(\del_ins_nontype<f>, U&&) noexcept;
+    template<auto f, class T> constexpr function_ref(\del_ins_nontype<f>, \exposid{cv} T*) noexcept;
+
+    constexpr function_ref(const function_ref&) noexcept = default;
+    constexpr function_ref& operator=(const function_ref&) noexcept = default;
+    template<class T> function_ref& operator=(T) = delete;
+
+    \black_comment{[func.wrap.ref.inv], invocation}
+    R operator()(ArgTypes...) const noexcept(\exposid{noex});
+
+  private:
+    template<class... T>
+      static constexpr bool \exposid{is-invocable-using} = \exposid{see below};     \black_comment{exposition only}
+
+    R (*\exposid{thunk-ptr})(\exposid{BoundEntityType}, Args&&...) noexcept(\exposid{noex});  \black_comment{exposition only}
+    \exposid{BoundEntityType} \exposid{bound-entity};                               \black_comment{exposition only}
+  };
+
+  \black_comment{[func.wrap.ref.deduct], deduction guides}
+  template<class F>
+    function_ref(F*) -> function_ref<F>;
+  template<auto f>
+    function_ref(\del_ins_nontype<f>) -> function_ref<\exposid{see below}>;
+  template<auto f, class T>
+    function_ref(\del_ins_nontype<f>, T&&) -> function_ref<\exposid{see below}>;
+}
+}
+}
+
+In \eelis{func.wrap.ref.ctor},
+replace every occurrence of \tcode{nontype_t} with \tcode{\replacement_t}:
+
+\Bdiff{
+\etc
+
+\itemdecl{
+template<auto f> constexpr function_ref(\del_ins_nontype<f>) noexcept;
+}
+
+\etc
+
+\itemdecl{
+template<auto f, class U>
+  constexpr function_ref(\del_ins_nontype<f>, U&& obj) noexcept;
+}
+
+\etc
+
+\itemdecl{
+template<auto f, class T>
+  constexpr function_ref(\del_ins_nontype<f>, \exposid{cv} T* obj) noexcept;
+}
+
+\etc
+
+\itemdecl{
+template<class T> function_ref& operator=(T) = delete;
+}
+\itemdescr{
+21 \constraints
+\ul{
+  \li{\tcode{T} is not the same type as \tcode{function_ref},}
+  \li{\tcode{is_pointer_v<T>} is \tcode{false}, and}  
+  \li{\tcode{T} is not a specialization of \del_ins_nontype{}.}  
+}
+}
+}
+
+In \eelis{func.wrap.ref.deduct},
+replace every occurrence of \tcode{nontype_t} with \tcode{\replacement_t}:
+
+\Bdiff{
+
+\etc
+
+\itemdecl{
+template<auto f>
+  function_ref(\del_ins_nontype<f>) -> function_ref<\exposid{see below}>;
+}
+
+\etc
+
+\itemdecl{
+template<auto f, class T>
+  function_ref(\del_ins_nontype<f>, T&&) -> function_ref<\exposid{see below}>;
+}
+
+\etc
+}
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = P0792R14,
+  title = function_ref: a type-erased callable reference,
+  date = 2022-02-08,
+  author = Vittorio Romeo\, Zhihao Yuan\, Jarrad Waterloo,
+  link = https://wg21.link/p0792r14,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0792r14.html
+]
+\bib[
+  id = P1045R1,
+  title = constexpr Function Parameters,
+  date = 2019-09-27,
+  author = David Stone,
+  link = https://wg21.link/p1045r1,
+  long-link = https://open-std.org/JTC1/SC22/WG21/docs/papers/2019/p1045r1.html
+]
+\bib[
+  id = P2472R3,
+  title = make function_ref more functional,
+  date = 2022-05-12,
+  author = Jarrad J. Waterloo\, Zhihao Yuan,
+  link = https://wg21.link/p2472r3,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2472r3.html
+]
+\bib[
+  id = P2781R9,
+  title = std::constant_wrapper,
+  date = 2025-06-17,
+  author = Hana Dusíková\, Matthias Kretz\, Zach Laine,
+  link = https://wg21.link/p2781r9,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2781r9.html
+]
+\bib[
+  id = P2841R1,
+  title = Concept and variable-template template-parameters,
+  date = 2023-10-14,
+  author = Corentin Jabot,
+  link = https://wg21.link/p2841r1,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2841r1.pdf
+]
+\bib[
+  id = P3312R1,
+  title = Overload Set Types,
+  date = 2025-04-16,
+  author = Bengt Gustafsson,
+  link = https://wg21.link/p3312r1,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+]
+\: FIXME: if we ever revise this paper,
+\: these links should be replaced with proper wg21.link hrefs like the others
+\bib[
+  id = P3740R0,
+  title = Last chance to fix std::nontype,
+  date = 2025-06-14,
+  author = Jan Schultke,
+  link = https://isocpp.org/files/papers/P3740R0.html
+]
+\bib[
+  id = P3740R1,
+  title = Last chance to fix std::nontype,
+  date = 2025-06-20,
+  author = Jan Schultke,
+  link = https://isocpp.org/files/papers/P3740R1.html
+]
+\bib[
+  id = P3792R0,
+  title = Why constant_wrapper is not a usable replacement for nontype,
+  author = Bronek Kozicki,
+  link = https://wg21.link/P3792R0
+]
+\bib[
+  id = GitHub1,
+  title = Reference implementation of function wrappers with std::constant_wrapper,
+  date = 2025-06-19,
+  author = Bronek Kozicki,
+  link = https://github.com/MFHava/P2548/compare/master...Bronek:P2548:bronek/with_constant_wrapper
+]
+\bib[
+  id = GitHub2,
+  title = Reference implementation of std::function_ref with std::stateless,
+  date = 2025-06-14,
+  author = Jan Schultke,
+  link = https://github.com/Eisenwave/nontype_functional
+]
+
+\make_bib
