@@ -1510,6 +1510,8 @@ We propose to deprecate them.
 <a href=#introduction><h2>Introduction</h2></a>
 <div class=toc-num data-level=2>2</div>
 <a href=#proposal><h2>Proposal</h2></a>
+<div class=toc-num data-level=3>2.1</div>
+<a href=#explicit-casts-should-be-allowed><h3>Explicit casts should be allowed</h3></a>
 <div class=toc-num data-level=2>3</div>
 <a href=#impact-on-existing-code><h2>Impact on existing code</h2></a>
 <div class=toc-num data-level=2>4</div>
@@ -1583,6 +1585,51 @@ a function with <code><h- data-h=kw_type>char</h-></code> parameter with a <code
 when storing a <code><h- data-h=kw_type>bool</h-></code> value in a <code><h- data-h=kw_type>char</h-></code> variable, and
 other such "direct" scenarios.
 </p>
+<h3 id=explicit-casts-should-be-allowed><a class=para href=#explicit-casts-should-be-allowed></a>2.1. Explicit casts should be allowed</h3>
+
+<p>While an implicit <code><h- data-h=kw_type>bool</h-></code> → <code><h- data-h=kw_type>char</h-></code> conversion is likely a bug,
+we want users to have a way to suppress deprecation warnings
+and to retain the old behavior, in the unlikely event they wanted the conversion to happen.
+There are various other conversion, like
+<code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>nullptr_t</h-></code> → <code><h- data-h=kw_type>bool</h-></code> or
+<code><h- data-h=kw_type>void</h-><h- data-h=sym_op>*</h-></code> → <code><h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-></code> which follow this pattern of
+"explicit conversions only".
+</p>
+<p>In summary, the intended semantics are as follows:
+</p><code-block><h- data-h=kw_type>bool</h-> <h- data-h=id>b</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=kw_type>char</h-> <h- data-h=id>d1</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>b</h-><h- data-h=sym_punc>;</h->                    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>d2</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>d3</h-><h- data-h=sym_brac>{</h-><h- data-h=id>b</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->                     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>d4</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=id>b</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->                  <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>d5</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>char</h-><h- data-h=sym_brac>{</h-><h- data-h=id>b</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+
+<h- data-h=kw_type>char</h-> <h- data-h=id>k1</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw_type>char</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>k2</h-> <h- data-h=sym_op>=</h-> <h- data-h=sym_par>(</h-><h- data-h=kw_type>char</h-><h- data-h=sym_par>)</h-><h- data-h=id>b</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK</h-></f-serif>
+<h- data-h=kw_type>char</h-> <h- data-h=id>k3</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>char</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK</h-></f-serif>
+
+<h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>b</h-><h- data-h=sym_punc>;</h->                        <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK</h-></f-serif></code-block>
+
+<p>While most of these are obvious, some decisions require rationale:
+</p><ul>
+  <li>
+    <code><h- data-h=id>d2</h-></code> should be deprecated because direct-initialization, unlike casts,
+    does not generally opt into all possible conversions.
+    For example, <code><h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=id>void_ptr</h-><h- data-h=sym_par>)</h-></code> is valid,
+    while <code><h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-> <h- data-h=id>p</h-><h- data-h=sym_par>(</h-><h- data-h=id>void_ptr</h-><h- data-h=sym_par>)</h-></code>, for some <code><h- data-h=kw_type>void</h-><h- data-h=sym_op>*</h-> <h- data-h=id>void_ptr</h-></code>.
+  </li>
+  <li>
+    <code><h- data-h=id>d5</h-></code> should be deprecated because list-initialization is generally more restrictive.
+    For instance, it does not permit narrowing conversions,
+    and <code><h- data-h=id>I</h-><h- data-h=sym_brac>{</h-><h- data-h=id>void_ptr</h-><h- data-h=sym_brac>}</h-></code> is ill-formed while <code><h- data-h=id>I</h-><h- data-h=sym_par>(</h-><h- data-h=id>void_ptr</h-><h- data-h=sym_par>)</h-></code> is okay,
+    where <code><h- data-h=id>I</h-></code> is <code><h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-></code>.
+  </li>
+  <li>
+    <code><h- data-h=id>k1</h-></code> and <code><h- data-h=id>k2</h-></code> should be okay because they are defined
+    in terms of <code><h- data-h=kw>static_cast</h-></code>.
+  </li>
+</ul>
+
 <h2 id=impact-on-existing-code><a class=para href=#impact-on-existing-code></a>3. Impact on existing code</h2>
 
 <p>During discussion of this proposal with various members of the C++ community,
@@ -1658,6 +1705,7 @@ to a prvalue of character type (<a href=https://eel%2eis/c++draft/basic%2efundam
 unless it was necessitated by a <code><h- data-h=kw>static_cast</h-></code>.
 <br/><wg21-block>[<i>Example</i>: 
 <code-block class=borderless><h- data-h=kw_type>char</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>=</h-> <h- data-h=bool>true</h-><h- data-h=sym_punc>;</h->           <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
+<h- data-h=kw_type>char</h-><h- data-h=sym_brac>{</h-><h- data-h=bool>true</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>deprecated</h-></f-serif>
 
 <h- data-h=kw>static_cast</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>char</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-> <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK, conversion directly necessitated by a </h-><code><h- data-h=kw>static_cast</h-></code></f-serif>
 <h- data-h=kw_type>char</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->              <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>OK, conversion indirectly necessitated by a </h-><code><h- data-h=kw>static_cast</h-></code></f-serif>

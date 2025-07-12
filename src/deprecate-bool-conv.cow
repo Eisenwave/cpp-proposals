@@ -95,6 +95,53 @@ a function with \tcode{char} parameter with a \tcode{bool} argument,
 when storing a \tcode{bool} value in a \tcode{char} variable, and
 other such "direct" scenarios.
 
+\h3{Explicit casts should be allowed}
+
+While an implicit \bool_to_char conversion is likely a bug,
+we want users to have a way to suppress deprecation warnings
+and to retain the old behavior, in the unlikely event they wanted the conversion to happen.
+There are various other conversion, like
+\tcode{std::nullptr_t} \N{RIGHTWARDS ARROW} \tcode{bool} or
+\tcode{void*} \N{RIGHTWARDS ARROW} \tcode{int*} which follow this pattern of
+"explicit conversions only".
+
+In summary, the intended semantics are as follows:
+\cppblock{
+bool b = /* ... */;
+
+char d1 = b;                    // \serif{deprecated}
+char d2(b);                     // \serif{deprecated}
+char d3{b};                     // \serif{deprecated}
+char d4 = {b};                  // \serif{deprecated}
+char d5 = char{b};              // \serif{deprecated}
+
+char k1 = char(b);              // \serif{OK}
+char k2 = (char)b;              // \serif{OK}
+char k3 = static_cast<char>(b); // \serif{OK}
+
+'a' + b;                        // \serif{OK}
+}
+
+While most of these are obvious, some decisions require rationale:
+\ul{
+  \li{
+    \tcode{d2} should be deprecated because direct-initialization, unlike casts,
+    does not generally opt into all possible conversions.
+    For example, \tcode{static_cast<int*>(void_ptr)} is valid,
+    while \tcode{int* p(void_ptr)}, for some \tcode{void* void_ptr}.
+  }
+  \li{
+    \tcode{d5} should be deprecated because list-initialization is generally more restrictive.
+    For instance, it does not permit narrowing conversions,
+    and \tcode{I{void_ptr}} is ill-formed while \tcode{I(void_ptr)} is okay,
+    where \tcode{I} is \tcode{int*}.
+  }
+  \li{
+    \tcode{k1} and \tcode{k2} should be okay because they are defined
+    in terms of \tcode{static_cast}.
+  }
+}
+
 \h2{Impact on existing code}
 
 During discussion of this proposal with various members of the C++ community,
@@ -173,6 +220,7 @@ unless it was necessitated by a \tcode{static_cast}.
 \br\wg21_example{
 \codeblock[cpp,borders=no]{
 char c = true;           // \serif{deprecated}
+char{true};              // \serif{deprecated}
 
 static_cast<char>(true); // \serif{OK, conversion directly necessitated by a \tcode{static_cast}}
 char(true);              // \serif{OK, conversion indirectly necessitated by a \tcode{static_cast}}
