@@ -173,7 +173,7 @@ and result in \tcode{int} \N{RIGHTWARDS ARROW} \tcode{char} conversion instead.
 
 \h2{Implementation experience}
 
-A \ref[ClangWarning] has been implemented,
+A \ref[ClangWarning] has been implemented in a fork,
 which triggers in the deprecated cases.
 
 \h2{Wording}
