@@ -1,0 +1,214 @@
+\import{libwg21.cow}
+
+\macro[\bool_to_char]{\tcode{bool} \N{RIGHTWARDS ARROW} \tcode{char}}
+
+\wg21_head[
+    title = Deprecate implicit conversion\br{}from \tcode{bool} to character types
+]{
+\dl{
+  \dt{Document number:} \dd{\docnum{P3765R0}}
+  \dt{Date:}            \dd{\tt{2025-07-12}}
+  \dt{Audience:}        \dd{EWG}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{Co-authors:}      \dd{Hana Dusíková <\mail{hanicka@hanicka.net}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3765/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/deprecate-bool-conv.cow]}
+}
+\hr
+}
+
+\Babstract{
+Implicit conversion from \tcode{bool} to character types
+serve little purpose in the language, and invite bugs.
+We propose to deprecate them.
+}
+
+\h2[listed=no]{Contents}
+
+\make_contents
+
+\h2{Introduction}
+
+\Bug{
+Consider the following bug,
+resulting from a typo (parentheses in the wrong place):
+\cppblock{
+std::string_view str = /* ... */;
+if (str.ends_with('\\n' || str.ends_with('\\r'))) {
+    // ...
+}
+}
+
+\tcode{'\\n' || str.ends_with('\\r')} is equivalent to \tcode{true},
+and the \tcode{ends_with(char)} overload is called with \tcode{char(true)}.
+
+Surprisingly, every compiler accepts this code at the time of writing,
+with no warning and no errors.
+That is because \bool_to_char conversion
+is neither a narrowing conversion, nor does it change the sign of the operand,
+so it does not trigger any checks.
+}
+
+Semantically (assuming ASCII-compatible encoding),
+in \bool_to_char conversion,
+\tcode{false} is converted to U+0000\N{NO-BREAK SPACE}\tt{NULL}, and
+\tcode{true} is converted to U+0001\N{NO-BREAK SPACE}\tt{START OF HEADING}.
+It is hard to see how this conversion needs to be a built-in language feature;
+possibly, no C++ developer ever wanted a conversion to have these semantics.
+
+Seeing that these implicit conversions also invite bugs like the one above,
+that makes them not just useless,
+but actively harmful to the language,
+qualifying them for removal.
+Similarly, \ref[P1120R0] deprecated array-to-pointer conversion
+in equality comparison of two arrays,
+a bug-prone and virtually useless conversion.
+
+\h2{Proposal}
+
+The goal of this proposal is to deprecate implicit conversion
+from \tcode{bool} to character types.
+That is, to \tcode{char}, \tcode{wchar_t}, \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}.
+
+Conversions to \tcode{signed char} and \tcode{unsigned char} are not affected.
+That is because these types are used for numerics and not to represent characters,
+so e.g. \tcode{char} \N{RIGHTWARDS ARROW} \tcode{unsigned char} represents a conversion from
+\tcode{false} to \tcode{0} and from \tcode{true} to \tcode{1},
+which is sometimes used in branchless programming:
+
+\Bex{
+In the following example, \tcode{z} is incremented if \tcode{x} is odd.
+\cppblock{
+int x = /* ... */, z;
+unsigned char y = x % 2 != 0;
+z += y;
+}
+}
+
+Note that branchless programming is generally not affected by a \bool_to_char deprecation.
+For example, in the expression \tcode{'0' + (x \% 2 != 0)},
+both operands are converted to \tcode{int} due to the usual arithmetic conversions
+and integral promotion.
+\bool_to_char conversion actually takes place when calling
+a function with \tcode{char} parameter with a \tcode{bool} argument,
+when storing a \tcode{bool} value in a \tcode{char} variable, and
+other such "direct" scenarios.
+
+\h2{Impact on existing code}
+
+During discussion of this proposal with various members of the C++ community,
+no one was able to produce an example of where this conversion is used in existing code.
+However, we did not yet perform an extensive survey of large code bases.
+
+Furthermore, there are GCC targets that do not comply with the C99 standard,
+where \tcode{int8_t} is defined to be \tcode{char} (not \tcode{signed char}).
+The following snippet includes GCC definitions for Solaris 2 (\ref[GccSolaris2]):
+
+\Bquote{
+\cppblock{
+/* ??? This definition of int8_t follows the system header but does
+   not conform to C99.  Likewise int_fast8_t, int_least8_t.  */
+#define INT8_TYPE "char"
+}
+}
+
+Since \tcode{bool} \N{RIGHTWARDS ARROW} \tcode{int8_t} conversion could plausibly happen
+in branchless programming,
+hypothetically,
+some code on such non-compliant platforms is affected.
+
+In any case,
+deprecation warnings are easily resolved by performing an explicit conversion,
+or by prepending \tcode{+} to the \tcode{bool} operand,
+which would trigger integral promotion
+and result in \tcode{int} \N{RIGHTWARDS ARROW} \tcode{char} conversion instead.
+
+\h2{Implementation experience}
+
+A \ref[ClangWarning] has been implemented,
+which triggers in the deprecated cases.
+
+\h2{Wording}
+
+The wording changes are relative to \ref[N5008].
+
+Change \eelis{conv.integral#1} as follows:
+
+\Bdiff{
+A prvalue of an integer type \ins{\tcode{S}}
+can be converted to a prvalue of another integer type \ins{\tcode{D}}.
+\ins{The conversion is deprecated\iref{depr.conv.bool.char} if}
+\ul{
+  \li{\ins{
+    \tcode{S} is \tcode{bool} and \tcode{D} is a character type\iref{basic.fundamental} and
+  }}
+  \li{\ins{
+    the conversion is not necessitated by a \tcode{static_cast} (\eelis{expr.static.cast}).
+  }}
+}
+\ins{\wg21_note{
+This deprecation also applies to cv-qualified character types
+because prvalues of such types are adjusted to cv-unqualified types\iref{expr.type}.
+}}\br
+\del{A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.}
+}
+
+Insert a new paragraph immediately following \eelis{conv.integral#1}:
+
+\Bins{
+A prvalue of an unscoped enumeration type can be converted to a prvalue of an integer type.
+}
+
+Insert a new subclause in \eelis{depr} between \eelis{depr.local} and \eelis{depr.capture.this},
+containing a single paragraph:
+
+\Bins{
+\h3[listed=no]{Conversion from \tcode{bool} to a character type \stable-ref{depr.conv.bool.char}}
+
+Integral conversion\iref{conv.integral}
+from a prvalue of type \tcode{bool}
+to a prvalue of character type\iref{basic.fundamental} is deprecated,
+unless it was necessitated by a \tcode{static_cast}.
+\br\wg21_example{
+\codeblock[cpp,borders=no]{
+char c = true;           // \serif{deprecated}
+
+static_cast<char>(true); // \serif{OK, conversion directly necessitated by a \tcode{static_cast}}
+char(true);              // \serif{OK, conversion indirectly necessitated by a \tcode{static_cast}}
+c + true;                // \serif{OK, \tcode{c} and \tcode{true} are promoted to \tcode{int}}
+}
+}
+}
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = P1120R0,
+  title = Consistency improvements for <=> and other comparison operators,
+  date = 2018-06-08,
+  author = Richard Smith,
+  link = https://wg21.link/p1120r0,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1120r0.html
+]
+\bib[
+  id = GccSolaris2,
+  title = Operating system specific defines to be used when targeting GCC for any Solaris 2 system,
+  link = https://gcc.gnu.org/cgit/gcc/tree/gcc/config/sol2.h#n48
+]
+\bib[
+  id = ClangWarning,
+  title = Implementation of Clang warning for this proposal,
+  author = Hana Dusíková,
+  link = https://github.com/llvm/llvm-project/commit/d7b80255bd582ac93d83f1ac5401b7787fee66c7
+]
+
+\make_bib
