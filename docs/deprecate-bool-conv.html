@@ -1563,7 +1563,7 @@ That is, to <code><h- data-h=kw_type>char</h-></code>, <code><h- data-h=kw_type>
 </p>
 <p>Conversions to <code><h- data-h=kw_type>signed</h-> <h- data-h=kw_type>char</h-></code> and <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>char</h-></code> are not affected.
 That is because these types are used for numerics and not to represent characters,
-so e.g. <code><h- data-h=kw_type>char</h-></code> → <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>char</h-></code> represents a conversion from
+so e.g. <code><h- data-h=kw_type>bool</h-></code> → <code><h- data-h=kw_type>unsigned</h-> <h- data-h=kw_type>char</h-></code> represents a conversion from
 <code><h- data-h=bool>false</h-></code> to <code><h- data-h=num>0</h-></code> and from <code><h- data-h=bool>true</h-></code> to <code><h- data-h=num>1</h-></code>,
 which is sometimes used in branchless programming:
 </p>

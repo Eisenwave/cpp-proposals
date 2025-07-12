@@ -73,7 +73,7 @@ That is, to \tcode{char}, \tcode{wchar_t}, \tcode{char8_t}, \tcode{char16_t}, an
 
 Conversions to \tcode{signed char} and \tcode{unsigned char} are not affected.
 That is because these types are used for numerics and not to represent characters,
-so e.g. \tcode{char} \N{RIGHTWARDS ARROW} \tcode{unsigned char} represents a conversion from
+so e.g. \tcode{bool} \N{RIGHTWARDS ARROW} \tcode{unsigned char} represents a conversion from
 \tcode{false} to \tcode{0} and from \tcode{true} to \tcode{1},
 which is sometimes used in branchless programming:
 
