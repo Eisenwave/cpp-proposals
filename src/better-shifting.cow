@@ -422,9 +422,189 @@ or by a scalar shift amount which applies to all elements in the \tcode{simd::ve
 
 The following changes are relative to \ref[N5008].
 
-\Btodo{
-This.
+\Bnote{
+The \tcode{shl} and \tcode{shr} functions should immediately precede the
+\tcode{rotl} and \tcode{rotr} functions in the wording. Therefore, if this paper
+and \ref[P3764] are adopted in the same meeting, the \tcode{shl} and \tcode{shr}
+functions should be inserted between the \tcode{msb_to_mask} and \tcode{rotl}
+functions.
 }
+
+\h3{[bit]}
+
+In \eelis{bit.syn}, change the synopsis as follows:
+
+\Bdiff{
+\itemdecl{
+namespace std {
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+
+\ins{  // \serif{[bit.shift], shifting}
+  template<class T>
+    constexpr T shl(T x, int s) noexcept;
+  template<class T>
+    constexpr T shr(T x, int s) noexcept;
+}
+
+  // \serif{[bit.rotate], rotating}
+  template<class T>
+    constexpr T rotl(T x, int s) noexcept;
+  template<class T>
+    constexpr T rotr(T x, int s) noexcept;
+
+  \html{[\N{HORIZONTAL ELLIPSIS}]}
+}
+}
+}
+
+In \eelis{bit}, add a new subclause immediately preceding \eelis{bit.rotate}:
+
+\Bins{
+\html-h3{Shifting \stable-ref{bit.shift}}
+
+\itemdecl{
+template<class T>
+  constexpr T shl(T x, int s) noexcept;
+}
+
+\itemdescr{
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\effects
+If \tcode{s} is negative, the behavior is erroneous and an
+implementation-defined value is returned. Otherwise, returns the value of
+\tcode{x} multiplied by 2\sup{\tcode{s}}.
+\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
+the result is zero.}
+}
+
+\itemdecl{
+template<class T>
+  constexpr T shr(T x, int s) noexcept;
+}
+
+\itemdescr{
+\constraints
+\tcode{T} is a signed or unsigned integer type\iref{basic.fundamental}.
+
+\effects
+If \tcode{s} is negative, the behavior is erroneous and an
+implementation-defined value is returned. Otherwise, returns the value of
+\tcode{x} divided by 2\sup{\tcode{s}}, rounded toward negative infinity.
+\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
+the result is -1 if \tcode{x} is negative and 0 otherwise; the computation of
+2\sup{\tcode{s}} does not overflow.}
+}
+}
+
+\h3{[simd]}
+
+In \eelis{simd.syn}, change the synopsis as follows:
+
+\Bdiff{
+\itemdecl{
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+
+// \serif{[simd.bit], Bit manipulation}
+
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+
+\Bins{
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 shl(const V0& v, const V1& s) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V  shl(const V& v, int s) noexcept;
+
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 shr(const V0& v, const V1& s) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V  shr(const V& v, int s) noexcept;
+}
+
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 rotl(const V0& v, const V1& s) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V  rotl(const V& v, int s) noexcept;
+
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 rotr(const V0& v, const V1& s) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V  rotr(const V& v, int s) noexcept;
+
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+
+// See \serif{[simd.bit], Bit manipulation}
+using simd::byteswap;
+using simd::bit_ceil;
+using simd::bit_floor;
+using simd::has_single_bit;
+\ins{using simd::shl;}
+\ins{using simd::shr;}
+using simd::rotl;
+using simd::rotr;
+using simd::bit_width;
+using simd::countl_zero;
+using simd::countl_one;
+using simd::countr_zero;
+using simd::countr_one;
+using simd::popcount;
+
+\html{[\N{HORIZONTAL ELLIPSIS}]}
+}
+}
+
+In \eelis{simd.bit}, immediately preceding the first declaration of
+\tcode{rotl}, insert the following:
+
+\Bins{
+\itemdecl{
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 shl(const V0& v0, const V1& v1) noexcept;
+template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+  constexpr V0 shr(const V0& v0, const V1& v1) noexcept;
+}
+
+\itemdescr{
+\constraints
+\ul{
+  \li{The type \tcode{V0::value_type} is a signed or unsigned integer type
+      \iref{basic.fundamental},}
+  \li{the type \tcode{V1::value_type} models \tcode{integral},}
+  \li{\tcode{V0::size() == V1.size()} is \tcode{true}, and}
+  \li{\tcode{sizeof(typename V0::value_type) == sizeof(typename V1::value_type)}
+      is \tcode{true}.}
+}
+
+\returns
+A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element
+is initialized to the result of \tcode{\exposid{bit-func}(v0[\math{\mi{i}}],
+static_cast<int>(v1[\math{\mi{i}}]))} for all \math{\mi{i}} in the range
+[\tcode{0}, \tcode{V::size()}), where \tcode{\exposid{bit-func}} is the
+corresponding scalar function from \tcode{<bit>}.
+}
+
+\itemdecl{
+template<\exposid{simd-type} V>
+  constexpr V shl(const V& v, int s) noexcept;
+template<\exposid{simd-type} V>
+  constexpr V shl(const V& v, int s) noexcept;
+}
+
+\itemdescr{
+\constraints
+The type \tcode{V::value_type} is a signed or unsigned integer type
+\iref{basic.fundamental}.
+
+\returns
+A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element is
+initialized to the result of \tcode{\exposid{bit-func}(v[\math{\mi{i}}], s)} for
+all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}), where
+\tcode{\exposid{bit-func}} is the corresponding scalar function from
+\tcode{<bit>}.
+}
+}
+
 
 \h2{References}
 
