@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3774R0}}
-    \dt{Date:}            \dd{\tt{2025-07-12}}
+    \dt{Date:}            \dd{\tt{2025-07-13}}
     \dt{Audience:}        \dd{LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -264,8 +264,8 @@ to \tcode{std::function}, \tcode{std::move_\N{SOFT HYPHEN}only_function},
 and \tcode{std::copyable_\N{SOFT HYPHEN}function};
 it would simply be invocable like function pointers or lambdas.
 Even without any constructors added to the standard wording,
-implementations are free to convert \tcode{std::nontype} into a function pointer
-within the constructor of \tcode{std::move_only_function},
+implementations are free to apply small-object optimization,
+i.e. no allocations are necessary,
 which may improve quality of implementation further.
 This optimization is simply part of the "as-if rule".
 
@@ -282,10 +282,15 @@ we have \em{big} plans.
 \tcode{std::fn} would be \em{the} idiomatic way of lifting function pointers into
 the type system.
 
+\tcode{std::fn} is inspired by the \tcode{std::not_fn} and \tcode{std::mem_fn} function templates.
+The future C++29 \tcode{std::fn} would have similar purpose to \tcode{std::not_fn};
+it just wouldn't negate the result of an invocation.
+
 However, such a short and valuable name is likely controversial.
 A plausible alternative is to use
-\tcode{std::fw} and \tcode{std::function_wrapper} analogous to
-\tcode{std::cw} and \tcode{std::constant_wrapper}.
+\tcode{std::fw} and \tcode{std::function_wrapper}, analogous to
+\tcode{std::cw} and \tcode{std::constant_wrapper},
+or \tcode{std::const_fn} and \tcode{std::const_fn_t}, analogous to \tcode{std::not_fn}.
 
 \Bnote{
 Some authors initially had concerns about \tcode{fn} possibly being used as a namespace
@@ -293,6 +298,19 @@ for functional programming in the future.
 However, the standard library generally has verbose namespaces (e.g. \tcode{filesystem}),
 and suggestion to add shorthands (e.g. \tcode{fs}) were historically rejected.
 }
+
+\h3{Change of header}
+
+Consider that \tcode{std::fn} is a more "functional name"
+than \tcode{std::nontype},
+and that the goal is to follow up the rename with a call operator added in C++29,
+\header{functional} is a more appropriate header than \header{utility}.
+
+Since \tcode{std::function_ref} is located in \header{functional} anyway,
+this change is largely inconsequential.
+It just means that users wouldn't be able to obtain \tcode{std::fn}
+through \header{utility} on its own,
+but we don't see strong motivation to do so.
 
 \h3{Interoperability with third-party \tcode{function_ref}s}
 
@@ -465,7 +483,14 @@ and for making \tcode{std::fn_t} invocable via surrogate function call
 
 \h2{Wording}
 
-\macro[\black_comment]{\hl[sym-punc]{//}\serif{\i{\hl[sym-punc]{ \put}}}}
+\style{
+diff-block h-[data-h=cmt],
+diff-block h-[data-h=cmt_dlim] {
+  color: inherit !important;
+}
+}
+
+\h3{Changes to C++26}
 
 The following changes are relative to \ref[N5008].
 
@@ -478,22 +503,48 @@ In \eelis{version.syn}, update the feature-test macro:
 
 \Bdiff{
 \itemdecl{
-#define __cpp_lib_function_ref \del{202306L} \ins{20XXXXL} \black_comment{also in <functional>}
+#define __cpp_lib_function_ref \del{202306L} \ins{20XXXXL} // \serif{also in \tt{<functional>}}
 }
 }
 
 In \eelis{utility.syn},
-modify the header synopsis as follows:
+delete the declarations of \tcode{std::nontype} and \tcode{std::nontype_t}:
+
+\Bdel{
+\itemdecl{
+// \serif{nontype argument tag}
+template<auto V>
+  struct nontype_t {
+    explicit nontype_t() = default;
+  };
+template<auto V> constexpr nontype_t<V> nontype{};
+}
+}
+
+In \eelis{functional.syn},
+change the synopsis as follows:
 
 \Bdiff{
 \itemdecl{
-\black_comment{\del{nontype} \ins{function} argument tag}
-template<auto V>
-  struct \del_ins_nontype {
-    explicit nontype_t() = default;
-  };
-\del{template<auto V> constexpr nontype_t<V> nontype{};}
-\ins{template<auto V> constexpr \replacement_t<V> \replacement_v{};}
+namespace std {
+  \html{\etc}
+
+  // \serif{\eelis{func.identity}, identity}
+  struct identity;                                                  // \serif{freestanding}
+
+\ins{  // \serif{constant function wrapper}
+  template<auto f>
+    struct \replacement_t {
+      explicit \replacement_t() = default;
+    };
+  template<auto f> constexpr \replacement_t<f> \replacement_v{};}
+  
+  // \serif{\eelis{func.not.fn}, function template \tcode{not_fn}}
+  template<class F> constexpr \exposid{unspecified} not_fn(F&& f);            // \serif{freestanding}
+  template<auto f> constexpr \exposid{unspecified} not_fn() noexcept;         // \serif{freestanding}
+
+  \html{\etc}
+}
 }
 }
 
@@ -506,7 +557,7 @@ namespace std {
   template<class R, class... ArgTypes>
   class function_ref<R(ArgTypes...) \exposid{cv} noexcept(\exposid{noex})> {
   public:
-    \black_comment{[func.wrap.ref.ctor], constructors and assignment operators}
+    // \serif{[func.wrap.ref.ctor], constructors and assignment operators}
     template<class F> function_ref(F*) noexcept;
     template<class F> constexpr function_ref(F&&) noexcept;
     template<auto f> constexpr function_ref(\del_ins_nontype<f>) noexcept;
@@ -517,18 +568,18 @@ namespace std {
     constexpr function_ref& operator=(const function_ref&) noexcept = default;
     template<class T> function_ref& operator=(T) = delete;
 
-    \black_comment{[func.wrap.ref.inv], invocation}
+    // \serif{[func.wrap.ref.inv], invocation}
     R operator()(ArgTypes...) const noexcept(\exposid{noex});
 
   private:
     template<class... T>
-      static constexpr bool \exposid{is-invocable-using} = \exposid{see below};     \black_comment{exposition only}
+      static constexpr bool \exposid{is-invocable-using} = \exposid{see below};     // \serif{exposition only}
 
-    R (*\exposid{thunk-ptr})(\exposid{BoundEntityType}, Args&&...) noexcept(\exposid{noex});  \black_comment{exposition only}
-    \exposid{BoundEntityType} \exposid{bound-entity};                               \black_comment{exposition only}
+    R (*\exposid{thunk-ptr})(\exposid{BoundEntityType}, Args&&...) noexcept(\exposid{noex});  // \serif{exposition only}
+    \exposid{BoundEntityType} \exposid{bound-entity};                               // \serif{exposition only}
   };
 
-  \black_comment{[func.wrap.ref.deduct], deduction guides}
+  // \serif{[func.wrap.ref.deduct], deduction guides}
   template<class F>
     function_ref(F*) -> function_ref<F>;
   template<auto f>
@@ -598,6 +649,87 @@ template<auto f, class T>
 }
 
 \etc
+}
+
+\h3{Follow-up changes to C++29}
+
+The following changes are relative to \ref[N5008],
+with the changes in the previous section applied.
+
+In \eelis{version.syn}, create a feature-test macro:
+
+\Bins{
+\itemdecl{
+#define __cpp_lib_fn 20XXXXL // \serif{also in \tt{<functional>}}
+}
+}
+
+In \eelis{functional.syn},
+change the declaration of \tcode{fn} and \tcode{fn_t} as follows:
+
+\Bdiff{
+\itemdecl{
+// \serif{\ins{[func.fn], }constant function wrapper}
+template<auto f>
+  struct \replacement_t\del{ {
+    explicit \replacement_t() = default;
+  }};
+template<auto f> constexpr \replacement_t<f> \replacement_v{};
+}
+}
+
+Between \eelis{func.identity} and \eelis{func.not.fn},
+insert a new subclause:
+
+\Bins{
+\html-h3{Constant function wrapper \stable-ref{func.fn}}
+
+\itemdecl{
+template<auto f>
+  struct \replacement_t {
+    explicit \replacement_t() = default;
+
+    \seebelow
+  };
+template<auto f> constexpr fn_t<f> fn;
+}
+
+\pnum
+Let \tcode{ft} be an object of type \tcode{FT}
+that is a (possibly const) specialization of \tcode{fn_t},
+and let \tcode{cf} be a template parameter object\iref{temp.param}
+corresponding to the constant template argument of \tcode{FT}.
+Then:
+\ul{
+\li{
+  \tcode{FT} is a trivially copyable type,
+  such that \tcode{FT} models \libconcept{semiregular} and
+  \tcode{is_empty_v<FT>} is \tcode{true};
+}
+\li{
+  \tcode{ft} is a simple call wrapper\iref{func.require}
+  with no state entities
+  and with the call pattern \tcode{invoke(cf, call_args...)},
+  where \tcode{call_args} is an argument pack used in a function call expression\iref{expr.call},
+  except that any parameter of the function selected by overload resolution
+  may be initialized from the corresponding element of \tcode{call_args}
+  if that element is a prvalue;
+}
+\li{
+  for any type \tcode{R} and pack of types \tcode{Args},
+  both \tcode{cf} and \tcode{std::move(ft)} are convertible to:
+  \ul{
+    \li{\tcode{R(*)(Args...)} if \tcode{is_invocable_r_v<R, decltype(cf), Args...>} is \tcode{true};}
+    \li{\tcode{R(*)(Args...) noexcept} if \tcode{is_nothrow_invocable_r_v<R, decltype(cf), Args...} is \tcode{true}.}
+  }
+  \wg21_example{
+  \tcode{\br
+  bool is_even(long);\br
+  bool(*ptr)(int) = std:::fn<&is_even>;\br
+  }
+  }
+}
+}
 }
 
 \h2{References}
