@@ -418,6 +418,14 @@ That is, overloads that can either shift a \tcode{simd::vec} by a \tcode{simd::v
 of shift amounts,
 or by a scalar shift amount which applies to all elements in the \tcode{simd::vec}.
 
+\h2{Wording}
+
+The following changes are relative to \ref[N5008].
+
+\Btodo{
+This.
+}
+
 \h2{References}
 
 \bib[
@@ -443,14 +451,6 @@ or by a scalar shift amount which applies to all elements in the \tcode{simd::ve
   author = Jan Schultke,
   link = https://wg21.link/p3643r0,
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3643r0.html
-]
-\bib[
-  id = P3312R1,
-  title = Overload Set Types,
-  date = 2025-04-16,
-  author = Bengt Gustafsson,
-  link = https://wg21.link/p3312r1,
-  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
 ]
 
 \make_bib
