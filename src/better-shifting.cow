@@ -1,0 +1,456 @@
+\import{libwg21.cow}
+
+\wg21_head[
+    title = Better shifting
+]{
+\dl{
+  \dt{Document number:} \dd{\docnum{P3793R0}}
+  \dt{Date:}            \dd{\tt{2025-07-13}}
+  \dt{Audience:}        \dd{SG6}
+  \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
+  \dt{Reply-to:}        \dd{Brian Bi <\mail{bbi5291@gmail.com}>}
+  \dt{Co-authors:}      \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
+  \dt{GitHub Issue:}    \dd{\ref[https://wg21.link/P3793/github]}
+  \dt{Source:}          \dd{\ref[https://github.com/Eisenwave/cpp-proposals/blob/master/src/better-shifting.cow]}
+}
+\hr
+}
+
+\Babstract{
+We propose the addition of functions to the \header{bit} header
+to perform bit shifts on integer operands.
+The \tcode{std::shl} and \tcode{std::shr} functions provide the
+following advantages over the built-in shift operators:
+
+\ol{
+  \li{They always produce a mathematically correct result when possible.}
+  \li{They never have undefined behavior.}
+  \li{They avoid the confusing precedence of the built-in shift operators.}
+}
+}
+
+\h2[listed=no]{Contents}
+
+\make_contents
+
+\h2{Introduction}
+
+C++ has built-in shift operators, \tcode{<<} and \tcode{>>},
+inherited from C with semantics essentially unchanged,
+including the following two inconvenient properties:
+
+\ol{
+  \li{
+    The precedence of these operators is less than the precedence of the additive operators,
+    which is counterintuitive because shift operations
+    behave as multiplication and division by a power of 2.
+  }
+  \li{
+    If the shift amount is greater than or equal to the width of the (promoted)
+    left operand or is negative, the behavior is undefined.
+    In the remainder of this document,
+    we will refer to shifts by a positive amount that is greater than
+    or equal to the bit width of the operand as \dfn{overlong} shifts.
+  }
+}
+
+The first property certainly cannot be changed at this point in time.
+Reflector discussion revealed that GCC relies on the second property when vectorizing
+multiple shift operations on adjacent memory locations,
+and changing it might therefore not be "free".
+Besides that, changing the second property is also likely to be contentious
+because some committee members prefer to make overlong
+shifts erroneous behavior instead of defining them to produce the mathematically
+correct result.
+
+For these reasons, we are instead proposing to solve the problems with shifting in C++
+by introducing new Standard Library facilities in the \header{bit} header.
+
+\h2[id=motivation]{Motivation \N{EM DASH} Why are overlong shifts needed?}
+
+We consider the undefined behavior of overlong shifts to be gratuitous.
+Unlike other arithmetic operators, which produce undefined behavior only when the result is
+"not mathematically defined or is outside the range of representable values"\iref{expr.pre#4},
+the built-in shift operators unconditionally produce UB for overlong shifts.
+This behavior is inherited from C,
+in which the arithmetic operators were originally designed to do
+whatever the corresponding hardware instructions would do;
+processor families differ as to how overlong shifts are
+handled.
+However, it is unclear why the behavior of overlong shifts was
+standardized as being undefined behavior as opposed to producing an unspecified result;
+perhaps there's some CPU that we (the authors of this paper)
+don't know about (and that might even be obsolete)
+on which the behavior could include trapping, halting, or otherwise failing to produce a result.
+
+Besides that, there are practical reasons why the undefined behavior of overlong
+shifts is inconvenient, particularly when the second operand is equal to the bit
+width of the first operand.
+
+\Bex{
+Consider the task of implementing the following function:
+
+\cppblock{
+/// \serif{Return the value of \tcode{x} with the least significant \tcode{num_bits} bits masked out.}
+/// \serif{\tcode{num_bits} shall be nonnegative and \N{LESS THAN OR EQUAL TO} \tcode{32}.}
+unsigned std::uint32_t mask_lsb(std::uint32_t x, int num_bits);
+}
+
+When \tcode{num_bits} is equal to 32, the behavior of \tcode{mask_lsb} is the natural
+continuation of the behavior for smaller values of num_bits.
+However, to implement this function,
+we must guard against \tcode{num_bits == 32}:
+
+\cppblock{
+unsigned std::uint32_t mask_lsb(std::uint32_t x, int num_bits) {
+    if (num_bits == 32) return 0;
+    return x & ~((static_cast<std::uint32_t>(1) << num_bits) - 1);
+}
+}
+
+The first statement in the body of \tcode{mask_lsb} would be unnecessary
+if the shift operation produced the mathematically correct result of \tcode{0}
+when \tcode{num_bits} is equal to \tcode{32}.
+}
+
+Overlong bit-shifts can also be a problem with right-shifting,
+although these problems are significantly less common.
+
+\Bex{
+We can use an integer \tcode{b} to represent a bitset,
+where \tcode{1} represents an element which is in the set,
+and \tcode{0} represents an integer that does not.
+
+\cppblock{
+std::uint32_t bitset = /* ... */;
+
+// \serif{Possibly undefined behavior; would require special cases to guard against negative or overlong shifts.}
+bool contains(size_t i) {
+    return (bitset >> i) & 1;
+}
+
+// \serif{Wide contract, never fails.}
+bool contains(size_t i) noexcept {
+    return std::shr(bitset, int(i)) & 1;
+}
+}
+
+Reporting an element that \tcode{bitset} has no capacity for
+as not being in the set may be exactly the behavior we want, rather than UB,
+and \tcode{std::shr} makes that easy.
+}
+
+\h2{Design considerations}
+
+\h3{Proposed behavior for overlong shifts}
+
+We propose the addition of Standard Library functions
+\tcode{std::shl} and \tcode{std::shr}
+that produce mathematically correct results for overlong shifts.
+That is, these functions actually just shift the bits by the number of positions specified:
+in the case of an overlong shift, that means that all bits that would
+be shifted are shifted off the end.
+For a logical shift, the result is \tcode{0};
+for an arithmetic right shift,
+the result is \tcode{-1} when the first operand is negative, and \tcode{0} otherwise.
+
+\h4{Wrapping behavior is not useful}
+
+We believe that the "wrapping" behavior
+(most famously exhibited by the x86 family of processors)
+in which the shift amount is reduced modulo the bit width
+of the other operand is not useful,
+other than when implementing bit rotations.
+Since the functions \tcode{std::rotl} and \tcode{std::rotr}
+are already provided by the Standard
+Library, C++ programmers do not need to implement rotations themselves anymore,
+and would not benefit from wrapping behavior for shifts.
+
+\h4{Shift amounts which are overlong by more than one should be safe}
+
+Although shifts by an amount that are strictly greater than the bit width of the
+first operand are not as useful as when the amount is equal to the bit width,
+we believe that requiring the implementation to produce the mathematically correct
+result in those cases does not impose an additional performance burden.
+For example, if \tcode{x} is \tcode{32} bits wide,
+then requiring \tcode{std::shift_left(x, 33)} to produce \tcode{0}
+does not impose additional overhead
+beyond only requiring \tcode{std::shift_left(x, 32)} to
+produce \tcode{0}.
+
+\Bex{
+For example, GCC 15.1 at \tt{-O2} or higher produces very similar x86-64
+assembly for the following two functions:
+
+\cppblock{
+unsigned int shl1(unsigned int x, unsigned int amount) {
+    if (amount < 32) return x << amount; else return 0;
+}
+unsigned int shl2(unsigned int x, unsigned int amount) {
+    if (amount > 32) std::unreachable();
+    if (amount < 32) return x << amount; else return 0;
+}
+}
+
+\codeblock[asm]{
+shl1:
+        mov     ecx, esi
+        xor     eax, eax
+        sal     edi, cl
+        cmp     esi, 32
+        cmovb   eax, edi
+        ret
+shl2:
+        mov     ecx, esi
+        xor     eax, eax
+        sal     edi, cl
+        cmp     esi, 32
+        cmovne  eax, edi
+        ret
+}
+
+Using \tcode{shl2} instead of \tcode{shl1} can improve performance
+only in the sense that UB enables more optimizations in general
+(e.g. assuming that the branch leading to the UB is not taken).
+The generated code in Clang 20 is very similar.
+}
+
+Such similarities in generated assembly are observed across many other architectures
+because if a single branch or conditional move instruction is
+required in order to produce the mathematically correct result for amount \tcode{>= 32},
+then a single one will also be needed merely to account for the case of
+\tcode{amount == 32} (when \tcode{amount > 32} is disallowed).
+
+\h3{Logical versus arithmetic shifts}
+
+The built-in \tcode{>>} operator performs an arithmetic shift on signed operands:
+that is, the sign bit is extended.
+One possible design is to provide both arithmetic and logical right shifts,
+either as separate functions or as one function with
+an additional parameter indicating the choice of arithmetic or logical shift.
+
+However, we believe that this is unnecessary because in cases where the
+programmer wishes to always perform a logical shift,
+it is customary to employ unsigned types,
+possibly by inserting a cast that will be optimized out.
+Conversely, the deliberate choice to use a signed type for the left operand of
+a right shift indicates intent to perform an arithmetic shift.
+The proposed \tcode{std::to_signed} and \tcode{std::to_unsigned}
+functions in \ref[P3643R0] would make such conversions convenient,
+even in generic code.
+
+A survey of popular programming languages supports this design direction:
+
+\ul{
+  \li{
+    Languages that provide an explicit choice between a logical shift or an
+    arithmetic shift usually lack unsigned integer types
+    (Fortran, Java, JavaScript, OCaml).
+    C# had unsigned integer types from its initial release, but
+    didn't have the logical right shift operator until version 11.
+  }
+  \li{
+    Languages that do not provide an explicit choice between a logical shift and
+    an arithmetic shift always perform arithmetic shifts for negative operands
+    (Go, Haskell, Objective-C, Python, Ruby, Rust).
+  }
+  \li{
+    Perl is possibly an exception to the above,
+    but it is hard to track down the behavior of shifts prior to version 5.
+  }
+}
+
+\h3{Negative shift amounts}
+
+The behavior of negative shift amounts
+in some popular programming languages is listed below:
+
+\ul{
+\li{Shift amount reduced modulo bit width of other operand: C#, Java, JavaScript}
+\li{Exception or panic: Go, Haskell, Python}
+\li{Shift in other direction: Fortran, Objective-C, Perl, Ruby}
+\li{Unspecified or implementation-defined result: OCaml, Rust}
+}
+
+Unlike overlong shifts, there is no obvious "mathematically correct result"
+for a shift by a negative number of bits,
+nor is there an obvious choice based on existing practice in other programming languages.
+Hardware instructions interpret the shift amount as an unsigned number.
+
+There are several options for how the proposed \tcode{std::shl} and
+\tcode{std::shr} functions could handle negative shift widths:
+\ol{
+  \li{Shift in other direction.}
+  \li{Implementation-defined result.}
+  \li{Erroneous behavior with unspecified result (proposed).}
+  \li{Undefined behavior.}
+}
+
+\h4{Why no shift in the other direction?}
+
+The first option imposes performance overhead compared with only handling
+overlong shifts, which makes the second and third options more attractive.
+Use cases where we want to shift in the other direction are extremely uncommon,
+and in those uncommon use cases,
+these operations can be easily expressed by conditionally shifting to the left or right.
+
+\h4{Why no implementation-defined result?}
+
+Hardware architectures don't always guarantee a specific result for
+bit-shifting instructions.
+For example, older Intel x86-64 processors do not guarantee that shifting wraps,
+but yield an unspecified result.
+
+"Implementation-defined" has a connotation of producing a deterministic result,
+and if that is not guaranteed by the underlying hardware instruction,
+there may be additional cost to make the result deterministic.
+Since the behavior is erroneous anyway,
+there is essentially no benefit to an implementation-defined result,
+as compared to an unspecified result.
+
+\h4{Why no undefined behavior?}
+
+Unlike division by zero,
+there is little motivation to make this operation undefined;
+the underlying hardware instruction does not raise an exception,
+but produces a surprising (possibly unspecified) result.
+
+If the programmer wants shifting by a negative amount \tcode{s} to have undefined behavior,
+they can opt into that using:
+\cppblock{
+if (s < 0) std::unreachable();
+// \serif{or}
+[[assume(s >= 0)]];
+}
+
+\h4{Conclusion}
+
+Attempting to shift by a negative amount is often a bug,
+with the programmer's intent being unclear.
+However, there is no necessity for undefined behavior.
+
+Therefore, we propose the third option (erroneous behavior with unspecified result).
+
+\h3{Naming}
+
+We chose the names \tcode{shl} and \tcode{shr}
+because they are as short as possible,
+while still being familiar to many programmers.
+For example, the x86 and ARM instruction sets
+have shift instructions named \tcode{SHL} and \tcode{SHR},
+Pascal has built-in operators with these names,
+and Rust uses \tcode{Shl} and \tcode{Shr} as the names of the traits
+that must be implemented for types to support the shift operators.
+
+We hope the brevity will encourage adoption of \tcode{std::shl} and \tcode{std::shr}
+as safe alternatives to the built-in operators.
+These abbreviations are also consistent
+with the existing \tcode{std::rotl} and \tcode{std::rotr} functions,
+which are conspicuously not named \tcode{std::rotate_left} and \tcode{std::rotate_right},
+respectively.
+
+\: However, for the bidirectional shift function, which we expect to be used much
+\: more rarely, the name sh, which would not be familiar to any programmers as far
+\: as we can tell, would not be appropriate. Instead, we propose to name this
+\: function shift.
+
+\h3{Signatures}
+
+We propose the following signatures:
+
+\cppblock{
+template<class T>
+  constexpr T shl(T x, int y) noexcept;
+
+template<class T>
+  constexpr T shr(T x, int y) noexcept;
+}
+
+The rationale for these signature is as follows:
+
+\ul{
+  \li{
+    We follow the design of \tcode{std::rotl} and \tcode{std::rotr}
+    in proposing that the shift functions do not perform integer promotion.
+  }
+  \li{
+    Like \tcode{rotl} and \tcode{rotr},
+    these functions don't participate in overload resolution
+    unless \tcode{T} is an integer type.
+    Unlike \tcode{rotl} and \tcode{rotr}, the proposed \tcode{shl} and \tcode{shr}
+    accept either signed or unsigned integral types for the first operand:
+    for \tcode{shr},
+    the signedness of the first parameter determines whether an arithmetic or
+    logical shift is performed,
+    and it would be surprising if \tcode{shl} did not also accept signed types.
+  }
+  \li{
+    We follow the design of \tcode{std::rotl} and \tcode{std::rotr}
+    in specifying a type of \tcode{int} for the second parameter.
+    \tcode{int} is large enough to hold any realistic shift width,
+    and the choice of a signed type rather than an unsigned type allows the
+    implementation to catch bugs in which the expression for the second argument
+    produced a negative result.
+  }
+  \li{
+    Although the Lakos rule states that Standard Library functions with narrow
+    contracts should not be declared noexcept,
+    we don't have precedent for functions that never produce undefined behavior
+    but produce erroneous behavior for some subset of arguments.
+    However, we think that we can sidestep that debate because
+    of the precedent that functions that are closely analogous to built-in
+    operators that are not potentially-throwing should be declared \tcode{noexcept} even if
+    they have narrow contracts.
+    If that is the case, it should be even more the
+    case for functions that sometimes exhibit erroneous behavior.
+  }
+}
+
+\h3{SIMD support}
+
+Following \ref[P2933R4],
+almost all \header{bit} functions have a corresponding overload in \header{simd},
+including \tcode{std::rotl} and \tcode{std::rotr}.
+
+The proposed functions should also have \header{simd} overloads,
+in the style of \tcode{simd::rotl} and \tcode{simd::rotr}.
+That is, overloads that can either shift a \tcode{simd::vec} by a \tcode{simd::vec}
+of shift amounts,
+or by a scalar shift amount which applies to all elements in the \tcode{simd::vec}.
+
+\h2{References}
+
+\bib[
+  id = N5008,
+  title = Working Draft\, Programming Languages — C++,
+  date = 2025-03-15,
+  author = Thomas Köppe,
+  link = https://wg21.link/n5008,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5008.pdf
+]
+\bib[
+  id = P2933R4,
+  title = Extend <bit> header function with overloads  for std::simd,
+  author = Daniel Towner\, Ruslan Arutyunyan,
+  date = 2025-02-13,
+  link = https://wg21.link/p2933r4,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2933r4.html
+]
+\bib[
+  id = P3643R0,
+  title = \tcode{std::to_signed} and \tcode{std::to_unsigned},
+  date = 2025-03-13,
+  author = Jan Schultke,
+  link = https://wg21.link/p3643r0,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3643r0.html
+]
+\bib[
+  id = P3312R1,
+  title = Overload Set Types,
+  date = 2025-04-16,
+  author = Bengt Gustafsson,
+  link = https://wg21.link/p3312r1,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3312r1.pdf
+]
+
+\make_bib
