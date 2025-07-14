@@ -510,7 +510,7 @@ In \eelis{simd.syn}, change the synopsis as follows:
 
 \html{[\N{HORIZONTAL ELLIPSIS}]}
 
-\Bins{
+\ins{
 template<\exposid{simd-type} V0, \exposid{simd-type} V1>
   constexpr V0 shl(const V0& v, const V1& s) noexcept;
 template<\exposid{simd-type} V>
@@ -580,8 +580,9 @@ template<\exposid{simd-type} V0, \exposid{simd-type} V1>
 A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element
 is initialized to the result of \tcode{\exposid{bit-func}(v0[\math{\mi{i}}],
 static_cast<int>(v1[\math{\mi{i}}]))} for all \math{\mi{i}} in the range
-[\tcode{0}, \tcode{V::size()}), where \tcode{\exposid{bit-func}} is the
-corresponding scalar function from \tcode{<bit>}.
+[\tcode{0}, \tcode{V::size()}), where \tcode{\exposid{bit-func}} has the same
+behavior as the corresponding scalar function from \tcode{<bit>} except that the
+type of its second parameter is considered to be \tcode{V1::value_type}.
 }
 
 \itemdecl{
@@ -631,6 +632,12 @@ all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}), where
   author = Jan Schultke,
   link = https://wg21.link/p3643r0,
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3643r0.html
+]
+\bib[
+  id = P3764,
+  title = A utility function for propagating the most significant bit,
+  author = Jan Schultke,
+  link = https://wg21.link/p3764
 ]
 
 \make_bib
