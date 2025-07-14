@@ -443,8 +443,7 @@ namespace std {
   template<class T>
     constexpr T shl(T x, int s) noexcept;
   template<class T>
-    constexpr T shr(T x, int s) noexcept;
-}
+    constexpr T shr(T x, int s) noexcept;}
 
   // \serif{[bit.rotate], rotating}
   template<class T>
@@ -475,7 +474,7 @@ template<class T>
 If \tcode{s} is negative, the behavior is erroneous and an
 implementation-defined value is returned. Otherwise, returns the value of
 \tcode{x} multiplied by 2\sup{\tcode{s}}.
-\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
+\br\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
 the result is zero.}
 }
 
@@ -492,7 +491,7 @@ template<class T>
 If \tcode{s} is negative, the behavior is erroneous and an
 implementation-defined value is returned. Otherwise, returns the value of
 \tcode{x} divided by 2\sup{\tcode{s}}, rounded toward negative infinity.
-\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
+\br\wg21_note{If \tcode{s} is greater than or equal to the bit width of \tcode{T},
 the result is -1 if \tcode{x} is negative and 0 otherwise; the computation of
 2\sup{\tcode{s}} does not overflow.}
 }
@@ -519,8 +518,7 @@ template<\exposid{simd-type} V>
 template<\exposid{simd-type} V0, \exposid{simd-type} V1>
   constexpr V0 shr(const V0& v, const V1& s) noexcept;
 template<\exposid{simd-type} V>
-  constexpr V  shr(const V& v, int s) noexcept;
-}
+  constexpr V  shr(const V& v, int s) noexcept;}
 
 template<\exposid{simd-type} V0, \exposid{simd-type} V1>
   constexpr V0 rotl(const V0& v, const V1& s) noexcept;
@@ -568,8 +566,8 @@ template<\exposid{simd-type} V0, \exposid{simd-type} V1>
 \itemdescr{
 \constraints
 \ul{
-  \li{The type \tcode{V0::value_type} is a signed or unsigned integer type
-      \iref{basic.fundamental},}
+  \li{The type \tcode{V0::value_type} is a signed or unsigned integer
+      type\iref{basic.fundamental},}
   \li{the type \tcode{V1::value_type} models \tcode{integral},}
   \li{\tcode{V0::size() == V1.size()} is \tcode{true}, and}
   \li{\tcode{sizeof(typename V0::value_type) == sizeof(typename V1::value_type)}
@@ -581,7 +579,7 @@ A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element
 is initialized to the result of \tcode{\exposid{bit-func}(v0[\math{\mi{i}}],
 static_cast<int>(v1[\math{\mi{i}}]))} for all \math{\mi{i}} in the range
 [\tcode{0}, \tcode{V::size()}), where \tcode{\exposid{bit-func}} has the same
-behavior as the corresponding scalar function from \tcode{<bit>} except that the
+behavior as the corresponding scalar function from \header{<bit>} except that the
 type of its second parameter is considered to be \tcode{V1::value_type}.
 }
 
@@ -594,8 +592,8 @@ template<\exposid{simd-type} V>
 
 \itemdescr{
 \constraints
-The type \tcode{V::value_type} is a signed or unsigned integer type
-\iref{basic.fundamental}.
+The type \tcode{V::value_type} is a signed or unsigned integer
+type\iref{basic.fundamental}.
 
 \returns
 A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element is
