@@ -647,7 +647,8 @@ all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}), where
   title = A utility function for propagating the most significant bit,
   date = 2025-07-15,
   author = Jan Schultke,
-  link = https://wg21.link/p3764r0
+  link = https://wg21.link/p3764r0,
+  long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3764r0.html
 ]
 
 \make_bib
