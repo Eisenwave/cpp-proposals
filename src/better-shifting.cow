@@ -514,8 +514,7 @@ In \eelis{simd.syn}, change the synopsis as follows:
 
 \html{[\N{HORIZONTAL ELLIPSIS}]}
 
-\ins{
-template<\exposid{simd-type} V0, \exposid{simd-type} V1>
+\ins{template<\exposid{simd-type} V0, \exposid{simd-type} V1>
   constexpr V0 shl(const V0& v, const V1& s) noexcept;
 template<\exposid{simd-type} V>
   constexpr V  shl(const V& v, int s) noexcept;
