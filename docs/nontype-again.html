@@ -1545,12 +1545,10 @@ We also propose to make it more broadly useful in C++29 by adding further member
 <a href=#possible-implementation-of-std::fn-for-c29><h3>Possible implementation of <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>fn</h-></code> for C++29</h3></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#wording><h2>Wording</h2></a>
-<div class=toc-num data-level=3>5.1</div>
-<a href=#changes-to-c26><h3>Changes to C++26</h3></a>
-<div class=toc-num data-level=3>5.2</div>
-<a href=#follow-up-changes-to-c29><h3>Follow-up changes to C++29</h3></a>
 <div class=toc-num data-level=2>6</div>
 <a href=#references><h2>References</h2></a>
+<div class=toc-num data-level=2>7</div>
+<a href=#wording-29><h2>Appendix — Follow-up wording for C++29</h2></a>
 </div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
@@ -2003,7 +2001,8 @@ would leave its details largely unspecified,
 which would allow for not implementing <code><h- data-h=kw>operator</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code> at all,
 and for making <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>fn_t</h-></code> invocable via surrogate function call
 (implicit conversion to function pointer, then calling that pointer).
-</p>
+See <a href=#wording-29>§ Appendix — Follow-up wording for C++29</a></p>
+
 <h2 id=wording><a class=para href=#wording></a>5. Wording</h2>
 
 <style>
@@ -2012,8 +2011,6 @@ diff-block h-[data-h=cmt_dlim] {
   color: inherit !important;
 }
 </style>
-
-<h3 id=changes-to-c26><a class=para href=#changes-to-c26></a>5.1. Changes to C++26</h3>
 
 <p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>.
 </p>
@@ -2154,95 +2151,7 @@ replace every occurrence of <code><h- data-h=id_type>nontype_t</h-></code> with 
 <p>[…]
 </p></diff-block>
 
-<h3 id=follow-up-changes-to-c29><a class=para href=#follow-up-changes-to-c29></a>5.2. Follow-up changes to C++29</h3>
-
-<p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>,
-with the changes in the previous section applied.
-</p>
-<p>In <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a>, create a feature-test macro:
-</p>
-<ins-block>
-<code-block class=borderless><h- data-h=mac>#define __cpp_lib_fn 20XXXXL </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in </h-><tt-><h- data-h=cmt>&lt;functional&gt;</h-></tt-></f-serif></code-block>
-</ins-block>
-
-<p>In <a href=https://eel%2eis/c++draft/functional%2esyn>[functional.syn]</a>,
-change the declaration of <code><h- data-h=id>fn</h-></code> and <code><h- data-h=id_type>fn_t</h-></code> as follows:
-</p>
-<diff-block>
-<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><ins><h- data-h=cmt>[func.fn], </h-></ins><h- data-h=cmt>constant function wrapper</h-></f-serif>
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>struct</h-> <h- data-h=id_type>fn_t</h-><del> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw>explicit</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
-  <h- data-h=sym_brac>}</h-></del><h- data-h=sym_punc>;</h->
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>fn</h-><h- data-h=sym_punc>;</h-></code-block>
-</diff-block>
-
-<p>Between <a href=https://eel%2eis/c++draft/func%2eidentity>[func.identity]</a> and <a href=https://eel%2eis/c++draft/func%2enot%2efn>[func.not.fn]</a>,
-insert a new subclause:
-</p>
-<ins-block>
-<h3>Constant function wrapper <span class=stable-ref>[func.fn]</span></h3>
-
-<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
-  <h- data-h=kw>struct</h-> <h- data-h=id_type>fn_t</h-> <h- data-h=sym_brac>{</h->
-    <h- data-h=kw>explicit</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
-
-    <i><h- data-h=id>see below</h-></i>
-  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>fn</h-><h- data-h=sym_punc>;</h-></code-block>
-
-<p>1
-Let <code><h- data-h=id>ft</h-></code> be an object of type <code><h- data-h=id>FT</h-></code>
-that is a (possibly const) specialization of <code><h- data-h=id_type>fn_t</h-></code>,
-and let <code><h- data-h=id>cf</h-></code> be a template parameter object (<a href=https://eel%2eis/c++draft/temp%2eparam>[temp.param]</a>)
-corresponding to the constant template argument of <code><h- data-h=id>FT</h-></code>.
-Then:
-</p><ul>
-<li>
-  <code><h- data-h=id>FT</h-></code> is a trivially copyable type,
-  such that <code><h- data-h=id>FT</h-></code> models <code><h- data-h=id>semiregular</h-></code> and
-  <code><h- data-h=id>is_empty_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>FT</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>;
-</li>
-<li>
-  <code><h- data-h=id>ft</h-></code> is a simple call wrapper (<a href=https://eel%2eis/c++draft/func%2erequire>[func.require]</a>)
-  with no state entities
-  and with the call pattern <code><h- data-h=id>invoke</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>call_args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>,
-  where <code><h- data-h=id>call_args</h-></code> is an argument pack used in a function call expression (<a href=https://eel%2eis/c++draft/expr%2ecall>[expr.call]</a>),
-  except that any parameter of the function selected by overload resolution
-  may be initialized from the corresponding element of <code><h- data-h=id>call_args</h-></code>
-  if that element is a prvalue;
-</li>
-<li>
-  for any type <code><h- data-h=id>R</h-></code> and pack of types <code><h- data-h=id>Args</h-></code>,
-  both <code><h- data-h=id>cf</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move</h-><h- data-h=sym_par>(</h-><h- data-h=id>ft</h-><h- data-h=sym_par>)</h-></code> are convertible to:
-  <ul>
-    <li><code><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code> if <code><h- data-h=id>is_invocable_r_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>;</li>
-    <li><code><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-></code> if <code><h- data-h=id>is_nothrow_invocable_r_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>...</h-></code> is <code><h- data-h=bool>true</h-></code>.</li>
-  </ul>
-  <wg21-block>[<i>Example</i>: 
-  <code><br/>
-  <h- data-h=kw_type>bool</h-> <h- data-h=id>is_even</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>long</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-><br/>
-  <h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=id>ptr</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=sym_punc>:</h-><h- data-h=id>fn</h-><h- data-h=sym_op>&lt;</h-><h- data-h=sym_op>&amp;</h-><h- data-h=id>is_even</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-><br/>
-  </code>
-   — <i>end example</i>]</wg21-block>
-</li>
-</ul>
-</ins-block>
-
 <h2 id=references><a class=para href=#references></a>6. References</h2>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class=bib><div id=bib-item-N5008 class=bib-item>
 <a href="https://wg21%2elink/n5008">[N5008]</a>
@@ -2304,5 +2213,92 @@ Then:
 <span class=bib-title>Reference implementation of std::function_ref with std::stateless</span>
 <span class=bib-date>2025-06-14</span>
 <a href="https://github%2ecom/Eisenwave/nontype_functional" class=bib-link>https://github.com/Eisenwave/nontype_functional</a></div></div>
+
+<h2 id=wording-29><a class=para href=#wording-29></a>Appendix — Follow-up wording for C++29</h2>
+
+<p>The following changes are relative to <a href="https://wg21%2elink/n5008">[N5008]</a>,
+with the changes in <a href=#wording>§5. Wording</a> applied.
+</p>
+<p>In <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a>, create a feature-test macro:
+</p>
+<ins-block>
+<code-block class=borderless><h- data-h=mac>#define __cpp_lib_fn 20XXXXL </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in </h-><tt-><h- data-h=cmt>&lt;functional&gt;</h-></tt-></f-serif></code-block>
+</ins-block>
+
+<p>In <a href=https://eel%2eis/c++draft/functional%2esyn>[functional.syn]</a>,
+change the declaration of <code><h- data-h=id>fn</h-></code> and <code><h- data-h=id_type>fn_t</h-></code> as follows:
+</p>
+<diff-block>
+<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><ins><h- data-h=cmt>[func.fn], </h-></ins><h- data-h=cmt>constant function wrapper</h-></f-serif>
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>struct</h-> <h- data-h=id_type>fn_t</h-><del> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>explicit</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_brac>}</h-></del><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>fn</h-><h- data-h=sym_punc>;</h-></code-block>
+</diff-block>
+
+<p>Between <a href=https://eel%2eis/c++draft/func%2eidentity>[func.identity]</a> and <a href=https://eel%2eis/c++draft/func%2enot%2efn>[func.not.fn]</a>,
+insert a new subclause:
+</p>
+<ins-block>
+<h3>Constant function wrapper <span class=stable-ref>[func.fn]</span></h3>
+
+<code-block class=borderless><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>auto</h-> <h- data-h=id>f</h-><h- data-h=sym_op>&gt;</h->
+  <h- data-h=kw>struct</h-> <h- data-h=id_type>fn_t</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>explicit</h-> <h- data-h=id_type>fn_t</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=kw>default</h-><h- data-h=sym_punc>;</h->
+
+    <i><h- data-h=id>see below</h-></i>
+  <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>1
+Let <code><h- data-h=id>ft</h-></code> be an object of type <code><h- data-h=id>FT</h-></code>
+that is a (possibly const) specialization of <code><h- data-h=id_type>fn_t</h-></code>,
+and let <code><h- data-h=id>cf</h-></code> be a template parameter object (<a href=https://eel%2eis/c++draft/temp%2eparam>[temp.param]</a>)
+corresponding to the constant template argument of <code><h- data-h=id>FT</h-></code>.
+Then:
+</p><ul>
+<li>
+  <code><h- data-h=id>FT</h-></code> is a trivially copyable type,
+  such that <code><h- data-h=id>FT</h-></code> models <code><h- data-h=id>semiregular</h-></code> and
+  <code><h- data-h=id>is_empty_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>FT</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>;
+</li>
+<li>
+  <code><h- data-h=id>ft</h-></code> is a simple call wrapper (<a href=https://eel%2eis/c++draft/func%2erequire>[func.require]</a>)
+  with no state entities
+  and with the call pattern <code><h- data-h=id>invoke</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>call_args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code>,
+  where <code><h- data-h=id>call_args</h-></code> is an argument pack used in a function call expression (<a href=https://eel%2eis/c++draft/expr%2ecall>[expr.call]</a>),
+  except that any parameter of the function selected by overload resolution
+  may be initialized from the corresponding element of <code><h- data-h=id>call_args</h-></code>
+  if that element is a prvalue;
+</li>
+<li>
+  for any type <code><h- data-h=id>R</h-></code> and pack of types <code><h- data-h=id>Args</h-></code>,
+  both <code><h- data-h=id>cf</h-></code> and <code><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>move</h-><h- data-h=sym_par>(</h-><h- data-h=id>ft</h-><h- data-h=sym_par>)</h-></code> are convertible to:
+  <ul>
+    <li><code><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-></code> if <code><h- data-h=id>is_invocable_r_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_op>&gt;</h-></code> is <code><h- data-h=bool>true</h-></code>;</li>
+    <li><code><h- data-h=id>R</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=id>Args</h-><h- data-h=sym_op>...</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-></code> if <code><h- data-h=id>is_nothrow_invocable_r_v</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>R</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>decltype</h-><h- data-h=sym_par>(</h-><h- data-h=id>cf</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Args</h-><h- data-h=sym_op>...</h-></code> is <code><h- data-h=bool>true</h-></code>.</li>
+  </ul>
+  <wg21-block>[<i>Example</i>: 
+  <code><br/>
+  <h- data-h=kw_type>bool</h-> <h- data-h=id>is_even</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>long</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-><br/>
+  <h- data-h=kw_type>bool</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=id>ptr</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>=</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=sym_punc>:</h-><h- data-h=id>fn</h-><h- data-h=sym_op>&lt;</h-><h- data-h=sym_op>&amp;</h-><h- data-h=id>is_even</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_punc>;</h-><br/>
+  </code>
+   — <i>end example</i>]</wg21-block>
+</li>
+</ul>
+</ins-block>
+
+
+
+
+
+
+
+
+
+
+
+
+
 </main></body>
 </html>

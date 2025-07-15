@@ -480,6 +480,7 @@ would leave its details largely unspecified,
 which would allow for not implementing \tcode{operator()} at all,
 and for making \tcode{std::fn_t} invocable via surrogate function call
 (implicit conversion to function pointer, then calling that pointer).
+See \ref[#wording-29]
 
 \h2{Wording}
 
@@ -489,8 +490,6 @@ diff-block h-[data-h=cmt_dlim] {
   color: inherit !important;
 }
 }
-
-\h3{Changes to C++26}
 
 The following changes are relative to \ref[N5008].
 
@@ -651,10 +650,14 @@ template<auto f, class T>
 \etc
 }
 
-\h3{Follow-up changes to C++29}
+\h2{References}
+
+\make_bib
+
+\h2[id=wording-29,show-number=no]{Appendix \N{EM DASH} Follow-up wording for C++29}
 
 The following changes are relative to \ref[N5008],
-with the changes in the previous section applied.
+with the changes in \ref[#wording] applied.
 
 In \eelis{version.syn}, create a feature-test macro:
 
@@ -691,7 +694,6 @@ template<auto f>
 
     \seebelow
   };
-template<auto f> constexpr fn_t<f> fn;
 }
 
 \pnum
@@ -731,8 +733,6 @@ Then:
 }
 }
 }
-
-\h2{References}
 
 \bib[
   id = N5008,
@@ -826,5 +826,3 @@ Then:
   author = Jan Schultke,
   link = https://github.com/Eisenwave/nontype_functional
 ]
-
-\make_bib
