@@ -314,10 +314,9 @@ define negative shifts to produce the same result as overlong shifts without
 incurring an additional performance penalty:
 
 \cppblock{
-template<class T>
-T shr(T x, int s) {
+unsigned shr(unsigned x, int s) {
   // \serif{Handles negative, not just over-large shifts, at no extra cost.}
-  return unsigned(s) >= \exposid{width-v}<T> ? T{0} : x >> s;
+  return unsigned(s) >= \exposid{width-v}<T> ? 0u : x >> s;
 }
 }
 

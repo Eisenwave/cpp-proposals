@@ -1821,10 +1821,9 @@ positive amounts to produce a defined result, an implementation could simply
 define negative shifts to produce the same result as overlong shifts without
 incurring an additional performance penalty:
 </p>
-<code-block><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>class</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h->
-<h- data-h=id>T</h-> <h- data-h=id>shr</h-><h- data-h=sym_par>(</h-><h- data-h=id>T</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>s</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+<code-block><h- data-h=kw_type>unsigned</h-> <h- data-h=id>shr</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>unsigned</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=id>s</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
   <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Handles negative, not just over-large shifts, at no extra cost.</h-></f-serif>
-  <h- data-h=kw_ctrl>return</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>s</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <i><h- data-h=id>width-v</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>?</h-> <h- data-h=id>T</h-><h- data-h=sym_brac>{</h-><h- data-h=num>0</h-><h- data-h=sym_brac>}</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>s</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=kw_ctrl>return</h-> <h- data-h=kw_type>unsigned</h-><h- data-h=sym_par>(</h-><h- data-h=id>s</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;=</h-> <i><h- data-h=id>width-v</h-></i><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_op>?</h-> <h- data-h=num>0</h-><h- data-h=num_deco>u</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>s</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
 
 <h4 id=why-no-undefined-behavior><a class=para href=#why-no-undefined-behavior></a>3.3.3. Why no undefined behavior?</h4>
