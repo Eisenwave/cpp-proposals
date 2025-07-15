@@ -311,7 +311,15 @@ interpreted as an attempt to shift by a large positive amount congruent to the
 original negative amount. Since we already propose to require shifting by large
 positive amounts to produce a defined result, an implementation could simply
 define negative shifts to produce the same result as overlong shifts without
-incurring an additional performance penalty.
+incurring an additional performance penalty:
+
+\cppblock{
+template<class T>
+T shr(T x, int s) {
+  // \serif{Handles negative, not just over-large shifts, at no extra cost.}
+  return unsigned(s) >= \exposid{width-v}<T> ? T{0} : x >> s;
+}
+}
 
 \h4{Why no undefined behavior?}
 
