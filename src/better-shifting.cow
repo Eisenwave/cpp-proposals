@@ -124,12 +124,12 @@ and \tcode{0} represents an integer that does not.
 \cppblock{
 std::uint32_t bitset = /* ... */;
 
-// \serif{Possibly undefined behavior; would require special cases to guard against negative or overlong shifts.}
+// \serif{Possibly undefined behavior; would require special cases to guard against overlong shifts.}
 bool contains(size_t i) {
     return (bitset >> i) & 1;
 }
 
-// \serif{Wide contract, never fails.}
+// \serif{Never undefined.}
 bool contains(size_t i) noexcept {
     return std::shr(bitset, int(i)) & 1;
 }

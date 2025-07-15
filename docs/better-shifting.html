@@ -1639,12 +1639,12 @@ and <code><h- data-h=num>0</h-></code> represents an integer that does not.
 </p>
 <code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id_type>uint32_t</h-> <h- data-h=id>bitset</h-> <h- data-h=sym_op>=</h-> <h- data-h=cmt_dlim>/*</h-><h- data-h=cmt> ... </h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>;</h->
 
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Possibly undefined behavior; would require special cases to guard against negative or overlong shifts.</h-></f-serif>
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Possibly undefined behavior; would require special cases to guard against overlong shifts.</h-></f-serif>
 <h- data-h=kw_type>bool</h-> <h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>size_t</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_par>(</h-><h- data-h=id>bitset</h-> <h- data-h=sym_op>&gt;&gt;</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Wide contract, never fails.</h-></f-serif>
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>Never undefined.</h-></f-serif>
 <h- data-h=kw_type>bool</h-> <h- data-h=id>contains</h-><h- data-h=sym_par>(</h-><h- data-h=id_type>size_t</h-> <h- data-h=id>i</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-> <h- data-h=sym_brac>{</h->
     <h- data-h=kw_ctrl>return</h-> <h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>shr</h-><h- data-h=sym_par>(</h-><h- data-h=id>bitset</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&amp;</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
