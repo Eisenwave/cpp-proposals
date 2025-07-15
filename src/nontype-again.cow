@@ -226,7 +226,7 @@ Thanks to that guarantee, \tcode{std::function_ref} can use the
 \tcode{\exposid{bound-entity}} pointer to refer to some user-specified entity,
 or simply make it \tcode{nullptr}.
 
-\h3{Making \tcode{std::nontype} more broadly useful}
+\h3{Making \tcode{std::nontype} useful for use in algorithms and function wrappers}
 
 A common recommendation when using standard library algorithms
 is to avoid the use of function pointers.
@@ -273,6 +273,36 @@ A \tcode{std::fn} with a call operator \em{just works}
 with all function wrappers and algorithms,
 exactly as expected,
 and with the same semantics as it has in \tcode{std::function_ref}.
+
+\h3{Making \tcode{std::nontype} useful for producing function pointers}
+
+Since the C++29 \tcode{std::fn} would be convertible to a function pointer,
+it could also be used for producing and converting function pointers.
+\tcode{std::fn} would be convertible to a function pointer type,
+possibly with conversions of parameters and the returned value being applied,
+not just if there is an "exact match" in signature.
+
+\Bex{
+In the following code, \tcode{is_prime} is wrapped in \tcode{std::fn},
+which is convertible to \tcode{bool(*)(int)}, not just \tcode{bool(*)(long)},
+because \tcode{int} is convertible to \tcode{long long}.
+
+\cppblock{
+bool is_prime(long long x);
+bool(*p)(int) = std::fn<&is_prime>;
+}
+
+This may be useful for passing function pointers to C APIs when on the C++ side,
+there is a slight mismatch between the C++ function signature
+and the expected function pointer type.
+}
+
+Similarly, C++29 \tcode{std::fn} could be used to produce function pointers
+to arbitrary callable types such as lambdas,
+\tcode{struct}s with a call operator, etc.
+All of this is feasible by creating a function "on the fly"
+within a conversion operator template.
+See \ref[#implementation-for-29] for specifics.
 
 \h3{Naming}
 
@@ -428,7 +458,7 @@ because it is merely changing the name of a symbol;
 it obviously works.
 This is what we are proposing for C++26.
 
-\h3{Possible implementation of \tcode{std::fn} for C++29}
+\h3[id=implementation-for-29]{Possible implementation of \tcode{std::fn} for C++29}
 
 An implementation for illustration purposes of the full C++29 \tcode{std::fn}
 may look as follows:
