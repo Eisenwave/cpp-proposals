@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3774R0}}
-    \dt{Date:}            \dd{\tt{2025-07-13}}
+    \dt{Date:}            \dd{\tt{2025-07-15}}
     \dt{Audience:}        \dd{LEWG}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -23,8 +23,8 @@ This solution found weak consensus in LEWG,
 but there was no time in LWG to review the change,
 so it did not make it into C++26.
 
-We now propose to rename it to \tcode{std::fn} and make it more broadly useful,
-a solution which has chances of achieving greater consensus.
+We now propose to rename it to \tcode{std::fn} in C++26.
+We also propose to make it more broadly useful in C++29 by adding further members.
 }
 
 \h2[listed=no]{Contents}
