@@ -1463,56 +1463,6 @@ if (theme !== null) {
     </script>
 </div>
 <main>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <style>
   ins-block .para::before {
     display: none;
@@ -1531,17 +1481,11 @@ if (theme !== null) {
   }
 </style>
 
-
-
-
-
-
-
 <p><div class=wg21-head><h1>A utility function for propagating the most significant bit</h1>
 
 <dl>
     <dt>Document number:</dt> <dd><a href=https://wg21%2elink/P3764R0>P3764R0</a></dd>
-    <dt>Date:</dt>            <dd><tt->2025-07-02</tt-></dd>
+    <dt>Date:</dt>            <dd><tt->2025-07-15</tt-></dd>
     <dt>Audience:</dt>        <dd>SG6</dd>
     <dt>Project:</dt>         <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21</dd>
     <dt>Reply-to:</dt>        <dd>Jan Schultke &lt;<a href=mailto:janschultke@gmail%2ecom class=sans>janschultke@gmail.com</a>&gt;</dd>
@@ -1820,10 +1764,10 @@ Equivalent to:
 <code-block class=borderless>[…]
 
 <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>[simd.bit], Bit manipulation</h-></f-serif>
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>simd</h-><h- data-h=sym_op>-</h-><h- data-h=id>type</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>byteswap</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>simd</h-><h- data-h=sym_op>-</h-><h- data-h=id>type</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>bit_ceil</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>simd</h-><h- data-h=sym_op>-</h-><h- data-h=id>type</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>bit_floor</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
-<ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>simd</h-><h- data-h=sym_op>-</h-><h- data-h=id>type</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>msb_to_mask</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>byteswap</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>bit_ceil</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>bit_floor</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h->
+<ins><h- data-h=kw>template</h-><h- data-h=sym_op>&lt;</h-><i><h- data-h=id>simd-type</h-></i> <h- data-h=id>V</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>constexpr</h-> <h- data-h=id>V</h-> <h- data-h=id>msb_to_mask</h-><h- data-h=sym_par>(</h-><h- data-h=kw>const</h-> <h- data-h=id>V</h-><h- data-h=sym_op>&amp;</h-> <h- data-h=id>v</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>noexcept</h-><h- data-h=sym_punc>;</h-></ins>
 
 […]
 

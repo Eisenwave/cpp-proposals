@@ -5,7 +5,7 @@
 ]{
 \dl{
     \dt{Document number:} \dd{\docnum{P3764R0}}
-    \dt{Date:}            \dd{\tt{2025-07-02}}
+    \dt{Date:}            \dd{\tt{2025-07-15}}
     \dt{Audience:}        \dd{SG6}
     \dt{Project:}         \dd{ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21}
     \dt{Reply-to:}        \dd{Jan Schultke <\mail{janschultke@gmail.com}>}
@@ -275,10 +275,10 @@ In \eelis{simd.syn}, change the synopsis as follows:
 \html{[\N{HORIZONTAL ELLIPSIS}]}
 
 // \serif{[simd.bit], Bit manipulation}
-template<simd-type V> constexpr V byteswap(const V& v) noexcept;
-template<simd-type V> constexpr V bit_ceil(const V& v) noexcept;
-template<simd-type V> constexpr V bit_floor(const V& v) noexcept;
-\ins{template<simd-type V> constexpr V msb_to_mask(const V& v) noexcept;}
+template<\exposid{simd-type} V> constexpr V byteswap(const V& v) noexcept;
+template<\exposid{simd-type} V> constexpr V bit_ceil(const V& v) noexcept;
+template<\exposid{simd-type} V> constexpr V bit_floor(const V& v) noexcept;
+\ins{template<\exposid{simd-type} V> constexpr V msb_to_mask(const V& v) noexcept;}
 
 \html{[\N{HORIZONTAL ELLIPSIS}]}
 
