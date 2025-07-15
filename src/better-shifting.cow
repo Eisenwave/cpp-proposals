@@ -373,10 +373,10 @@ We propose the following signatures:
 
 \cppblock{
 template<class T>
-  constexpr T shl(T x, int y) noexcept;
+  constexpr T shl(T x, int s) noexcept;
 
 template<class T>
-  constexpr T shr(T x, int y) noexcept;
+  constexpr T shr(T x, int s) noexcept;
 }
 
 The rationale for these signature is as follows:
