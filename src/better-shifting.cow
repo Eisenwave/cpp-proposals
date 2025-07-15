@@ -601,7 +601,7 @@ A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element
 is initialized to the result of \tcode{\exposid{bit-func}(v0[\math{\mi{i}}],
 static_cast<int>(v1[\math{\mi{i}}]))} for all \math{\mi{i}} in the range
 [\tcode{0}, \tcode{V::size()}), where \tcode{\exposid{bit-func}} has the same
-behavior as the corresponding scalar function from \header{<bit>} except that the
+behavior as the corresponding scalar function from \header{bit} except that the
 type of its second parameter is considered to be \tcode{V1::value_type}.
 }
 
@@ -622,7 +622,7 @@ A \tcode{basic_simd} object where the \math{\msup{\mi{i}\mtext{th}}} element is
 initialized to the result of \tcode{\exposid{bit-func}(v[\math{\mi{i}}], s)} for
 all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}), where
 \tcode{\exposid{bit-func}} is the corresponding scalar function from
-\tcode{<bit>}.
+\header{bit}.
 }
 }
 
