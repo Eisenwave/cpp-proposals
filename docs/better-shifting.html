@@ -1530,7 +1530,7 @@ following advantages over the built-in shift operators:
 <div class=toc-num data-level=4>3.3.1</div>
 <a href=#why-no-shift-in-the-other-direction><h4>Why no shift in the other direction?</h4></a>
 <div class=toc-num data-level=4>3.3.2</div>
-<a href=#why-no-implementation-defined-result><h4>Why no implementation-defined result?</h4></a>
+<a href=#why-no-unspecified-result><h4>Why no unspecified result?</h4></a>
 <div class=toc-num data-level=4>3.3.3</div>
 <a href=#why-no-undefined-behavior><h4>Why no undefined behavior?</h4></a>
 <div class=toc-num data-level=4>3.3.4</div>
@@ -1790,7 +1790,9 @@ Hardware instructions interpret the shift amount as an unsigned number.
 </p><ol>
   <li>Shift in other direction.</li>
   <li>Implementation-defined result.</li>
-  <li>Erroneous behavior with unspecified result (proposed).</li>
+  <li>Erroneous behavior with implementation-defined result (proposed).</li>
+  <li>Unspecified result.</li>
+  <li>Erroneous behavior with unspecified result.</li>
   <li>Undefined behavior.</li>
 </ol>
 
@@ -1802,19 +1804,22 @@ Use cases where we want to shift in the other direction are extremely uncommon,
 and in those uncommon use cases,
 these operations can be easily expressed by conditionally shifting to the left or right.
 </p>
-<h4 id=why-no-implementation-defined-result><a class=para href=#why-no-implementation-defined-result></a>3.3.2. Why no implementation-defined result?</h4>
+<h4 id=why-no-unspecified-result><a class=para href=#why-no-unspecified-result></a>3.3.2. Why no unspecified result?</h4>
 
 <p>Hardware architectures don't always guarantee a specific result for
 bit-shifting instructions.
 For example, older Intel x86-64 processors do not guarantee that shifting wraps,
 but yield an unspecified result.
-</p>
-<p>"Implementation-defined" has a connotation of producing a deterministic result,
-and if that is not guaranteed by the underlying hardware instruction,
-there may be additional cost to make the result deterministic.
-Since the behavior is erroneous anyway,
-there is essentially no benefit to an implementation-defined result,
-as compared to an unspecified result.
+Therefore, it might seem at first that requiring a predictable,
+implementation-defined result imposes additional overhead compared with leaving
+the result unspecified.
+However, all hardware that we are aware of treats the shift amount as an
+unsigned integer: that is, any attempt to shift by a negative amount would be
+interpreted as an attempt to shift by a large positive amount congruent to the
+original negative amount. Since we already propose to require shifting by large
+positive amounts to produce a defined result, an implementation could simply
+define negative shifts to produce the same result as overlong shifts without
+incurring an additional performance penalty.
 </p>
 <h4 id=why-no-undefined-behavior><a class=para href=#why-no-undefined-behavior></a>3.3.3. Why no undefined behavior?</h4>
 
@@ -1835,7 +1840,7 @@ they can opt into that using:
 with the programmer's intent being unclear.
 However, there is no necessity for undefined behavior.
 </p>
-<p>Therefore, we propose the third option (erroneous behavior with unspecified result).
+<p>Therefore, we propose the third option (erroneous behavior with implementation-defined result).
 </p>
 <h3 id=naming><a class=para href=#naming></a>3.4. Naming</h3>
 
