@@ -1544,8 +1544,10 @@ following advantages over the built-in shift operators:
 <div class=toc-num data-level=2>4</div>
 <a href=#wording><h2>Wording</h2></a>
 <div class=toc-num data-level=3>4.1</div>
-<a href=#bit><h3>[bit]</h3></a>
+<a href=#version%2esyn><h3>[version.syn]</h3></a>
 <div class=toc-num data-level=3>4.2</div>
+<a href=#bit><h3>[bit]</h3></a>
+<div class=toc-num data-level=3>4.3</div>
 <a href=#simd><h3>[simd]</h3></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#references><h2>References</h2></a>
@@ -1940,7 +1942,16 @@ functions should be inserted between the <code><h- data-h=id>msb_to_mask</h-></c
 functions.
 </p></note-block>
 
-<h3 id=bit><a class=para href=#bit></a>4.1. [bit]</h3>
+<h3 id=version.syn><a class=para href=#version%2esyn></a>4.1. [version.syn]</h3>
+
+<p>Bump feature-test macros in <a href=https://eel%2eis/c++draft/version%2esyn>[version.syn]</a> as follows:
+</p>
+<diff-block>
+<code-block class=borderless><h- data-h=mac>#define __cpp_lib_bitops </h-><del><h- data-h=mac>201907L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac> </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>freestanding, also in </h-><tt-><h- data-h=cmt>&lt;bit&gt;</h-></tt-></f-serif>
+<h- data-h=mac>#define __cpp_lib_simd </h-><del><h- data-h=mac>202502L</h-></del><h- data-h=mac> </h-><ins><h- data-h=mac>20XXXXL</h-></ins><h- data-h=mac>   </h-><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> </h-><f-serif><h- data-h=cmt>also in </h-><tt-><h- data-h=cmt>&lt;simd&gt;</h-></tt-></f-serif></code-block>
+</diff-block>
+
+<h3 id=bit><a class=para href=#bit></a>4.2. [bit]</h3>
 
 <p>In <a href=https://eel%2eis/c++draft/bit%2esyn>[bit.syn]</a>, change the synopsis as follows:
 </p>
@@ -2001,7 +2012,7 @@ the result is -1 if <code><h- data-h=id>x</h-></code> is negative and 0 otherwis
 </p></div>
 </ins-block>
 
-<h3 id=simd><a class=para href=#simd></a>4.2. [simd]</h3>
+<h3 id=simd><a class=para href=#simd></a>4.3. [simd]</h3>
 
 <p>In <a href=https://eel%2eis/c++draft/simd%2esyn>[simd.syn]</a>, change the synopsis as follows:
 </p>

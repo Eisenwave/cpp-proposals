@@ -442,6 +442,17 @@ functions should be inserted between the \tcode{msb_to_mask} and \tcode{rotl}
 functions.
 }
 
+\h3{[version.syn]}
+
+Bump feature-test macros in \eelis{version.syn} as follows:
+
+\Bdiff{
+\itemdecl{
+#define __cpp_lib_bitops \del{201907L} \ins{20XXXXL} // \serif{freestanding, also in \tt{<bit>}}
+#define __cpp_lib_simd \del{202502L} \ins{20XXXXL}   // \serif{also in \tt{<simd>}}
+}
+}
+
 \h3{[bit]}
 
 In \eelis{bit.syn}, change the synopsis as follows:
