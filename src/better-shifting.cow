@@ -430,7 +430,7 @@ The following changes are relative to \ref[N5008].
 \Bnote{
 The \tcode{shl} and \tcode{shr} functions should immediately precede the
 \tcode{rotl} and \tcode{rotr} functions in the wording. Therefore, if this paper
-and \ref[P3764] are adopted in the same meeting, the \tcode{shl} and \tcode{shr}
+and \ref[P3764R0] are adopted in the same meeting, the \tcode{shl} and \tcode{shr}
 functions should be inserted between the \tcode{msb_to_mask} and \tcode{rotl}
 functions.
 }
@@ -637,10 +637,11 @@ all \math{\mi{i}} in the range [\tcode{0}, \tcode{V::size()}), where
   long-link = https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3643r0.html
 ]
 \bib[
-  id = P3764,
+  id = P3764R0,
   title = A utility function for propagating the most significant bit,
+  date = 2025-07-15,
   author = Jan Schultke,
-  link = https://wg21.link/p3764
+  link = https://wg21.link/p3764r0
 ]
 
 \make_bib
